@@ -78,7 +78,7 @@ dart::dynamics::SkeletonPtr loadRobot(){
 
 void setInitialPose(dart::dynamics::SkeletonPtr robot){
     //robot->setPosition(5, 1.05);
-    robot->setPosition(5, 0.73);
+    robot->setPosition(5, 0.7);
     
     Eigen::Vector3d JPos_init;
     JPos_init[0] = 0.0;

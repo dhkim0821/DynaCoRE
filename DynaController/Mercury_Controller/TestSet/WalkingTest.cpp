@@ -75,7 +75,7 @@ WalkingTest::~WalkingTest(){
 
 void WalkingTest::TestInitialization(){
   // Planner
-  reversal_planner_->PlannerInitialization("PLANNER_velocity_reversal");
+  reversal_planner_->PlannerInitialization(MercuryConfigPath"PLANNER_velocity_reversal");
 
   // Yaml file name
   jpos_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
