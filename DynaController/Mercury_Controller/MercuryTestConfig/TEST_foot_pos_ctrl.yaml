@@ -1,0 +1,11 @@
+swing_foot: right
+
+# Initialization
+initial_jpos: [0.0, -0.7, 1.1, 0.0, -0.7, 1.1]
+initialization_time: 1
+
+# Timing Parameters (sec)
+swing_test_time: 100.32
+amplitude: [0.05, 0.0, 0.05 ]
+frequency: [0.5, 0.0, 0.5 ]
+phase: [1.6, 0., 0.]

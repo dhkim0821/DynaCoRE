@@ -1,0 +1,11 @@
+add_executable(sj_snopt_cpp_catmixa catmixa.cpp)
+add_executable(sj_snopt_cpp_hs118 hs118.cpp)
+add_executable(sj_snopt_cpp_sntoya sntoya.cpp)
+add_executable(sj_snopt_cpp_sntoyb sntoyb.cpp)
+add_executable(sj_snopt_cpp_sntoyc sntoyc.cpp)
+
+target_link_libraries(sj_snopt_cpp_catmixa SJsnopt)
+target_link_libraries(sj_snopt_cpp_hs118 SJsnopt)
+target_link_libraries(sj_snopt_cpp_sntoya SJsnopt)
+target_link_libraries(sj_snopt_cpp_sntoyb SJsnopt)
+target_link_libraries(sj_snopt_cpp_sntoyc SJsnopt)
