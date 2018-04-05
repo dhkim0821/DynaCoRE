@@ -1,2 +1,1 @@
-# DynaCoRE
-
+# Dynamic Control for Robotics (Expedition)
