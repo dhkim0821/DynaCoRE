@@ -48,8 +48,10 @@ void WorldNode::customPreStep() {
     if(pelvis_hold == true) {
         if (curr_time < 1.5) { holdpelvis(); }
         //if (curr_time < 1000.5) { holdpelvis(); }
-        else {
+        else if (curr_time < 2.8){
             holdhorizontal();
+        } else {
+
         }
     } 
 
@@ -95,10 +97,12 @@ void WorldNode::_WBDC_Ctrl(){
     for(int i(0); i<3; ++i){
         mTorqueCommand[i + 6] = cmd_[i];
     }
+    // Right ankle 
     mTorqueCommand[9] = 300.0 * (0. - mQ[9]) + 10.0 * (0. - mQdot[9]);
     for(int i(0); i<3; ++i){
         mTorqueCommand[i + 10] = cmd_[i+3];
     }
+    // Left ankle
     mTorqueCommand[13] = 300.0 * (0. - mQ[13]) + 10.0 * (0. - mQdot[13]);
 
     robot_->setForces(mTorqueCommand);

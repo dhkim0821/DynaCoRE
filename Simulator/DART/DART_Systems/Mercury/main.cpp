@@ -47,7 +47,7 @@ dart::simulation::WorldPtr loadWorld(){
     world->addSkeleton(ground);
     Eigen::Vector3d gravity(0.0, 0.0, -9.81);
     world->setGravity(gravity);
-    world->setTimeStep(1.0/1500);
+    world->setTimeStep(1.0/1500.);
 
     return world;
 }

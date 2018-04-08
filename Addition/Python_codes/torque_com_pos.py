@@ -3,12 +3,13 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
+File_Path = '/Users/donghyunkim/Repository/dynacore/experiment_data/'
 ## read files
-data_torq = np.genfromtxt('torque.txt', delimiter=None, dtype=(float))
-data_comm = np.genfromtxt('command.txt', delimiter=None, dtype=(float))
-data_cpos = np.genfromtxt('com_pos.txt', delimiter=None, dtype=(float))
-data_cdes = np.genfromtxt('com_pos_des.txt', delimiter=None, dtype=(float))
-data_x = np.genfromtxt('time.txt', delimiter='\n', dtype=(float))
+data_torq = np.genfromtxt(File_Path+'torque.txt', delimiter=None, dtype=(float))
+data_comm = np.genfromtxt(File_Path+'command.txt', delimiter=None, dtype=(float))
+data_cpos = np.genfromtxt(File_Path+'com_pos.txt', delimiter=None, dtype=(float))
+data_cdes = np.genfromtxt(File_Path+'com_pos_des.txt', delimiter=None, dtype=(float))
+data_x = np.genfromtxt(File_Path+'time.txt', delimiter='\n', dtype=(float))
 
 ## get torque.txt data
 for j in range(1,7,1):
