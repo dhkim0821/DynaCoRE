@@ -1,7 +1,7 @@
 planner_name: velocity_reversal_lipm
 swing_height: 0.13
 push_down_height: 0.0
-default_target_foot_location: [0.0, -0.18, 0.0]
+default_target_foot_location: [0.0, -0.17, 0.0]
 
 ## Feedback Gain
 # CoMx, CoMy, CoMz, Rx, Ry, Rz, Foot_x, Foot_y, Foot_z
