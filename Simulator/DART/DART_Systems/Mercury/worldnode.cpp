@@ -50,7 +50,6 @@ void WorldNode::customPreStep() {
     double curr_time = ((double)count)*(1.0/1500.);
     if(pelvis_hold == true) {
         if (curr_time < 1.5) { holdpelvis(); }
-        //if (curr_time < 1000.5) { holdpelvis(); }
         else if (curr_time < 2.8){
             holdhorizontal();
         } else {
@@ -58,6 +57,7 @@ void WorldNode::customPreStep() {
         }
     } 
 
+    Torques_ = robot_->getForces();
     //dynacore::pretty_print(mQ, std::cout, "dart Q");
     //dynacore::pretty_print(robot_->getGravityForces(), std::cout, "dart gravity");
     //dynacore::pretty_print(robot_->getForces(), std::cout, "dart forces");
@@ -98,9 +98,6 @@ void WorldNode::_WBDC_Ctrl(){
     dynacore::Vect3 rfoot_pos = rfoot_->getTransform().translation();
     dynacore::Vect3 lfoot_pos = lfoot_->getTransform().translation();
 
-    //dynacore::pretty_print(rfoot_pos, std::cout, "rfoot pos");
-    //dynacore::pretty_print(lfoot_pos, std::cout, "lfoot pos");
-
     double height_threshold(0.0484);
     if(rfoot_pos[2] < height_threshold)    sensor_data_->rfoot_contact = true;
     else sensor_data_->rfoot_contact = false;
@@ -108,29 +105,28 @@ void WorldNode::_WBDC_Ctrl(){
     if(lfoot_pos[2] < height_threshold)    sensor_data_->lfoot_contact = true;
     else sensor_data_->lfoot_contact = false;
 
-    //printf("right foot contact: %d \n", sensor_data_->rfoot_contact);
-    //printf("left foot contact: %d \n", sensor_data_->lfoot_contact);
-    //printf("\n");
 
     static int count(0);
     ++count;
-    //printf("begin wbdc: %d \n", count);
     //if(count % 2 == 0)  interface_->GetCommand(sensor_data_, cmd_);
     interface_->GetCommand(sensor_data_, cmd_);
-    //printf("end wbdc\n");
+    
     for(int i(0); i<3; ++i){
         mTorqueCommand[i + 6] = cmd_[i];
     }
     // Right ankle 
-    mTorqueCommand[9] = 0.5 * (-0.4 - mQ[9]) + 0.05 * (0. - mQdot[9]);
+    double kp_ankle(0.1);
+    double kd_ankle(0.01);
+    mTorqueCommand[9] = kp_ankle * (-0.4 - mQ[9]) + kd_ankle * (0. - mQdot[9]);
     for(int i(0); i<3; ++i){
         mTorqueCommand[i + 10] = cmd_[i+3];
     }
     // Left ankle
-    mTorqueCommand[13] = 0.5 * (-0.4 - mQ[13]) + 0.05 * (0. - mQdot[13]);
-
+    mTorqueCommand[13] = kp_ankle * (-0.4 - mQ[13]) + kd_ankle * (0. - mQdot[13]);
+    //TEST
+    //mTorqueCommand.setZero();
+    
     robot_->setForces(mTorqueCommand);
-    Torques_ = robot_->getForces();
 }
 
 void WorldNode::_DART_JPosCtrl(){
@@ -196,8 +192,8 @@ void WorldNode::holdpelvis(){
 
     // virtual joints
     for(int i(0); i<3 ;i++){
-        Kp(i,i) = 1500.0;
-        Kd(i,i) = 300.0;
+        Kp(i,i) = 1000.0;
+        Kd(i,i) = 100.0;
     }
 
     Eigen::Vector3d Force;
@@ -227,8 +223,10 @@ void WorldNode::holdhorizontal(){
 
     // virtual joints
     for(int i(0); i<3 ;i++){
-        Kp(i,i) = 1500.0;
-        Kd(i,i) = 300.0;
+         //Kp(i,i) = 5.0;
+        //Kd(i,i) = 0.3;
+        Kp(i,i) = 1000.0;
+        Kd(i,i) = 100.0;
     }
 
     Eigen::Vector3d Force;

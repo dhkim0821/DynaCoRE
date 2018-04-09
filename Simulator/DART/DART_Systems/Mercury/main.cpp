@@ -48,7 +48,6 @@ dart::simulation::WorldPtr loadWorld(){
     Eigen::Vector3d gravity(0.0, 0.0, -9.81);
     world->setGravity(gravity);
     world->setTimeStep(1.0/1500.);
-
     return world;
 }
 
@@ -127,7 +126,7 @@ int main(int argc, char* argv[]) {
     dart::gui::osg::Viewer viewer;
     // Wrap a worldnode
     osg::ref_ptr<WorldNode> node = new WorldNode(world, msm);
-    node->setNumStepsPerCycle(10);
+    node->setNumStepsPerCycle(15);
 
     msm->setLight(viewer.getLightSource(0)->getLight());
     viewer.switchHeadlights(false);
