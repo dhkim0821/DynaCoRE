@@ -23,6 +23,7 @@
 Mercury_interface::Mercury_interface():
     interface(),
     torque_command_(mercury::num_act_joint),
+    test_command_(mercury::num_act_joint),
     sensed_torque_(mercury::num_act_joint),
     torque_limit_max_(mercury::num_act_joint),
     torque_limit_min_(mercury::num_act_joint),
@@ -32,6 +33,7 @@ Mercury_interface::Mercury_interface():
     sensed_torque_.setZero();
     torque_command_.setZero();
     mapped_current_.setZero();
+    test_command_.setZero();
 
     sp_ = Mercury_StateProvider::getStateProvider();
     state_estimator_ = new Mercury_StateEstimator(robot_sys_);  
@@ -60,13 +62,13 @@ void Mercury_interface::GetCommand( void* _data,
 #endif
         state_estimator_->Update(data);
         // Calcualate Torque
-        test_->getTorqueInput(torque_command_);
+        test_->getTorqueInput(test_command_);
 
 #if MEASURE_TIME
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> time_span1 = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
         if(count_%1000 == 1){
-            std::cout << "[Mercury_interface] All process took me " << time_span1.count()*1000.0 << "ms."<<std::endl;;
+            std::cout << "[Mercury_interface] All process took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
         }
 #endif
     }
@@ -74,30 +76,33 @@ void Mercury_interface::GetCommand( void* _data,
     /// Begin of Torque Limit
     static bool isTurnoff(false);
     for (int i(0); i<mercury::num_act_joint; ++i){
-        if(torque_command_[i] > torque_limit_max_[i]){
+        if(test_command_[i] > torque_limit_max_[i]){
             //if (count_ % 100 == 0) {
             //printf("%i th torque is too large: %f\n", i, torque_command_[i]);
             //}
             torque_command_[i] = torque_limit_max_[i];
             isTurnoff = true;
             //exit(0);
-        }else if(torque_command_[i]< torque_limit_min_[i]){
+        }else if(test_command_[i]< torque_limit_min_[i]){
             //if (count_ % 100 == 0) {
             //printf("%i th torque is too small: %f\n", i, torque_command_[i]);
             //}
             torque_command_[i] = torque_limit_min_[i];
             isTurnoff = true;
             //exit(0);
+        } else{
+            torque_command_[i] = test_command_[i];
         }
         command[i] = torque_command_[i];
         sensed_torque_[i] = data->jtorque[i];
         mapped_current_[i] = data->mapped_current[i];
     }
     if (isTurnoff) {
-        torque_command_.setZero();
+        //torque_command_.setZero();
         for(int i(0); i<mercury::num_act_joint; ++i){
             command[i] = 0.;
         }
+        isTurnoff = false;
     }
     /// End of Torque Limit Check
     

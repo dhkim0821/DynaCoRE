@@ -56,6 +56,8 @@ public:
 
   void SaveCurrentData();
 
+  int b_rfoot_contact_;
+  int b_lfoot_contact_;
   // (x, y, x_dot, y_dot)
   dynacore::Vector estimated_com_state_;
 private:

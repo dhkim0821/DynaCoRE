@@ -44,6 +44,7 @@ private:
 
   dynacore::Vector virtual_sensor_;
   dynacore::Vector torque_command_;
+  dynacore::Vector test_command_;
   dynacore::Vector sensed_torque_;
   dynacore::Vector mapped_current_;
 

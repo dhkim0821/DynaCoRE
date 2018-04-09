@@ -1,5 +1,5 @@
 #! /bin/bash
-PATH_PACKAGE="/Users/donghyunkim/Sejong_Dynamic_Control_Toolkit"
+PATH_PACKAGE="/Users/donghyunkim/Repository/dynacore"
 # PATH_PACKAGE="/home/hcrl/Repository/Sejong_Dynamic_Control_Toolkit"
 
 # Move experiment data to the other folder to plot data

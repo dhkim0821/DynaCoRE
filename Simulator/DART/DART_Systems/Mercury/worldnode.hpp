@@ -32,6 +32,7 @@ protected:
     int mDof;
      Eigen::VectorXd mQ;
     Eigen::VectorXd mQdot;
+    Eigen::VectorXd Torques_;
     Eigen::VectorXd mTorqueCommand;
     
     void _DART_JPosCtrl();
@@ -39,6 +40,8 @@ protected:
 	dart::dynamics::SkeletonPtr robot_;
 	dart::dynamics::SkeletonPtr robot_ctr_;
     dart::dynamics::BodyNode* Pelvis_;
+    dart::dynamics::BodyNode* rfoot_;
+    dart::dynamics::BodyNode* lfoot_;
 
     Eigen::Vector3d Pelvis_pos_init_;
 

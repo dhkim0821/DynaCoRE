@@ -61,6 +61,7 @@ protected:
 
   int swing_foot_;
   double swing_height_;
+  double push_down_height_; // push foot below the ground at landing
   dynacore::Vect3 default_target_loc_;
 
   double planning_frequency_;

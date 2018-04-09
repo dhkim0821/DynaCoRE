@@ -11,6 +11,7 @@ WorldNode::WorldNode(const dart::simulation::WorldPtr & world_,
         mDof = robot_->getNumDofs();
         mQ = Eigen::VectorXd::Zero(mDof);
         mQdot = Eigen::VectorXd::Zero(mDof);
+        Torques_ = Eigen::VectorXd::Zero(mDof);
         mTorqueCommand = Eigen::VectorXd::Zero(mDof);
 
 
@@ -23,6 +24,8 @@ WorldNode::WorldNode(const dart::simulation::WorldPtr & world_,
         Pelvis_pos_init_ = Pelvis_->getTransform().translation();
         //Pelvis_pos_init_[2] = Pelvis_pos_init_[2] -0.1;
 
+        rfoot_ = robot_->getBodyNode("rfoot");
+        lfoot_ = robot_->getBodyNode("lfoot");
         // pelvis hold
         pelvis_hold =true;
 
@@ -58,6 +61,7 @@ void WorldNode::customPreStep() {
     //dynacore::pretty_print(mQ, std::cout, "dart Q");
     //dynacore::pretty_print(robot_->getGravityForces(), std::cout, "dart gravity");
     //dynacore::pretty_print(robot_->getForces(), std::cout, "dart forces");
+    //dynacore::pretty_print(Torques_, std::cout, "dart torque");
 }
 void WorldNode::_WBDC_Ctrl(){
     mQ = robot_->getPositions();
@@ -69,12 +73,14 @@ void WorldNode::_WBDC_Ctrl(){
         sensor_data_->joint_jpos[i] = mQ[i+6];
         sensor_data_->motor_jpos[i] = mQ[i+6];
         sensor_data_->motor_jvel[i] = mQdot[i+6];
+        sensor_data_->jtorque[i] = Torques_[i+6];
     }
     // Right Leg
     for(int i(0); i<3; ++i){
         sensor_data_->joint_jpos[i + 3] = mQ[i+10];
         sensor_data_->motor_jpos[i + 3] = mQ[i+10];
         sensor_data_->motor_jvel[i + 3] = mQdot[i+10];
+        sensor_data_->jtorque[i + 3] = Torques_[i+10];
     }
     for(int i(0); i<3; ++i){
         // X, Y, Z
@@ -87,6 +93,24 @@ void WorldNode::_WBDC_Ctrl(){
 
     dynacore::Quaternion quat;
     dynacore::convert(so3, quat);
+    
+    // Foot contact
+    dynacore::Vect3 rfoot_pos = rfoot_->getTransform().translation();
+    dynacore::Vect3 lfoot_pos = lfoot_->getTransform().translation();
+
+    //dynacore::pretty_print(rfoot_pos, std::cout, "rfoot pos");
+    //dynacore::pretty_print(lfoot_pos, std::cout, "lfoot pos");
+
+    double height_threshold(0.0484);
+    if(rfoot_pos[2] < height_threshold)    sensor_data_->rfoot_contact = true;
+    else sensor_data_->rfoot_contact = false;
+
+    if(lfoot_pos[2] < height_threshold)    sensor_data_->lfoot_contact = true;
+    else sensor_data_->lfoot_contact = false;
+
+    //printf("right foot contact: %d \n", sensor_data_->rfoot_contact);
+    //printf("left foot contact: %d \n", sensor_data_->lfoot_contact);
+    //printf("\n");
 
     static int count(0);
     ++count;
@@ -98,14 +122,15 @@ void WorldNode::_WBDC_Ctrl(){
         mTorqueCommand[i + 6] = cmd_[i];
     }
     // Right ankle 
-    mTorqueCommand[9] = 300.0 * (0. - mQ[9]) + 10.0 * (0. - mQdot[9]);
+    mTorqueCommand[9] = 0.5 * (-0.4 - mQ[9]) + 0.05 * (0. - mQdot[9]);
     for(int i(0); i<3; ++i){
         mTorqueCommand[i + 10] = cmd_[i+3];
     }
     // Left ankle
-    mTorqueCommand[13] = 300.0 * (0. - mQ[13]) + 10.0 * (0. - mQdot[13]);
+    mTorqueCommand[13] = 0.5 * (-0.4 - mQ[13]) + 0.05 * (0. - mQdot[13]);
 
     robot_->setForces(mTorqueCommand);
+    Torques_ = robot_->getForces();
 }
 
 void WorldNode::_DART_JPosCtrl(){

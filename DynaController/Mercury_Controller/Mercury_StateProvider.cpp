@@ -15,6 +15,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 reaction_forces_(6),
                                 jpos_des_(mercury::num_act_joint),
                                 jvel_des_(mercury::num_act_joint),
+                                b_rfoot_contact_(0),
+                                b_lfoot_contact_(0),
                                 estimated_com_state_(4)
 {
   Q_.setZero();
@@ -73,6 +75,10 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
 
   data_manager->RegisterData(&jpos_des_, DYN_VEC, "jpos_des", mercury::num_act_joint);
   data_manager->RegisterData(&jvel_des_, DYN_VEC, "jvel_des", mercury::num_act_joint);
+
+  // Foot Contact 
+  data_manager->RegisterData(&b_rfoot_contact_, INT, "rfoot_contact", 1);
+  data_manager->RegisterData(&b_lfoot_contact_, INT, "lfoot_contact", 1);
   data_manager->RegisterData(&estimated_com_state_, DYN_VEC, "estimated_com_state", 4);
 }
 

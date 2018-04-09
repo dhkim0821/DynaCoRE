@@ -75,9 +75,18 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     // sp_->global_pos_local_.head(2) = foot_pos.head(2);
     robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
   }
-    robot_sys_->getCoMPosition(sp_->CoM_pos_);
-    robot_sys_->getCoMVelocity(sp_->CoM_vel_);
+  robot_sys_->getCoMPosition(sp_->CoM_pos_);
+  robot_sys_->getCoMVelocity(sp_->CoM_vel_);
+
+  // Warning: state provider setup
   sp_->SaveCurrentData();
+
+  // Right Contact 
+   if(data->rfoot_contact) sp_->b_rfoot_contact_ = 1;
+  else sp_->b_rfoot_contact_ = 0;
+    // Left Contact 
+  if(data->lfoot_contact) sp_->b_lfoot_contact_ = 1;
+  else sp_->b_lfoot_contact_ = 0;
 }
 
 void Mercury_StateEstimator::Update(Mercury_SensorData* data){
@@ -128,10 +137,17 @@ std::vector<double> imu_acc(3);
   }else{
     robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
   }
+  // Warning: Save Sensor Data in StateProvider
   sp_->SaveCurrentData();
     robot_sys_->getCoMPosition(sp_->CoM_pos_);
     robot_sys_->getCoMVelocity(sp_->CoM_vel_);
- 
+  // Right Contact 
+   if(data->rfoot_contact) sp_->b_rfoot_contact_ = 1;
+  else sp_->b_rfoot_contact_ = 0;
+    // Left Contact 
+  if(data->lfoot_contact) sp_->b_lfoot_contact_ = 1;
+  else sp_->b_lfoot_contact_ = 0;
+
   for(int i(0); i<3; ++i){
     sp_->imu_acc_inc_[i] = data->imu_inc[i];
     sp_->imu_acc_[i] = data->imu_acc[i];
