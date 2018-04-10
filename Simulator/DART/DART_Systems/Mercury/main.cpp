@@ -48,6 +48,9 @@ dart::simulation::WorldPtr loadWorld(){
     Eigen::Vector3d gravity(0.0, 0.0, -9.81);
     world->setGravity(gravity);
     world->setTimeStep(1.0/1500.);
+    dart::dynamics::BodyNode* glink = ground->getBodyNode("ground_link");
+glink->setFrictionCoeff(1.0);
+    //printf("glink friction: %f\n", glink->getFrictionCoeff());
     return world;
 }
 

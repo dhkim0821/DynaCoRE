@@ -26,6 +26,11 @@ WorldNode::WorldNode(const dart::simulation::WorldPtr & world_,
 
         rfoot_ = robot_->getBodyNode("rfoot");
         lfoot_ = robot_->getBodyNode("lfoot");
+//rfoot_->setFrictionCoeff(5.0);
+//lfoot_->setFrictionCoeff(5.0);
+        printf("right friction: %f\n", rfoot_->getFrictionCoeff());
+        printf("left friction: %f\n", lfoot_->getFrictionCoeff());
+
         // pelvis hold
         pelvis_hold =true;
 

@@ -27,7 +27,7 @@ bool SingleContact::_UpdateJcDotQdot(){
 }
 
 bool SingleContact::_UpdateUf(){
-  double mu (0.8);
+  double mu (0.4);
   Uf_ = dynacore::Matrix::Zero(5, dim_contact_);
   Uf_(0, 2) = 1.; // Fz >= 0
 
