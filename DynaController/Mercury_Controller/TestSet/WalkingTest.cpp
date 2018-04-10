@@ -57,12 +57,34 @@ robot_sys_ = robot;
 
   _SettingParameter();
 
-  DataManager::GetDataManager()->RegisterData(&(((BodyFootPlanningCtrl*)right_swing_ctrl_)->curr_foot_pos_des_), VECT3, "rfoot_pos_des", 3);
-  DataManager::GetDataManager()->RegisterData(&(((BodyFootPlanningCtrl*)left_swing_ctrl_)->curr_foot_pos_des_), VECT3, "lfoot_pos_des", 3);
+  DataManager::GetDataManager()->RegisterData(
+          &(((BodyFootPlanningCtrl*)right_swing_ctrl_)->curr_foot_pos_des_), 
+          VECT3, "rfoot_pos_des", 3);
+  DataManager::GetDataManager()->RegisterData(
+          &(((BodyFootPlanningCtrl*)left_swing_ctrl_)->curr_foot_pos_des_), 
+          VECT3, "lfoot_pos_des", 3);
 
+  DataManager::GetDataManager()->RegisterData(
+          &(((BodyFootPlanningCtrl*)right_swing_ctrl_)->curr_foot_vel_des_), 
+          VECT3, "rfoot_vel_des", 3);
+  DataManager::GetDataManager()->RegisterData(
+          &(((BodyFootPlanningCtrl*)left_swing_ctrl_)->curr_foot_vel_des_), 
+          VECT3, "lfoot_vel_des", 3);
 
-  DataManager::GetDataManager()->RegisterData(&(((BodyFootPlanningCtrl*)right_swing_ctrl_)->curr_foot_vel_des_), VECT3, "rfoot_vel_des", 3);
-  DataManager::GetDataManager()->RegisterData(&(((BodyFootPlanningCtrl*)left_swing_ctrl_)->curr_foot_vel_des_), VECT3, "lfoot_vel_des", 3);
+  DataManager::GetDataManager()->RegisterData(
+          &(((BodyFootPlanningCtrl*)right_swing_ctrl_)->curr_foot_pos_), 
+          VECT3, "rfoot_pos", 3);
+  DataManager::GetDataManager()->RegisterData(
+          &(((BodyFootPlanningCtrl*)left_swing_ctrl_)->curr_foot_pos_), 
+          VECT3, "lfoot_pos", 3);
+
+  DataManager::GetDataManager()->RegisterData(
+          &(((BodyFootPlanningCtrl*)right_swing_ctrl_)->curr_foot_vel_), 
+          VECT3, "rfoot_vel", 3);
+  DataManager::GetDataManager()->RegisterData(
+          &(((BodyFootPlanningCtrl*)left_swing_ctrl_)->curr_foot_vel_), 
+          VECT3, "lfoot_vel", 3);
+
 
   printf("[Walking Test] Constructed\n");
 }

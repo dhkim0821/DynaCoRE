@@ -178,6 +178,10 @@ void BodyFootPlanningCtrl::_task_setup(){
     body_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
     task_list_.push_back(body_foot_task_);
     // dynacore::pretty_print(wbdc_data_->cost_weight,std::cout, "cost weight");
+    //
+    // For Save
+    robot_sys_->getPos(swing_foot_, curr_foot_pos_);
+    robot_sys_->getLinearVel(swing_foot_, curr_foot_vel_);
 }
 
 void BodyFootPlanningCtrl::_CheckPlanning(){

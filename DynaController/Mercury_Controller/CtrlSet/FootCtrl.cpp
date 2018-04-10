@@ -13,7 +13,10 @@
 FootCtrl::FootCtrl(RobotSystem* robot, int swing_foot):Controller(robot),
     swing_foot_(swing_foot),
     end_time_(1000.0),
-    ctrl_start_time_(0.)
+    ctrl_start_time_(0.),
+    foot_pos_des_(3),
+    foot_vel_des_(3),
+    foot_acc_des_(3)
 {
     amp_.resize(3, 0.);
     freq_.resize(3, 0.);
@@ -64,16 +67,21 @@ void FootCtrl::_foot_pos_ctrl(dynacore::Vector & gamma){
 }
 
 void FootCtrl::_foot_pos_task_setup(){
-    dynacore::Vector acc_des(3); acc_des.setZero();
+    foot_acc_des_.setZero();
+    foot_vel_des_.setZero();
+    foot_pos_des_.setZero();
 
     double omega;
     for(int i(0); i<3; ++i){
         omega = 2. * M_PI * freq_[i];
-        sp_->foot_pos_des_[i] = foot_pos_ini_[i] + amp_[i] * sin(omega * state_machine_time_ + phase_[i]);
-        sp_->foot_vel_des_[i] = amp_[i] * omega * cos(omega * state_machine_time_ + phase_[i]);
-        acc_des[i] = -amp_[i] * omega * omega * sin(omega * state_machine_time_ + phase_[i]);
+        foot_pos_des_[i] = 
+            foot_pos_ini_[i] + amp_[i] * sin(omega * state_machine_time_ + phase_[i]);
+        foot_vel_des_[i] = 
+            amp_[i] * omega * cos(omega * state_machine_time_ + phase_[i]);
+        foot_acc_des_[i] = 
+            -amp_[i] * omega * omega * sin(omega * state_machine_time_ + phase_[i]);
     }
-    foot_task_->UpdateTask(&(sp_->foot_pos_des_), sp_->foot_vel_des_, acc_des);
+    foot_task_->UpdateTask(&foot_pos_des_, foot_vel_des_, foot_acc_des_);
     std::vector<bool> relaxed_op(foot_task_->getDim(), false);
     foot_task_->setRelaxedOpCtrl(relaxed_op);
     task_list_.push_back(foot_task_);

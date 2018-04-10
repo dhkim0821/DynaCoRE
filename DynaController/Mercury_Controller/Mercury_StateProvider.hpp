@@ -38,14 +38,6 @@ public:
   dynacore::Vect3 global_pos_local_;
   dynacore::Vect2 des_location_;
 
-  dynacore::Vect3 Rfoot_pos_;
-  dynacore::Vect3 Lfoot_pos_;
-  dynacore::Vect3 Rfoot_vel_;
-  dynacore::Vect3 Lfoot_vel_;
-  dynacore::Vect3 foot_pos_des_;
-  dynacore::Vect3 foot_vel_des_;
-
-
   dynacore::Vect3 CoM_pos_;
   dynacore::Vect3 CoM_vel_;
   dynacore::Vect3 com_pos_des_;

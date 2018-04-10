@@ -39,6 +39,11 @@ protected:
 
   dynacore::Vect3 foot_pos_ini_;
   dynacore::Vector jpos_ini_;
+  
+  dynacore::Vector foot_pos_des_;
+  dynacore::Vector foot_vel_des_;
+  dynacore::Vector foot_acc_des_;
+
   std::vector<double> amp_;
   std::vector<double> freq_;
   std::vector<double> phase_;

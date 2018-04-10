@@ -44,6 +44,11 @@ public:
   dynacore::Vect3 curr_foot_vel_des_;
   dynacore::Vect3 curr_foot_acc_des_;
 
+  dynacore::Vect3 curr_foot_pos_;
+  dynacore::Vect3 curr_foot_vel_;
+  dynacore::Vect3 curr_foot_acc_;
+
+
 protected:
   void _CoMEstiamtorUpdate();
 
