@@ -188,10 +188,10 @@ void BodyFootPlanningCtrl::_task_setup(){
 }
 
 void BodyFootPlanningCtrl::_CheckPlanning(){
-    //if( state_machine_time_ > 
-            //(end_time_/(planning_frequency_ + 1.) * (num_planning_ + 1.) + 0.002) ){
+    if( state_machine_time_ > 
+            (end_time_/(planning_frequency_ + 1.) * (num_planning_ + 1.) + 0.002) ){
     
-    if(state_machine_time_ > 0.5 * end_time_ + 0.002 && (num_planning_ < 1)){
+    //if(state_machine_time_ > 0.5 * end_time_ + 0.002 && (num_planning_ < 1)){
          //+ 0.002 is to account one or two more ticks before the end of phase
        _Replanning();
         ++num_planning_;
@@ -246,7 +246,7 @@ void BodyFootPlanningCtrl::_Replanning(){
 
     target_loc -= sp_->global_pos_local_;
     target_loc[2] -= push_down_height_;
-     dynacore::pretty_print(target_loc, std::cout, "next foot loc");
+     //dynacore::pretty_print(target_loc, std::cout, "next foot loc");
      //curr_foot_acc_des_.setZero();
      //curr_foot_vel_des_.setZero();
     _SetBspline(curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
