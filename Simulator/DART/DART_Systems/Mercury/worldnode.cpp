@@ -114,6 +114,7 @@ void WorldNode::_WBDC_Ctrl(){
     static int count(0);
     ++count;
     //if(count % 2 == 0)  interface_->GetCommand(sensor_data_, cmd_);
+    //dynacore::pretty_print(quat, std::cout, "dart quat");
     interface_->GetCommand(sensor_data_, cmd_);
     
     for(int i(0); i<3; ++i){

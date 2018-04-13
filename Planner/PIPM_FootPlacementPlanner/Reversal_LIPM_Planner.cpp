@@ -138,26 +138,30 @@ void Reversal_LIPM_Planner::_StepLengthCheck(dynacore::Vect3 & target_loc,
     if(y_step_length < y_step_length_limit_[0]){
       target_loc[1] = stance_foot[1] + y_step_length_limit_[0];
       printf("y step length hit min: %f\n", y_step_length);
-      printf("new y step: %f, %f \n", target_loc[1], stance_foot[1]);
+      printf("new y step (target loc, stance foot): %f, %f \n", 
+              target_loc[1], stance_foot[1]);
     }
 
     if(y_step_length > y_step_length_limit_[1]){
       target_loc[1] = stance_foot[1] + y_step_length_limit_[1];
       printf("y step length hit max: %f\n", y_step_length);
-      printf("new y step: %f, %f \n", target_loc[1], stance_foot[1]);
+      printf("new y step (target loc, stance foot): %f, %f \n", 
+              target_loc[1], stance_foot[1]);
     }
 
   } else { // move to right
     if(-y_step_length < y_step_length_limit_[0]){
       target_loc[1] = stance_foot[1] - y_step_length_limit_[0];
       printf("y step length hit min: %f\n", y_step_length);
-      printf("new y step: %f, %f \n", target_loc[1], stance_foot[1]);
+      printf("new y step (target loc, stance foot): %f, %f \n", 
+              target_loc[1], stance_foot[1]);
     }
 
     if(-y_step_length > y_step_length_limit_[1]){
       target_loc[1] = stance_foot[1] - y_step_length_limit_[1];
       printf("y step length hit max: %f\n", y_step_length);
-      printf("new y step: %f, %f \n", target_loc[1], stance_foot[1]);
+      printf("new y step (target loc, stance foot): %f, %f \n",
+              target_loc[1], stance_foot[1]);
     }
 
   }
