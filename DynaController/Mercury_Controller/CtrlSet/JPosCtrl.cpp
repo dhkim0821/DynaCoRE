@@ -86,8 +86,6 @@ void JPosCtrl::_jpos_task_setup(){
     jacc_des[i] = -amp_[i] * omega * omega * sin(omega * state_machine_time_ + phase_[i]);
     jacc_des[i] *= ramp_value;
   }
-  // TEST
-  jacc_des.setZero();
   jpos_task_->UpdateTask(&(sp_->jpos_des_), sp_->jvel_des_, jacc_des);
 
   std::vector<bool> relaxed_op(jpos_task_->getDim(), false);

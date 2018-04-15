@@ -10,7 +10,7 @@
 #include <ParamHandler/ParamHandler.hpp>
 #include <Mercury/Mercury_Model.hpp>
 
-// TEST SET LIST
+// Test SET LIST
 #include <Mercury_Controller/TestSet/BodyCtrlTest.hpp>
 #include <Mercury_Controller/TestSet/JointCtrlTest.hpp>
 #include <Mercury_Controller/TestSet/WalkingTest.hpp>
@@ -170,8 +170,6 @@ void Mercury_interface::GetReactionForce(std::vector<dynacore::Vect3> & reaction
 
 bool Mercury_interface::_Initialization(Mercury_SensorData* data){
     if(count_ < 10){
-    // TEST
-    //if(count_ < 50000000){
         torque_command_.setZero();
         state_estimator_->Initialization(data);
         test_->TestInitialization();
@@ -187,7 +185,7 @@ void Mercury_interface::_ParameterSetting(){
 
     std::string tmp_string;
     bool b_tmp;
-    // TEST SETUP
+    // Test SETUP
     handler.getString("test_name", tmp_string);
     if(tmp_string == "joint_ctrl_test"){
         test_ = new JointCtrlTest(robot_sys_);
