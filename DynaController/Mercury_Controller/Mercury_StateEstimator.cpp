@@ -41,6 +41,8 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     for (int i(0); i<mercury::num_act_joint; ++i){
         sp_->Q_[mercury::num_virtual + i] = data->joint_jpos[i];
         sp_->Qdot_[mercury::num_virtual + i] = data->motor_jvel[i];
+
+        sp_->rotor_inertia_[i] = data->reflected_rotor_inertia[i];
     }
     // Update Orientation w/ Mocap data
     body_foot_est_->getMoCapBodyOri(sp_->body_ori_);
@@ -97,6 +99,8 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     for (int i(0); i<mercury::num_act_joint; ++i){
         sp_->Q_[mercury::num_virtual + i] = data->joint_jpos[i];
         sp_->Qdot_[mercury::num_virtual + i] = data->motor_jvel[i];
+        
+        sp_->rotor_inertia_[i] = data->reflected_rotor_inertia[i];
     }
     std::vector<double> imu_acc(3);
     std::vector<double> imu_ang_vel(3);

@@ -46,6 +46,8 @@ public:
   dynacore::Vector jpos_des_;
   dynacore::Vector jvel_des_;
 
+  dynacore::Vector rotor_inertia_;
+
   void SaveCurrentData();
 
   int b_rfoot_contact_;

@@ -143,8 +143,6 @@ void MoCapManager::_UpdateLEDPosData(const mercury_message & msg){
     if (msg.visible[led_number] > 0) {
       led_pos_data_[i] = msg.data[i] * 0.001;
     }
-    // TEST
-    led_pos_data_[i] = msg.data[i] * 0.001;
 
     if (i%3 == 2) {
       ++led_number;

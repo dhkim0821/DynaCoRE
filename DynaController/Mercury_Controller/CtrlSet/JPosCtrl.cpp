@@ -48,7 +48,7 @@ void JPosCtrl::OneStep(dynacore::Vector & gamma){
   _PreProcessing_Command();
   state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
-  gamma.setZero();
+  gamma = dynacore::Vector::Zero(mercury::num_act_joint * 2);
   _fixed_body_contact_setup();
   _jpos_task_setup();
   _jpos_ctrl(gamma);
@@ -57,8 +57,24 @@ void JPosCtrl::OneStep(dynacore::Vector & gamma){
 }
 
 void JPosCtrl::_jpos_ctrl(dynacore::Vector & gamma){
+    dynacore::Vector jtorque_cmd(mercury::num_act_joint);
+
   wbdc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-  wbdc_->MakeTorque(task_list_, contact_list_, gamma, wbdc_data_);
+  wbdc_->MakeTorque(task_list_, contact_list_, jtorque_cmd, wbdc_data_);
+
+ gamma.head(mercury::num_act_joint) = jtorque_cmd;
+
+ dynacore::Matrix A_rotor = A_;
+ for(int i(0); i<mercury::num_act_joint; ++i) {
+     A_rotor(i+mercury::num_virtual,i + mercury::num_virtual) 
+         += sp_->rotor_inertia_[i];
+ }
+ dynacore::Matrix A_rotor_inv;
+
+ dynacore::pseudoInverse(A_rotor, 0.00001, A_rotor_inv, 0);
+  wbdc_->UpdateSetting(A_rotor, A_rotor_inv, coriolis_, grav_);
+  wbdc_->MakeTorque(task_list_, contact_list_, jtorque_cmd, wbdc_data_);
+ gamma.tail(mercury::num_act_joint) = jtorque_cmd;
 }
 
 void JPosCtrl::_jpos_task_setup(){

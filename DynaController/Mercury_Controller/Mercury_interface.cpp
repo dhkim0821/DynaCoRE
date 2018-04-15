@@ -22,7 +22,7 @@
 
 Mercury_interface::Mercury_interface():
     interface(),
-    torque_command_(mercury::num_act_joint),
+    torque_command_(mercury::num_act_joint* 2),
     test_command_(mercury::num_act_joint),
     sensed_torque_(mercury::num_act_joint),
     torque_limit_max_(mercury::num_act_joint),
@@ -37,10 +37,14 @@ Mercury_interface::Mercury_interface():
 
     sp_ = Mercury_StateProvider::getStateProvider();
     state_estimator_ = new Mercury_StateEstimator(robot_sys_);  
-    DataManager::GetDataManager()->RegisterData(&running_time_, DOUBLE, "running_time");
-    DataManager::GetDataManager()->RegisterData(&sensed_torque_, DYN_VEC, "torque", mercury::num_act_joint);
-    DataManager::GetDataManager()->RegisterData(&torque_command_, DYN_VEC, "command", mercury::num_act_joint);
-    DataManager::GetDataManager()->RegisterData(&motor_current_, DYN_VEC, "motor_current", mercury::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &running_time_, DOUBLE, "running_time");
+    DataManager::GetDataManager()->RegisterData(
+            &sensed_torque_, DYN_VEC, "torque", mercury::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &torque_command_, DYN_VEC, "command", mercury::num_act_joint * 2);
+    DataManager::GetDataManager()->RegisterData(
+            &motor_current_, DYN_VEC, "motor_current", mercury::num_act_joint);
 
     _ParameterSetting();
     printf("[Mercury_interface] Contruct\n");
@@ -113,18 +117,16 @@ void Mercury_interface::GetCommand( void* _data,
         int k(0);
         for (int i(mercury::num_act_joint); i<mercury::num_act_joint*2; ++i){
             k = i - mercury::num_act_joint;
-            if(test_command_[i] > torque_limit_max_[i]){
-                torque_command_[i] = torque_limit_max_[i];
+            if(test_command_[i] > torque_limit_max_[k]){
+                torque_command_[i] = torque_limit_max_[k];
                 isTurnoff = true;
-            }else if(test_command_[i]< torque_limit_min_[i]){
-                torque_command_[i] = torque_limit_min_[i];
+            }else if(test_command_[i]< torque_limit_min_[k]){
+                torque_command_[i] = torque_limit_min_[k];
                 isTurnoff = true;
             } else{
                 torque_command_[i] = test_command_[i];
             }
             command[i] = torque_command_[i];
-            sensed_torque_[i] = data->jtorque[i];
-            motor_current_[i] = data->motor_current[i];
         }
         if (isTurnoff) {
             //torque_command_.setZero();
@@ -134,6 +136,10 @@ void Mercury_interface::GetCommand( void* _data,
             isTurnoff = false;
         }
         /// End of Torque Limit Check
+    } else {
+        for(int i(0); i<mercury::num_act_joint; ++i){
+            command[i + mercury::num_act_joint] = torque_command_[i];
+        }
     }
 
     running_time_ = (double)(count_) * mercury::servo_rate;
