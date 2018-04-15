@@ -57,7 +57,7 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     sp_->Q_[4] = sp_->body_ori_.y();
     sp_->Q_[5] = sp_->body_ori_.z();
     sp_->Q_[mercury::num_qdot] = sp_->body_ori_.w();
-
+    
     robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
 
     // Local Frame Setting
@@ -109,6 +109,8 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     }
     ori_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel);
     ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
+    //dynacore::pretty_print(sp_->body_ori_, std::cout, "dynacore quat");
+    //printf("\n");
 
     if(is_floating_){
         sp_->Q_[3] = sp_->body_ori_.x();
