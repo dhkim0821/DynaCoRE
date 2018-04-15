@@ -3,7 +3,8 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-File_Path = '/Users/donghyunkim/Repository/dynacore/experiment_data_check/'
+# File_Path = '/Users/donghyunkim/Repository/dynacore/experiment_data_check/'
+File_Path = '/home/hcrl/Repository/dynacore/experiment_data_check/'
 ## read files
 data_torq = np.genfromtxt(File_Path+'torque.txt', delimiter=None, dtype=(float))
 data_comm = np.genfromtxt(File_Path+'command.txt', delimiter=None, dtype=(float))

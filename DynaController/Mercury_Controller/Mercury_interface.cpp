@@ -27,12 +27,12 @@ Mercury_interface::Mercury_interface():
     sensed_torque_(mercury::num_act_joint),
     torque_limit_max_(mercury::num_act_joint),
     torque_limit_min_(mercury::num_act_joint),
-    mapped_current_(mercury::num_act_joint)
+    motor_current_(mercury::num_act_joint)
 {
     robot_sys_ = new Mercury_Model();
     sensed_torque_.setZero();
     torque_command_.setZero();
-    mapped_current_.setZero();
+    motor_current_.setZero();
     test_command_.setZero();
 
     sp_ = Mercury_StateProvider::getStateProvider();
@@ -40,7 +40,7 @@ Mercury_interface::Mercury_interface():
     DataManager::GetDataManager()->RegisterData(&running_time_, DOUBLE, "running_time");
     DataManager::GetDataManager()->RegisterData(&sensed_torque_, DYN_VEC, "torque", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(&torque_command_, DYN_VEC, "command", mercury::num_act_joint);
-    DataManager::GetDataManager()->RegisterData(&mapped_current_, DYN_VEC, "mapped_current", mercury::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(&motor_current_, DYN_VEC, "motor_current", mercury::num_act_joint);
 
     _ParameterSetting();
     printf("[Mercury_interface] Contruct\n");
@@ -53,7 +53,7 @@ Mercury_interface::~Mercury_interface(){
 void Mercury_interface::GetCommand( void* _data,
         std::vector<double> & command){
     
-    command.resize(mercury::num_act_joint);
+    command.resize(mercury::num_act_joint*2, 0.);
     Mercury_SensorData* data = ((Mercury_SensorData*)_data);
     
     if(!_Initialization(data)){
@@ -95,7 +95,7 @@ void Mercury_interface::GetCommand( void* _data,
         }
         command[i] = torque_command_[i];
         sensed_torque_[i] = data->jtorque[i];
-        mapped_current_[i] = data->mapped_current[i];
+        motor_current_[i] = data->motor_current[i];
     }
     if (isTurnoff) {
         //torque_command_.setZero();
@@ -105,7 +105,37 @@ void Mercury_interface::GetCommand( void* _data,
         isTurnoff = false;
     }
     /// End of Torque Limit Check
-    
+
+
+    // IF torque feedforward control is computed
+    if( test_command_.rows() == 2* mercury::num_act_joint ){
+        /// Begin of Torque Limit
+        int k(0);
+        for (int i(mercury::num_act_joint); i<mercury::num_act_joint*2; ++i){
+            k = i - mercury::num_act_joint;
+            if(test_command_[i] > torque_limit_max_[i]){
+                torque_command_[i] = torque_limit_max_[i];
+                isTurnoff = true;
+            }else if(test_command_[i]< torque_limit_min_[i]){
+                torque_command_[i] = torque_limit_min_[i];
+                isTurnoff = true;
+            } else{
+                torque_command_[i] = test_command_[i];
+            }
+            command[i] = torque_command_[i];
+            sensed_torque_[i] = data->jtorque[i];
+            motor_current_[i] = data->motor_current[i];
+        }
+        if (isTurnoff) {
+            //torque_command_.setZero();
+            for(int i(mercury::num_act_joint); i<2*mercury::num_act_joint; ++i){
+                command[i] = 0.;
+            }
+            isTurnoff = false;
+        }
+        /// End of Torque Limit Check
+    }
+
     running_time_ = (double)(count_) * mercury::servo_rate;
     ++count_;
     // When there is sensed time
@@ -139,7 +169,7 @@ void Mercury_interface::GetReactionForce(std::vector<dynacore::Vect3> & reaction
 }
 
 bool Mercury_interface::_Initialization(Mercury_SensorData* data){
-    if(count_ < 5){
+    if(count_ < 10){
     // TEST
     //if(count_ < 50000000){
         torque_command_.setZero();
