@@ -72,7 +72,7 @@ void BodyFootPlanningCtrl::OneStep(dynacore::Vector & gamma){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
-    gamma.setZero();
+    gamma = dynacore::Vector::Zero(mercury::num_act_joint * 2);
     _single_contact_setup();
     _task_setup();
     _body_foot_ctrl(gamma);
@@ -87,18 +87,36 @@ void BodyFootPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
     std::chrono::high_resolution_clock::time_point t1 
         = std::chrono::high_resolution_clock::now();
 #endif
+    dynacore::Vector jtorque_cmd(mercury::num_act_joint);
+
     wbdc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    wbdc_->MakeTorque(task_list_, contact_list_, gamma, wbdc_data_);
+    wbdc_->MakeTorque(task_list_, contact_list_, jtorque_cmd, wbdc_data_);
+
+    gamma.head(mercury::num_act_joint) = jtorque_cmd;
+
+    // Feedforward Torque command accounting rotor inertia
+    dynacore::Matrix A_rotor = A_;
+    for(int i(0); i<mercury::num_act_joint; ++i) {
+        A_rotor(i+mercury::num_virtual,i + mercury::num_virtual) 
+            += sp_->rotor_inertia_[i];
+    }
+    dynacore::Matrix A_rotor_inv;
+
+    dynacore::pseudoInverse(A_rotor, 0.00001, A_rotor_inv, 0);
+    wbdc_->UpdateSetting(A_rotor, A_rotor_inv, coriolis_, grav_);
+    wbdc_->MakeTorque(task_list_, contact_list_, jtorque_cmd, wbdc_data_);
+    gamma.tail(mercury::num_act_joint) = jtorque_cmd;
+
 #if MEASURE_TIME_WBDC 
-        std::chrono::high_resolution_clock::time_point t2 
-            = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> time_span1 
-            = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
-        if(time_count%500 == 1){
-            std::cout << "[body foot planning] WBDC took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
-        }
+    std::chrono::high_resolution_clock::time_point t2 
+        = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> time_span1 
+        = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
+    if(time_count%500 == 1){
+        std::cout << "[body foot planning] WBDC took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
+    }
 #endif
- 
+
     int offset(0);
     if(swing_foot_ == mercury_link::rightFoot) offset = 3;
     for(int i(0); i<3; ++i)
@@ -190,16 +208,16 @@ void BodyFootPlanningCtrl::_task_setup(){
 void BodyFootPlanningCtrl::_CheckPlanning(){
     if( state_machine_time_ > 
             (end_time_/(planning_frequency_ + 1.) * (num_planning_ + 1.) + 0.002) ){
-    
-    //if(state_machine_time_ > 0.5 * end_time_ + 0.002 && (num_planning_ < 1)){
-         //+ 0.002 is to account one or two more ticks before the end of phase
-       _Replanning();
+
+        //if(state_machine_time_ > 0.5 * end_time_ + 0.002 && (num_planning_ < 1)){
+        //+ 0.002 is to account one or two more ticks before the end of phase
+        _Replanning();
         ++num_planning_;
     }
 
     // Earlier planning
-        //_Replanning();
-        //++num_planning_;
+    //_Replanning();
+    //++num_planning_;
     //}
 
     //printf("time (state/end): %f, %f\n", state_machine_time_, end_time_);
@@ -246,9 +264,9 @@ void BodyFootPlanningCtrl::_Replanning(){
 
     target_loc -= sp_->global_pos_local_;
     target_loc[2] -= push_down_height_;
-     //dynacore::pretty_print(target_loc, std::cout, "next foot loc");
-     //curr_foot_acc_des_.setZero();
-     //curr_foot_vel_des_.setZero();
+    //dynacore::pretty_print(target_loc, std::cout, "next foot loc");
+    //curr_foot_acc_des_.setZero();
+    //curr_foot_vel_des_.setZero();
     _SetBspline(curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
 }
 
@@ -348,8 +366,8 @@ void BodyFootPlanningCtrl::LastVisit(){
 
 bool BodyFootPlanningCtrl::EndOfPhase(){
     if(state_machine_time_ > end_time_){
-         //printf("[Body Foot Ctrl] End, state_machine time/ end time: (%f, %f)\n", 
-                 //state_machine_time_, end_time_);
+        //printf("[Body Foot Ctrl] End, state_machine time/ end time: (%f, %f)\n", 
+        //state_machine_time_, end_time_);
         return true;
     }
     // Swing foot contact = END
