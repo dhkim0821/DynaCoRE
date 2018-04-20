@@ -3,7 +3,8 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-file_path = '/Users/donghyunkim/Repository/dynacore/experiment_data_check/'
+# file_path = '/Users/donghyunkim/Repository/dynacore/experiment_data_check/'
+file_path = '/home/hcrl/Repository/dynacore/experiment_data_check/'
 ## read files
 data_global_pos_offset = \
 np.genfromtxt(file_path+'global_pos_local.txt', delimiter=None, dtype=(float))

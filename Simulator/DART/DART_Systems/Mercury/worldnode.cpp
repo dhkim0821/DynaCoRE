@@ -56,7 +56,7 @@ void WorldNode::customPreStep() {
     if(pelvis_hold == true) {
         if (curr_time < 1.5) { holdpelvis(); }
         //else if (curr_time < 2.8){
-        else if (curr_time < 200000.8){
+        else if (curr_time < 200.8){
             holdhorizontal();
         } else {
 
