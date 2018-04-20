@@ -75,6 +75,7 @@ void JPosCtrl::_jpos_ctrl(dynacore::Vector & gamma){
   wbdc_->UpdateSetting(A_rotor, A_rotor_inv, coriolis_, grav_);
   wbdc_->MakeTorque(task_list_, contact_list_, jtorque_cmd, wbdc_data_);
  gamma.tail(mercury::num_act_joint) = jtorque_cmd;
+
 }
 
 void JPosCtrl::_jpos_task_setup(){
