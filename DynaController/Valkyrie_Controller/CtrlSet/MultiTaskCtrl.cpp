@@ -2,7 +2,7 @@
 #include <Utils/utilities.hpp>
 #include <Valkyrie/Valkyrie_Definition.h>
 #include "../Valkyrie_StateProvider.hpp"
-#include <WBLC/WBLC.hpp>
+#include <WBDC/WBDC.hpp>
 #include <Valkyrie_Controller/ContactSet/DoubleContact.hpp>
 #include <Valkyrie_Controller/TaskSet/JPosTask.hpp>
 #include <Valkyrie_Controller/TaskSet/CentroidTask.hpp>
@@ -17,8 +17,8 @@ MultiTaskCtrl::MultiTaskCtrl(RobotSystem* robot):Controller(robot),
     act_list.resize(valkyrie::num_qdot, true);
     for(int i(0); i<valkyrie::num_virtual; ++i) act_list[i] = false;
 
-    wblc_ = new WBLC(act_list);
-    wblc_data_ = new WBLC_ExtraData();
+    wbdc_ = new WBDC(act_list);
+    wbdc_data_ = new WBDC_ExtraData();
 
     jpos_task_ = new JPosTask();
     centroid_task_ = new CentroidTask(robot);
@@ -40,7 +40,7 @@ MultiTaskCtrl::~MultiTaskCtrl(){
     delete double_contact_;
     delete body_ori_task_;
     delete pelvis_ori_task_;
-    delete wblc_;
+    delete wbdc_;
 }
 
 void MultiTaskCtrl::_double_contact_setup(){
@@ -49,22 +49,22 @@ void MultiTaskCtrl::_double_contact_setup(){
 }
 
 void MultiTaskCtrl::_wblc_ctrl(dynacore::Vector & gamma){
-    wblc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    wbdc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
     
     int dim_first_task = task_list_[0]->getDim();
 
-    wblc_data_->cost_weight = dynacore::Vector(
+    wbdc_data_->cost_weight = dynacore::Vector(
             dim_first_task + double_contact_->getDim());
 
-    for(int i(0); i<dim_first_task; ++i) wblc_data_->cost_weight[i] = 10000.0;
+    for(int i(0); i<dim_first_task; ++i) wbdc_data_->cost_weight[i] = 10000.0;
     for(int i(0); i<double_contact_->getDim(); ++i){
-        wblc_data_->cost_weight[dim_first_task + i] = 1.0;
+        wbdc_data_->cost_weight[dim_first_task + i] = 1.0;
     }
-    wblc_data_->cost_weight[dim_first_task + 5] = 0.001; // vertical reaction
-    wblc_data_->cost_weight[dim_first_task + 11] = 0.001; // vertical reaction
+    wbdc_data_->cost_weight[dim_first_task + 5] = 0.001; // vertical reaction
+    wbdc_data_->cost_weight[dim_first_task + 11] = 0.001; // vertical reaction
 
     //std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-    wblc_->MakeTorque(task_list_, contact_list_, gamma, wblc_data_);
+    wbdc_->MakeTorque(task_list_, contact_list_, gamma, wbdc_data_);
     
     //std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
     //std::chrono::duration<double> time_span1 = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);

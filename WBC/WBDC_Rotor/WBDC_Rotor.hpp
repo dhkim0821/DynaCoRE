@@ -1,26 +1,29 @@
-#ifndef WHOLE_BODY_LOCOMOTION_CONTROL_H
-#define WHOLE_BODY_LOCOMOTION_CONTROL_H
+#ifndef WHOLE_BODY_DYNAMIC_CONTROL_ROTOR_INERTIA_H
+#define WHOLE_BODY_DYNAMIC_CONTROL_ROTOR_INERTIA_H
 
 #include <WBC.hpp>
 #include <Utils/utilities.hpp>
 #include <Optimizer/Goldfarb/QuadProg++.hh>
 
 #include <Task.hpp>
-#include "WBLC_ContactSpec.hpp"
+#include <WBDC/WBDC_ContactSpec.hpp>
 
-class WBLC_ExtraData{
+class WBDC_Rotor_ExtraData{
     public:
         dynacore::Vector cost_weight;
+        dynacore::Matrix A_rotor;
+
+        dynacore::Vector cmd_ff; //Feedforward torque cmd
         dynacore::Vector opt_result_;
 
-        WBLC_ExtraData(){}
-        ~WBLC_ExtraData(){}
+        WBDC_Rotor_ExtraData(){}
+        ~WBDC_Rotor_ExtraData(){}
 };
 
-class WBLC: public WBC{
+class WBDC_Rotor: public WBC{
     public:
-        WBLC(const std::vector<bool> & act_list, const dynacore::Matrix* Jci = NULL);
-        virtual ~WBLC(){}
+        WBDC_Rotor(const std::vector<bool> & act_list, const dynacore::Matrix* Jci = NULL);
+        virtual ~WBDC_Rotor(){}
 
         virtual void UpdateSetting(const dynacore::Matrix & A,
                 const dynacore::Matrix & Ainv,
@@ -31,7 +34,7 @@ class WBLC: public WBC{
         virtual void MakeTorque(const std::vector<Task*> & task_list,
                 const std::vector<ContactSpec*> & contact_list,
                 dynacore::Vector & cmd,
-                void* extra_input = NULL);
+                void* extra_data = NULL);
 
     private:
         void _SetInEqualityConstraint();
@@ -45,7 +48,7 @@ class WBLC: public WBC{
         int dim_eq_cstr_; // equality constraints
         int dim_ieq_cstr_; // inequality constraints
         int dim_first_task_; // first task dimension
-        WBLC_ExtraData* data_;
+        WBDC_Rotor_ExtraData* data_;
 
         GolDIdnani::GVect<double> z;
         // Cost
@@ -81,7 +84,7 @@ class WBLC: public WBC{
 
         dynacore::Matrix Sf_; //floating base
         void _PrintDebug(double i) {
-            //printf("[WBLC] %f \n", i);
+            //printf("[WBDC_Rotor] %f \n", i);
         }
 };
 

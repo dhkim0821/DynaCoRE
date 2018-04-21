@@ -1,15 +1,15 @@
-#include "WBLC.hpp"
+#include "WBDC_Rotor.hpp"
 #include <Utils/utilities.hpp>
 #include <Eigen/LU>
 #include <Eigen/SVD>
 
-WBLC::WBLC(const std::vector<bool> & act_list,
+WBDC_Rotor::WBDC_Rotor(const std::vector<bool> & act_list,
         const dynacore::Matrix * Jci): WBC(act_list, Jci){
     Sf_ = dynacore::Matrix::Zero(6, num_qdot_);
     Sf_.block(0,0, 6, 6).setIdentity();
 }
 
-void WBLC::UpdateSetting(const dynacore::Matrix & A,
+void WBDC_Rotor::UpdateSetting(const dynacore::Matrix & A,
         const dynacore::Matrix & Ainv,
         const dynacore::Vector & cori,
         const dynacore::Vector & grav,
@@ -21,7 +21,7 @@ void WBLC::UpdateSetting(const dynacore::Matrix & A,
     b_updatesetting_ = true;
 }
 
-bool WBLC::_CheckNullSpace(const dynacore::Matrix & Npre){
+bool WBDC_Rotor::_CheckNullSpace(const dynacore::Matrix & Npre){
     dynacore::Matrix M_check = Sf_ * A_ * Npre;
     Eigen::JacobiSVD<dynacore::Matrix> svd(M_check, Eigen::ComputeThinU | Eigen::ComputeThinV);
     //dynacore::pretty_print(svd.singularValues(), std::cout, "svd singular value");
@@ -38,15 +38,14 @@ bool WBLC::_CheckNullSpace(const dynacore::Matrix & Npre){
     return true;
 }
 
-
-void WBLC::MakeTorque(const std::vector<Task*> & task_list,
+void WBDC_Rotor::MakeTorque(const std::vector<Task*> & task_list,
         const std::vector<ContactSpec*> & contact_list,
         dynacore::Vector & cmd,
-        void* extra_input){
+        void* extra_data){
     _PrintDebug(1);    
-    if(!b_updatesetting_) { printf("[Wanning] WBLC setting is not done\n"); }
+    if(!b_updatesetting_) { printf("[Wanning] WBDC_Rotor setting is not done\n"); }
 
-    if(extra_input) data_ = static_cast<WBLC_ExtraData*>(extra_input);
+    if(extra_data) data_ = static_cast<WBDC_Rotor_ExtraData*>(extra_data);
 
     // Internal Constraint Check
     Nci_ = dynacore::Matrix::Identity(num_qdot_, num_qdot_);
@@ -195,7 +194,7 @@ void WBLC::MakeTorque(const std::vector<Task*> & task_list,
 
 }
 
-void WBLC::_SetInEqualityConstraint(){
+void WBDC_Rotor::_SetInEqualityConstraint(){
     dynacore::Matrix dyn_CI(dim_ieq_cstr_, dim_opt_); dyn_CI.setZero();
     dynacore::Vector dyn_ci0(dim_ieq_cstr_);
 
@@ -208,11 +207,11 @@ void WBLC::_SetInEqualityConstraint(){
         }
         ci0[i] = -dyn_ci0[i];
     }
-   // dynacore::pretty_print(dyn_CI, std::cout, "WBLC: CI");
-    // dynacore::pretty_print(dyn_ci0, std::cout, "WBLC: ci0");
+   // dynacore::pretty_print(dyn_CI, std::cout, "WBDC_Rotor: CI");
+    // dynacore::pretty_print(dyn_ci0, std::cout, "WBDC_Rotor: ci0");
 }
 
-void WBLC::_ContactBuilding(const std::vector<ContactSpec*> & contact_list){
+void WBDC_Rotor::_ContactBuilding(const std::vector<ContactSpec*> & contact_list){
     dynacore::Matrix Uf;
     dynacore::Vector uf_ieq_vec;
     // Initial
@@ -223,11 +222,11 @@ void WBLC::_ContactBuilding(const std::vector<ContactSpec*> & contact_list){
     Jc_ = Jc;
 
     JcDotQdot_ = JcDotQdot;
-    static_cast<WBLC_ContactSpec*>(contact_list[0])->getRFConstraintMtx(Uf_);
-    static_cast<WBLC_ContactSpec*>(contact_list[0])->getRFConstraintVec(uf_ieq_vec_);
+    static_cast<WBDC_ContactSpec*>(contact_list[0])->getRFConstraintMtx(Uf_);
+    static_cast<WBDC_ContactSpec*>(contact_list[0])->getRFConstraintVec(uf_ieq_vec_);
 
     dim_rf_ = contact_list[0]->getDim();
-    dim_rf_cstr_ = static_cast<WBLC_ContactSpec*>(contact_list[0])->getDimRFConstratint();
+    dim_rf_cstr_ = static_cast<WBDC_ContactSpec*>(contact_list[0])->getDimRFConstratint();
 
     int dim_new_rf, dim_new_rf_cstr;
 
@@ -235,7 +234,7 @@ void WBLC::_ContactBuilding(const std::vector<ContactSpec*> & contact_list){
         contact_list[i]->getContactJacobian(Jc);
         contact_list[i]->getJcDotQdot(JcDotQdot);
         dim_new_rf = contact_list[i]->getDim();
-        dim_new_rf_cstr = static_cast<WBLC_ContactSpec*>(contact_list[i])->getDimRFConstratint();
+        dim_new_rf_cstr = static_cast<WBDC_ContactSpec*>(contact_list[i])->getDimRFConstratint();
 
         // Jc append
         Jc_.conservativeResize(dim_rf_ + dim_new_rf, num_qdot_);
@@ -246,14 +245,14 @@ void WBLC::_ContactBuilding(const std::vector<ContactSpec*> & contact_list){
         JcDotQdot_.tail(dim_new_rf) = JcDotQdot;
 
         // Uf
-        static_cast<WBLC_ContactSpec*>(contact_list[i])->getRFConstraintMtx(Uf);
+        static_cast<WBDC_ContactSpec*>(contact_list[i])->getRFConstraintMtx(Uf);
         Uf_.conservativeResize(dim_rf_cstr_ + dim_new_rf_cstr, dim_rf_ + dim_new_rf);
         Uf_.block(0, dim_rf_, dim_rf_cstr_, dim_new_rf).setZero();
         Uf_.block(dim_rf_cstr_, 0, dim_new_rf_cstr, dim_rf_).setZero();
         Uf_.block(dim_rf_cstr_, dim_rf_, dim_new_rf_cstr, dim_new_rf) = Uf;
 
         // Uf inequality vector
-        static_cast<WBLC_ContactSpec*>(contact_list[i])->getRFConstraintVec(uf_ieq_vec);
+        static_cast<WBDC_ContactSpec*>(contact_list[i])->getRFConstraintVec(uf_ieq_vec);
         uf_ieq_vec_.conservativeResize(dim_rf_cstr_ + dim_new_rf_cstr);
         uf_ieq_vec_.tail(dim_new_rf_cstr) = uf_ieq_vec;
 
@@ -262,12 +261,12 @@ void WBLC::_ContactBuilding(const std::vector<ContactSpec*> & contact_list){
         dim_rf_cstr_ += dim_new_rf_cstr;
     }
     // printf("dim rf: %i, dim rf constr: %i \n", dim_rf_, dim_rf_cstr_);
-    // dynacore::pretty_print(Jc_, std::cout, "WBLC: Jc");
-    // dynacore::pretty_print(JcDotQdot_, std::cout, "WBLC: JcDot Qdot");
-    // dynacore::pretty_print(Uf_, std::cout, "WBLC: Uf");
+    // dynacore::pretty_print(Jc_, std::cout, "WBDC_Rotor: Jc");
+    // dynacore::pretty_print(JcDotQdot_, std::cout, "WBDC_Rotor: JcDot Qdot");
+    // dynacore::pretty_print(Uf_, std::cout, "WBDC_Rotor: Uf");
 }
 
-void WBLC::_GetSolution(const dynacore::Vector & qddot, dynacore::Vector & cmd){
+void WBDC_Rotor::_GetSolution(const dynacore::Vector & qddot, dynacore::Vector & cmd){
     dynacore::Vector Fr(dim_rf_);
     for(int i(0); i<dim_rf_; ++i) Fr[i] = z[i + dim_first_task_];
     dynacore::Vector tot_tau = A_ * qddot + cori_ + grav_ - (Jc_* Nci_).transpose() * Fr;
@@ -297,7 +296,7 @@ void WBLC::_GetSolution(const dynacore::Vector & qddot, dynacore::Vector & cmd){
      //dynacore::pretty_print(cmd, std::cout, "final command");
 }
 
-void WBLC::_OptimizationPreparation(){
+void WBDC_Rotor::_OptimizationPreparation(){
     dim_opt_ = dim_rf_ + dim_first_task_; 
     dim_eq_cstr_ = 6;
     dim_ieq_cstr_ = dim_rf_cstr_; 

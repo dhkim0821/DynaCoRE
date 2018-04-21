@@ -3,7 +3,11 @@
 #include <Eigen/LU>
 #include <Eigen/SVD>
 
-WBDC::WBDC(const std::vector<bool> & act_list): WBC(act_list){}
+WBDC::WBDC(const std::vector<bool> & act_list,
+        const dynacore::Matrix * Jci): WBC(act_list, Jci){
+    Sf_ = dynacore::Matrix::Zero(6, num_qdot_);
+    Sf_.block(0,0, 6, 6).setIdentity();
+}
 
 void WBDC::UpdateSetting(const dynacore::Matrix & A,
         const dynacore::Matrix & Ainv,
@@ -14,63 +18,144 @@ void WBDC::UpdateSetting(const dynacore::Matrix & A,
     Ainv_ = Ainv;
     cori_ = cori;
     grav_ = grav;
+    b_updatesetting_ = true;
 }
+
+bool WBDC::_CheckNullSpace(const dynacore::Matrix & Npre){
+    dynacore::Matrix M_check = Sf_ * A_ * Npre;
+    Eigen::JacobiSVD<dynacore::Matrix> svd(M_check, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    //dynacore::pretty_print(svd.singularValues(), std::cout, "svd singular value");
+
+    for(int i(0); i<svd.singularValues().rows(); ++i){
+        if(svd.singularValues()[i] > 0.00001) { 
+            printf("non singular!!\n"); 
+    dynacore::pretty_print(svd.singularValues(), std::cout, "svd singular value");
+            return false;
+        }else{
+            //printf("small enough singular value: %f\n", svd.singularValues()[i]);
+        }
+    }
+    return true;
+}
+
 
 void WBDC::MakeTorque(const std::vector<Task*> & task_list,
         const std::vector<ContactSpec*> & contact_list,
         dynacore::Vector & cmd,
         void* extra_input){
-    data_ = static_cast<WBDC_ExtraData*>(extra_input);
+    _PrintDebug(1);    
+    if(!b_updatesetting_) { printf("[Wanning] WBDC setting is not done\n"); }
 
-    //printf("WBDC 1\n");
-    // Contact & Task Setting
+    if(extra_input) data_ = static_cast<WBDC_ExtraData*>(extra_input);
+
+    // Internal Constraint Check
+    Nci_ = dynacore::Matrix::Identity(num_qdot_, num_qdot_);
+
+    if(b_internal_constraint_) {
+        dynacore::Matrix JciBar;
+        _WeightedInverse(Jci_, Ainv_, JciBar);
+        Nci_ -= JciBar * Jci_;
+    }
+    
+    _PrintDebug(2);    
+    // Contact Setting 
     _ContactBuilding(contact_list);
+    dynacore::Matrix JcN = Jc_ * Nci_;
+    dynacore::Matrix check = JcN - Jc_;
 
-    //printf("WBDC 2\n");
-    _TaskHierarchyBuilding(task_list);
+    _PrintDebug(3);    
+    dynacore::Matrix JcN_Bar;
+    _WeightedInverse(JcN, Ainv_, JcN_Bar);
+    dynacore::Matrix Npre = dynacore::Matrix::Identity(num_qdot_, num_qdot_)
+        - JcN_Bar * JcN;
 
-    //printf("WBDC 3\n");
-    // Dimension Setting
-    dim_opt_ = dim_rf_ + dim_relaxed_task_;
-    dim_eq_cstr_ = num_passive_;
-    dim_ieq_cstr_ = dim_rf_cstr_ + 2*num_act_joint_;
+    _PrintDebug(4);    
+    // First Task Check
+    Task* task = task_list[0];
+    dynacore::Matrix Jt, JtPre, JtPreBar;
+    dynacore::Vector JtDotQdot, xddot, qddot_pre;
+    qddot_pre = JcN_Bar * ( - JcDotQdot_ );
 
-    // Matrix Setting
-    _MatrixInitialization();
+    _PrintDebug(5);    
+    if(!task->IsTaskSet()){ printf("1st task is not set!\n"); exit(0); }
+    task->getTaskJacobian(Jt);
+    task->getTaskJacobianDotQdot(JtDotQdot);
+    task->getCommand(xddot);
+    dim_first_task_ = task->getDim();
 
-    // Equality Constraint Setting
-    _SetEqualityConstraint();
-
-    // Inequality Constraint Setting
+    JtPre = Jt * Npre;
+    _WeightedInverse(JtPre, Ainv_, JtPreBar);
+    Npre = Npre * (dynacore::Matrix::Identity(num_qdot_, num_qdot_)
+            - JtPreBar * JtPre);
+    
+    _PrintDebug(6);    
+    //_CheckNullSpace(Npre);
+    // Optimization
+    _PrintDebug(7);    
+    _OptimizationPreparation();
+    // Set equality constraints
+    dynacore::Matrix dyn_CE(dim_eq_cstr_, dim_opt_);
+    dynacore::Vector dyn_ce0(dim_eq_cstr_);
+    dyn_CE.block(0,0, dim_eq_cstr_, dim_first_task_) = Sf_ * A_ * JtPreBar;
+    dyn_CE.block(0, dim_first_task_, dim_eq_cstr_, dim_rf_) = -Sf_ * JcN.transpose();
+    dyn_ce0 = Sf_ * (A_ * (JtPreBar * (xddot - JtDotQdot - Jt * qddot_pre) + qddot_pre)
+            + cori_ + grav_);
+    for(int i(0); i< dim_eq_cstr_; ++i){
+        for(int j(0); j<dim_opt_; ++j){
+            CE[j][i] = dyn_CE(i,j);
+        }
+        ce0[i] = dyn_ce0[i];
+    }
+    // Set inequality constraints
     _SetInEqualityConstraint();
 
-    //printf("G:\n");
-    //std::cout<<G<<std::endl;
-    //printf("g0:\n");
-    //std::cout<<g0<<std::endl;
-
-    //printf("CE:\n");
-    //std::cout<<CE<<std::endl;
-    //printf("ce0:\n");
-    //std::cout<<ce0<<std::endl;
-
-    //printf("CI:\n");
-    //std::cout<<CI<<std::endl;
-    //printf("ci0:\n");
-    //std::cout<<ci0<<std::endl;
+    // Optimization
     double f = solve_quadprog(G, g0, CE, ce0, CI, ci0, z);
+    dynacore::Vector delta(dim_first_task_);
+    for(int i(0); i<dim_first_task_; ++i) { delta[i] = z[i]; }
+    qddot_pre = qddot_pre + JtPreBar * (xddot + delta - JtDotQdot - Jt * qddot_pre);
 
-    _GetSolution(cmd);
-    data_->opt_result_ = dynacore::Vector(dim_opt_);
+    // First Qddot is found
+    // Stack The last Task
+    for(int i(1); i<task_list.size(); ++i){
+        task = task_list[i];
+
+        if(!task->IsTaskSet()){ printf("%d th task is not set!\n", i); exit(0); }
+        task->getTaskJacobian(Jt);
+        task->getTaskJacobianDotQdot(JtDotQdot);
+        task->getCommand(xddot);
+
+        JtPre = Jt * Npre;
+        _WeightedInverse(JtPre, Ainv_, JtPreBar);
+
+        qddot_pre = qddot_pre + JtPreBar * (xddot - JtDotQdot - Jt * qddot_pre);
     
+        Npre = Npre * (dynacore::Matrix::Identity(num_qdot_, num_qdot_) 
+                - JtPreBar * JtPre);
+    }
+
+    _GetSolution(qddot_pre, cmd);
+
+    data_->opt_result_ = dynacore::Vector(dim_opt_);
     for(int i(0); i<dim_opt_; ++i){
         data_->opt_result_[i] = z[i];
     }
-    // if(f > 1.e5){
-    //std::cout << "f: " << f << std::endl;
-    //std::cout << "x: " << z << std::endl;
-    //std::cout << "cmd: "<<cmd<<std::endl;
+       //std::cout << "f: " << f << std::endl;
+       //std::cout << "x: " << z << std::endl;
+       //std::cout << "cmd: "<<cmd<<std::endl;
+    //dynacore::pretty_print(Sf_, std::cout, "Sf");
+    //dynacore::pretty_print(qddot_pre, std::cout, "qddot_pre");
+    //dynacore::pretty_print(JcN, std::cout, "JcN");
+    //dynacore::pretty_print(Nci_, std::cout, "Nci");
+    //dynacore::Vector eq_check = dyn_CE * data_->opt_result_;
+    //dynacore::pretty_print(dyn_ce0, std::cout, "dyn ce0");
+    //dynacore::pretty_print(eq_check, std::cout, "eq_check");
+ 
+    //dynacore::pretty_print(Jt, std::cout, "Jt");
+    //dynacore::pretty_print(JtDotQdot, std::cout, "Jtdotqdot");
+    //dynacore::pretty_print(xddot, std::cout, "xddot");
 
+   
     //printf("G:\n");
     //std::cout<<G<<std::endl;
     //printf("g0:\n");
@@ -85,57 +170,46 @@ void WBDC::MakeTorque(const std::vector<Task*> & task_list,
     //std::cout<<CI<<std::endl;
     //printf("ci0:\n");
     //std::cout<<ci0<<std::endl;
+
+
+    // if(f > 1.e5){
+    //   std::cout << "f: " << f << std::endl;
+    //   std::cout << "x: " << z << std::endl;
+    //   std::cout << "cmd: "<<cmd<<std::endl;
+
+    //   printf("G:\n");
+    //   std::cout<<G<<std::endl;
+    //   printf("g0:\n");
+    //   std::cout<<g0<<std::endl;
+
+    //   printf("CE:\n");
+    //   std::cout<<CE<<std::endl;
+    //   printf("ce0:\n");
+    //   std::cout<<ce0<<std::endl;
+
+    //   printf("CI:\n");
+    //   std::cout<<CI<<std::endl;
+    //   printf("ci0:\n");
+    //   std::cout<<ci0<<std::endl;
     // }
 
 }
 
-void WBDC::_SetEqualityConstraint(){
-    dynacore::Matrix test_eq = Sv_ * tot_tau_Mtx_;
-    dynacore::Matrix sj_CE(dim_eq_cstr_, dim_opt_);
-    dynacore::Vector sj_ce0(dim_eq_cstr_);
-    sj_CE.setZero();
-    sj_ce0.setZero();
-    // Virtual Torque
-    sj_CE = Sv_ * tot_tau_Mtx_;
-    sj_ce0.head(num_passive_) = Sv_ * tot_tau_Vect_;
-
-    for(int i(0); i< dim_eq_cstr_; ++i){
-        for(int j(0); j<dim_opt_; ++j){
-            CE[j][i] = sj_CE(i,j);
-        }
-        ce0[i] = sj_ce0[i];
-    }
-    //dynacore::pretty_print(sj_CE, std::cout, "WBDC: CE");
-    //dynacore::pretty_print(sj_ce0, std::cout, "WBDC: ce0");
-}
-
 void WBDC::_SetInEqualityConstraint(){
-    dynacore::Matrix sj_CI(dim_ieq_cstr_, dim_opt_);
-    dynacore::Vector sj_ci0(dim_ieq_cstr_);
-    sj_CI.setZero();
-    sj_ci0.setZero();
+    dynacore::Matrix dyn_CI(dim_ieq_cstr_, dim_opt_); dyn_CI.setZero();
+    dynacore::Vector dyn_ci0(dim_ieq_cstr_);
 
-    // RF constraint
-    sj_CI.block(0,0, dim_rf_cstr_, dim_rf_) = Uf_;
-    (sj_ci0.head(dim_rf_cstr_)) = uf_ieq_vec_;
-
-    // Torque min & max
-    // min
-    sj_CI.block(dim_rf_cstr_, 0, num_act_joint_, dim_opt_) = Sa_ * tot_tau_Mtx_;
-    sj_ci0.segment(dim_rf_cstr_, num_act_joint_) = Sa_ * tot_tau_Vect_ - data_->tau_min;
-
-    // max
-    sj_CI.block(dim_rf_cstr_ + num_act_joint_, 0, num_act_joint_, dim_opt_) = -Sa_ * tot_tau_Mtx_;
-    sj_ci0.tail(num_act_joint_) = -Sa_ * tot_tau_Vect_ + data_->tau_max;
-
-    for(int i(0); i< dim_ieq_cstr_; ++i){
+    dyn_CI.block(0, dim_first_task_, dim_rf_cstr_, dim_rf_) = Uf_;
+    dyn_ci0 = uf_ieq_vec_;
+ 
+   for(int i(0); i< dim_ieq_cstr_; ++i){
         for(int j(0); j<dim_opt_; ++j){
-            CI[j][i] = sj_CI(i,j);
+            CI[j][i] = dyn_CI(i,j);
         }
-        ci0[i] = sj_ci0[i];
+        ci0[i] = -dyn_ci0[i];
     }
-    //dynacore::pretty_print(sj_CI, std::cout, "WBDC: CI");
-    //dynacore::pretty_print(sj_ci0, std::cout, "WBDC: ci0");
+   // dynacore::pretty_print(dyn_CI, std::cout, "WBDC: CI");
+    // dynacore::pretty_print(dyn_ci0, std::cout, "WBDC: ci0");
 }
 
 void WBDC::_ContactBuilding(const std::vector<ContactSpec*> & contact_list){
@@ -187,128 +261,48 @@ void WBDC::_ContactBuilding(const std::vector<ContactSpec*> & contact_list){
         dim_rf_ += dim_new_rf;
         dim_rf_cstr_ += dim_new_rf_cstr;
     }
-    //printf("dim rf: %i, dim rf constr: %i \n", dim_rf_, dim_rf_cstr_);
-    //dynacore::pretty_print(Jc_, std::cout, "WBDC: Jc");
-    //dynacore::pretty_print(JcDotQdot_, std::cout, "WBDC: JcDot Qdot");
-    //dynacore::pretty_print(Uf_, std::cout, "WBDC: Uf");
+    // printf("dim rf: %i, dim rf constr: %i \n", dim_rf_, dim_rf_cstr_);
+    // dynacore::pretty_print(Jc_, std::cout, "WBDC: Jc");
+    // dynacore::pretty_print(JcDotQdot_, std::cout, "WBDC: JcDot Qdot");
+    // dynacore::pretty_print(Uf_, std::cout, "WBDC: Uf");
 }
 
-void WBDC::_TaskHierarchyBuilding(const std::vector<Task*> & task_list){
-    dim_relaxed_task_ = 0;
-
-    dynacore::Matrix Jt, JtPre;
-    dynacore::Matrix Jt_inv, JtPre_inv;
-    dynacore::Vector JtDotQdot;
-    dynacore::Vector xddot;
-    dynacore::Matrix Npre;
-    dynacore::Matrix I_JtPreInv_Jt;
-    Task* task = task_list[0];
-
-    int tot_task_size(0);
-
-    // First Task: Contact Constraint
-    Jt = Jc_;
-    JtDotQdot = JcDotQdot_;
-
-    _WeightedInverse(Jt, Ainv_, Jt_inv);
-    B_ = Jt_inv;
-    c_ = Jt_inv * JtDotQdot;
-
-    task_cmd_ = dynacore::Vector::Zero(dim_rf_);
-    Npre = dynacore::Matrix::Identity(num_qdot_, num_qdot_) - Jt_inv * Jt;
-    tot_task_size += dim_rf_;
-
-    //printf("constraint task: ");
-    //dynacore::pretty_print(B_, std::cout, "WBDC: B");
-    //dynacore::pretty_print(c_, std::cout, "WBDC: c");
-    //printf("\n");
-
-    // Task Stacking
-    for(int i(0); i<task_list.size(); ++i){
-        // Obtaining Task
-        task = task_list[i];
-
-        if(!task->IsTaskSet()){
-            printf("%d th task is not set!\n", i);
-            exit(0);
-        }
-
-        task->getTaskJacobian(Jt);
-        task->getTaskJacobianDotQdot(JtDotQdot);
-        task->getCommand(xddot);
-        JtPre = Jt * Npre;
-        _WeightedInverse(JtPre, Ainv_, JtPre_inv);
-        I_JtPreInv_Jt = dynacore::Matrix::Identity(num_qdot_, num_qdot_) - JtPre_inv * Jt;
-
-        // B matrix building
-        B_.conservativeResize(num_qdot_, tot_task_size + task->getDim());
-        B_.block(0, 0, num_qdot_, tot_task_size) =
-            I_JtPreInv_Jt * B_.block(0, 0, num_qdot_, tot_task_size);
-        B_.block(0, tot_task_size, num_qdot_, task->getDim()) = JtPre_inv;
-        // c vector building
-        c_ = I_JtPreInv_Jt * c_ - JtPre_inv * JtDotQdot;
-        //dynacore::pretty_print(JtPre_inv, std::cout, "Jt Pre inverse");
-        //dynacore::pretty_print(JtDotQdot, std::cout, "Jt dot qdot");
-        //dynacore::pretty_print(c_, std::cout, "WBDC: c");
-
-        // task commad
-        task_cmd_.conservativeResize(tot_task_size + task->getDim());
-        task_cmd_.tail(task->getDim()) = xddot;
-
-        // Build for Next
-        Npre = Npre * ( dynacore::Matrix::Identity(num_qdot_, num_qdot_) - JtPre_inv * JtPre);
-        tot_task_size += task->getDim();
-
-
-        // Relaxed Task Setup
-        if(static_cast<WBDC_Task*>(task)->getRelaxed_Dim() > 0){
-            dynacore::Matrix Sd;
-            static_cast<WBDC_Task*>(task)->getSdelta(Sd);
-            int dim_relax = static_cast<WBDC_Task*>(task)->getRelaxed_Dim();
-
-            if(dim_relaxed_task_ == 0){ // First Visit
-                S_delta_ = dynacore::Matrix::Zero(tot_task_size, dim_relax);
-                S_delta_.block(tot_task_size - task->getDim(), 0, task->getDim(), dim_relax) = Sd;
-            } else { // Next Visit
-                S_delta_.conservativeResize(tot_task_size, dim_relaxed_task_ + dim_relax);
-                (S_delta_.block(tot_task_size - task->getDim(), 0, task->getDim(), dim_relaxed_task_)).setZero();
-                S_delta_.block(tot_task_size - task->getDim(), dim_relaxed_task_, task->getDim(), dim_relax) = Sd;
-            }
-            dim_relaxed_task_ += dim_relax;
-        }
-        //printf("task %d th: ", i);
-        //dynacore::pretty_print(B_, std::cout, "WBDC: B");
-        //dynacore::pretty_print(c_, std::cout, "WBDC: c");
-        //printf("\n");
-    }
-    //dynacore::pretty_print(B_, std::cout, "WBDC: B");
-    //dynacore::pretty_print(c_, std::cout, "WBDC: c");
-    //dynacore::pretty_print(task_cmd_, std::cout, "WBDC: task cmd");
-    //dynacore::pretty_print(S_delta_, std::cout, "tot S delta");
+void WBDC::_GetSolution(const dynacore::Vector & qddot, dynacore::Vector & cmd){
+    dynacore::Vector Fr(dim_rf_);
+    for(int i(0); i<dim_rf_; ++i) Fr[i] = z[i + dim_first_task_];
+    dynacore::Vector tot_tau = A_ * qddot + cori_ + grav_ - (Jc_* Nci_).transpose() * Fr;
+    
+    //cmd = tot_tau.tail(num_act_joint_);
+    dynacore::Matrix UNci = Sa_ * Nci_;
+    dynacore::Matrix UNciBar;
+// only work in 3D case
+    dynacore::Matrix UNci_trc = UNci.block(0,6, num_act_joint_, num_qdot_-6);
+    dynacore::Vector tot_tau_trc = tot_tau.tail(num_qdot_-6);
+    dynacore::Matrix UNciBar_trc;
+    dynacore::Matrix eye(num_qdot_-6, num_qdot_-6);
+    eye.setIdentity();
+    _WeightedInverse(UNci_trc, eye, UNciBar_trc);
+    //dynacore::Matrix Ainv_trc = Ainv_.block(6,6, num_qdot_-6, num_qdot_-6);
+    //_WeightedInverse(UNci_trc, Ainv_trc, UNciBar_trc, 0.0001);
+    cmd = UNciBar_trc.transpose() * tot_tau_trc;
+    //cmd = (UNci_trc.inverse()).transpose()* tot_tau_trc;
+     //dynacore::pretty_print(UNci, std::cout, "UNci");
+     //dynacore::pretty_print(UNci_trc, std::cout, "UNci+trc");
+     //dynacore::pretty_print(UNciBar_trc, std::cout, "UNciBar_trc");
+     //dynacore::pretty_print(tot_tau_trc, std::cout, "tot tau trc");
+    //_WeightedInverse(UNci, Ainv_, UNciBar);
+    //cmd = UNciBar.transpose() * tot_tau;
+    // dynacore::pretty_print(result, std::cout, "opt result");
+     //dynacore::pretty_print(tot_tau, std::cout, "tot tau result");
+     //dynacore::pretty_print(cmd, std::cout, "final command");
 }
 
-void WBDC::_GetSolution(dynacore::Vector & cmd){
-    dynacore::Vector result(dim_opt_);
-    for(int i(0); i<dim_opt_; ++i) result[i] = z[i];
-    dynacore::Vector tot_tau = tot_tau_Mtx_*result + tot_tau_Vect_;
-    cmd = tot_tau.tail(num_act_joint_);
-    //dynacore::pretty_print(result, std::cout, "opt result");
-    //dynacore::pretty_print(tot_tau, std::cout, "tot tau result");
-}
+void WBDC::_OptimizationPreparation(){
+    dim_opt_ = dim_rf_ + dim_first_task_; 
+    dim_eq_cstr_ = 6;
+    dim_ieq_cstr_ = dim_rf_cstr_; 
 
-void WBDC::_MatrixInitialization(){
-
-    if(dim_relaxed_task_ > 0){
-        tot_tau_Mtx_.resize(num_qdot_, dim_opt_);
-        tot_tau_Mtx_.block(0,0, num_qdot_, dim_rf_) = -Jc_.transpose();
-        tot_tau_Mtx_.block(0, dim_rf_, num_qdot_, dim_relaxed_task_) = A_ * B_ * S_delta_;
-    } else {
-        tot_tau_Mtx_ =  -Jc_.transpose();
-    }
-    tot_tau_Vect_ = A_*B_*task_cmd_ + A_*c_ + cori_ + grav_;
-    // tot_tau_Vect_ =  cori_ + grav_;
-
-    G.resize(dim_opt_, dim_opt_);
+    G.resize(dim_opt_, dim_opt_); 
     g0.resize(dim_opt_);
     CE.resize(dim_opt_, dim_eq_cstr_);
     ce0.resize(dim_eq_cstr_);
@@ -321,9 +315,9 @@ void WBDC::_MatrixInitialization(){
         }
         g0[i] = 0.;
     }
-
     // Set Cost
-    for (int i(0); i < dim_opt_; ++i){
+     for (int i(0); i < dim_opt_; ++i){
         G[i][i] = data_->cost_weight[i];
     }
 }
+

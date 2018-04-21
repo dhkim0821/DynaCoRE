@@ -2,7 +2,7 @@
 #include <Utils/utilities.hpp>
 #include <Valkyrie/Valkyrie_Definition.h>
 #include "../Valkyrie_StateProvider.hpp"
-#include <WBLC/WBLC.hpp>
+#include <WBDC/WBDC.hpp>
 #include <Valkyrie_Controller/ContactSet/DoubleContact.hpp>
 #include <Valkyrie_Controller/TaskSet/JPosTask.hpp>
 #include <Valkyrie_Controller/TaskSet/CentroidTask.hpp>

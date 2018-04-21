@@ -6,7 +6,7 @@ set(CTRL_SYS Valkyrie)
 add_library (${CTRL_SYS}_Controller SHARED ${headers} ${sources} ../Test.cpp)
 target_link_libraries (${CTRL_SYS}_Controller dynacore_utils)
 target_link_libraries (${CTRL_SYS}_Controller Valkyrie_model)
-target_link_libraries (${CTRL_SYS}_Controller WBLC)
+target_link_libraries (${CTRL_SYS}_Controller WBDC)
 
 #install(TARGETS ${CTRL_SYS}_Controller DESTINATION "${INSTALL_LIB_DIR}")
 #install(FILES ${headers} DESTINATION

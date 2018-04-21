@@ -1,12 +1,12 @@
 #ifndef VALKYRIE_DOUBLE_CONTACT
 #define VALKYRIE_DOUBLE_CONTACT
 
-#include <WBLC/WBLC_ContactSpec.hpp>
+#include <WBDC/WBDC_ContactSpec.hpp>
 
 class RobotSystem;
 class Valkyrie_StateProvider;
 
-class DoubleContact: public WBLC_ContactSpec{
+class DoubleContact: public WBDC_ContactSpec{
 public:
   DoubleContact(RobotSystem* );
   virtual ~DoubleContact();

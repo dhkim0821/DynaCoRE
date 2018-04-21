@@ -3,7 +3,7 @@
 #include "../Valkyrie_StateProvider.hpp"
 #include <Utils/utilities.hpp>
 
-DoubleContact::DoubleContact(RobotSystem* robot):WBLC_ContactSpec(12)
+DoubleContact::DoubleContact(RobotSystem* robot):WBDC_ContactSpec(12)
 {
     robot_sys_ = robot;
     sp_ = Valkyrie_StateProvider::getStateProvider();

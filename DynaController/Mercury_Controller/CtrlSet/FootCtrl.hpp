@@ -5,9 +5,9 @@
 
 class Mercury_StateProvider;
 class RobotSystem;
-class WBDC;
-class WBDC_ExtraData;
-class WBDC_Task;
+class WBDC_Relax;
+class WBDC_Relax_ExtraData;
+class WBDC_Relax_Task;
 class WBDC_ContactSpec;
 
 class FootCtrl: public Controller{
@@ -31,10 +31,10 @@ protected:
   int swing_foot_;
   double end_time_;
 
-  WBDC* wbdc_;
-  WBDC_ExtraData* wbdc_data_;
-  WBDC_Task* foot_task_;
-  WBDC_Task* jpos_task_;
+  WBDC_Relax* wbdc_;
+  WBDC_Relax_ExtraData* wbdc_data_;
+  WBDC_Relax_Task* foot_task_;
+  WBDC_Relax_Task* jpos_task_;
   WBDC_ContactSpec* fixed_body_contact_;
 
   dynacore::Vect3 foot_pos_ini_;

@@ -6,7 +6,7 @@
 
 #include <Utils/utilities.hpp>
 
-CoMBodyOriTask::CoMBodyOriTask(RobotSystem* robot):WBDC_Task(6)
+CoMBodyOriTask::CoMBodyOriTask(RobotSystem* robot):WBDC_Relax_Task(6)
 {
   Kp_vec_ = dynacore::Vector(dim_task_);
   Kd_vec_ = dynacore::Vector(dim_task_);

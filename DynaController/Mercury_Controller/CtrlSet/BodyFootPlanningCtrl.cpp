@@ -3,14 +3,14 @@
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <Mercury_Controller/TaskSet/BodyFootTask.hpp>
 #include <Mercury_Controller/ContactSet/SingleContact.hpp>
-#include <WBDC/WBDC.hpp>
+#include <WBDC_Relax/WBDC_Relax.hpp>
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury/Mercury_Definition.h>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Planner/PIPM_FootPlacementPlanner/Reversal_LIPM_Planner.hpp>
 #include <Utils/DataManager.hpp>
 
-#define MEASURE_TIME_WBDC 0
+#define MEASURE_TIME_WBDC 1
 
 #if MEASURE_TIME_WBDC
 #include <chrono>
@@ -45,9 +45,9 @@ BodyFootPlanningCtrl::BodyFootPlanningCtrl(RobotSystem* robot, int swing_foot, P
     for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
 
 
-    wbdc_ = new WBDC(act_list);
+    wbdc_ = new WBDC_Relax(act_list);
 
-    wbdc_data_ = new WBDC_ExtraData();
+    wbdc_data_ = new WBDC_Relax_ExtraData();
     wbdc_data_->tau_min = dynacore::Vector(mercury::num_act_joint);
     wbdc_data_->tau_max = dynacore::Vector(mercury::num_act_joint);
 
@@ -113,7 +113,7 @@ void BodyFootPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
     std::chrono::duration<double> time_span1 
         = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
     if(time_count%500 == 1){
-        std::cout << "[body foot planning] WBDC took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
+        std::cout << "[body foot planning] WBDC_Relax took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
     }
 #endif
 

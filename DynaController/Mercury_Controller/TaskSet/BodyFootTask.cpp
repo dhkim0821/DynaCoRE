@@ -6,7 +6,7 @@
 
 #include <Utils/utilities.hpp>
 
-BodyFootTask::BodyFootTask(RobotSystem* robot, int swing_foot):WBDC_Task(9),
+BodyFootTask::BodyFootTask(RobotSystem* robot, int swing_foot):WBDC_Relax_Task(9),
     robot_sys_(robot),
                                            swing_foot_(swing_foot)
 {

@@ -16,6 +16,7 @@
 #include <Mercury_Controller/TestSet/WalkingTest.hpp>
 #include <Mercury_Controller/TestSet/FootCtrlTest.hpp>
 
+//#define MEASURE_TIME 1
 #if MEASURE_TIME
 #include <chrono>
 #endif

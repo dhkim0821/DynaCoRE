@@ -1,12 +1,12 @@
-#ifndef WHOLE_BODY_CONTROL_TASK
-#define WHOLE_BODY_CONTROL_TASK
+#ifndef WHOLE_BODY_DYNAMIC_CONTROL_RELAXED_TASK
+#define WHOLE_BODY_DYNAMIC_CONTROL_RELAXED_TASK
 
 #include <Task.hpp>
 
-class WBDC_Task: public Task{
+class WBDC_Relax_Task: public Task{
 public:
-  WBDC_Task(int dim);
-  virtual ~WBDC_Task();
+  WBDC_Relax_Task(int dim);
+  virtual ~WBDC_Relax_Task();
 
   int getRelaxed_Dim(){ return dim_relaxed_;}
   void setRelaxedOpCtrl(const std::vector<bool> & relaxed_op);

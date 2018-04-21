@@ -5,10 +5,10 @@
 #include <chrono>
 
 class Valkyrie_StateProvider;
-class WBLC;
-class WBLC_ExtraData;
+class WBDC;
+class WBDC_ExtraData;
 class Task;
-class WBLC_ContactSpec;
+class WBDC_ContactSpec;
 
 class MultiTaskCtrl: public Controller{
     public:
@@ -23,8 +23,8 @@ class MultiTaskCtrl: public Controller{
         virtual void CtrlInitialization(const std::string & setting_file_name);
 
     protected:
-        WBLC* wblc_;
-        WBLC_ExtraData* wblc_data_;
+        WBDC* wbdc_;
+        WBDC_ExtraData* wbdc_data_;
         Task* centroid_task_;
         Task* jpos_task_;
         Task* body_ori_task_;
@@ -32,7 +32,7 @@ class MultiTaskCtrl: public Controller{
         Task* rpalm_pos_task_;
         Task* lpalm_pos_task_;
         Task* head_ori_task_;
-        WBLC_ContactSpec* double_contact_;
+        WBDC_ContactSpec* double_contact_;
 
         void _wblc_ctrl(dynacore::Vector & gamma);
         void _double_contact_setup();

@@ -1,13 +1,13 @@
 #ifndef WBDC_COM_BODY_ORIENTATION_FOOT_TASK
 #define WBDC_COM_BODY_ORIENTATION_FOOT_TASK
 
-#include <WBDC/WBDC_Task.hpp>
+#include <WBDC_Relax/WBDC_Relax_Task.hpp>
 
 class Mercury_StateProvider;
 class RobotSystem;
 
 // CoM_{x, y, z}, BodyOri_{Rx, Ry, Rz}, Foot (x, y, z)
-class BodyFootTask: public WBDC_Task{
+class BodyFootTask: public WBDC_Relax_Task{
 public:
   BodyFootTask(RobotSystem*, int swing_foot);
   virtual ~BodyFootTask();

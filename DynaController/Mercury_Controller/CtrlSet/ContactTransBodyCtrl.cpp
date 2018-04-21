@@ -3,7 +3,7 @@
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <Mercury_Controller/TaskSet/CoMBodyOriTask.hpp>
 #include <Mercury_Controller/ContactSet/DoubleTransitionContact.hpp>
-#include <WBDC/WBDC.hpp>
+#include <WBDC_Relax/WBDC_Relax.hpp>
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury/Mercury_Definition.h>
 #include <ParamHandler/ParamHandler.hpp>
@@ -21,9 +21,9 @@ ContactTransBodyCtrl::ContactTransBodyCtrl(RobotSystem* robot):
     act_list.resize(mercury::num_qdot, true);
     for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
 
-    wbdc_ = new WBDC(act_list);
+    wbdc_ = new WBDC_Relax(act_list);
 
-    wbdc_data_ = new WBDC_ExtraData();
+    wbdc_data_ = new WBDC_Relax_ExtraData();
     wbdc_data_->tau_min = dynacore::Vector(mercury::num_act_joint);
     wbdc_data_->tau_max = dynacore::Vector(mercury::num_act_joint);
 

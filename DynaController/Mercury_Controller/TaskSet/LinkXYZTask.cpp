@@ -5,7 +5,7 @@
 #include <Mercury/Mercury_Definition.h>
 #include <Utils/utilities.hpp>
 
-LinkXYZTask::LinkXYZTask(RobotSystem* robot, int link_id):WBDC_Task(3)
+LinkXYZTask::LinkXYZTask(RobotSystem* robot, int link_id):WBDC_Relax_Task(3)
 {
   link_id_ = link_id;
   Kp_vec_ = dynacore::Vector(dim_task_);

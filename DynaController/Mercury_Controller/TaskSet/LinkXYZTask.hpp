@@ -1,12 +1,12 @@
 #ifndef LINK_XYZ_TASK
 #define LINK_XYZ_TASK
 
-#include <WBDC/WBDC_Task.hpp>
+#include <WBDC_Relax/WBDC_Relax_Task.hpp>
 
 class Mercury_StateProvider;
 class RobotSystem;
 
-class LinkXYZTask: public WBDC_Task{
+class LinkXYZTask: public WBDC_Relax_Task{
 public:
   LinkXYZTask(RobotSystem*, int link_id);
   virtual ~LinkXYZTask();

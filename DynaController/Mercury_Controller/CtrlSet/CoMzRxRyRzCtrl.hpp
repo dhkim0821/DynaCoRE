@@ -4,9 +4,9 @@
 #include <Controller.hpp>
 
 class Mercury_StateProvider;
-class WBDC;
-class WBDC_ExtraData;
-class WBDC_Task;
+class WBDC_Relax;
+class WBDC_Relax_ExtraData;
+class WBDC_Relax_Task;
 class WBDC_ContactSpec;
 class RobotSystem;
 
@@ -39,9 +39,9 @@ protected:
   bool b_set_height_target_;
   double des_com_height_;
 
-  WBDC* wbdc_;
-  WBDC_ExtraData* wbdc_data_;
-  WBDC_Task* body_task_;
+  WBDC_Relax* wbdc_;
+  WBDC_Relax_ExtraData* wbdc_data_;
+  WBDC_Relax_Task* body_task_;
   WBDC_ContactSpec* double_contact_;
 
   dynacore::Vector body_pos_ini_;

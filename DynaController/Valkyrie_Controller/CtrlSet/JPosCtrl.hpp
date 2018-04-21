@@ -5,10 +5,10 @@
 #include <chrono>
 
 class Valkyrie_StateProvider;
-class WBLC;
-class WBLC_ExtraData;
+class WBDC;
+class WBDC_ExtraData;
 class Task;
-class WBLC_ContactSpec;
+class WBDC_ContactSpec;
 
 class JPosCtrl: public Controller{
     public:
@@ -23,10 +23,10 @@ class JPosCtrl: public Controller{
         virtual void CtrlInitialization(const std::string & setting_file_name);
 
     protected:
-        WBLC* wblc_;
-        WBLC_ExtraData* wblc_data_;
+        WBDC* wbdc_;
+        WBDC_ExtraData* wbdc_data_;
         Task* jpos_task_;
-        WBLC_ContactSpec* double_contact_;
+        WBDC_ContactSpec* double_contact_;
 
         void _jpos_ctrl(dynacore::Vector & gamma);
         void _double_contact_setup();

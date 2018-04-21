@@ -1,11 +1,11 @@
 #ifndef WBDC_BODY_TASK
 #define WBDC_BODY_TASK
 
-#include <WBDC/WBDC_Task.hpp>
+#include <WBDC_Relax/WBDC_Relax_Task.hpp>
 
 class Mercury_StateProvider;
 
-class JPosTask: public WBDC_Task{
+class JPosTask: public WBDC_Relax_Task{
 public:
   JPosTask();
   virtual ~JPosTask();

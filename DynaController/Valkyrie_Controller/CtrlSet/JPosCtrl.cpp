@@ -2,7 +2,7 @@
 #include <Utils/utilities.hpp>
 #include <Valkyrie/Valkyrie_Definition.h>
 #include "../Valkyrie_StateProvider.hpp"
-#include <WBLC/WBLC.hpp>
+#include <WBDC/WBDC.hpp>
 #include <Valkyrie_Controller/ContactSet/DoubleContact.hpp>
 #include <Valkyrie_Controller/TaskSet/JPosTask.hpp>
 
@@ -13,8 +13,8 @@ JPosCtrl::JPosCtrl(RobotSystem* robot):Controller(robot),
     act_list.resize(valkyrie::num_qdot, true);
     for(int i(0); i<valkyrie::num_virtual; ++i) act_list[i] = false;
 
-    wblc_ = new WBLC(act_list);
-    wblc_data_ = new WBLC_ExtraData();
+    wbdc_ = new WBDC(act_list);
+    wbdc_data_ = new WBDC_ExtraData();
 
     jpos_task_ = new JPosTask();
     double_contact_ = new DoubleContact(robot);
@@ -26,7 +26,7 @@ JPosCtrl::JPosCtrl(RobotSystem* robot):Controller(robot),
 JPosCtrl::~JPosCtrl(){
     delete jpos_task_;
     delete double_contact_;
-    delete wblc_;
+    delete wbdc_;
 }
 
 void JPosCtrl::_jpos_task_setup(){
@@ -61,23 +61,23 @@ void JPosCtrl::_double_contact_setup(){
 
 void JPosCtrl::_jpos_ctrl(dynacore::Vector & gamma){
     //printf("ctrl 1\n");
-    wblc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    wbdc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
 
     //printf("ctrl 2\n");
-    wblc_data_->cost_weight = dynacore::Vector(
+    wbdc_data_->cost_weight = dynacore::Vector(
             jpos_task_->getDim() + double_contact_->getDim());
 
     //printf("ctrl 3\n");
-    for(int i(0); i<jpos_task_->getDim(); ++i) wblc_data_->cost_weight[i] = 10000.0;
+    for(int i(0); i<jpos_task_->getDim(); ++i) wbdc_data_->cost_weight[i] = 10000.0;
     for(int i(0); i<double_contact_->getDim(); ++i){
-        wblc_data_->cost_weight[jpos_task_->getDim() + i] = 1.0;
+        wbdc_data_->cost_weight[jpos_task_->getDim() + i] = 1.0;
     }
     //printf("ctrl 4\n");
-    wblc_data_->cost_weight[jpos_task_->getDim() + 5] = 0.001; // vertical reaction
-    wblc_data_->cost_weight[jpos_task_->getDim() + 11] = 0.001; // vertical reaction
+    wbdc_data_->cost_weight[jpos_task_->getDim() + 5] = 0.001; // vertical reaction
+    wbdc_data_->cost_weight[jpos_task_->getDim() + 11] = 0.001; // vertical reaction
     
     //printf("ctrl 5\n");
-    wblc_->MakeTorque(task_list_, contact_list_, gamma, wblc_data_);
+    wbdc_->MakeTorque(task_list_, contact_list_, gamma, wbdc_data_);
     //printf("ctrl 6\n");
     //dynacore::pretty_print(grav_, std::cout, "gravity");
 }

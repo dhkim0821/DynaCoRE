@@ -1,13 +1,13 @@
-#include "WBDC_Task.hpp"
+#include "WBDC_Relax_Task.hpp"
 #include <Utils/utilities.hpp>
 
-WBDC_Task::WBDC_Task(int dim): Task(dim),
+WBDC_Relax_Task::WBDC_Relax_Task(int dim): Task(dim),
                                dim_relaxed_(0){
   // printf("[WBDC Task]Constructed\n");
 }
-WBDC_Task::~WBDC_Task(){}
+WBDC_Relax_Task::~WBDC_Relax_Task(){}
 
-void WBDC_Task::setRelaxedOpCtrl(const std::vector<bool> & relaxed_op){
+void WBDC_Relax_Task::setRelaxedOpCtrl(const std::vector<bool> & relaxed_op){
   dim_relaxed_ = 0;
   for(int i(0); i<dim_task_; ++i){
     if(relaxed_op[i]){ ++dim_relaxed_; }

@@ -8,9 +8,9 @@
 class Mercury_StateProvider;
 class RobotSystem;
 class Planner;
-class WBDC;
-class WBDC_ExtraData;
-class WBDC_Task;
+class WBDC_Relax;
+class WBDC_Relax_ExtraData;
+class WBDC_Relax_Task;
 class WBDC_ContactSpec;
 
 class BodyFootPlanningCtrl:public Controller{
@@ -74,9 +74,9 @@ protected:
   double t_prime_x_;
   double t_prime_y_;
 
-  WBDC* wbdc_;
-  WBDC_ExtraData* wbdc_data_;
-  WBDC_Task* body_foot_task_;
+  WBDC_Relax* wbdc_;
+  WBDC_Relax_ExtraData* wbdc_data_;
+  WBDC_Relax_Task* body_foot_task_;
   WBDC_ContactSpec* single_contact_;
 
   Planner* planner_;

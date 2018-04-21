@@ -1,12 +1,12 @@
 #ifndef WBDC_COM_BODY_ORIENTATION_TASK
 #define WBDC_COM_BODY_ORIENTATION_TASK
 
-#include <WBDC/WBDC_Task.hpp>
+#include <WBDC_Relax/WBDC_Relax_Task.hpp>
 
 class Mercury_StateProvider;
 class RobotSystem;
 
-class CoMBodyOriTask: public WBDC_Task{
+class CoMBodyOriTask: public WBDC_Relax_Task{
 public:
   CoMBodyOriTask(RobotSystem* ); // X, Y, Z, Rx, Ry, Rz
   virtual ~CoMBodyOriTask();

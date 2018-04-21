@@ -5,9 +5,9 @@
 
 class RobotSystem;
 class Mercury_StateProvider;
-class WBDC;
-class WBDC_ExtraData;
-class WBDC_Task;
+class WBDC_Relax;
+class WBDC_Relax_ExtraData;
+class WBDC_Relax_Task;
 class WBDC_ContactSpec;
 
 class TransitionCtrl: public Controller{
@@ -38,9 +38,9 @@ protected:
   double max_rf_z_;
   double min_rf_z_;
   
-  WBDC* wbdc_;
-  WBDC_ExtraData* wbdc_data_;
-  WBDC_Task* body_task_;
+  WBDC_Relax* wbdc_;
+  WBDC_Relax_ExtraData* wbdc_data_;
+  WBDC_Relax_Task* body_task_;
   WBDC_ContactSpec* double_contact_;
 
   dynacore::Vector body_pos_ini_;

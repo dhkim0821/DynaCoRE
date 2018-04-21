@@ -37,7 +37,6 @@ void JointCtrlTest::_ParameterSetting(){
   ParamHandler handle(MercuryConfigPath"TEST_jpos_ctrl.yaml");
   std::vector<double> tmp_vec;
   double tmp_value;
-
   // JPos initialization
   handle.getVector("initial_jpos", tmp_vec);
   ((JPosTargetCtrl*)jpos_ctrl_ini_)->setTargetPosition(tmp_vec);
