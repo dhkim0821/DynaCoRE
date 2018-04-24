@@ -16,7 +16,7 @@
 #include <Mercury_Controller/TestSet/WalkingTest.hpp>
 #include <Mercury_Controller/TestSet/FootCtrlTest.hpp>
 
-//#define MEASURE_TIME 1
+#define MEASURE_TIME 0
 #if MEASURE_TIME
 #include <chrono>
 #endif
@@ -28,13 +28,15 @@ Mercury_interface::Mercury_interface():
     sensed_torque_(mercury::num_act_joint),
     torque_limit_max_(mercury::num_act_joint),
     torque_limit_min_(mercury::num_act_joint),
-    motor_current_(mercury::num_act_joint)
+    motor_current_(mercury::num_act_joint),
+    jjvel_(mercury::num_act_joint)
 {
     robot_sys_ = new Mercury_Model();
     sensed_torque_.setZero();
     torque_command_.setZero();
     motor_current_.setZero();
     test_command_.setZero();
+    jjvel_.setZero();
 
     sp_ = Mercury_StateProvider::getStateProvider();
     state_estimator_ = new Mercury_StateEstimator(robot_sys_);  
@@ -46,6 +48,9 @@ Mercury_interface::Mercury_interface():
             &torque_command_, DYN_VEC, "command", mercury::num_act_joint * 2);
     DataManager::GetDataManager()->RegisterData(
             &motor_current_, DYN_VEC, "motor_current", mercury::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &jjvel_, DYN_VEC, "joint_jvel", mercury::num_act_joint);
+
 
     _ParameterSetting();
     printf("[Mercury_interface] Contruct\n");
@@ -101,6 +106,7 @@ void Mercury_interface::GetCommand( void* _data,
         command[i] = torque_command_[i];
         sensed_torque_[i] = data->jtorque[i];
         motor_current_[i] = data->motor_current[i];
+        jjvel_[i] = data->joint_jvel[i];
     }
     if (isTurnoff) {
         //torque_command_.setZero();
@@ -206,9 +212,17 @@ void Mercury_interface::_ParameterSetting(){
         printf("[Interfacce] There is no test matching with the name\n");
         exit(0);
     }
+
     // State Estimator Setup
-    handler.getBoolean("is_floating_base", b_tmp);
-    state_estimator_->setFloatingBase(b_tmp);
+    handler.getString("base_condition", tmp_string);
+    if(tmp_string == "floating")
+        state_estimator_->setFloatingBase(base_condition::floating);
+    else if(tmp_string == "fixed")
+        state_estimator_->setFloatingBase(base_condition::fixed);
+    else if(tmp_string == "lying")
+        state_estimator_->setFloatingBase(base_condition::lying);
+    else
+        printf("[Interface] Error: No proper base condition\n");
 
     // Torque limit
     handler.getVector("torque_max", torque_limit_max_);

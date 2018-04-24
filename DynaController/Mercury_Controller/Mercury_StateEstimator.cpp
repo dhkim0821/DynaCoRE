@@ -17,7 +17,7 @@
 
 
 Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
-    is_floating_(true){
+    base_cond_(0){
         sp_ = Mercury_StateProvider::getStateProvider();
         robot_sys_ = robot;
 
@@ -55,15 +55,15 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     }
 
     ori_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel);
-    sp_->Q_[3] = sp_->body_ori_.x();
-    sp_->Q_[4] = sp_->body_ori_.y();
-    sp_->Q_[5] = sp_->body_ori_.z();
-    sp_->Q_[mercury::num_qdot] = sp_->body_ori_.w();
-    
-    robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
-
     // Local Frame Setting
-    if(is_floating_){
+    if(base_cond_ == base_condition::floating){
+        sp_->Q_[3] = sp_->body_ori_.x();
+        sp_->Q_[4] = sp_->body_ori_.y();
+        sp_->Q_[5] = sp_->body_ori_.z();
+        sp_->Q_[mercury::num_qdot] = sp_->body_ori_.w();
+
+        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+
         dynacore::Vect3 foot_pos, foot_vel;
         robot_sys_->getPos(sp_->stance_foot_, foot_pos);
         robot_sys_->getLinearVel(sp_->stance_foot_, foot_vel);
@@ -75,6 +75,15 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
         sp_->Qdot_[2] = -foot_vel[2];
 
         // sp_->global_pos_local_.head(2) = foot_pos.head(2);
+        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+    } else if (base_cond_ == base_condition::fixed){
+        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+        
+    } else if (base_cond_ == base_condition::lying){
+        // pitch rotation (PI/2)
+        sp_->Q_[4] = sin(M_PI/2.0/2.0);
+        sp_->Q_[mercury::num_qdot] = cos(M_PI/2.0/2.0);
+
         robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
     }
     robot_sys_->getCoMPosition(sp_->CoM_pos_);
@@ -116,7 +125,7 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     //dynacore::pretty_print(sp_->body_ori_, std::cout, "dynacore quat");
     //printf("\n");
 
-    if(is_floating_){
+    if(base_cond_ == base_condition::floating){
         sp_->Q_[3] = sp_->body_ori_.x();
         sp_->Q_[4] = sp_->body_ori_.y();
         sp_->Q_[5] = sp_->body_ori_.z();
@@ -140,9 +149,18 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
         sp_->Qdot_[2] = -foot_vel[2];
 
         robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
-    }else{
+
+    } else if (base_cond_ == base_condition::fixed){
+        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+        
+    } else if (base_cond_ == base_condition::lying){
+        // pitch rotation (PI/2)
+        sp_->Q_[4] = sin(M_PI/2.0/2.0);
+        sp_->Q_[mercury::num_qdot] = cos(M_PI/2.0/2.0);
+
         robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
     }
+
     // Warning: Save Sensor Data in StateProvider
     sp_->SaveCurrentData();
     robot_sys_->getCoMPosition(sp_->CoM_pos_);
