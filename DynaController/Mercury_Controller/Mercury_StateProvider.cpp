@@ -38,6 +38,12 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   body_ang_vel_.setZero();
   body_ang_vel_des_.setZero();
 
+  Rfoot_pos_.setZero();
+  Rfoot_vel_.setZero();
+  Lfoot_pos_.setZero();
+  Lfoot_vel_.setZero();
+
+
   DataManager* data_manager = DataManager::GetDataManager();
 
   data_manager->RegisterData(&curr_time_, DOUBLE, "time");
@@ -45,10 +51,10 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&Qdot_, DYN_VEC, "qdot", mercury::num_qdot);
   data_manager->RegisterData(&reaction_forces_, DYN_VEC, "reaction_force", 6);
 
-  //data_manager->RegisterData(&Rfoot_pos_, VECT3, "rfoot_pos", 3);
-  //data_manager->RegisterData(&Rfoot_vel_, VECT3, "rfoot_vel", 3);
-  //data_manager->RegisterData(&Lfoot_pos_, VECT3, "lfoot_pos", 3);
-  //data_manager->RegisterData(&Lfoot_vel_, VECT3, "lfoot_vel", 3);
+  data_manager->RegisterData(&Rfoot_pos_, VECT3, "rfoot_pos", 3);
+  data_manager->RegisterData(&Rfoot_vel_, VECT3, "rfoot_vel", 3);
+  data_manager->RegisterData(&Lfoot_pos_, VECT3, "lfoot_pos", 3);
+  data_manager->RegisterData(&Lfoot_vel_, VECT3, "lfoot_vel", 3);
   //data_manager->RegisterData(&foot_pos_des_, VECT3, "foot_pos_des", 3);
   //data_manager->RegisterData(&foot_vel_des_, VECT3, "foot_vel_des", 3);
 

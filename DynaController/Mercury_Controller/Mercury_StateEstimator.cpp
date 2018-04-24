@@ -98,6 +98,12 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     // Left Contact 
     if(data->lfoot_contact) sp_->b_lfoot_contact_ = 1;
     else sp_->b_lfoot_contact_ = 0;
+
+    // Foot pos
+    robot_sys_->getPos(mercury_link::rightFoot, sp_->Rfoot_pos_);
+    robot_sys_->getLinearVel(mercury_link::rightFoot, sp_->Rfoot_vel_);
+    robot_sys_->getPos(mercury_link::leftFoot, sp_->Lfoot_pos_);
+    robot_sys_->getLinearVel(mercury_link::leftFoot, sp_->Lfoot_vel_);
 }
 
 void Mercury_StateEstimator::Update(Mercury_SensorData* data){
@@ -159,6 +165,9 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
         sp_->Q_[mercury::num_qdot] = cos(M_PI/2.0/2.0);
 
         robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+    } else {
+        printf("[Error] Incorrect base condition setup\n");
+        exit(0);
     }
 
     // Warning: Save Sensor Data in StateProvider
@@ -177,4 +186,9 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
         sp_->imu_acc_[i] = data->imu_acc[i];
         sp_->imu_ang_vel_[i] = data->imu_ang_vel[i];
     }
+    // Foot pos
+    robot_sys_->getPos(mercury_link::rightFoot, sp_->Rfoot_pos_);
+    robot_sys_->getLinearVel(mercury_link::rightFoot, sp_->Rfoot_vel_);
+    robot_sys_->getPos(mercury_link::leftFoot, sp_->Lfoot_pos_);
+    robot_sys_->getLinearVel(mercury_link::leftFoot, sp_->Lfoot_vel_);
 }

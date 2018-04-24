@@ -54,6 +54,12 @@ public:
   int b_lfoot_contact_;
   // (x, y, x_dot, y_dot)
   dynacore::Vector estimated_com_state_;
+  
+  dynacore::Vect3 Rfoot_pos_;
+  dynacore::Vect3 Rfoot_vel_;
+  dynacore::Vect3 Lfoot_pos_;
+  dynacore::Vect3 Lfoot_vel_;
+
 private:
   Mercury_StateProvider();
 };

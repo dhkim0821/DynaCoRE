@@ -34,12 +34,12 @@ FootCtrlTest::FootCtrlTest(RobotSystem* robot):Test(robot){
         DataManager::GetDataManager()->RegisterData(
                 &(((FootCtrl*)foot_ctrl_)->foot_vel_des_), 
                 DYN_VEC, "rfoot_vel_des", 3);
-        DataManager::GetDataManager()->RegisterData(
-                &(((FootCtrl*)foot_ctrl_)->foot_pos_), 
-                VECT3, "rfoot_pos", 3);
-        DataManager::GetDataManager()->RegisterData(
-                &(((FootCtrl*)foot_ctrl_)->foot_vel_), 
-                VECT3, "rfoot_vel", 3);
+        //DataManager::GetDataManager()->RegisterData(
+                //&(((FootCtrl*)foot_ctrl_)->foot_pos_), 
+                //VECT3, "rfoot_pos", 3);
+        //DataManager::GetDataManager()->RegisterData(
+                //&(((FootCtrl*)foot_ctrl_)->foot_vel_), 
+                //VECT3, "rfoot_vel", 3);
     }else{
         DataManager::GetDataManager()->RegisterData(
                 &(((FootCtrl*)foot_ctrl_)->foot_pos_des_), 
@@ -47,17 +47,13 @@ FootCtrlTest::FootCtrlTest(RobotSystem* robot):Test(robot){
         DataManager::GetDataManager()->RegisterData(
                 &(((FootCtrl*)foot_ctrl_)->foot_vel_des_), 
                 DYN_VEC, "lfoot_vel_des", 3);
-        DataManager::GetDataManager()->RegisterData(
-                &(((FootCtrl*)foot_ctrl_)->foot_pos_), 
-                VECT3, "lfoot_pos", 3);
-        DataManager::GetDataManager()->RegisterData(
-                &(((FootCtrl*)foot_ctrl_)->foot_vel_), 
-                VECT3, "lfoot_vel", 3);
+        //DataManager::GetDataManager()->RegisterData(
+                //&(((FootCtrl*)foot_ctrl_)->foot_pos_), 
+                //VECT3, "lfoot_pos", 3);
+        //DataManager::GetDataManager()->RegisterData(
+                //&(((FootCtrl*)foot_ctrl_)->foot_vel_), 
+                //VECT3, "lfoot_vel", 3);
     }
-
-
-
-
 
     _ParameterCtrlSetting();
     printf("[Foot Ctrl Test] Constructed\n");
@@ -85,9 +81,13 @@ void FootCtrlTest::_ParameterCtrlSetting(){
     std::vector<double> tmp_vec;
     double tmp_value;
 
-    // JPos initialization
+    // Initial posture setup
     handle.getVector("initial_jpos", tmp_vec);
     ((JPosTargetCtrl*)jpos_ini_)->setTargetPosition(tmp_vec);
+    ((FootCtrl*)foot_ctrl_)->setPosture(tmp_vec);
+
+
+    // JPos initialization
     handle.getValue("initialization_time", tmp_value);
     ((JPosTargetCtrl*)jpos_ini_)->setMovingTime(tmp_value);
 

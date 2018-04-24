@@ -28,8 +28,8 @@ WorldNode::WorldNode(const dart::simulation::WorldPtr & world_,
         lfoot_ = robot_->getBodyNode("lfoot");
 //rfoot_->setFrictionCoeff(5.0);
 //lfoot_->setFrictionCoeff(5.0);
-        printf("right friction: %f\n", rfoot_->getFrictionCoeff());
-        printf("left friction: %f\n", lfoot_->getFrictionCoeff());
+        //printf("right friction: %f\n", rfoot_->getFrictionCoeff());
+        //printf("left friction: %f\n", lfoot_->getFrictionCoeff());
 
         // pelvis hold
         pelvis_hold =true;
@@ -54,8 +54,8 @@ void WorldNode::customPreStep() {
 
     double curr_time = ((double)count)*(1.0/1500.);
     if(pelvis_hold == true) {
-        if (curr_time < 1.5) { holdpelvis(); }
-        //if (curr_time < 2000000.5) { holdpelvis(); }
+        //if (curr_time < 1.5) { holdpelvis(); }
+        if (curr_time < 2000000.5) { holdpelvis(); }
         //else if (curr_time < 2.8){
         else if (curr_time < 200.8){
             holdhorizontal();

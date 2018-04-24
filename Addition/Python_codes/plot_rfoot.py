@@ -18,8 +18,8 @@ np.genfromtxt(file_path+'rfoot_vel.txt', delimiter=None, dtype=(float))
 
 data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
 
-st_idx = 300
-end_idx = len(data_x) - 500
+st_idx = 1
+end_idx = len(data_x) - 10
 data_x = data_x[st_idx:end_idx]
 
 ## plot foot pos

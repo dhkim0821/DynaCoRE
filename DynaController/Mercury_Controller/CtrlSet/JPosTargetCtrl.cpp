@@ -38,7 +38,7 @@ JPosTargetCtrl::JPosTargetCtrl(RobotSystem* robot):Controller(robot),
         dynacore::Vector::Constant(fixed_body_contact_->getDim() + 
                 jpos_task_->getDim(), 1000.0);
 
-    wbdc_rotor_data_->cost_weight.tail(jpos_task_->getDim()) = 
+    wbdc_rotor_data_->cost_weight.tail(fixed_body_contact_->getDim()) = 
         dynacore::Vector::Constant(fixed_body_contact_->getDim(), 1.0);
 
     sp_ = Mercury_StateProvider::getStateProvider();
