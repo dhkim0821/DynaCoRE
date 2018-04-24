@@ -10,6 +10,9 @@ class WBDC_Relax_ExtraData;
 class WBDC_Relax_Task;
 class WBDC_ContactSpec;
 
+class WBDC_Rotor;
+class WBDC_Rotor_ExtraData;
+
 class JPosTargetCtrl: public Controller{
 public:
   JPosTargetCtrl(RobotSystem* );
@@ -32,12 +35,16 @@ protected:
   WBDC_Relax_Task* jpos_task_;
   WBDC_ContactSpec* fixed_body_contact_;
 
+  WBDC_Rotor* wbdc_rotor_;
+  WBDC_Rotor_ExtraData* wbdc_rotor_data_;
+ 
   dynacore::Vector jpos_ini_;
   dynacore::Vector jpos_target_;
   
   void _jpos_task_setup();
   void _fixed_body_contact_setup();
   void _jpos_ctrl(dynacore::Vector & gamma);
+  void _jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma);
 
   Mercury_StateProvider* sp_;
   double ctrl_start_time_;

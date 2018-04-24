@@ -5,6 +5,7 @@
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury/Mercury_Definition.h>
 #include <WBDC_Relax/WBDC_Relax.hpp>
+#include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Utils/utilities.hpp>
 
@@ -29,6 +30,17 @@ JPosTargetCtrl::JPosTargetCtrl(RobotSystem* robot):Controller(robot),
         wbdc_data_->tau_max[i] = 50.0;
         wbdc_data_->tau_min[i] = -50.0;
     }
+    wbdc_rotor_ = new WBDC_Rotor(act_list);
+    wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
+    wbdc_rotor_data_->A_rotor = 
+        dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
+    wbdc_rotor_data_->cost_weight = 
+        dynacore::Vector::Constant(fixed_body_contact_->getDim() + 
+                jpos_task_->getDim(), 1000.0);
+
+    wbdc_rotor_data_->cost_weight.tail(jpos_task_->getDim()) = 
+        dynacore::Vector::Constant(fixed_body_contact_->getDim(), 1.0);
+
     sp_ = Mercury_StateProvider::getStateProvider();
 }
 
@@ -37,6 +49,9 @@ JPosTargetCtrl::~JPosTargetCtrl(){
     delete fixed_body_contact_;
     delete wbdc_;
     delete wbdc_data_;
+
+    delete wbdc_rotor_;
+    delete wbdc_rotor_data_;
 }
 
 void JPosTargetCtrl::OneStep(dynacore::Vector & gamma){
@@ -46,7 +61,8 @@ void JPosTargetCtrl::OneStep(dynacore::Vector & gamma){
     gamma.setZero();
     _fixed_body_contact_setup();
     _jpos_task_setup();
-    _jpos_ctrl(gamma);
+    //_jpos_ctrl(gamma);
+    _jpos_ctrl_wbdc_rotor(gamma);
     //dynacore::pretty_print(gamma, std::cout, "gamma");
 
     _PostProcessing_Command();
@@ -56,6 +72,21 @@ void JPosTargetCtrl::_jpos_ctrl(dynacore::Vector & gamma){
     wbdc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
     wbdc_->MakeTorque(task_list_, contact_list_, gamma, wbdc_data_);
 }
+
+void JPosTargetCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
+    gamma = dynacore::Vector::Zero(mercury::num_act_joint * 2);
+    dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+    for (int i(0); i<mercury::num_act_joint; ++i){
+        wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            = sp_->rotor_inertia_[i];
+    }
+    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
+
+    gamma.head(mercury::num_act_joint) = fb_cmd;
+    gamma.tail(mercury::num_act_joint) = wbdc_rotor_data_->cmd_ff;
+}
+
 
 void JPosTargetCtrl::_jpos_task_setup(){
     dynacore::Vector jacc_des(mercury::num_act_joint); jacc_des.setZero();

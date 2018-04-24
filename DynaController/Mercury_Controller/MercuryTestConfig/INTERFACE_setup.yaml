@@ -1,7 +1,7 @@
 #test_name: body_ctrl_test
 #test_name: foot_ctrl_test
-#test_name: walking_test
-test_name: joint_ctrl_test
+test_name: walking_test
+#test_name: joint_ctrl_test
 
 #is_floating_base: false #must be true in standing up test
 is_floating_base: true #must be true in standing up test

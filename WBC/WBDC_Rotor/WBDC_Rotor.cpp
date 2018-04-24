@@ -284,6 +284,13 @@ void WBDC_Rotor::_GetSolution(const dynacore::Vector & qddot, dynacore::Vector &
     //dynacore::Matrix Ainv_trc = Ainv_.block(6,6, num_qdot_-6, num_qdot_-6);
     //_WeightedInverse(UNci_trc, Ainv_trc, UNciBar_trc, 0.0001);
     cmd = UNciBar_trc.transpose() * tot_tau_trc;
+
+
+    dynacore::Vector tot_tau_ff = (A_ + data_->A_rotor) * qddot 
+        + cori_ + grav_ - (Jc_* Nci_).transpose() * Fr;
+    dynacore::Vector tot_tau_ff_trc = tot_tau_ff.tail(num_qdot_-6);
+ 
+    data_->cmd_ff = UNciBar_trc.transpose() * tot_tau_ff_trc;
     //cmd = (UNci_trc.inverse()).transpose()* tot_tau_trc;
      //dynacore::pretty_print(UNci, std::cout, "UNci");
      //dynacore::pretty_print(UNci_trc, std::cout, "UNci+trc");

@@ -13,6 +13,9 @@ class WBDC_Relax_ExtraData;
 class WBDC_Relax_Task;
 class WBDC_ContactSpec;
 
+class WBDC_Rotor;
+class WBDC_Rotor_ExtraData;
+
 class BodyFootPlanningCtrl:public Controller{
 public:
   BodyFootPlanningCtrl(RobotSystem* robot, int swing_foot, Planner* planner);
@@ -79,6 +82,9 @@ protected:
   WBDC_Relax_Task* body_foot_task_;
   WBDC_ContactSpec* single_contact_;
 
+  WBDC_Rotor* wbdc_rotor_;
+  WBDC_Rotor_ExtraData* wbdc_rotor_data_;
+
   Planner* planner_;
   void _CheckPlanning();
   void _Replanning();
@@ -96,10 +102,11 @@ protected:
   void _task_setup();
   void _single_contact_setup();
   void _body_foot_ctrl(dynacore::Vector & gamma);
-
+  void _body_foot_ctrl_wbdc_rotor(dynacore::Vector & gamma);
+  
   CoMStateEstimator* com_estimator_;
-Mercury_StateProvider* sp_;
-double ctrl_start_time_;
+  Mercury_StateProvider* sp_;
+  double ctrl_start_time_;
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include <Mercury_Controller/TaskSet/BodyFootTask.hpp>
 #include <Mercury_Controller/ContactSet/SingleContact.hpp>
 #include <WBDC_Relax/WBDC_Relax.hpp>
+#include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury/Mercury_Definition.h>
 #include <ParamHandler/ParamHandler.hpp>
@@ -55,6 +56,23 @@ BodyFootPlanningCtrl::BodyFootPlanningCtrl(RobotSystem* robot, int swing_foot, P
         wbdc_data_->tau_max[i] = 100.0;
         wbdc_data_->tau_min[i] = -100.0;
     }
+    wbdc_rotor_ = new WBDC_Rotor(act_list);
+    wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
+    wbdc_rotor_data_->A_rotor = 
+        dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
+    wbdc_rotor_data_->cost_weight = 
+        dynacore::Vector::Constant(
+                body_foot_task_->getDim() + 
+                single_contact_->getDim(), 100.0);
+
+    wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
+    wbdc_rotor_data_->cost_weight[1] = 0.0001; // Y
+    wbdc_rotor_data_->cost_weight[5] = 0.0001; // Yaw
+
+    wbdc_rotor_data_->cost_weight.tail(single_contact_->getDim()) = 
+        dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
+    wbdc_rotor_data_->cost_weight[body_foot_task_->getDim() + 2]  = 0.001; // Rz
+
 
     com_estimator_ = new LIPM_KalmanFilter();
     sp_ = Mercury_StateProvider::getStateProvider();
@@ -75,10 +93,45 @@ void BodyFootPlanningCtrl::OneStep(dynacore::Vector & gamma){
     gamma = dynacore::Vector::Zero(mercury::num_act_joint * 2);
     _single_contact_setup();
     _task_setup();
-    _body_foot_ctrl(gamma);
+    //_body_foot_ctrl(gamma);
+    _body_foot_ctrl_wbdc_rotor(gamma);
 
     _PostProcessing_Command();
 }
+void BodyFootPlanningCtrl::_body_foot_ctrl_wbdc_rotor(dynacore::Vector & gamma){
+#if MEASURE_TIME_WBDC 
+    static int time_count(0);
+    time_count++;
+    std::chrono::high_resolution_clock::time_point t1 
+        = std::chrono::high_resolution_clock::now();
+#endif
+    dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+    for (int i(0); i<mercury::num_act_joint; ++i){
+        wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            = sp_->rotor_inertia_[i];
+    }
+    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
+
+    gamma.head(mercury::num_act_joint) = fb_cmd;
+    gamma.tail(mercury::num_act_joint) = wbdc_rotor_data_->cmd_ff;
+
+#if MEASURE_TIME_WBDC 
+    std::chrono::high_resolution_clock::time_point t2 
+        = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> time_span1 
+        = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
+    if(time_count%500 == 1){
+        std::cout << "[body foot planning] WBDC_Relax took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
+    }
+#endif
+
+    int offset(0);
+    if(swing_foot_ == mercury_link::rightFoot) offset = 3;
+    for(int i(0); i<3; ++i)
+        sp_->reaction_forces_[i + offset] = wbdc_rotor_data_->opt_result_[i];
+}
+
 
 void BodyFootPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
 #if MEASURE_TIME_WBDC 
