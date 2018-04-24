@@ -10,49 +10,57 @@ class WBDC_Relax_Task;
 class WBDC_ContactSpec;
 class RobotSystem;
 
+class WBDC_Rotor;
+class WBDC_Rotor_ExtraData;
+
 class CoMzRxRyRzCtrl: public Controller{
-public:
-  CoMzRxRyRzCtrl(RobotSystem*);
-  virtual ~CoMzRxRyRzCtrl();
+    public:
+        CoMzRxRyRzCtrl(RobotSystem*);
+        virtual ~CoMzRxRyRzCtrl();
 
-  virtual void OneStep(dynacore::Vector & gamma);
-  virtual void FirstVisit();
-  virtual void LastVisit();
-  virtual bool EndOfPhase();
+        virtual void OneStep(dynacore::Vector & gamma);
+        virtual void FirstVisit();
+        virtual void LastVisit();
+        virtual bool EndOfPhase();
 
-  virtual void CtrlInitialization(const std::string & setting_file_name);
+        virtual void CtrlInitialization(const std::string & setting_file_name);
 
-  void setStanceTime(double stance_time){ end_time_ = stance_time; }
-  void setAmp(const std::vector<double> & amp);
-  void setFrequency(const std::vector<double> & freq);
-  void setPhase(const std::vector<double> & phase);
+        void setStanceTime(double stance_time){ end_time_ = stance_time; }
+        void setAmp(const std::vector<double> & amp);
+        void setFrequency(const std::vector<double> & freq);
+        void setPhase(const std::vector<double> & phase);
 
-  void setStanceHeight(double height) {
-    des_com_height_ = height;
-    b_set_height_target_ = true;
-  }
+        void setStanceHeight(double height) {
+            des_com_height_ = height;
+            b_set_height_target_ = true;
+        }
 
-protected:
-  dynacore::Vector amp_, freq_, phase_;
+    protected:
+        dynacore::Vector amp_, freq_, phase_;
 
-  int dim_ctrl_;
-  bool b_set_height_target_;
-  double des_com_height_;
+        int dim_ctrl_;
+        bool b_set_height_target_;
+        double des_com_height_;
 
-  WBDC_Relax* wbdc_;
-  WBDC_Relax_ExtraData* wbdc_data_;
-  WBDC_Relax_Task* body_task_;
-  WBDC_ContactSpec* double_contact_;
+        WBDC_Relax* wbdc_;
+        WBDC_Relax_ExtraData* wbdc_data_;
+        WBDC_Relax_Task* body_task_;
+        WBDC_ContactSpec* double_contact_;
 
-  dynacore::Vector body_pos_ini_;
-  dynacore::Vect3 ini_com_pos_;
+        WBDC_Rotor* wbdc_rotor_;
+        WBDC_Rotor_ExtraData* wbdc_rotor_data_;
 
-  double end_time_;
-  void _body_task_setup();
-  void _double_contact_setup();
-  void _body_ctrl(dynacore::Vector & gamma);
-  Mercury_StateProvider* sp_;
-  double ctrl_start_time_;
+        dynacore::Vector body_pos_ini_;
+        dynacore::Vect3 ini_com_pos_;
+
+        double end_time_;
+        void _body_task_setup();
+        void _double_contact_setup();
+        void _body_ctrl(dynacore::Vector & gamma);
+        void _body_ctrl_wbdc_rotor(dynacore::Vector & gamma);
+
+        Mercury_StateProvider* sp_;
+        double ctrl_start_time_;
 };
 
 #endif

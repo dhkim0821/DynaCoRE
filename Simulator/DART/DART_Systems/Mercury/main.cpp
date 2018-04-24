@@ -49,7 +49,7 @@ dart::simulation::WorldPtr loadWorld(){
     world->setGravity(gravity);
     world->setTimeStep(1.0/1500.);
     dart::dynamics::BodyNode* glink = ground->getBodyNode("ground_link");
-glink->setFrictionCoeff(1.0);
+    glink->setFrictionCoeff(1.0);
     //printf("glink friction: %f\n", glink->getFrictionCoeff());
     return world;
 }
@@ -57,7 +57,7 @@ glink->setFrictionCoeff(1.0);
 dart::dynamics::SkeletonPtr loadRobot(){
     dart::utils::DartLoader urdfLoader;
     // std::string current_path = GetCurrentWorkingDir();
-   
+
     dart::dynamics::SkeletonPtr robot = urdfLoader.parseSkeleton(
             SIM_MODEL_PATH"/Mercury_Model/mercury_passive.urdf");
 
@@ -81,7 +81,7 @@ dart::dynamics::SkeletonPtr loadRobot(){
 void setInitialPose(dart::dynamics::SkeletonPtr robot){
     //robot->setPosition(5, 1.05);
     robot->setPosition(5, 0.7);
-    
+
     Eigen::Vector3d JPos_init;
     JPos_init[0] = 0.0;
     JPos_init[1] = -0.95;
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
     viewer.switchHeadlights(false);
     ::osg::Vec3 p1(2.0, 1.2 , 1.);
     viewer.getLightSource(0)->getLight()->setPosition(::osg::Vec4(p1[0], p1[1], p1[2], 0.0));
- 
+
     viewer.addWorldNode(node);
     viewer.simulate(false);
     viewer.getCamera()->setClearColor(osg::Vec4(0.93f, 0.95f, 1.0f, 0.95f)); 
@@ -148,11 +148,11 @@ int main(int argc, char* argv[]) {
     //viewer.setUpViewInWindow(0, 0, 1280, 960);
     viewer.setUpViewInWindow(0, 0, 780, 460);
     //viewer.getCameraManipulator()->setHomePosition(
-            //::osg::Vec3( 2.57,  3.14, 2.)*2.0,
-            //::osg::Vec3( 0.00,  0.00, 1.00),
-            //::osg::Vec3(-0.24, -0.25, 0.94));    
+    //::osg::Vec3( 2.57,  3.14, 2.)*2.0,
+    //::osg::Vec3( 0.00,  0.00, 1.00),
+    //::osg::Vec3(-0.24, -0.25, 0.94));    
     //viewer.setCameraManipulator(viewer.getCameraManipulator());
-     viewer.getCameraManipulator()->setHomePosition(
+    viewer.getCameraManipulator()->setHomePosition(
             ::osg::Vec3( 6.14,  3.28, 1.6)*0.75,
             ::osg::Vec3( 0.30,  0.0, 0.6),
             ::osg::Vec3(-0.01, 0.0, 1.0));

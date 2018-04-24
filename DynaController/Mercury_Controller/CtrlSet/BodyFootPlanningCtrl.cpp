@@ -71,7 +71,7 @@ BodyFootPlanningCtrl::BodyFootPlanningCtrl(RobotSystem* robot, int swing_foot, P
 
     wbdc_rotor_data_->cost_weight.tail(single_contact_->getDim()) = 
         dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
-    wbdc_rotor_data_->cost_weight[body_foot_task_->getDim() + 2]  = 0.001; // Rz
+    wbdc_rotor_data_->cost_weight[body_foot_task_->getDim() + 2]  = 0.001; // Fr_z
 
 
     com_estimator_ = new LIPM_KalmanFilter();
@@ -122,14 +122,16 @@ void BodyFootPlanningCtrl::_body_foot_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     std::chrono::duration<double> time_span1 
         = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
     if(time_count%500 == 1){
-        std::cout << "[body foot planning] WBDC_Relax took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
+        std::cout << "[body foot planning] WBDC_Rotor took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
     }
 #endif
 
     int offset(0);
     if(swing_foot_ == mercury_link::rightFoot) offset = 3;
+    dynacore::Vector reaction_force = 
+        (wbdc_rotor_data_->opt_result_).tail(single_contact_->getDim());
     for(int i(0); i<3; ++i)
-        sp_->reaction_forces_[i + offset] = wbdc_rotor_data_->opt_result_[i];
+        sp_->reaction_forces_[i + offset] = reaction_force[i];
 }
 
 

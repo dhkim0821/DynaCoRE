@@ -1,10 +1,11 @@
-#test_name: body_ctrl_test
+test_name: body_ctrl_test
 #test_name: foot_ctrl_test
-test_name: walking_test
+#test_name: walking_test
 #test_name: joint_ctrl_test
 
-#is_floating_base: false #must be true in standing up test
-is_floating_base: true #must be true in standing up test
+base_condition: floating
+#base_condition: fixed
+#base_condition: lying
 
 torque_max: [  150,  100,  100,  150,  100,  100]
 torque_min: [ -150, -100, -200, -150, -100, -200]

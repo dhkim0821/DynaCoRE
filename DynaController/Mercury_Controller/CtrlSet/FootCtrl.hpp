@@ -27,6 +27,13 @@ public:
   void setFrequency(const std::vector<double> & freq){ freq_ = freq; }
   void setPhase(const std::vector<double> & phase){ phase_ = phase; }
 
+  dynacore::Vector foot_pos_des_;
+  dynacore::Vector foot_vel_des_;
+  dynacore::Vector foot_acc_des_;
+
+  dynacore::Vect3 foot_pos_;
+  dynacore::Vect3 foot_vel_;
+
 protected:
   int swing_foot_;
   double end_time_;
@@ -40,10 +47,6 @@ protected:
   dynacore::Vect3 foot_pos_ini_;
   dynacore::Vector jpos_ini_;
   
-  dynacore::Vector foot_pos_des_;
-  dynacore::Vector foot_vel_des_;
-  dynacore::Vector foot_acc_des_;
-
   std::vector<double> amp_;
   std::vector<double> freq_;
   std::vector<double> phase_;

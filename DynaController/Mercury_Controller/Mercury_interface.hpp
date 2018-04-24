@@ -15,6 +15,7 @@ class Mercury_SensorData{
         double imu_ang_vel[3];
         double imu_acc[3];
         double joint_jpos[mercury::num_act_joint];
+        double joint_jvel[mercury::num_act_joint];
         double motor_jpos[mercury::num_act_joint];
         double motor_jvel[mercury::num_act_joint];
         double jtorque[mercury::num_act_joint];
@@ -49,6 +50,8 @@ private:
   dynacore::Vector sensed_torque_;
   dynacore::Vector motor_current_;
 
+  dynacore::Vector jjvel_;
+  
   dynacore::Vector initial_jpos_;
   Mercury_StateEstimator* state_estimator_;
   Mercury_StateProvider* sp_;

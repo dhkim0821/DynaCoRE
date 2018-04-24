@@ -28,7 +28,7 @@ bool LinkXYZTask::_UpdateCommand(void* pos_des,
                                     const dynacore::Vector & vel_des,
                                     const dynacore::Vector & acc_des){
 
-  dynacore::Vect3* pos_cmd = (dynacore::Vect3*)pos_des;
+  dynacore::Vector* pos_cmd = (dynacore::Vector*)pos_des;
   dynacore::Vect3 pos, vel;
   robot_sys_->getPos(link_id_, pos);
   robot_sys_->getLinearVel(link_id_, vel);
@@ -38,10 +38,10 @@ bool LinkXYZTask::_UpdateCommand(void* pos_des,
     op_cmd_[i] = acc_des[i] + Kp_vec_[i] * ((*pos_cmd)[i] - pos[i]) + Kd_vec_[i] * (vel_des[i] - vel[i]);
   }
 
-  // dynacore::pretty_print(acc_des, std::cout, "acc_des");
-  // dynacore::pretty_print(op_cmd_, std::cout, "op cmd");
-  // dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");
-  // dynacore::pretty_print(pos, std::cout, "pos");
+   //dynacore::pretty_print(acc_des, std::cout, "acc_des");
+   //dynacore::pretty_print(op_cmd_, std::cout, "op cmd");
+   //dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");
+   //dynacore::pretty_print(pos, std::cout, "pos");
 
   return true;
 }

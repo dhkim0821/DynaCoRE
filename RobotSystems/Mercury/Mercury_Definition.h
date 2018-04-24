@@ -30,5 +30,12 @@ namespace mercury_link{
     constexpr int LED_BODY_1 = 29;
     constexpr int LED_BODY_2 = 30;
 };
+
+namespace mercury_trj_type{
+    constexpr int sinusoidal = 0;
+    constexpr int ramp = 1;
+    constexpr int step = 2;
+    constexpr int impulse = 3;
+};
 #endif
 

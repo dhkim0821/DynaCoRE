@@ -18,6 +18,15 @@ FootCtrl::FootCtrl(RobotSystem* robot, int swing_foot):Controller(robot),
     foot_vel_des_(3),
     foot_acc_des_(3)
 {
+  foot_pos_des_.setZero();
+  foot_vel_des_.setZero();
+  foot_acc_des_.setZero();
+
+  foot_pos_.setZero();
+  foot_vel_.setZero();
+
+
+
     amp_.resize(3, 0.);
     freq_.resize(3, 0.);
 
@@ -39,6 +48,7 @@ FootCtrl::FootCtrl(RobotSystem* robot, int swing_foot):Controller(robot),
         wbdc_data_->tau_max[i] = 50.0;
         wbdc_data_->tau_min[i] = -50.0;
     }
+
     sp_ = Mercury_StateProvider::getStateProvider();
 }
 
@@ -52,7 +62,7 @@ void FootCtrl::OneStep(dynacore::Vector & gamma){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
-    gamma.setZero();
+    gamma = dynacore::Vector::Zero(mercury::num_act_joint * 2);
     _fixed_body_contact_setup();
     _foot_pos_task_setup();
     _jpos_task_setup();
@@ -62,8 +72,24 @@ void FootCtrl::OneStep(dynacore::Vector & gamma){
 }
 
 void FootCtrl::_foot_pos_ctrl(dynacore::Vector & gamma){
+    dynacore::Vector jtorque_cmd(mercury::num_act_joint);
+
     wbdc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    wbdc_->MakeTorque(task_list_, contact_list_, gamma, wbdc_data_);
+    wbdc_->MakeTorque(task_list_, contact_list_, jtorque_cmd, wbdc_data_);
+
+    gamma.head(mercury::num_act_joint) = jtorque_cmd;
+
+    dynacore::Matrix A_rotor = A_;
+    for(int i(0); i<mercury::num_act_joint; ++i) {
+        A_rotor(i+mercury::num_virtual,i + mercury::num_virtual) 
+            += sp_->rotor_inertia_[i];
+    }
+    dynacore::Matrix A_rotor_inv;
+
+    dynacore::pseudoInverse(A_rotor, 0.00001, A_rotor_inv, 0);
+    wbdc_->UpdateSetting(A_rotor, A_rotor_inv, coriolis_, grav_);
+    wbdc_->MakeTorque(task_list_, contact_list_, jtorque_cmd, wbdc_data_);
+    gamma.tail(mercury::num_act_joint) = jtorque_cmd;
 }
 
 void FootCtrl::_foot_pos_task_setup(){
@@ -85,6 +111,10 @@ void FootCtrl::_foot_pos_task_setup(){
     std::vector<bool> relaxed_op(foot_task_->getDim(), false);
     foot_task_->setRelaxedOpCtrl(relaxed_op);
     task_list_.push_back(foot_task_);
+
+    // For Save
+    robot_sys_->getPos(swing_foot_, foot_pos_);
+    robot_sys_->getLinearVel(swing_foot_, foot_vel_);
 }
 
 void FootCtrl::_jpos_task_setup(){
@@ -143,5 +173,5 @@ void FootCtrl::CtrlInitialization(const std::string & setting_file_name){
     handler.getVector("jpos_Kd", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i)
         ((JPosTask*)jpos_task_)->Kd_vec_[i] = tmp_vec[i];
-    printf("[Foot Control Parameter Set!\n");
+    //printf("[Foot Control Parameter Set!\n");
 }

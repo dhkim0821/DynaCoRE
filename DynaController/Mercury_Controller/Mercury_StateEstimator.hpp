@@ -11,6 +11,12 @@ class OriEstimator;
 class BodyFootPosEstimator;
 class Mercury_SensorData;
 
+namespace base_condition{
+    constexpr int fixed = 0;
+    constexpr int floating = 1;
+    constexpr int lying = 2;
+};
+
 class Mercury_StateEstimator{
 public:
   Mercury_StateEstimator(RobotSystem* robot);
@@ -18,10 +24,10 @@ public:
 
   void Initialization(Mercury_SensorData* );
   void Update(Mercury_SensorData* );
-  void setFloatingBase(bool is_floating){ is_floating_ = is_floating; }
+  void setFloatingBase(int base_cond){ base_cond_ = base_cond; }
 
 protected:
-  bool is_floating_;
+  int base_cond_;
   double initial_height_;
   int fixed_foot_;
   dynacore::Vect3 foot_pos_;

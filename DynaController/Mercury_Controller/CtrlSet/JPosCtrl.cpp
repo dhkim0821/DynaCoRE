@@ -35,6 +35,7 @@ JPosCtrl::JPosCtrl(RobotSystem* robot):Controller(robot),
         wbdc_data_->tau_max[i] = 50.0;
         wbdc_data_->tau_min[i] = -50.0;
     }
+    
     wbdc_rotor_ = new WBDC_Rotor(act_list);
     wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
     wbdc_rotor_data_->A_rotor = 
@@ -44,7 +45,6 @@ JPosCtrl::JPosCtrl(RobotSystem* robot):Controller(robot),
                 jpos_task_->getDim(), 1000.0);
     wbdc_rotor_data_->cost_weight.tail(jpos_task_->getDim()) = 
         dynacore::Vector::Constant(fixed_body_contact_->getDim(), 1.0);
-
 
     sp_ = Mercury_StateProvider::getStateProvider();
 
@@ -93,7 +93,6 @@ void JPosCtrl::_jpos_ctrl(dynacore::Vector & gamma){
     wbdc_->UpdateSetting(A_rotor, A_rotor_inv, coriolis_, grav_);
     wbdc_->MakeTorque(task_list_, contact_list_, jtorque_cmd, wbdc_data_);
     gamma.tail(mercury::num_act_joint) = jtorque_cmd;
-
 }
 
 void JPosCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
@@ -112,7 +111,6 @@ void JPosCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
 void JPosCtrl::_jpos_task_setup(){
     dynacore::Vector jacc_des(mercury::num_act_joint); jacc_des.setZero();
 
-    double omega;
     double ramp_value(0.);
     double ramp_duration(0.5);
 
@@ -122,17 +120,41 @@ void JPosCtrl::_jpos_task_setup(){
         ramp_value = 1.;
     }
 
-    for(int i(0); i<mercury::num_act_joint; ++i){
-        omega = 2. * M_PI * freq_[i];
-        if(b_jpos_set_)
-            sp_->jpos_des_[i] = set_jpos_[i] + amp_[i] * sin(omega * state_machine_time_ + phase_[i]);
-        else
-            sp_->jpos_des_[i] = jpos_ini_[i] + amp_[i] * sin(omega * state_machine_time_ + phase_[i]);
+   if(trj_type_ == mercury_trj_type::sinusoidal){
+        double omega;
 
-        sp_->jvel_des_[i] = amp_[i] * omega * cos(omega * state_machine_time_ + phase_[i]);
-        sp_->jvel_des_[i] *= ramp_value;
-        jacc_des[i] = -amp_[i] * omega * omega * sin(omega * state_machine_time_ + phase_[i]);
-        jacc_des[i] *= ramp_value;
+        for(int i(0); i<mercury::num_act_joint; ++i){
+            omega = 2. * M_PI * freq_[i];
+            if(b_jpos_set_)
+                sp_->jpos_des_[i] = set_jpos_[i] + amp_[i] * sin(omega * state_machine_time_ + phase_[i]);
+            else
+                sp_->jpos_des_[i] = jpos_ini_[i] + amp_[i] * sin(omega * state_machine_time_ + phase_[i]);
+
+            sp_->jvel_des_[i] = amp_[i] * omega * cos(omega * state_machine_time_ + phase_[i]);
+            sp_->jvel_des_[i] *= ramp_value;
+            jacc_des[i] = -amp_[i] * omega * omega * sin(omega * state_machine_time_ + phase_[i]);
+            jacc_des[i] *= ramp_value;
+        }
+    } else if(trj_type_ == mercury_trj_type::ramp){
+        double rising_time;
+        double ini_jpos;
+
+        for (int i(0); i<mercury::num_act_joint; ++i){
+            rising_time = state_machine_time_ - start_time_[i];
+            if(b_jpos_set_){
+                ini_jpos = set_jpos_[i];
+            }else {
+                ini_jpos = jpos_ini_[i];
+            }
+            if(state_machine_time_ < start_time_[i]){
+                sp_->jpos_des_[i] = ini_jpos;
+            }else if(state_machine_time_<start_time_[i] + delta_time_[i]){
+                sp_->jpos_des_[i] = ini_jpos + jpos_delta_[i]*rising_time/delta_time_[i];
+            }else {
+                sp_->jpos_des_[i] = ini_jpos + jpos_delta_[i];
+            }
+            sp_->jvel_des_[i] = 0.;
+        }
     }
     jpos_task_->UpdateTask(&(sp_->jpos_des_), sp_->jvel_des_, jacc_des);
 
