@@ -9,6 +9,8 @@ class WBDC_Relax;
 class WBDC_Relax_ExtraData;
 class WBDC_Relax_Task;
 class WBDC_ContactSpec;
+class WBDC_Rotor;
+class WBDC_Rotor_ExtraData;
 
 class ContactTransBodyCtrl: public Controller{
 public:
@@ -38,6 +40,9 @@ protected:
   WBDC_Relax_ExtraData* wbdc_data_;
   WBDC_Relax_Task* body_task_;
   WBDC_ContactSpec* double_contact_;
+        WBDC_Rotor* wbdc_rotor_;
+        WBDC_Rotor_ExtraData* wbdc_rotor_data_;
+
 
   dynacore::Vector body_pos_ini_;
   dynacore::Vect3 ini_com_pos_;
@@ -47,6 +52,7 @@ protected:
   void _double_contact_setup();
   void _body_ctrl(dynacore::Vector & gamma);
 
+        void _body_ctrl_wbdc_rotor(dynacore::Vector & gamma);
   double ctrl_start_time_;
   Mercury_StateProvider* sp_;
 };

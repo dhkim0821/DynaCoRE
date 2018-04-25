@@ -10,8 +10,8 @@ test_duration: 100.32
 trajectory_type: sinusoidal
 #trajectory_type: ramp
 
-amplitude: [0, 0.0, 0.5, 0, 0.0, 0.0]
-frequency: [0.0, 1.0, 0.1, 0.0, 1.0, 1.0]
+amplitude: [0, 0.0, 0.5, 0, 0.0, 0.5]
+frequency: [0.0, 1.0, 1.0, 0.0, 1.0, 1.0]
 phase: [0., 0., 0., 0., 0., 0.]
 
 jpos_delta: [0., 0., 0.0, 0., 0., 0.]

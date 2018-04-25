@@ -54,7 +54,7 @@ CoMzRxRyRzCtrl::CoMzRxRyRzCtrl(RobotSystem* robot): Controller(robot),
 
     wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
     wbdc_rotor_data_->cost_weight[1] = 0.0001; // Y
-    wbdc_rotor_data_->cost_weight[5] = 0.001; // Yaw
+    wbdc_rotor_data_->cost_weight[5] = 0.0001; // Yaw
 
     wbdc_rotor_data_->cost_weight.tail(double_contact_->getDim()) = 
         dynacore::Vector::Constant(double_contact_->getDim(), 1.0);
