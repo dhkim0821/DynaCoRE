@@ -22,19 +22,22 @@ public:
     void holdhorizontal();
     void Jpos_control();
 
-    bool pelvis_hold;
-
     interface* interface_;
     Mercury_SensorData* sensor_data_;
     std::vector<double> cmd_;
 
 protected:
-    int mDof;
+     double hanging_duration_;
+    double holding_duration_;
+    int base_cond_;
+
+   int mDof;
      Eigen::VectorXd mQ;
     Eigen::VectorXd mQdot;
     Eigen::VectorXd Torques_;
     Eigen::VectorXd mTorqueCommand;
     
+    void _ReadParamFile();
     void _DART_JPosCtrl();
     void _WBDC_Ctrl();
 	dart::dynamics::SkeletonPtr robot_;

@@ -42,9 +42,9 @@ JPosCtrl::JPosCtrl(RobotSystem* robot):Controller(robot),
         dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(fixed_body_contact_->getDim() + 
-                jpos_task_->getDim(), 1000.0);
+                jpos_task_->getDim(), 100.0);
     wbdc_rotor_data_->cost_weight.tail(fixed_body_contact_->getDim()) = 
-        dynacore::Vector::Constant(fixed_body_contact_->getDim(), 1.0);
+        dynacore::Vector::Constant(fixed_body_contact_->getDim(), 0.001);
 
     sp_ = Mercury_StateProvider::getStateProvider();
 

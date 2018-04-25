@@ -3,8 +3,8 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-# file_path = '/Users/donghyunkim/Repository/dynacore/experiment_data_check/'
-file_path = '/home/hcrl/Repository/dynacore/experiment_data_check/'
+file_path = '/Users/donghyunkim/Repository/dynacore/experiment_data_check/'
+# file_path = '/home/hcrl/Repository/dynacore/experiment_data_check/'
 ## read files
 data_cmd = \
 np.genfromtxt(file_path+'command.txt', delimiter=None, dtype=(float))

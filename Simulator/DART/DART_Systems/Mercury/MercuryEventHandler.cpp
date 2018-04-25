@@ -15,12 +15,12 @@ bool MercuryEventHandler::handle(
   {
     if(ea.getKey() == 'h' || ea.getKey() == 'H')
     {
-      mNode->pelvis_hold = true;
+      //mNode->pelvis_hold = true;
       return true;
     }
     else if(ea.getKey() == 'c' || ea.getKey() == 'C')
     {
-      mNode->pelvis_hold = false;
+      //mNode->pelvis_hold = false;
       return true;
     }
   }

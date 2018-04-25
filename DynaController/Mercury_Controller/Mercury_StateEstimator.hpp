@@ -11,12 +11,6 @@ class OriEstimator;
 class BodyFootPosEstimator;
 class Mercury_SensorData;
 
-namespace base_condition{
-    constexpr int fixed = 0;
-    constexpr int floating = 1;
-    constexpr int lying = 2;
-};
-
 class Mercury_StateEstimator{
 public:
   Mercury_StateEstimator(RobotSystem* robot);

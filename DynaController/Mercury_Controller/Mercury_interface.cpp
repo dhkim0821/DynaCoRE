@@ -150,10 +150,10 @@ void Mercury_interface::GetCommand( void* _data,
     }
 
     // TEST
-    for(int i(0); i<mercury::num_act_joint; ++i){
-            command[i + mercury::num_act_joint] = torque_command_[i];
-        }
- 
+    //for(int i(0); i<mercury::num_act_joint; ++i){
+        //command[i + mercury::num_act_joint] = torque_command_[i];
+    //}
+
     running_time_ = (double)(count_) * mercury::servo_rate;
     ++count_;
     // When there is sensed time

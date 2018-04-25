@@ -226,7 +226,8 @@ void WBDC_Rotor::_ContactBuilding(const std::vector<ContactSpec*> & contact_list
     static_cast<WBDC_ContactSpec*>(contact_list[0])->getRFConstraintVec(uf_ieq_vec_);
 
     dim_rf_ = contact_list[0]->getDim();
-    dim_rf_cstr_ = static_cast<WBDC_ContactSpec*>(contact_list[0])->getDimRFConstratint();
+    dim_rf_cstr_ = 
+        static_cast<WBDC_ContactSpec*>(contact_list[0])->getDimRFConstratint();
 
     int dim_new_rf, dim_new_rf_cstr;
 

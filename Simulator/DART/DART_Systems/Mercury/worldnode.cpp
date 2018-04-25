@@ -1,43 +1,85 @@
 #include "worldnode.hpp"
 #include <Utils/utilities.hpp>
+#include <ParamHandler/ParamHandler.hpp>
 
 WorldNode::WorldNode(const dart::simulation::WorldPtr & world_,
-        osgShadow::MinimalShadowMap * msm) :
-    dart::gui::osg::WorldNode(world_, msm) {
+        osgShadow::MinimalShadowMap * msm) : dart::gui::osg::WorldNode(world_, msm) {
 
-        // setWolrd(world_);
-        robot_ = world_->getSkeleton("mercury");
+    // setWolrd(world_);
+    robot_ = world_->getSkeleton("mercury");
 
-        mDof = robot_->getNumDofs();
-        mQ = Eigen::VectorXd::Zero(mDof);
-        mQdot = Eigen::VectorXd::Zero(mDof);
-        Torques_ = Eigen::VectorXd::Zero(mDof);
-        mTorqueCommand = Eigen::VectorXd::Zero(mDof);
+    mDof = robot_->getNumDofs();
+    mQ = Eigen::VectorXd::Zero(mDof);
+    mQdot = Eigen::VectorXd::Zero(mDof);
+    Torques_ = Eigen::VectorXd::Zero(mDof);
+    mTorqueCommand = Eigen::VectorXd::Zero(mDof);
 
 
-        // initialize controller
-        mController = dart::common::make_unique<Controller>(robot_);   
-        //printf("The controller is constructed!!\n");
+    // initialize controller
+    mController = dart::common::make_unique<Controller>(robot_);   
+    //printf("The controller is constructed!!\n");
 
-        // get initial pose of body
-        Pelvis_ = robot_->getBodyNode("body");
-        Pelvis_pos_init_ = Pelvis_->getTransform().translation();
-        //Pelvis_pos_init_[2] = Pelvis_pos_init_[2] -0.1;
+    // get initial pose of body
+    Pelvis_ = robot_->getBodyNode("body");
+    //Pelvis_pos_init_[2] = Pelvis_pos_init_[2] -0.1;
 
-        rfoot_ = robot_->getBodyNode("rfoot");
-        lfoot_ = robot_->getBodyNode("lfoot");
-//rfoot_->setFrictionCoeff(5.0);
-//lfoot_->setFrictionCoeff(5.0);
-        //printf("right friction: %f\n", rfoot_->getFrictionCoeff());
-        //printf("left friction: %f\n", lfoot_->getFrictionCoeff());
+    rfoot_ = robot_->getBodyNode("rfoot");
+    lfoot_ = robot_->getBodyNode("lfoot");
+    //rfoot_->setFrictionCoeff(5.0);
+    //lfoot_->setFrictionCoeff(5.0);
+    //printf("right friction: %f\n", rfoot_->getFrictionCoeff());
+    //printf("left friction: %f\n", lfoot_->getFrictionCoeff());
 
-        // pelvis hold
-        pelvis_hold =true;
+    interface_ = new Mercury_interface();
+    sensor_data_ = new Mercury_SensorData();
 
-        interface_ = new Mercury_interface();
-        sensor_data_ = new Mercury_SensorData();
+    base_cond_ = base_condition::fixed;
+    _ReadParamFile();
+
+    Eigen::Vector3d JPos_init;
+    JPos_init[0] = 0.0;
+    JPos_init[1] = -0.95;
+    JPos_init[2] = 1.85;
+
+    // JPos_init.setZero();
+
+    for(int i=0; i<3; i++){
+        robot_->setPosition(i+6, JPos_init[i]);
+        robot_->setPosition(i+6+4, JPos_init[i]);
+    }
+}
+
+void WorldNode::_ReadParamFile(){
+    ParamHandler handler(THIS_COM
+            "Simulator/DART/DART_Systems/Mercury/SIMULATION_setup.yaml");
+
+    handler.getValue("hanging_duration", hanging_duration_);
+
+    std::string tmp_string;
+    handler.getString("base_condition", tmp_string);
+    if(tmp_string == "fixed"){
+        base_cond_ = base_condition::fixed;
+        hanging_duration_ = 100000000.0;
+        Pelvis_pos_init_[2] = 1.1; 
+    }
+    else if(tmp_string == "floating"){
+        base_cond_ = base_condition::floating;
+        holding_duration_ = 2.5;
+        Pelvis_pos_init_[2] = 0.7; 
+    }
+    else if(tmp_string == "holding"){
+        base_cond_ = base_condition::holding;
+        holding_duration_ = 10000000.0;
+        Pelvis_pos_init_[2] = 0.7;
+    }
+    else{
+        printf("[Error] base condition is incorrectly set\n");
     }
 
+    robot_->setPosition(5, Pelvis_pos_init_[2]);
+    std::cout<<tmp_string<<std::endl;
+    printf("hanging time:%f \n", hanging_duration_);
+}
 WorldNode::~WorldNode() {
     delete interface_;
     delete sensor_data_;
@@ -53,16 +95,13 @@ void WorldNode::customPreStep() {
     ++count;
 
     double curr_time = ((double)count)*(1.0/1500.);
-    if(pelvis_hold == true) {
-        if (curr_time < 3.5) { holdpelvis(); }
-        //if (curr_time < 2000000.5) { holdpelvis(); }
-        //else if (curr_time < 2.8){
-        else if (curr_time < 200.8){
-            holdhorizontal();
-        } else {
 
-        }
-    } 
+    if (curr_time < hanging_duration_) { holdpelvis(); }
+    else if (curr_time < holding_duration_){
+        holdhorizontal();
+    } else {
+        // Free to move
+    }
 
     Torques_ = robot_->getForces();
     //dynacore::pretty_print(mQ, std::cout, "dart Q");
@@ -82,13 +121,21 @@ void WorldNode::_WBDC_Ctrl(){
         sensor_data_->motor_jvel[i] = mQdot[i+6];
         sensor_data_->jtorque[i] = Torques_[i+6];
     }
-    // Right Leg
+    sensor_data_->reflected_rotor_inertia[0] = 2.;
+    sensor_data_->reflected_rotor_inertia[1] = 0.5;
+    sensor_data_->reflected_rotor_inertia[2] = 0.5;
+
+    // Left Leg
     for(int i(0); i<3; ++i){
         sensor_data_->joint_jpos[i + 3] = mQ[i+10];
         sensor_data_->motor_jpos[i + 3] = mQ[i+10];
         sensor_data_->motor_jvel[i + 3] = mQdot[i+10];
         sensor_data_->jtorque[i + 3] = Torques_[i+10];
     }
+    sensor_data_->reflected_rotor_inertia[3] = 2.;
+    sensor_data_->reflected_rotor_inertia[4] = 0.5;
+    sensor_data_->reflected_rotor_inertia[5] = 0.5;
+
     for(int i(0); i<3; ++i){
         // X, Y, Z
 
@@ -100,7 +147,7 @@ void WorldNode::_WBDC_Ctrl(){
 
     dynacore::Quaternion quat;
     dynacore::convert(so3, quat);
-    
+
     // Foot contact
     dynacore::Vect3 rfoot_pos = rfoot_->getTransform().translation();
     dynacore::Vect3 lfoot_pos = lfoot_->getTransform().translation();
@@ -118,7 +165,7 @@ void WorldNode::_WBDC_Ctrl(){
     //if(count % 2 == 0)  interface_->GetCommand(sensor_data_, cmd_);
     //dynacore::pretty_print(quat, std::cout, "dart quat");
     interface_->GetCommand(sensor_data_, cmd_);
-    
+
     for(int i(0); i<3; ++i){
         mTorqueCommand[i + 6] = cmd_[i];
     }
@@ -133,7 +180,7 @@ void WorldNode::_WBDC_Ctrl(){
     mTorqueCommand[13] = kp_ankle * (-0.4 - mQ[13]) + kd_ankle * (0. - mQdot[13]);
     //TEST
     //mTorqueCommand.setZero();
-    
+
     robot_->setForces(mTorqueCommand);
 }
 
@@ -231,7 +278,7 @@ void WorldNode::holdhorizontal(){
 
     // virtual joints
     for(int i(0); i<3 ;i++){
-         //Kp(i,i) = 5.0;
+        //Kp(i,i) = 5.0;
         //Kd(i,i) = 0.3;
         Kp(i,i) = 1000.0;
         Kd(i,i) = 100.0;

@@ -37,19 +37,27 @@ ContactTransBodyCtrl::ContactTransBodyCtrl(RobotSystem* robot):
     wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
     wbdc_rotor_data_->A_rotor = 
         dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
+
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(
                 body_task_->getDim() + 
-                double_contact_->getDim(), 10.0);
+                double_contact_->getDim(), 1.0);
 
-    wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
-    wbdc_rotor_data_->cost_weight[1] = 0.0001; // Y
-    wbdc_rotor_data_->cost_weight[5] = 0.0001; // Yaw
+    //wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
+    //wbdc_rotor_data_->cost_weight[1] = 0.0001; // Y
+    //wbdc_rotor_data_->cost_weight[5] = 0.0001; // Yaw
+    //wbdc_rotor_data_->cost_weight[body_task_->getDim() + 2]  = 0.001; // Fr_z
+    //wbdc_rotor_data_->cost_weight[body_task_->getDim() + 5]  = 0.001; // Fr_z
 
-    wbdc_rotor_data_->cost_weight.tail(double_contact_->getDim()) = 
-        dynacore::Vector::Constant(double_contact_->getDim(), 1.0);
-    wbdc_rotor_data_->cost_weight[body_task_->getDim() + 2]  = 0.001; // Fr_z
-    wbdc_rotor_data_->cost_weight[body_task_->getDim() + 5]  = 0.001; // Fr_z
+    //wbdc_rotor_data_->cost_weight.tail(double_contact_->getDim()) = 
+        //dynacore::Vector::Constant(double_contact_->getDim(), 100.0);
+    wbdc_rotor_data_->cost_weight[2]  = 0.001; // Fr_z
+    wbdc_rotor_data_->cost_weight[5]  = 0.001; // Fr_z
+
+    wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 0] = 0.0001; // X
+    wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 1] = 0.0001; // Y
+    wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 5] = 0.0001; // Yaw
+
 
    sp_ = Mercury_StateProvider::getStateProvider();
 
@@ -122,7 +130,7 @@ void ContactTransBodyCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
 
     gamma.head(mercury::num_act_joint) = fb_cmd;
-    //gamma.tail(mercury::num_act_joint) = wbdc_rotor_data_->cmd_ff;
+    gamma.tail(mercury::num_act_joint) = wbdc_rotor_data_->cmd_ff;
 
 #if MEASURE_TIME_WBDC 
     std::chrono::high_resolution_clock::time_point t2 

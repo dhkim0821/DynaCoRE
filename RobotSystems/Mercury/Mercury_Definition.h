@@ -1,6 +1,14 @@
 #ifndef MERCURY_DEFINITION
 #define MERCURY_DEFINITION
 
+namespace base_condition{
+    constexpr int fixed = 0;
+    constexpr int floating = 1;
+    constexpr int lying = 2;
+    constexpr int holding = 3;
+};
+
+
 namespace mercury{
     constexpr int num_q = 13;
     constexpr int num_qdot = 12;
