@@ -85,6 +85,10 @@ void JPosTargetCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
 
     gamma.head(mercury::num_act_joint) = fb_cmd;
     gamma.tail(mercury::num_act_joint) = wbdc_rotor_data_->cmd_ff;
+
+
+    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+    sp_->reflected_reaction_force_ = wbdc_rotor_data_->reflected_reaction_force_;
 }
 
 

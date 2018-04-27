@@ -13,6 +13,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 Q_(mercury::num_q),
                                 Qdot_(mercury::num_qdot),
                                 reaction_forces_(6),
+                                qddot_cmd_(mercury::num_qdot),
+                                reflected_reaction_force_(mercury::num_qdot),
                                 jpos_des_(mercury::num_act_joint),
                                 jvel_des_(mercury::num_act_joint),
                                 rotor_inertia_(mercury::num_act_joint),
@@ -23,6 +25,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   Q_.setZero();
   Qdot_.setZero();
   reaction_forces_.setZero();
+  qddot_cmd_.setZero();
+  reflected_reaction_force_.setZero();
   global_pos_local_.setZero();
   des_location_.setZero();
   estimated_com_state_.setZero();
@@ -50,6 +54,9 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&Q_, DYN_VEC, "config", mercury::num_q);
   data_manager->RegisterData(&Qdot_, DYN_VEC, "qdot", mercury::num_qdot);
   data_manager->RegisterData(&reaction_forces_, DYN_VEC, "reaction_force", 6);
+  data_manager->RegisterData(&qddot_cmd_, DYN_VEC, "qddot_cmd", mercury::num_qdot);
+  data_manager->RegisterData(&reflected_reaction_force_, 
+          DYN_VEC, "refl_react_force", mercury::num_qdot);
 
   data_manager->RegisterData(&Rfoot_pos_, VECT3, "rfoot_pos", 3);
   data_manager->RegisterData(&Rfoot_vel_, VECT3, "rfoot_vel", 3);

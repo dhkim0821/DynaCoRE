@@ -205,7 +205,7 @@ void WBDC_Rotor::_SetInEqualityConstraint(){
         for(int j(0); j<dim_opt_; ++j){
             CI[j][i] = dyn_CI(i,j);
         }
-        ci0[i] = -dyn_ci0[i];
+        ci0[i] = dyn_ci0[i];
     }
    // dynacore::pretty_print(dyn_CI, std::cout, "WBDC_Rotor: CI");
     // dynacore::pretty_print(dyn_ci0, std::cout, "WBDC_Rotor: ci0");
@@ -270,30 +270,20 @@ void WBDC_Rotor::_ContactBuilding(const std::vector<ContactSpec*> & contact_list
 void WBDC_Rotor::_GetSolution(const dynacore::Vector & qddot, dynacore::Vector & cmd){
     dynacore::Vector Fr(dim_rf_);
     for(int i(0); i<dim_rf_; ++i) Fr[i] = z[i + dim_first_task_];
-    dynacore::Vector tot_tau = A_ * qddot + cori_ + grav_ - (Jc_* Nci_).transpose() * Fr;
+    dynacore::Vector tot_tau = A_ * qddot + cori_ + grav_ - (Jc_).transpose() * Fr;
     
-    //cmd = tot_tau.tail(num_act_joint_);
-    dynacore::Matrix UNci = Sa_ * Nci_;
-    dynacore::Matrix UNciBar;
-// only work in 3D case
-    dynacore::Matrix UNci_trc = UNci.block(0,6, num_act_joint_, num_qdot_-6);
-    dynacore::Vector tot_tau_trc = tot_tau.tail(num_qdot_-6);
-    dynacore::Matrix UNciBar_trc;
-    dynacore::Matrix eye(num_qdot_-6, num_qdot_-6);
-    eye.setIdentity();
-    _WeightedInverse(UNci_trc, eye, UNciBar_trc);
-    //dynacore::Matrix Ainv_trc = Ainv_.block(6,6, num_qdot_-6, num_qdot_-6);
-    //_WeightedInverse(UNci_trc, Ainv_trc, UNciBar_trc, 0.0001);
-    cmd = UNciBar_trc.transpose() * tot_tau_trc;
-
+    cmd = tot_tau.tail(num_act_joint_);
 
     dynacore::Vector tot_tau_ff = (A_ + data_->A_rotor) * qddot 
-        + cori_ + grav_ - (Jc_* Nci_).transpose() * Fr;
+        + cori_ + grav_ - (Jc_).transpose() * Fr;
     dynacore::Vector tot_tau_ff_trc = tot_tau_ff.tail(num_qdot_-6);
  
-    data_->cmd_ff = UNciBar_trc.transpose() * tot_tau_ff_trc;
+    data_->cmd_ff = tot_tau_ff_trc.tail(num_act_joint_);
+    data_->reflected_reaction_force_ = Jc_.transpose() * Fr;
+    data_->result_qddot_ = qddot;
+
     //cmd = (UNci_trc.inverse()).transpose()* tot_tau_trc;
-     //dynacore::pretty_print(UNci, std::cout, "UNci");
+     //dynacore::pretty_print(Jc_, std::cout, "Jc");
      //dynacore::pretty_print(UNci_trc, std::cout, "UNci+trc");
      //dynacore::pretty_print(UNciBar_trc, std::cout, "UNciBar_trc");
      //dynacore::pretty_print(tot_tau_trc, std::cout, "tot tau trc");

@@ -41,22 +41,22 @@ ContactTransBodyCtrl::ContactTransBodyCtrl(RobotSystem* robot):
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(
                 body_task_->getDim() + 
-                double_contact_->getDim(), 1.0);
+                double_contact_->getDim(), 100.0);
 
-    //wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
-    //wbdc_rotor_data_->cost_weight[1] = 0.0001; // Y
-    //wbdc_rotor_data_->cost_weight[5] = 0.0001; // Yaw
-    //wbdc_rotor_data_->cost_weight[body_task_->getDim() + 2]  = 0.001; // Fr_z
-    //wbdc_rotor_data_->cost_weight[body_task_->getDim() + 5]  = 0.001; // Fr_z
+    wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
+    wbdc_rotor_data_->cost_weight[1] = 0.0001; // Y
+    wbdc_rotor_data_->cost_weight[5] = 0.0001; // Yaw
+    wbdc_rotor_data_->cost_weight.tail(double_contact_->getDim()) = 
+        dynacore::Vector::Constant(double_contact_->getDim(), 1.0);
+    wbdc_rotor_data_->cost_weight[body_task_->getDim() + 2]  = 0.001; // Fr_z
+    wbdc_rotor_data_->cost_weight[body_task_->getDim() + 5]  = 0.001; // Fr_z
 
-    //wbdc_rotor_data_->cost_weight.tail(double_contact_->getDim()) = 
-        //dynacore::Vector::Constant(double_contact_->getDim(), 100.0);
-    wbdc_rotor_data_->cost_weight[2]  = 0.001; // Fr_z
-    wbdc_rotor_data_->cost_weight[5]  = 0.001; // Fr_z
+   //wbdc_rotor_data_->cost_weight[2]  = 0.001; // Fr_z
+    //wbdc_rotor_data_->cost_weight[5]  = 0.001; // Fr_z
 
-    wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 0] = 0.0001; // X
-    wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 1] = 0.0001; // Y
-    wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 5] = 0.0001; // Yaw
+    //wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 0] = 0.0001; // X
+    //wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 1] = 0.0001; // Y
+    //wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 5] = 0.0001; // Yaw
 
 
    sp_ = Mercury_StateProvider::getStateProvider();
@@ -77,8 +77,8 @@ void ContactTransBodyCtrl::OneStep(dynacore::Vector & gamma){
     gamma.setZero();
     _double_contact_setup();
     _body_task_setup();
-    _body_ctrl(gamma);
-    //_body_ctrl_wbdc_rotor(gamma);
+    //_body_ctrl(gamma);
+    _body_ctrl_wbdc_rotor(gamma);
 
     _PostProcessing_Command();
 }
@@ -108,8 +108,9 @@ void ContactTransBodyCtrl::_body_ctrl(dynacore::Vector & gamma){
     //wbdc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
     //wbdc_->MakeTorque(task_list_, contact_list_, gamma, wbdc_data_);
 
-    //for(int i(0); i<6; ++i)
-        //sp_->reaction_forces_[i] = wbdc_data_->opt_result_[i];
+    for(int i(0); i<6; ++i)
+        sp_->reaction_forces_[i] = wbdc_data_->opt_result_[i];
+
 }
 void ContactTransBodyCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     
@@ -126,7 +127,13 @@ void ContactTransBodyCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
         wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
             = sp_->rotor_inertia_[i];
     }
-    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+
+    double ramp = (state_machine_time_)/(end_time_*0.5);
+    if( state_machine_time_ > end_time_* 0.5 ) ramp = 1.;
+    dynacore::Vector ramp_grav = ramp * grav_;
+     
+    //wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, ramp_grav);
     wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
 
     gamma.head(mercury::num_act_joint) = fb_cmd;
@@ -146,6 +153,10 @@ void ContactTransBodyCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
         (wbdc_rotor_data_->opt_result_).tail(double_contact_->getDim());
     for(int i(0); i<double_contact_->getDim(); ++i)
         sp_->reaction_forces_[i] = reaction_force[i];
+
+    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+    sp_->reflected_reaction_force_ = wbdc_rotor_data_->reflected_reaction_force_;
+    //dynacore::pretty_print(sp_->reflected_reaction_force_, std::cout, "reflected force");
 }
 
 
@@ -201,7 +212,9 @@ void ContactTransBodyCtrl::_body_task_setup(){
 
 void ContactTransBodyCtrl::_double_contact_setup(){
 
-    ((DoubleTransitionContact*)double_contact_)->setFzUpperLimit(min_rf_z_ + state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_));
+    ((DoubleTransitionContact*)double_contact_)->
+        setFzUpperLimit(min_rf_z_ + 
+                state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_));
     double_contact_->UpdateContactSpec();
 
     contact_list_.push_back(double_contact_);
@@ -215,6 +228,7 @@ void ContactTransBodyCtrl::_double_contact_setup(){
 
 void ContactTransBodyCtrl::FirstVisit(){
     // printf("[ContactTransBody] Start\n");
+    robot_sys_->getCoMPosition(ini_com_pos_);
     ctrl_start_time_ = sp_->curr_time_;
 }
 

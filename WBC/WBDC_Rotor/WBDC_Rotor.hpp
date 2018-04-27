@@ -1,3 +1,6 @@
+/* Whole-body dynamic control account rotor inertia:
+ * No internal constrain */
+
 #ifndef WHOLE_BODY_DYNAMIC_CONTROL_ROTOR_INERTIA_H
 #define WHOLE_BODY_DYNAMIC_CONTROL_ROTOR_INERTIA_H
 
@@ -16,6 +19,8 @@ class WBDC_Rotor_ExtraData{
         dynacore::Vector cmd_ff; //Feedforward torque cmd
         dynacore::Vector opt_result_;
 
+        dynacore::Vector result_qddot_;
+        dynacore::Vector reflected_reaction_force_;
         WBDC_Rotor_ExtraData(){}
         ~WBDC_Rotor_ExtraData(){}
 };

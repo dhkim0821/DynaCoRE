@@ -126,6 +126,10 @@ void CoMzRxRyRzCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
         (wbdc_rotor_data_->opt_result_).tail(double_contact_->getDim());
     for(int i(0); i<double_contact_->getDim(); ++i)
         sp_->reaction_forces_[i] = reaction_force[i];
+
+
+    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+    sp_->reflected_reaction_force_ = wbdc_rotor_data_->reflected_reaction_force_;
 }
 
 void CoMzRxRyRzCtrl::_body_task_setup(){

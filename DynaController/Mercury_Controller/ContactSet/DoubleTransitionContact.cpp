@@ -60,8 +60,8 @@ bool DoubleTransitionContact::_UpdateUf(){
 }
 
 void DoubleTransitionContact::setFzUpperLimit(double lim){
-  ieq_vec_[10] = lim;
-  ieq_vec_[11] = lim;
+    ieq_vec_[10] = lim;
+    ieq_vec_[11] = lim;
 }
 
 bool DoubleTransitionContact::_UpdateInequalityVector(){
