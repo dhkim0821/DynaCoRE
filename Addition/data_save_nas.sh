@@ -1,5 +1,6 @@
 #! /bin/bash
-PATH_PACKAGE="/home/hcrl/Repository/dynacore"
+#PATH_PACKAGE="/home/hcrl/Repository/dynacore"
+PATH_PACKAGE=$(dirname "$(pwd)")
 
 folder_name=$(date +%Y%m%d_%H_%M_%S)
 target_folder="/home/hcrl/MyCloud/Apptronik/Mercury_Test_2018/"

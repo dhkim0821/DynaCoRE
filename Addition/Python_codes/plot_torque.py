@@ -2,9 +2,10 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+import os
 
-file_path = '/Users/donghyunkim/Repository/dynacore/experiment_data_check/'
-# file_path = '/home/hcrl/Repository/dynacore/experiment_data_check/'
+file_path = os.getcwd() + "/../../experiment_data_check/"
+
 ## read files
 data_cmd = \
 np.genfromtxt(file_path+'command.txt', delimiter=None, dtype=(float))
@@ -14,7 +15,7 @@ np.genfromtxt(file_path+'torque.txt', delimiter=None, dtype=(float))
 data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
 
 st_idx = 30
-end_idx = len(data_x) - 500
+end_idx = len(data_x) - 50
 data_x = data_x[st_idx:end_idx]
 
 ## plot command/jpos

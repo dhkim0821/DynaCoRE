@@ -2,10 +2,15 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+import os
 
-file_path = '/Users/donghyunkim/Repository/dynacore/experiment_data_check/'
-# file_path = '/home/hcrl/Repository/dynacore/experiment_data_check/'
+file_path = os.getcwd() + "/../../experiment_data_check/"
+
 ## read files
+data_global_pos_offset = \
+np.genfromtxt(file_path+'global_pos_local.txt', delimiter=None, dtype=(float))
+data_estimated_com = \
+np.genfromtxt(file_path+'estimated_com_state.txt', delimiter=None, dtype=(float))
 data_com_des = \
 np.genfromtxt(file_path+'com_pos_des.txt', delimiter=None, dtype=(float))
 data_com = \

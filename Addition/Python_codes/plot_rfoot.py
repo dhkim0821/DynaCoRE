@@ -2,9 +2,10 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+import os
 
-# file_path = '/Users/donghyunkim/Repository/dynacore/experiment_data_check/'
-file_path = '/home/hcrl/Repository/dynacore/experiment_data_check/'
+file_path = os.getcwd() + "/../../experiment_data_check/"
+
 ## read files
 data_foot_pos_des = \
 np.genfromtxt(file_path+'rfoot_pos_des.txt', delimiter=None, dtype=(float))

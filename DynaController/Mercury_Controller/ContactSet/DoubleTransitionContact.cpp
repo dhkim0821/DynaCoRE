@@ -54,8 +54,8 @@ bool DoubleTransitionContact::_UpdateUf(){
   Uf_.block(0, 0, size_u, 3) = U;
   Uf_.block(size_u, 3, size_u, 3) = U;
 
-  Uf_(size_u*2, 2) = -1.; // Right
-  Uf_(size_u*2+1, 5) = -1.; // Left
+  //Uf_(size_u*2, 2) = -1.; // Right
+  //Uf_(size_u*2+1, 5) = -1.; // Left
   return true;
 }
 
