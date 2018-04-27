@@ -6,10 +6,11 @@
 - IP_ADDR is the definition that you need to care
 
 ## Make a folder to save data files
-Made a folder 'experiment_data' below the hcrl_src folder (not in Motion_Ctrl folder)
+Made a folder 'experiment_data' below the dynacore folder (not in DynaController folder)
 
 ## Run the Status_Display
-- After building statust_display, run the executable file
+- After building statust_display, run the executable file 
+- Option) -v (verbose mode)/ -q (default, quiet mode) 
 
 ### Run the main control program
 - Then the Status_Display program will display and save the registered data
@@ -18,9 +19,9 @@ Made a folder 'experiment_data' below the hcrl_src folder (not in Motion_Ctrl fo
 ###################################################################################
 # Register Data
 ###################################################################################
-- Include <utils/DataManager.h>
+- Include <utils/DataManager.hpp>
 - Call the RegisterData function
 
 ex)
-    DataManager::GetDataManager()->RegisterData(&Q_, SJ_VEC, "config", NUM_Q);
+    DataManager::GetDataManager()->RegisterData(&Q_, DYN_VEC, "config", NUM_Q);
     (pointer of data, data type, file name, size of data)
