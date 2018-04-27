@@ -46,18 +46,11 @@ ContactTransBodyCtrl::ContactTransBodyCtrl(RobotSystem* robot):
     wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
     wbdc_rotor_data_->cost_weight[1] = 0.0001; // Y
     wbdc_rotor_data_->cost_weight[5] = 0.0001; // Yaw
+    
     wbdc_rotor_data_->cost_weight.tail(double_contact_->getDim()) = 
         dynacore::Vector::Constant(double_contact_->getDim(), 1.0);
     wbdc_rotor_data_->cost_weight[body_task_->getDim() + 2]  = 0.001; // Fr_z
     wbdc_rotor_data_->cost_weight[body_task_->getDim() + 5]  = 0.001; // Fr_z
-
-   //wbdc_rotor_data_->cost_weight[2]  = 0.001; // Fr_z
-    //wbdc_rotor_data_->cost_weight[5]  = 0.001; // Fr_z
-
-    //wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 0] = 0.0001; // X
-    //wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 1] = 0.0001; // Y
-    //wbdc_rotor_data_->cost_weight[double_contact_->getDim() + 5] = 0.0001; // Yaw
-
 
    sp_ = Mercury_StateProvider::getStateProvider();
 
@@ -109,8 +102,8 @@ void ContactTransBodyCtrl::_body_ctrl(dynacore::Vector & gamma){
     //wbdc_->MakeTorque(task_list_, contact_list_, gamma, wbdc_data_);
 
     for(int i(0); i<6; ++i)
-        sp_->reaction_forces_[i] = wbdc_data_->opt_result_[i];
-
+       sp_->reaction_forces_[i] = 
+            wbdc_data_->opt_result_[task_list_[0]->getDim() + i];
 }
 void ContactTransBodyCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     
