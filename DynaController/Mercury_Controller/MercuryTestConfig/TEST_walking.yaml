@@ -6,11 +6,11 @@ initial_jpos: [0.04, -0.90, 1.55, -0.0229, -0.83, 1.59]
 com_height: 0.85
 
 # Timing Parameters (sec)
-jpos_initialization_time: 2.5
+jpos_initialization_time: 1.3
 com_lifting_time: 2.0
 
 ## Experiment
-swing_time: 0.5
+swing_time: 0.3
 st_transition_time: 0.05
 end_transition_time: 0.05
 stance_time: 0.01
@@ -22,6 +22,6 @@ stance_time: 0.01
 # stance_time: 0.01
 
 # 0: default stepping test (no planning)
-planning_frequency: 0
+planning_frequency: 1
 transition_phase_mix_ratio: 0.7
 double_stance_mix_ratio: 0.0
