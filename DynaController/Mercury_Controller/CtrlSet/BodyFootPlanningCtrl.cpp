@@ -11,7 +11,7 @@
 #include <Planner/PIPM_FootPlacementPlanner/Reversal_LIPM_Planner.hpp>
 #include <Utils/DataManager.hpp>
 
-#define MEASURE_TIME_WBDC 1
+#define MEASURE_TIME_WBDC 0
 
 #if MEASURE_TIME_WBDC
 #include <chrono>

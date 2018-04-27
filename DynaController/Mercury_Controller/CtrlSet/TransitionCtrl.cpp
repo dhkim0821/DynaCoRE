@@ -4,6 +4,7 @@
 #include <Mercury_Controller/TaskSet/CoMBodyOriTask.hpp>
 #include <Mercury_Controller/ContactSet/DoubleContactBounding.hpp>
 #include <WBDC_Relax/WBDC_Relax.hpp>
+#include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury/Mercury_Definition.h>
 #include <ParamHandler/ParamHandler.hpp>
@@ -32,7 +33,25 @@ TransitionCtrl::TransitionCtrl(RobotSystem* robot, int moving_foot, bool b_incre
         wbdc_data_->tau_max[i] = 100.0;
         wbdc_data_->tau_min[i] = -100.0;
     }
-    sp_ = Mercury_StateProvider::getStateProvider();
+    wbdc_rotor_ = new WBDC_Rotor(act_list);
+    wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
+    wbdc_rotor_data_->A_rotor = 
+        dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
+    wbdc_rotor_data_->cost_weight = 
+        dynacore::Vector::Constant(
+                body_task_->getDim() + 
+                double_contact_->getDim(), 100.0);
+
+    wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
+    wbdc_rotor_data_->cost_weight[1] = 0.0001; // Y
+    wbdc_rotor_data_->cost_weight[5] = 0.0001; // Yaw
+
+    wbdc_rotor_data_->cost_weight.tail(double_contact_->getDim()) = 
+        dynacore::Vector::Constant(double_contact_->getDim(), 1.0);
+    wbdc_rotor_data_->cost_weight[body_task_->getDim() + 2]  = 0.001; // Fr_z
+    wbdc_rotor_data_->cost_weight[body_task_->getDim() + 5]  = 0.001; // Fr_z
+
+   sp_ = Mercury_StateProvider::getStateProvider();
      printf("[Transition Controller] Constructed\n");
 }
 
@@ -40,6 +59,10 @@ TransitionCtrl::~TransitionCtrl(){
     delete body_task_;
     delete double_contact_;
     delete wbdc_;
+    delete wbdc_data_;
+
+    delete wbdc_rotor_;
+    delete wbdc_rotor_data_;
 }
 
 void TransitionCtrl::OneStep(dynacore::Vector & gamma){
@@ -48,10 +71,59 @@ void TransitionCtrl::OneStep(dynacore::Vector & gamma){
     gamma.setZero();
     _double_contact_setup();
     _body_task_setup();
-    _body_ctrl(gamma);
+    //_body_ctrl(gamma);
+    _body_ctrl_wbdc_rotor(gamma);
 
     _PostProcessing_Command();
 }
+
+void TransitionCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
+    
+#if MEASURE_TIME_WBDC 
+    static int time_count(0);
+    time_count++;
+    std::chrono::high_resolution_clock::time_point t1 
+        = std::chrono::high_resolution_clock::now();
+#endif
+   gamma = dynacore::Vector::Zero(mercury::num_act_joint * 2); 
+    
+   dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+    for (int i(0); i<mercury::num_act_joint; ++i){
+        wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            = sp_->rotor_inertia_[i];
+    }
+
+    double ramp = (state_machine_time_)/(end_time_*0.5);
+    if( state_machine_time_ > end_time_* 0.5 ) ramp = 1.;
+    dynacore::Vector ramp_grav = ramp * grav_;
+     
+    //wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, ramp_grav);
+    wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
+
+    gamma.head(mercury::num_act_joint) = fb_cmd;
+    gamma.tail(mercury::num_act_joint) = wbdc_rotor_data_->cmd_ff;
+
+#if MEASURE_TIME_WBDC 
+    std::chrono::high_resolution_clock::time_point t2 
+        = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> time_span1 
+        = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
+    if(time_count%500 == 1){
+        std::cout << "[body ctrl] WBDC_Rotor took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
+    }
+#endif
+    
+    dynacore::Vector reaction_force = 
+        (wbdc_rotor_data_->opt_result_).tail(double_contact_->getDim());
+    for(int i(0); i<double_contact_->getDim(); ++i)
+        sp_->reaction_forces_[i] = reaction_force[i];
+
+    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+    sp_->reflected_reaction_force_ = wbdc_rotor_data_->reflected_reaction_force_;
+    //dynacore::pretty_print(sp_->reflected_reaction_force_, std::cout, "reflected force");
+}
+
 
 void TransitionCtrl::_body_ctrl(dynacore::Vector & gamma){
     wbdc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
