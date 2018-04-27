@@ -19,7 +19,7 @@ Made a folder 'experiment_data' below the dynacore folder (not in DynaController
 ###################################################################################
 # Register Data
 ###################################################################################
-- Include <utils/DataManager.hpp>
+- Include <Utils/DataManager.hpp>
 - Call the RegisterData function
 
 ex)
