@@ -2,13 +2,28 @@ import numpy as np
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+import os
+
+file_path = os.getcwd() + "/../../experiment_data_check/"
 
 ## read files
-data_torq = np.genfromtxt('torque.txt', delimiter=None, dtype=(float))
-data_comm = np.genfromtxt('command.txt', delimiter=None, dtype=(float))
-data_cpos = np.genfromtxt('com_pos.txt', delimiter=None, dtype=(float))
-data_cdes = np.genfromtxt('com_pos_des.txt', delimiter=None, dtype=(float))
-data_x = np.genfromtxt('time.txt', delimiter='\n', dtype=(float))
+data_torq = \
+np.genfromtxt(file_path+'torque.txt', delimiter=None, dtype=(float))
+data_comm = \
+np.genfromtxt(file_path+'command.txt', delimiter=None, dtype=(float))
+data_cpos = \
+np.genfromtxt(file_path+'com_pos.txt', delimiter=None, dtype=(float))
+data_cdes = \
+np.genfromtxt(file_path+'com_pos_des.txt', delimiter=None, dtype=(float))
+
+data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
+
+# read files
+# data_torq = np.genfromtxt('torque.txt', delimiter=None, dtype=(float))
+# data_comm = np.genfromtxt('command.txt', delimiter=None, dtype=(float))
+# data_cpos = np.genfromtxt('com_pos.txt', delimiter=None, dtype=(float))
+# data_cdes = np.genfromtxt('com_pos_des.txt', delimiter=None, dtype=(float))
+# data_x = np.genfromtxt('time.txt', delimiter='\n', dtype=(float))
 
 ## get torque.txt data
 for j in range(1,7,1):
