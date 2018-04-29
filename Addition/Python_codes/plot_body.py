@@ -23,6 +23,8 @@ data_com_vel_des = \
 np.genfromtxt(file_path+'com_vel_des.txt', delimiter=None, dtype=(float))
 data_com_vel = \
 np.genfromtxt(file_path+'com_vel.txt', delimiter=None, dtype=(float))
+data_qdot = \
+np.genfromtxt(file_path+'qdot.txt', delimiter=None, dtype=(float))
 
 data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
 
@@ -61,6 +63,16 @@ for i in range(1,5,1):
             data_x, data_body_ori[st_idx:end_idx,i-1], "b-")
     plt.grid(True)
 plt.xlabel('time (sec)')
+
+fig = plt.figure(4)
+plt.get_current_fig_manager().window.wm_geometry("480x600+1200+0")
+fig.canvas.set_window_title('body ang vel')
+for i in range(1,4,1):
+    ax1 = plt.subplot(3, 1, i)
+    plt.plot(data_x, data_qdot[st_idx:end_idx,i-1+3], "r-")
+    plt.grid(True)
+plt.xlabel('time (sec)')
+
 
 
 plt.show()
