@@ -1,6 +1,7 @@
 #include "BasicAccumulation.hpp"
 #include <Configuration.h>
 #include <Utils/utilities.hpp>
+#include <Mercury/Mercury_Definition.h>
 
 BasicAccumulation::BasicAccumulation():OriEstimator(){
   global_ori_.w() = 1.;
@@ -28,7 +29,7 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
   dynacore::Vect3 delta_th;
   double theta(0.);
   for(int i(0); i<3; ++i){
-    delta_th[i] = ang_vel[i] * SERVO_RATE;
+    delta_th[i] = ang_vel[i] * mercury::servo_rate;
     theta += delta_th[i] * delta_th[i];
   }
 

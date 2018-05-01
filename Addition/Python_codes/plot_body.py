@@ -28,7 +28,7 @@ np.genfromtxt(file_path+'qdot.txt', delimiter=None, dtype=(float))
 
 data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
 
-st_idx = 30
+st_idx = 250
 end_idx = len(data_x) - 10
 data_x = data_x[st_idx:end_idx]
 
@@ -45,7 +45,7 @@ for i in range(1,4,1):
 plt.xlabel('time (sec)')
 
 fig = plt.figure(2)
-plt.get_current_fig_manager().window.wm_geometry("480x600+400+0")
+plt.get_current_fig_manager().window.wm_geometry("480x600+540+0")
 fig.canvas.set_window_title('com vel')
 for i in range(1,4,1):
     ax1 = plt.subplot(3, 1, i)
@@ -55,7 +55,7 @@ for i in range(1,4,1):
 plt.xlabel('time (sec)')
 
 fig = plt.figure(3)
-plt.get_current_fig_manager().window.wm_geometry("480x600+800+0")
+plt.get_current_fig_manager().window.wm_geometry("480x600+0+650")
 fig.canvas.set_window_title('body ori (quaternion)')
 for i in range(1,5,1):
     ax1 = plt.subplot(4, 1, i)
@@ -65,7 +65,7 @@ for i in range(1,5,1):
 plt.xlabel('time (sec)')
 
 fig = plt.figure(4)
-plt.get_current_fig_manager().window.wm_geometry("480x600+1200+0")
+plt.get_current_fig_manager().window.wm_geometry("480x600+540+650")
 fig.canvas.set_window_title('body ang vel')
 for i in range(1,4,1):
     ax1 = plt.subplot(3, 1, i)

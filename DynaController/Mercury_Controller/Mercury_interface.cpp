@@ -29,7 +29,9 @@ Mercury_interface::Mercury_interface():
     torque_limit_max_(mercury::num_act_joint),
     torque_limit_min_(mercury::num_act_joint),
     motor_current_(mercury::num_act_joint),
-    jjvel_(mercury::num_act_joint)
+    jjvel_(mercury::num_act_joint),
+    mjpos_(mercury::num_act_joint),
+    waiting_count_(10)
 {
     robot_sys_ = new Mercury_Model();
     sensed_torque_.setZero();
@@ -37,6 +39,7 @@ Mercury_interface::Mercury_interface():
     motor_current_.setZero();
     test_command_.setZero();
     jjvel_.setZero();
+    mjpos_.setZero();
 
     sp_ = Mercury_StateProvider::getStateProvider();
     state_estimator_ = new Mercury_StateEstimator(robot_sys_);  
@@ -50,6 +53,8 @@ Mercury_interface::Mercury_interface():
             &motor_current_, DYN_VEC, "motor_current", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &jjvel_, DYN_VEC, "joint_jvel", mercury::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &mjpos_, DYN_VEC, "motor_jpos", mercury::num_act_joint);
 
 
     _ParameterSetting();
@@ -107,6 +112,7 @@ void Mercury_interface::GetCommand( void* _data,
         sensed_torque_[i] = data->jtorque[i];
         motor_current_[i] = data->motor_current[i];
         jjvel_[i] = data->joint_jvel[i];
+        mjpos_[i] = data->motor_jpos[i];
     }
     if (isTurnoff) {
         //torque_command_.setZero();
@@ -187,14 +193,20 @@ void Mercury_interface::GetReactionForce(std::vector<dynacore::Vect3> & reaction
 }
 
 bool Mercury_interface::_Initialization(Mercury_SensorData* data){
-    if(count_ < 10){
+    if(count_ < waiting_count_){
         torque_command_.setZero();
         state_estimator_->Initialization(data);
         test_->TestInitialization();
 
+        if(fabs(data->imu_acc[2]) < 0.00001){
+            waiting_count_ = 10000000;
+        }else{
+            waiting_count_ = 10;
+        }
+
+        DataManager::GetDataManager()->start();
         return true;
     }
-    DataManager::GetDataManager()->start();
     return false;
 }
 

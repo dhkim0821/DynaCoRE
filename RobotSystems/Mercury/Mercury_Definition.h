@@ -15,6 +15,7 @@ namespace mercury{
     constexpr int num_act_joint = 6;
     constexpr int num_virtual = 6;
     constexpr double servo_rate = 1.0/1500.0;
+    //constexpr double servo_rate = 1.0/1000.0;
 };
 
 namespace mercury_link{

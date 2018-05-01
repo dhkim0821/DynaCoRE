@@ -139,6 +139,7 @@ void WorldNode::_WBDC_Ctrl(){
     for(int i(0); i<3; ++i){
         // X, Y, Z
 
+        sensor_data_->imu_acc[i] = 0.1;
         // Rx, Ry, Rz
         sensor_data_->imu_ang_vel[i] = mQdot[i];
     }

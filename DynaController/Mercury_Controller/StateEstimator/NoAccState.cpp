@@ -1,6 +1,7 @@
 #include "NoAccState.hpp"
 #include <Configuration.h>
 #include <Utils/utilities.hpp>
+#include <Mercury/Mercury_Definition.h>
 #include <Utils/pseudo_inverse.hpp>
 
 NoAccState::NoAccState():OriEstimator(),
@@ -31,12 +32,12 @@ NoAccState::NoAccState():OriEstimator(),
   R_.setIdentity();
 
   Q_ *= 0.05;
-  Q_ *= SERVO_RATE;
+  Q_ *= mercury::servo_rate;
   // Q_.block<3,3>(0,0) *= 1.0;
   // Q_.block<3,3>(3,3) *= 0.001;
   // Q_.block<3,3>(6,6) *= 0.1;
 
-  R_ /= SERVO_RATE;
+  R_ /= mercury::servo_rate;
   // R_*=1.0;
   // R_.block<2,2>(0,0) *=1.;
   // R_.block<2,2>(3,3) *=1.;
@@ -70,7 +71,7 @@ void NoAccState::setSensorData(const std::vector<double> & acc,
   dynacore::Vect3 delta_th;
   double theta(0.);
   for(int i(0); i<3; ++i){
-    delta_th[i] = (ang_vel[i]) * SERVO_RATE;
+    delta_th[i] = (ang_vel[i]) * mercury::servo_rate;
     theta += delta_th[i] * delta_th[i];
   }
 
@@ -82,7 +83,7 @@ void NoAccState::setSensorData(const std::vector<double> & acc,
   ori_pred_ = dynacore::QuatMultiply(global_ori_, delt_quat);
 
   for(int i(0); i<3; ++i){
-    x_pred_[i] = x_[i] + acc_inc[i] * SERVO_RATE; // Velocity
+    x_pred_[i] = x_[i] + acc_inc[i] * mercury::servo_rate; // Velocity
   }
 
   // Propagate Covariance

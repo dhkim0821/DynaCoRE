@@ -43,6 +43,8 @@ public:
     // CoM estimator
     com_estimator_->h_ = des_com_height_;
   }
+  void setContactSwitchCheck(bool switch_check){ b_contact_switch_check_ = switch_check; }
+
   dynacore::Vect3 curr_foot_pos_des_;
   dynacore::Vect3 curr_foot_vel_des_;
   dynacore::Vect3 curr_foot_acc_des_;
@@ -61,6 +63,7 @@ protected:
                    const dynacore::Vect3 & target_pos);
   double replan_moment_;
 
+  bool b_contact_switch_check_;
   bool b_set_height_target_;
   double des_com_height_;
 

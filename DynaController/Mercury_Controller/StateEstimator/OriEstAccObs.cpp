@@ -2,6 +2,7 @@
 #include <Configuration.h>
 #include <Utils/utilities.hpp>
 #include <Utils/pseudo_inverse.hpp>
+#include <Mercury/Mercury_Definition.h>
 
 OriEstAccObs::OriEstAccObs():OriEstimator(),
                              x_(DIM_STATE_EST_ACC_OBS - 3),
@@ -61,7 +62,7 @@ void OriEstAccObs::setSensorData(const std::vector<double> & acc,
   dynacore::Vect3 delta_th;
   double theta(0.);
   for(int i(0); i<3; ++i){
-    delta_th[i] = (ang_vel[i] + bias_w[i]) * SERVO_RATE;
+    delta_th[i] = (ang_vel[i] + bias_w[i]) * mercury::servo_rate;
     theta += delta_th[i] * delta_th[i];
   }
 
@@ -73,7 +74,7 @@ void OriEstAccObs::setSensorData(const std::vector<double> & acc,
   ori_pred_ = dynacore::QuatMultiply(global_ori_, delt_quat);
 
   for(int i(0); i<3; ++i){
-    x_pred_[i] = x_[i] + x_[i+3] * SERVO_RATE; // Velocity
+    x_pred_[i] = x_[i] + x_[i+3] * mercury::servo_rate; // Velocity
     x_pred_[i+3] = x_[i+3]; // Acceleration
     x_pred_[i+6] = x_[i+6]; // bias omega
   }
@@ -81,8 +82,8 @@ void OriEstAccObs::setSensorData(const std::vector<double> & acc,
   // Propagate Covariance
   Eigen::Matrix3d RotMtx(global_ori_);
   F_.setIdentity();
-  F_.block<3,3>(0,3) = Eigen::Matrix3d::Identity() * SERVO_RATE;
-  F_.block<3,3>(6,9) = RotMtx * SERVO_RATE;
+  F_.block<3,3>(0,3) = Eigen::Matrix3d::Identity() * mercury::servo_rate;
+  F_.block<3,3>(6,9) = RotMtx * mercury::servo_rate;
   // dynacore::pretty_print((dynacore::Matrix)F_, std::cout, "F");
   P_pred_ = F_ * P_ * F_.transpose() + Q_;
 

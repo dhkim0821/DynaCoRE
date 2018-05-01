@@ -24,7 +24,8 @@ BodyFootPlanningCtrl::BodyFootPlanningCtrl(RobotSystem* robot, int swing_foot, P
     planning_frequency_(0.),
     replan_moment_(0.),
     push_down_height_(0.),
-    ctrl_start_time_(0.)
+    ctrl_start_time_(0.),
+    b_contact_switch_check_(false)
 {
     planner_ = planner;
     curr_foot_pos_des_.setZero();
@@ -318,7 +319,8 @@ void BodyFootPlanningCtrl::_Replanning(){
     // dynacore::pretty_print(sp_->global_pos_local_, std::cout, "global loc");
 
     target_loc -= sp_->global_pos_local_;
-    target_loc[2] -= push_down_height_;
+    //target_loc[2] -= push_down_height_;
+    target_loc[2] = default_target_loc_[2];
     //dynacore::pretty_print(target_loc, std::cout, "next foot loc");
     //curr_foot_acc_des_.setZero();
     //curr_foot_vel_des_.setZero();
@@ -346,8 +348,8 @@ void BodyFootPlanningCtrl::FirstVisit(){
     dynacore::Vect3 zero;
     zero.setZero();
     default_target_loc_[0] = sp_->Q_[0];
-    //default_target_loc_[2] = ini_foot_pos_[2];
-    default_target_loc_[2] = 0.0;
+    default_target_loc_[2] = ini_foot_pos_[2];
+    //default_target_loc_[2] = 0.0;
     default_target_loc_[2] -= push_down_height_;
     _SetBspline(ini_foot_pos_, zero, zero, default_target_loc_);
 
@@ -426,17 +428,19 @@ bool BodyFootPlanningCtrl::EndOfPhase(){
         return true;
     }
     // Swing foot contact = END
-    bool contact_happen(false);
-    if(swing_foot_ == mercury_link::leftFoot && sp_->b_lfoot_contact_){
-        contact_happen = true;
-    }
-    if(swing_foot_ == mercury_link::rightFoot && sp_->b_rfoot_contact_){
-        contact_happen = true;
-    }
-    if(state_machine_time_ > end_time_ * 0.5 && contact_happen){
-        printf("[Body Foot Ctrl] contact happen, state_machine_time/ end time: (%f, %f)\n",
-                state_machine_time_, end_time_);
-        return true;
+    if(b_contact_switch_check_){
+        bool contact_happen(false);
+        if(swing_foot_ == mercury_link::leftFoot && sp_->b_lfoot_contact_){
+            contact_happen = true;
+        }
+        if(swing_foot_ == mercury_link::rightFoot && sp_->b_rfoot_contact_){
+            contact_happen = true;
+        }
+        if(state_machine_time_ > end_time_ * 0.5 && contact_happen){
+            printf("[Body Foot Ctrl] contact happen, state_machine_time/ end time: (%f, %f)\n",
+                    state_machine_time_, end_time_);
+            return true;
+        }
     }
     return false;
 }

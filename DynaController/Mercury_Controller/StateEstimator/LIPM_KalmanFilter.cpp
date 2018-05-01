@@ -2,6 +2,7 @@
 #include <Configuration.h>
 #include <ParamHandler/ParamHandler.hpp>
 #include <string>
+#include <Mercury/Mercury_Definition.h>
 
 LIPM_KalmanFilter::LIPM_KalmanFilter():CoMStateEstimator(),
                                        prediction_var_(LIPM_KFILTER_STATE_DIM),
@@ -48,8 +49,8 @@ void LIPM_KalmanFilter::InputData(const dynacore::Vector & com_state){
   // Prediction
   x_pre_ = F_ * x_;
   for(int i(0); i<2; ++i){
-    x_pre_[i] += x_pre_[i+2] * SERVO_RATE;
-    x_pre_[i+2] += g_/h_* (x_[i]) * SERVO_RATE;
+    x_pre_[i] += x_pre_[i+2] * mercury::servo_rate;
+    x_pre_[i+2] += g_/h_* (x_[i]) * mercury::servo_rate;
   }
 
   P_pre_ = F_ * P_ * F_.transpose() + Q_;

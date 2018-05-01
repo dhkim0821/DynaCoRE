@@ -34,12 +34,6 @@ FootCtrlTest::FootCtrlTest(RobotSystem* robot):Test(robot){
         DataManager::GetDataManager()->RegisterData(
                 &(((FootCtrl*)foot_ctrl_)->foot_vel_des_), 
                 DYN_VEC, "rfoot_vel_des", 3);
-        //DataManager::GetDataManager()->RegisterData(
-                //&(((FootCtrl*)foot_ctrl_)->foot_pos_), 
-                //VECT3, "rfoot_pos", 3);
-        //DataManager::GetDataManager()->RegisterData(
-                //&(((FootCtrl*)foot_ctrl_)->foot_vel_), 
-                //VECT3, "rfoot_vel", 3);
     }else{
         DataManager::GetDataManager()->RegisterData(
                 &(((FootCtrl*)foot_ctrl_)->foot_pos_des_), 
@@ -47,12 +41,6 @@ FootCtrlTest::FootCtrlTest(RobotSystem* robot):Test(robot){
         DataManager::GetDataManager()->RegisterData(
                 &(((FootCtrl*)foot_ctrl_)->foot_vel_des_), 
                 DYN_VEC, "lfoot_vel_des", 3);
-        //DataManager::GetDataManager()->RegisterData(
-                //&(((FootCtrl*)foot_ctrl_)->foot_pos_), 
-                //VECT3, "lfoot_pos", 3);
-        //DataManager::GetDataManager()->RegisterData(
-                //&(((FootCtrl*)foot_ctrl_)->foot_vel_), 
-                //VECT3, "lfoot_vel", 3);
     }
 
     _ParameterCtrlSetting();

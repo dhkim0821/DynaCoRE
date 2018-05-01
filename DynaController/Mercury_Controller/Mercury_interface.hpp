@@ -38,6 +38,7 @@ public:
   dynacore::Quaternion global_ori_;
 
 private:
+  int waiting_count_;
   std::vector<double> torque_limit_min_;
   std::vector<double> torque_limit_max_;
   
@@ -51,6 +52,7 @@ private:
   dynacore::Vector motor_current_;
 
   dynacore::Vector jjvel_;
+  dynacore::Vector mjpos_;
   
   dynacore::Vector initial_jpos_;
   Mercury_StateEstimator* state_estimator_;

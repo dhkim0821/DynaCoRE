@@ -71,21 +71,6 @@ robot_sys_ = robot;
           &(((BodyFootPlanningCtrl*)left_swing_ctrl_)->curr_foot_vel_des_), 
           VECT3, "lfoot_vel_des", 3);
 
-  DataManager::GetDataManager()->RegisterData(
-          &(((BodyFootPlanningCtrl*)right_swing_ctrl_)->curr_foot_pos_), 
-          VECT3, "rfoot_pos", 3);
-  DataManager::GetDataManager()->RegisterData(
-          &(((BodyFootPlanningCtrl*)left_swing_ctrl_)->curr_foot_pos_), 
-          VECT3, "lfoot_pos", 3);
-
-  DataManager::GetDataManager()->RegisterData(
-          &(((BodyFootPlanningCtrl*)right_swing_ctrl_)->curr_foot_vel_), 
-          VECT3, "rfoot_vel", 3);
-  DataManager::GetDataManager()->RegisterData(
-          &(((BodyFootPlanningCtrl*)left_swing_ctrl_)->curr_foot_vel_), 
-          VECT3, "lfoot_vel", 3);
-
-
   printf("[Walking Test] Constructed\n");
 }
 
@@ -119,7 +104,8 @@ int WalkingTest::_NextPhase(const int & phase){
   int next_phase = phase + 1;
   // printf("next phase: %i\n", next_phase);
   
-  if(phase == WKPhase::wk_double_contact_1) {
+  //if(phase == WKPhase::wk_double_contact_1) {
+  if(phase == WKPhase::wk_right_swing_start_trans) {
     ++num_step_;
     printf("%i th step:\n", num_step_);
     // printf("One swing done: Next Right Leg Swing\n");
@@ -130,7 +116,8 @@ int WalkingTest::_NextPhase(const int & phase){
     robot_sys_->getPos(mercury_link::leftFoot, next_local_frame_location);
     sp_->global_pos_local_.head(2) += next_local_frame_location.head(2);
   }
-  if(phase == WKPhase::wk_double_contact_2){
+  //if(phase == WKPhase::wk_double_contact_2){
+  if(phase == WKPhase::wk_left_swing_start_trans){
     ++num_step_;
     printf("%i th step:\n", num_step_);
 
@@ -152,7 +139,7 @@ void WalkingTest::_SettingParameter(){
   // Setting Parameters
   ParamHandler handler(MercuryConfigPath"TEST_walking.yaml");
 
-  double tmp;
+  double tmp; bool b_tmp;
   std::vector<double> tmp_vec;
   std::string tmp_str;
   // Start Phase
@@ -215,6 +202,11 @@ void WalkingTest::_SettingParameter(){
   handler.getValue("transition_phase_mix_ratio", tmp);
   ((BodyFootPlanningCtrl*)right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
   ((BodyFootPlanningCtrl*)left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+
+  handler.getBoolean("contact_switch_check", b_tmp);
+  ((BodyFootPlanningCtrl*)right_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+  ((BodyFootPlanningCtrl*)left_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+
 
   printf("[Walking Test] Complete to Setup Parameters\n");
 }
