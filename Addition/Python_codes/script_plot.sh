@@ -1,5 +1,6 @@
-#!/bin/sh
-python plot_multiple.py \
-	plot_joint \
-	plot_body \
-	plot_motor_current
+#!/bin/bash
+plot_these=(plot_joint 
+	plot_body 
+	plot_motor_current)
+
+python plot_multiple.py  ${plot_these[*]}
