@@ -7,9 +7,6 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import os
 
-# Import plotting scripts manually
-#import plot_joint as plot_joint
-
 # List of valid figures to plot. Must be the names of the plotting script without the .py extension
 valid_figures = ["plot_joint", "plot_body"]
 figures_to_plot = {}
@@ -44,20 +41,6 @@ def create_all_figures():
 		## Increment the figure number and index
 	 	figure_number += (module.num_figures)
 	 	row_index += 1
-
-
-	# Create plot
-	# if "plot_joint" in valid_figures:
-	# 	plot_joint.create_figures(subfigure_width=480, subfigure_height=200, starting_figure_no=figure_number, starting_row_index=row_index)
-	# 	figure_number += (plot_joint.num_figures)
-	# 	row_index += 1
-
-	# if "plot_joint" in valid_figures:
-	# 	plot_joint.create_figures(subfigure_width=480, subfigure_height=200, starting_figure_no=figure_number, starting_row_index=row_index)
-	# 	figure_number += (plot_joint.num_figures)
-	# 	row_index += 1
-
-
 
 if __name__ == "__main__":
 	# print sys.argv # Outputs the input to this script
