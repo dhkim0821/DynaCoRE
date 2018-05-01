@@ -1,3 +1,4 @@
-#plot_joint
-plot_torque
-plot_body
+#!/bin/sh
+python plot_multiple.py \
+	plot_joint \
+	plot_body
