@@ -29,6 +29,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     np.genfromtxt(file_path+'qdot.txt', delimiter=None, dtype=(float))
     data_jjvel = \
     np.genfromtxt(file_path+'joint_jvel.txt', delimiter=None, dtype=(float))
+    data_mjpos = \
+    np.genfromtxt(file_path+'motor_jpos.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
     ##--------------------------------------------------------------------------------
 
@@ -42,7 +44,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_jpos_des[:,i-1], "r-", \
-                 data_x, data_config[:,i-1 + 6], "b-")
+                 data_x, data_config[:,i-1 + 6], "b-", \
+                 data_x, data_mjpos[:, i-1], "c-")
         # plt.legend(('command', 'pos'), loc='upper left')
         plt.grid(True)
     plt.xlabel('time (sec)')
@@ -62,7 +65,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_jpos_des[:,i-1 + 3], "r-" , \
-                 data_x, data_config[:,i-1 + 9], "b-")
+                 data_x, data_config[:,i-1 + 9], "b-", \
+                 data_x, data_mjpos[:, i-1 +3 ], "c-")
         # plt.legend(('command', 'pos'), loc='upper left')
         plt.grid(True)
     plt.xlabel('time (sec)')

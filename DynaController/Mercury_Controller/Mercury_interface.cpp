@@ -15,6 +15,7 @@
 #include <Mercury_Controller/TestSet/JointCtrlTest.hpp>
 #include <Mercury_Controller/TestSet/WalkingTest.hpp>
 #include <Mercury_Controller/TestSet/FootCtrlTest.hpp>
+#include <Mercury_Controller/TestSet/StanceSwingTest.hpp>
 
 #define MEASURE_TIME 0
 #if MEASURE_TIME
@@ -29,6 +30,8 @@ Mercury_interface::Mercury_interface():
     torque_limit_max_(mercury::num_act_joint),
     torque_limit_min_(mercury::num_act_joint),
     motor_current_(mercury::num_act_joint),
+    bus_current_(mercury::num_act_joint),
+    bus_voltage_(mercury::num_act_joint),
     jjvel_(mercury::num_act_joint),
     mjpos_(mercury::num_act_joint),
     waiting_count_(10)
@@ -37,12 +40,15 @@ Mercury_interface::Mercury_interface():
     sensed_torque_.setZero();
     torque_command_.setZero();
     motor_current_.setZero();
+    bus_current_.setZero();
+    bus_voltage_.setZero();
     test_command_.setZero();
     jjvel_.setZero();
     mjpos_.setZero();
 
     sp_ = Mercury_StateProvider::getStateProvider();
     state_estimator_ = new Mercury_StateEstimator(robot_sys_);  
+
     DataManager::GetDataManager()->RegisterData(
             &running_time_, DOUBLE, "running_time");
     DataManager::GetDataManager()->RegisterData(
@@ -55,6 +61,10 @@ Mercury_interface::Mercury_interface():
             &jjvel_, DYN_VEC, "joint_jvel", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &mjpos_, DYN_VEC, "motor_jpos", mercury::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &bus_current_, DYN_VEC, "bus_current", mercury::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &bus_voltage_, DYN_VEC, "bus_voltage", mercury::num_act_joint);
 
 
     _ParameterSetting();
@@ -111,6 +121,8 @@ void Mercury_interface::GetCommand( void* _data,
         command[i] = torque_command_[i];
         sensed_torque_[i] = data->jtorque[i];
         motor_current_[i] = data->motor_current[i];
+        bus_current_[i] = data->bus_current[i];
+        bus_voltage_[i] = data->bus_voltage[i];
         jjvel_[i] = data->joint_jvel[i];
         mjpos_[i] = data->motor_jpos[i];
     }
@@ -225,6 +237,8 @@ void Mercury_interface::_ParameterSetting(){
         test_ = new BodyCtrlTest(robot_sys_);
     }else if(tmp_string == "foot_ctrl_test"){
         test_ = new FootCtrlTest(robot_sys_);
+    }else if(tmp_string == "stance_swing_test"){
+        test_ = new StanceSwingTest(robot_sys_);
     }else {
         printf("[Interfacce] There is no test matching with the name\n");
         exit(0);

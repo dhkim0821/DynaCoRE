@@ -18,6 +18,8 @@ class Mercury_SensorData{
         double joint_jvel[mercury::num_act_joint];
         double motor_jpos[mercury::num_act_joint];
         double motor_jvel[mercury::num_act_joint];
+        double bus_current[mercury::num_act_joint];
+        double bus_voltage[mercury::num_act_joint];
         double jtorque[mercury::num_act_joint];
         double motor_current[mercury::num_act_joint];
         double reflected_rotor_inertia[mercury::num_act_joint];
@@ -50,6 +52,8 @@ private:
   dynacore::Vector test_command_;
   dynacore::Vector sensed_torque_;
   dynacore::Vector motor_current_;
+  dynacore::Vector bus_current_;
+  dynacore::Vector bus_voltage_;
 
   dynacore::Vector jjvel_;
   dynacore::Vector mjpos_;

@@ -64,7 +64,7 @@ BodyFootPlanningCtrl::BodyFootPlanningCtrl(RobotSystem* robot, int swing_foot, P
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(
                 body_foot_task_->getDim() + 
-                single_contact_->getDim(), 100.0);
+                single_contact_->getDim(), 1000.0);
 
     wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
     wbdc_rotor_data_->cost_weight[1] = 0.0001; // Y

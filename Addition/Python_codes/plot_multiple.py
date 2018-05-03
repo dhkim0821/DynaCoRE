@@ -13,10 +13,10 @@ PLOT_HORIZONTALLY = 1
 PLOT_CONFIG = PLOT_VERTICALLY
 
 # List of valid figures to plot. Must be the names of the plotting script without the .py extension
-valid_figures = ["plot_joint", "plot_body", "plot_motor_current"]
+valid_figures = ["plot_joint", "plot_body", "plot_motor_current", "plot_torque"]
 figures_to_plot = {}
-screen_resolution_width = 1920
-screen_resolution_height = 1080
+screen_resolution_width = 2920
+screen_resolution_height = 1280
 num_plot_scripts = 0
 
 def count_num_plot_scripts():
