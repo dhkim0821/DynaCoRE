@@ -93,12 +93,8 @@ void TransitionCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
             = sp_->rotor_inertia_[i];
     }
 
-    double ramp = (state_machine_time_)/(end_time_*0.5);
-    if( state_machine_time_ > end_time_* 0.5 ) ramp = 1.;
-    dynacore::Vector ramp_grav = ramp * grav_;
-     
-    //wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, ramp_grav);
+    
+    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
     wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
 
     gamma.head(mercury::num_act_joint) = fb_cmd;
