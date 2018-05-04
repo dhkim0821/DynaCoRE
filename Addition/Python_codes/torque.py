@@ -5,6 +5,23 @@ import matplotlib.pyplot as plt
 
 data_y = np.genfromtxt('torque.txt', delimiter=None, dtype=(float))
 data_x = np.genfromtxt('time.txt', delimiter='\n', dtype=(float))
+data_phse = np.genfromtxt('phase.txt', delimiter=None, dtype=(float))
+## get phase.txt data
+phseChange = []
+for i in range(0,len(data_phse)-1):
+        if data_phse[i] != data_phse[i+1]:
+            phseChange.append(i+1)
+        else:
+            pass
+print phseChange
+# phseChange.insert(0,0)
+
+# phseChange.append(len(data_phse)-1)
+
+# should have different in these x values(pos)
+# get indexes
+# for i in range(0,10):
+    # exec('phse_%d = [index for index, v in enumerate(data_phse) if v == %d]'%(i,i))
 
 #y1, y2, y3, y4, y5, y6 = ([] for i in range(6))
 for j in range(1,7,1):
