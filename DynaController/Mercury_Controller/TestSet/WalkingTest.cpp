@@ -114,7 +114,7 @@ int WalkingTest::_NextPhase(const int & phase){
     // Global Frame Update
     dynacore::Vect3 next_local_frame_location;
     robot_sys_->getPos(mercury_link::leftFoot, next_local_frame_location);
-    sp_->global_pos_local_.head(2) += next_local_frame_location.head(2);
+    sp_->global_pos_local_ += next_local_frame_location;
   }
   //if(phase == WKPhase::wk_double_contact_2){
   if(phase == WKPhase::wk_left_swing_start_trans){
@@ -127,7 +127,7 @@ int WalkingTest::_NextPhase(const int & phase){
     // Global Frame Update
     dynacore::Vect3 next_local_frame_location;
     robot_sys_->getPos(mercury_link::rightFoot, next_local_frame_location);
-    sp_->global_pos_local_.head(2) += next_local_frame_location.head(2);
+    sp_->global_pos_local_ += next_local_frame_location;
   }
   if(next_phase == NUM_WALKING_PHASE) {
     return WKPhase::wk_double_contact_1;

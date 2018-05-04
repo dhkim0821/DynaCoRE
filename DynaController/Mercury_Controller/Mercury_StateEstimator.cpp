@@ -75,7 +75,7 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
         sp_->Qdot_[1] = -foot_vel[1];
         sp_->Qdot_[2] = -foot_vel[2];
 
-        // sp_->global_pos_local_.head(2) = foot_pos.head(2);
+        sp_->Q_[2] += sp_->global_pos_local_[2];
         robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
     } else if (base_cond_ == base_condition::fixed){
         robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
@@ -156,6 +156,7 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
         sp_->Qdot_[1] = -foot_vel[1];
         sp_->Qdot_[2] = -foot_vel[2];
 
+        sp_->Q_[2] += sp_->global_pos_local_[2];
         robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
 
     } else if (base_cond_ == base_condition::fixed){

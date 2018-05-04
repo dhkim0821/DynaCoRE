@@ -31,20 +31,20 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     np.genfromtxt(file_path+'rfoot_vel.txt', delimiter=None, dtype=(float))
 
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
+    st_idx = 1
+    end_idx = len(data_x) - 10
+    data_x = data_x[st_idx:end_idx]
+
     # PHASE MARKER #
     data_phse = np.genfromtxt(file_path+'phase.txt', delimiter=None, dtype=(float))
     # get phase.txt data #
     phseChange = []
-    for i in range(0,len(data_phse)-1):
+    for i in range(0,len(data_x)-1):
             if data_phse[i] != data_phse[i+1]:
-                phseChange.append(i+1)
+                phseChange.append(i+1 - st_idx)
             else:
                 pass
     axes = plt.gca()
-
-    st_idx = 1
-    end_idx = len(data_x) - 10
-    data_x = data_x[st_idx:end_idx]
 
     ## plot foot pos
     fig = plt.figure(figure_number)
