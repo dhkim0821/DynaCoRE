@@ -12,7 +12,6 @@ np.genfromtxt(file_path+'reaction_force.txt', delimiter=None, dtype=(float))
 data_rf_sense = \
 np.genfromtxt(file_path+'reaction_force.txt', delimiter=None, dtype=(float))
 
-data_phase = np.genfromtxt(file_path+'phase.txt', delimiter='\n', dtype=(float))
 data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
 
 
@@ -25,9 +24,9 @@ data_x = data_x[st_idx:end_idx];
 data_phse = np.genfromtxt(file_path+'phase.txt', delimiter=None, dtype=(float))
 # get phase.txt data #
 phseChange = []
-for i in range(0,len(data_phse)-1):
+for i in range(0,len(data_x)-1):
         if data_phse[i] != data_phse[i+1]:
-            phseChange.append(i+1)
+            phseChange.append(i+1 - st_idx)
         else:
             pass
 axes = plt.gca()
@@ -39,8 +38,7 @@ fig.canvas.set_window_title('reaction_force (right_leg)')
 for i in range(1,4,1):
     ax1 = plt.subplot(3, 1, i)
     plt.plot(data_x, data_rf_cmd[st_idx:end_idx,i-1], "r-", \
-             data_x, data_rf_sense[st_idx:end_idx,i-1], "b-", \
-             data_x, data_phase[st_idx:end_idx], "k-")
+             data_x, data_rf_sense[st_idx:end_idx,i-1], "b-")
     # plt.legend(('command', 'pos'), loc='upper left')
     # phase marker #
     for j in phseChange:

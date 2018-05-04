@@ -12,7 +12,10 @@ public:
   virtual ~DoubleContactBounding();
 
   void setFzUpperLimit(double lim);
-
+  void setFrictionCoeff(double mu_trans, double mu_stance){
+      mu_trans_ = mu_trans;
+      mu_stance_ = mu_stance;
+  }
 protected:
   int trans_pt_;
 
@@ -23,6 +26,8 @@ protected:
 
   void _setU(double mu, dynacore::Matrix & U);
 
+  double mu_trans_;
+  double mu_stance_;
   RobotSystem* robot_sys_;
   Mercury_StateProvider* sp_;
 };
