@@ -21,6 +21,16 @@ data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
 st_idx = 10;
 end_idx = len(data_x) - 100;
 data_x = data_x[st_idx:end_idx];
+# PHASE MARKER #
+data_phse = np.genfromtxt(file_path+'phase.txt', delimiter=None, dtype=(float))
+# get phase.txt data #
+phseChange = []
+for i in range(0,len(data_phse)-1):
+        if data_phse[i] != data_phse[i+1]:
+            phseChange.append(i+1)
+        else:
+            pass
+axes = plt.gca()
 
 ## plot command/jpos
 fig = plt.figure(1)
@@ -32,6 +42,12 @@ for i in range(1,4,1):
              data_x, data_rf_sense[st_idx:end_idx,i-1], "b-", \
              data_x, data_phase[st_idx:end_idx], "k-")
     # plt.legend(('command', 'pos'), loc='upper left')
+    # phase marker #
+    for j in phseChange:
+        # phase line
+        plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+        # phase number
+        plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
     plt.grid(True)
 plt.xlabel('time (sec)')
 
@@ -42,6 +58,12 @@ for i in range(1,4,1):
     ax1 = plt.subplot(3, 1, i)
     plt.plot(data_x, data_rf_cmd[st_idx:end_idx,i-1 + 3], "r-" , \
              data_x, data_rf_sense[st_idx:end_idx,i-1 + 3], "b-")
+    # phase marker #
+    for j in phseChange:
+        # phase line
+        plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+        # phase number
+        plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
     # plt.legend(('command', 'pos'), loc='upper left')
     plt.grid(True)
 plt.xlabel('time (sec)')

@@ -36,6 +36,17 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     st_idx = 1
     end_idx = len(data_x) - 10
     data_x = data_x[st_idx:end_idx]
+
+    # PHASE MARKER #
+    data_phse = np.genfromtxt(file_path+'phase.txt', delimiter=None, dtype=(float))
+    # get phase.txt data #
+    phseChange = []
+    for i in range(0,len(data_phse)-1):
+            if data_phse[i] != data_phse[i+1]:
+                phseChange.append(i+1)
+            else:
+                pass
+    axes = plt.gca()
     
     ## plot foot pos
     fig = plt.figure(figure_number)
@@ -46,6 +57,12 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_foot_pos_des[st_idx:end_idx,i-1], "r-", \
                  data_x, data_foot_pos[st_idx:end_idx,i-1], "b-")
         # plt.legend(('command', 'pos'), loc='upper left')
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+            # phase number
+            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
         plt.grid(True)
     plt.xlabel('time (sec)')
     ## increment figure number and index
@@ -65,6 +82,12 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_foot_vel_des[st_idx:end_idx,i-1], "r-", \
                  data_x, data_foot_vel[st_idx:end_idx,i-1], "b-")
         # plt.legend(('command', 'pos'), loc='upper left')
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+            # phase number
+            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
         plt.grid(True)
     plt.xlabel('time (sec)')
     ## increment figure number and index

@@ -40,6 +40,16 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     st_idx = 10
     end_idx = len(data_x) - 10
     data_x = data_x[st_idx:end_idx]
+    # PHASE MARKER #
+    data_phse = np.genfromtxt(file_path+'phase.txt', delimiter=None, dtype=(float))
+    # get phase.txt data #
+    phseChange = []
+    for i in range(0,len(data_phse)-1):
+            if data_phse[i] != data_phse[i+1]:
+                phseChange.append(i+1)
+            else:
+                pass
+    axes = plt.gca()
     
     ### FULL / TRIM ###
     '''comment out the next four lines and set the two values for a limited graph'''
@@ -76,6 +86,12 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
                 data_x, data_cmd[st_idx:end_idx,i-1], "r-", \
                 data_x, data_torque[st_idx:end_idx,i-1], "b-")
         # plt.legend(('command', 'pos'), loc='upper left')
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+            # phase number
+            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
         plt.grid(True)
     plt.xlabel('time (sec)')
     
@@ -96,6 +112,12 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
                 data_x, data_cmd[st_idx:end_idx, i-1+3 + 6], "c-", \
                 data_x, data_cmd[st_idx:end_idx,i-1 + 3], "r-" , \
                 data_x, data_torque[st_idx:end_idx,i-1 + 3], "b-")
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+            # phase number
+            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
         plt.grid(True)
     plt.xlabel('time (sec)')
     figure_number += 1
@@ -111,6 +133,12 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,7,1):
         ax1 = plt.subplot(6, 1, i)
         plt.plot(data_x, data_qddot_cmd[xMinIndex:xMaxIndex, i-1], "r-")
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+            # phase number
+            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
         plt.grid(True)
     plt.xlabel('time (sec)')
     figure_number += 1
@@ -126,6 +154,12 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_qddot_cmd[xMinIndex:xMaxIndex, i-1 + 6], "r-")
         plt.grid(True)
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+            # phase number
+            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
     plt.xlabel('time (sec)')
     figure_number += 1
     if plot_configuration == PLOT_HORIZONTALLY:
@@ -139,6 +173,12 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_qddot_cmd[xMinIndex:xMaxIndex, i-1 + 9], "r-")
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+            # phase number
+            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
         plt.grid(True)
     plt.xlabel('time (sec)')
     if plot_configuration == PLOT_HORIZONTALLY:
