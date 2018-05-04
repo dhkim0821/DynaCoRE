@@ -41,7 +41,7 @@ bool DoubleContact::_UpdateJcDotQdot(){
 }
 
 bool DoubleContact::_UpdateUf(){
-  double mu(0.4);
+  double mu(0.3);
 
   int size_u(5);
   Uf_ = dynacore::Matrix::Zero(size_u*2, dim_contact_);

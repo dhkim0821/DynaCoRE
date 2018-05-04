@@ -175,11 +175,14 @@ void TransitionCtrl::_body_task_setup(){
 
 void TransitionCtrl::_double_contact_setup(){
     if(b_increase_){
-        ((DoubleContactBounding*)double_contact_)->setFzUpperLimit(min_rf_z_ + state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_));
+        ((DoubleContactBounding*)double_contact_)->setFrictionCoeff(0.05, 0.3);
+        ((DoubleContactBounding*)double_contact_)->setFzUpperLimit(
+            min_rf_z_ + state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_));
     } else {
-        ((DoubleContactBounding*)double_contact_)->setFzUpperLimit(max_rf_z_ - state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_));
+        ((DoubleContactBounding*)double_contact_)->setFrictionCoeff(0.3, 0.4);
+        ((DoubleContactBounding*)double_contact_)->setFzUpperLimit(
+            max_rf_z_ - state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_));
     }
-    // ((DoubleContactBounding*)double_contact_)->setFzUpperLimit(1000.);
 
     double_contact_->UpdateContactSpec();
 

@@ -6,7 +6,9 @@
 
 DoubleContactBounding::DoubleContactBounding(RobotSystem* robot, int trans_pt):
   WBDC_ContactSpec(6),
-  trans_pt_(trans_pt)
+  trans_pt_(trans_pt),
+    mu_trans_(0.3),
+    mu_stance_(0.3)
 {
   robot_sys_ = robot;
   sp_ = Mercury_StateProvider::getStateProvider();
@@ -45,20 +47,25 @@ bool DoubleContactBounding::_UpdateJcDotQdot(){
 }
 
 bool DoubleContactBounding::_UpdateUf(){
-  double mu(0.4);
+  double mu_small(0.3);
 
   int size_u(5);
   Uf_ = dynacore::Matrix::Zero(size_u*2+1, dim_contact_);
-
   dynacore::Matrix U;
-  _setU(mu, U);
-  Uf_.block(0, 0, size_u, 3) = U;
-  Uf_.block(size_u, 3, size_u, 3) = U;
-
   if(trans_pt_ == mercury_link::rightFoot){
-    Uf_(size_u*2, 2) = -1.;
+      _setU(mu_trans_, U);
+      Uf_.block(0, 0, size_u, 3) = U;
+      _setU(mu_stance_, U);
+      Uf_.block(size_u, 3, size_u, 3) = U;
+
+      Uf_(size_u*2, 2) = -1.;
   }else if(trans_pt_ == mercury_link::leftFoot){
-    Uf_(size_u*2, 5) = -1.;
+      _setU(mu_stance_, U);
+      Uf_.block(0, 0, size_u, 3) = U;
+      _setU(mu_trans_, U);
+      Uf_.block(size_u, 3, size_u, 3) = U;
+
+     Uf_(size_u*2, 5) = -1.;
   }else{
     printf("[Double Contact Bounding] Incorrect Foot Idx: %i\n", trans_pt_);
   }
