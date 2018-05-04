@@ -11,13 +11,13 @@ com_lifting_time: 2.0
 
 # Timing Parameters (sec)
 stance_time: 1.0
-transition_time: 0.05
+transition_time: 0.1
 moving_preparation_time: 1.0
 swing_duration: 100.
 
 # Trajectory
 swing_height: 0.15
-amplitude: [0, 0.0, 0.08]
+amplitude: [0, 0.0, 0.0]
 frequency: [0.0, 0.5, 1.5]
 phase: [0., 0., 0.]
 
