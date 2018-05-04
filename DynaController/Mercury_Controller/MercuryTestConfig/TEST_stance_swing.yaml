@@ -1,4 +1,4 @@
-swing_foot: right
+swing_foot: left 
 
 # Initialization
 initial_jpos: [0.02, -1.1, 1.6, -0.02, -1.1, 1.6]
@@ -18,6 +18,6 @@ swing_duration: 100.
 # Trajectory
 swing_height: 0.15
 amplitude: [0, 0.0, 0.08]
-frequency: [0.0, 0.5, 2.5]
+frequency: [0.0, 0.5, 1.5]
 phase: [0., 0., 0.]
 

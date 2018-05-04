@@ -30,19 +30,17 @@ StanceSwingTest::StanceSwingTest(RobotSystem* robot):Test(robot){
         printf("[Stance Swing Test] Incorrect Foot Setting\n");
         exit(0);
     }
-printf("swing foot: %d\n", swing_foot_);
+
     jpos_ctrl_ = new JPosTargetCtrl(robot);
     body_up_ctrl_ = new ContactTransBodyCtrl(robot);
     body_fix_ctrl_ = new CoMzRxRyRzCtrl(robot);
 
-printf("swing foot: %d\n", swing_foot_);
 
     swing_start_trans_ctrl_ = 
         new TransitionCtrl(robot, swing_foot_, false);
     swing_ctrl_ = 
         new BodyFootCtrl(robot, swing_foot_);
 
-printf("swing foot: %d\n", swing_foot_);
     state_list_.clear();
     state_list_.push_back(jpos_ctrl_);
     state_list_.push_back(body_up_ctrl_);
@@ -53,13 +51,15 @@ printf("swing foot: %d\n", swing_foot_);
 
     _SettingParameter(handler);
 
-    if(swing_foot_ == mercury_link::rightFoot){
-        DataManager::GetDataManager()->RegisterData(
-                &(((BodyFootCtrl*)swing_ctrl_)->curr_foot_pos_des_), 
-                VECT3, "rfoot_pos_des", 3);
-        DataManager::GetDataManager()->RegisterData(
-                &(((BodyFootCtrl*)swing_ctrl_)->curr_foot_vel_des_), 
-                VECT3, "rfoot_vel_des", 3);
+    if(swing_foot_ = mercury_link::rightFoot){
+        printf("????\n");
+        exit(0);
+        //DataManager::GetDataManager()->RegisterData(
+                //&(((BodyFootCtrl*)swing_ctrl_)->curr_foot_pos_des_), 
+                //VECT3, "rfoot_pos_des", 3);
+        //DataManager::GetDataManager()->RegisterData(
+                //&(((BodyFootCtrl*)swing_ctrl_)->curr_foot_vel_des_), 
+                //VECT3, "rfoot_vel_des", 3);
     } else if (swing_foot_ == mercury_link::leftFoot){
         DataManager::GetDataManager()->RegisterData(
                 &(((BodyFootCtrl*)swing_ctrl_)->curr_foot_pos_des_), 
