@@ -104,8 +104,8 @@ int WalkingTest::_NextPhase(const int & phase){
   int next_phase = phase + 1;
   // printf("next phase: %i\n", next_phase);
   
-  //if(phase == WKPhase::wk_double_contact_1) {
-  if(phase == WKPhase::wk_right_swing_start_trans) {
+  if(phase == WKPhase::wk_double_contact_1) {
+  //if(phase == WKPhase::wk_right_swing_start_trans) {
     ++num_step_;
     printf("%i th step:\n", num_step_);
     // printf("One swing done: Next Right Leg Swing\n");
@@ -114,20 +114,27 @@ int WalkingTest::_NextPhase(const int & phase){
     // Global Frame Update
     dynacore::Vect3 next_local_frame_location;
     robot_sys_->getPos(mercury_link::leftFoot, next_local_frame_location);
-    sp_->global_pos_local_ += next_local_frame_location;
+    // when it start the left leg is already stance foot and 
+    // global set by 0.15
+    if(num_step_>1) sp_->global_pos_local_ += next_local_frame_location;
+    sp_->global_foot_height_ = next_local_frame_location[2];
   }
-  //if(phase == WKPhase::wk_double_contact_2){
-  if(phase == WKPhase::wk_left_swing_start_trans){
+  if(phase == WKPhase::wk_double_contact_2){
+  //if(phase == WKPhase::wk_left_swing_start_trans){
     ++num_step_;
     printf("%i th step:\n", num_step_);
 
-    // printf("One swing done: Next Left Leg Swing\n");
     sp_->stance_foot_ = mercury_link::rightFoot;
 
     // Global Frame Update
     dynacore::Vect3 next_local_frame_location;
     robot_sys_->getPos(mercury_link::rightFoot, next_local_frame_location);
+     //printf("One swing done: Next Left Leg Swing\n");
+    //dynacore::pretty_print(sp_->global_pos_local_, std::cout, "global local");
     sp_->global_pos_local_ += next_local_frame_location;
+    //dynacore::pretty_print(next_local_frame_location, std::cout, "next local frame");
+    //dynacore::pretty_print(sp_->global_pos_local_, std::cout, "global local");
+    sp_->global_foot_height_ = next_local_frame_location[2];
   }
   if(next_phase == NUM_WALKING_PHASE) {
     return WKPhase::wk_double_contact_1;

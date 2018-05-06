@@ -49,6 +49,28 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
                 phseChange.append(i - st_idx)
             else:
                 pass
+
+    # LeftFoot Contact Signal #
+    data_lf_contact = np.genfromtxt(file_path+'lfoot_contact.txt', delimiter=None, dtype=(float))
+    data_lf_contact = data_lf_contact[st_idx:end_idx]    
+    lf_contact_index_change = []
+    lf_contact_index_change.append(0)    
+    lf_contact_index_change.append(1)        
+    for i in range(2, len(data_x)):
+        if data_lf_contact[i] != data_lf_contact[i-1]:
+            lf_contact_index_change.append(i)
+
+
+    # RightFoot Contact Signal #
+    data_rf_contact = np.genfromtxt(file_path+'rfoot_contact.txt', delimiter=None, dtype=(float))
+    data_rf_contact = data_rf_contact[st_idx:end_idx]
+    rf_contact_index_change = []
+    rf_contact_index_change.append(0)    
+    rf_contact_index_change.append(1)        
+    for i in range(2, len(data_x)):
+        if data_rf_contact[i] != data_rf_contact[i-1]:
+            rf_contact_index_change.append(i)          
+
     axes = plt.gca()
     
     ### FULL / TRIM ###
@@ -92,6 +114,29 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             plt.axvline(x=data_x[j],color='indigo',linestyle='-')
             # phase number
             plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
+
+        # Plot Left Foot Contact 
+        for j in range(1, len(lf_contact_index_change)):
+            t_start = data_x[lf_contact_index_change[j-1]]
+            t_end = data_x[lf_contact_index_change[j]]            
+            y_start = data_lf_contact[lf_contact_index_change[j-1]] * ax1.get_ylim()[1]/2.0 * 0.9
+            y_end = data_lf_contact[lf_contact_index_change[j]] * ax1.get_ylim()[1]/2.0 * 0.9            
+
+            # Plot Square Wave
+            plt.plot([t_start, t_end, t_end], [y_start, y_start, y_end], color='orange')
+
+        # Plot Right Foot Contact 
+        for j in range(1, len(rf_contact_index_change)):
+            t_start = data_x[rf_contact_index_change[j-1]]
+            t_end = data_x[rf_contact_index_change[j]]            
+            y_start = data_rf_contact[rf_contact_index_change[j-1]] * ax1.get_ylim()[1]/2.0
+            y_end = data_rf_contact[rf_contact_index_change[j]] * ax1.get_ylim()[1]/2.0            
+
+            # Plot Square Wave
+            plt.plot([t_start, t_end, t_end], [y_start, y_start, y_end], color='magenta')
+
+
+
         plt.grid(True)
     plt.xlabel('time (sec)')
     
@@ -118,6 +163,28 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             plt.axvline(x=data_x[j],color='indigo',linestyle='-')
             # phase number
             plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
+
+        # Plot Left Foot Contact 
+        for j in range(1, len(lf_contact_index_change)):
+            t_start = data_x[lf_contact_index_change[j-1]]
+            t_end = data_x[lf_contact_index_change[j]]            
+            y_start = data_lf_contact[lf_contact_index_change[j-1]] * ax1.get_ylim()[1]/2.0 * 0.9
+            y_end = data_lf_contact[lf_contact_index_change[j]] * ax1.get_ylim()[1]/2.0 * 0.9            
+
+            # Plot Square Wave
+            plt.plot([t_start, t_end, t_end], [y_start, y_start, y_end], color='orange')
+
+        # Plot Right Foot Contact 
+        for j in range(1, len(rf_contact_index_change)):
+            t_start = data_x[rf_contact_index_change[j-1]]
+            t_end = data_x[rf_contact_index_change[j]]            
+            y_start = data_rf_contact[rf_contact_index_change[j-1]] * ax1.get_ylim()[1]/2.0
+            y_end = data_rf_contact[rf_contact_index_change[j]] * ax1.get_ylim()[1]/2.0            
+
+            # Plot Square Wave
+            plt.plot([t_start, t_end, t_end], [y_start, y_start, y_end], color='magenta')
+
+
         plt.grid(True)
     plt.xlabel('time (sec)')
     figure_number += 1
