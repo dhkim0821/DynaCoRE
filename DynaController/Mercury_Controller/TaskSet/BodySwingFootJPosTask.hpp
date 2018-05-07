@@ -1,5 +1,5 @@
-#ifndef WBDC_COM_BODY_ORIENTATION_RELATIVE_FOOT_POS_TASK
-#define WBDC_COM_BODY_ORIENTATION_RELATIVE_FOOT_POS_TASK
+#ifndef WBDC_COM_BODY_ORIENTATION_SWING_FOOT_JPOS_TASK
+#define WBDC_COM_BODY_ORIENTATION_SWING_FOOT_JPOS_TASK
 
 #include <Task.hpp>
 
@@ -7,10 +7,10 @@ class Mercury_StateProvider;
 class RobotSystem;
 
 // CoM_{x, y, z}, BodyOri_{Rx, Ry, Rz}, Foot (x, y, z)
-class BodyRelativeFootTask: public Task{
+class BodySwingFootJPosTask: public Task{
 public:
-  BodyRelativeFootTask(RobotSystem*, int swing_foot);
-  virtual ~BodyRelativeFootTask();
+  BodySwingFootJPosTask(RobotSystem*, int swing_foot);
+  virtual ~BodySwingFootJPosTask();
 
   dynacore::Vector Kp_vec_;
   dynacore::Vector Kd_vec_;

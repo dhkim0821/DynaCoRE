@@ -1,4 +1,4 @@
-#include "BodyRelativeFootTask.hpp"
+#include "BodySwingFootJPosTask.hpp"
 #include <Configuration.h>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <Mercury/Mercury_Model.hpp>
@@ -6,7 +6,7 @@
 
 #include <Utils/utilities.hpp>
 
-BodyRelativeFootTask::BodyRelativeFootTask(RobotSystem* robot, int swing_foot):
+BodySwingFootJPosTask::BodySwingFootJPosTask(RobotSystem* robot, int swing_foot):
     Task(9),
     robot_sys_(robot),
     swing_foot_(swing_foot)
@@ -21,12 +21,12 @@ BodyRelativeFootTask::BodyRelativeFootTask(RobotSystem* robot, int swing_foot):
 
   sp_ = Mercury_StateProvider::getStateProvider();
   Jt_ = dynacore::Matrix::Zero(dim_task_, mercury::num_qdot);
-   printf("[BodyFoot Task] Constructed\n");
+   printf("[Body Swing Foot JPos Task] Constructed\n");
 }
 
-BodyRelativeFootTask::~BodyRelativeFootTask(){}
+BodySwingFootJPosTask::~BodySwingFootJPosTask(){}
 
-bool BodyRelativeFootTask::_UpdateCommand(void* pos_des,
+bool BodySwingFootJPosTask::_UpdateCommand(void* pos_des,
                                     const dynacore::Vector & vel_des,
                                     const dynacore::Vector & acc_des){
 
@@ -64,7 +64,7 @@ bool BodyRelativeFootTask::_UpdateCommand(void* pos_des,
     op_cmd_[i+3] = acc_des[i+3] + Kp_vec_[i+3] * ori_err[i] + Kd_vec_[i+3] * (vel_des[i+1] - sp_->Qdot_[i+3]);
   }
 
-  // Foot Position
+  // Swing Foot JPos 
   dynacore::Vect3 foot_pos, foot_vel;
   robot_sys_->getPos(swing_foot_, foot_pos);
   robot_sys_->getLinearVel(swing_foot_, foot_vel);
@@ -82,7 +82,7 @@ bool BodyRelativeFootTask::_UpdateCommand(void* pos_des,
   return true;
 }
 
-bool BodyRelativeFootTask::_UpdateTaskJacobian(){
+bool BodySwingFootJPosTask::_UpdateTaskJacobian(){
   dynacore::Matrix Jbody, Jcom, Jfoot;
 
   robot_sys_->getCoMJacobian(Jcom);
@@ -105,7 +105,7 @@ bool BodyRelativeFootTask::_UpdateTaskJacobian(){
   return true;
 }
 
-bool BodyRelativeFootTask::_UpdateTaskJDotQdot(){
+bool BodySwingFootJPosTask::_UpdateTaskJDotQdot(){
   // TODO
   JtDotQdot_ = dynacore::Vector::Zero(dim_task_);
 

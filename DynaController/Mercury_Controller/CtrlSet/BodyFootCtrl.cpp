@@ -1,7 +1,7 @@
 #include "BodyFootCtrl.hpp"
 #include <Configuration.h>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
-#include <Mercury_Controller/TaskSet/BodyRelativeFootTask.hpp>
+#include <Mercury_Controller/TaskSet/BodyFootTask.hpp>
 #include <Mercury_Controller/ContactSet/SingleContact.hpp>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <Mercury/Mercury_Model.hpp>
@@ -28,7 +28,7 @@ BodyFootCtrl::BodyFootCtrl(RobotSystem* robot, int swing_foot):
     curr_foot_acc_des_.setZero();
 
 
-    body_foot_task_ = new BodyRelativeFootTask(robot, swing_foot);
+    body_foot_task_ = new BodyFootTask(robot, swing_foot);
     if(swing_foot == mercury_link::leftFoot) {
         single_contact_ = new SingleContact(robot, mercury_link::rightFoot); }
     else if(swing_foot == mercury_link::rightFoot) {
@@ -259,11 +259,11 @@ void BodyFootCtrl::CtrlInitialization(const std::string & setting_file_name){
     // Feedback Gain
     handler.getVector("Kp", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
-        ((BodyRelativeFootTask*)body_foot_task_)->Kp_vec_[i] = tmp_vec[i];
+        ((BodyFootTask*)body_foot_task_)->Kp_vec_[i] = tmp_vec[i];
     }
     handler.getVector("Kd", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
-        ((BodyRelativeFootTask*)body_foot_task_)->Kd_vec_[i] = tmp_vec[i];
+        ((BodyFootTask*)body_foot_task_)->Kd_vec_[i] = tmp_vec[i];
     }
     //printf("[Body Foot Ctrl] Parameter Setup Completed\n");
 }
