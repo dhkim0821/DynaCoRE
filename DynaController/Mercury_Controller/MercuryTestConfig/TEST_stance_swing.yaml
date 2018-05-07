@@ -1,7 +1,8 @@
 swing_foot: right
 
 # Initialization
-initial_jpos: [0.02, -1.1, 1.6, -0.02, -1.1, 1.6]
+#initial_jpos: [0.02, -1.1, 1.6, -0.02, -1.1, 1.6]
+initial_jpos: [0.02, -0.92, 1.55, -0.02, -0.93, 1.59]
 com_height: 0.85
 
 # Timing Parameters (sec)
@@ -10,7 +11,7 @@ com_lifting_time: 2.0
 
 
 # Timing Parameters (sec)
-stance_time: 10.0
+stance_time: 1.0
 transition_time: 0.1
 moving_preparation_time: 1.0
 swing_duration: 100.

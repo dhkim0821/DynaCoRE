@@ -2,8 +2,8 @@ start_phase: 0
 
 # Initialization
 #initial_jpos: [0.04, -0.90, 1.55, -0.0229, -0.83, 1.59]
-#initial_jpos: [0.07, -0.92, 1.55, -0.05029, -0.93, 1.59]
-initial_jpos: [0.02, -1.1, 1.6, -0.02, -1.1, 1.6]
+initial_jpos: [0.07, -0.92, 1.55, -0.05029, -0.93, 1.59]
+#initial_jpos: [0.02, -1.1, 1.6, -0.02, -1.1, 1.6]
 com_height: 0.85
 
 # Timing Parameters (sec)
@@ -12,9 +12,9 @@ com_lifting_time: 2.0
 
 ## Experiment
 swing_time: 0.4
-st_transition_time: 0.07
-end_transition_time: 0.07
-stance_time: 0.04
+st_transition_time: 0.06
+end_transition_time: 0.06
+stance_time: 0.02
 
 ## Simulation
 # swing_time: 0.355
@@ -24,6 +24,6 @@ stance_time: 0.04
 
 # 0: default stepping test (no planning)
 planning_frequency: 1
-transition_phase_mix_ratio: 0.7
+transition_phase_mix_ratio: 1.0
 double_stance_mix_ratio: 0.0
 contact_switch_check: true
