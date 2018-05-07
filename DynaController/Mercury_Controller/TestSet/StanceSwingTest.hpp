@@ -32,6 +32,7 @@ protected:
   Controller* body_fix_ctrl_;
   Controller* swing_start_trans_ctrl_;
   Controller* swing_ctrl_;
+  Controller* jpos_swing_ctrl_;
   
   const RobotSystem* robot_sys_;
 };

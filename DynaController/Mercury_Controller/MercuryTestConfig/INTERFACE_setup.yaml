@@ -1,7 +1,7 @@
 #test_name: body_ctrl_test
 #test_name: foot_ctrl_test
-test_name: walking_test
-#test_name: stance_swing_test
+#test_name: walking_test
+test_name: stance_swing_test
 #test_name: joint_ctrl_test
 
 base_condition: floating

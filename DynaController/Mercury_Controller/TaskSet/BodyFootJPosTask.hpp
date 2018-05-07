@@ -7,10 +7,10 @@ class Mercury_StateProvider;
 class RobotSystem;
 
 // CoM_{x, y, z}, BodyOri_{Rx, Ry, Rz}, Foot (x, y, z)
-class BodySwingFootJPosTask: public Task{
+class BodyFootJPosTask: public Task{
 public:
-  BodySwingFootJPosTask(RobotSystem*, int swing_foot);
-  virtual ~BodySwingFootJPosTask();
+  BodyFootJPosTask(RobotSystem*, int swing_foot);
+  virtual ~BodyFootJPosTask();
 
   dynacore::Vector Kp_vec_;
   dynacore::Vector Kd_vec_;
@@ -28,6 +28,7 @@ protected:
   virtual bool _UpdateTaskJDotQdot();
   virtual bool _AdditionalUpdate(){ return true;}
 
+  int swing_leg_jidx_;
   const Mercury_StateProvider* sp_;
   const RobotSystem* robot_sys_;
 };

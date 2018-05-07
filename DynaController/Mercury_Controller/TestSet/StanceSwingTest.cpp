@@ -5,6 +5,7 @@
 #include <Mercury_Controller/CtrlSet/ContactTransBodyCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/CoMzRxRyRzCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/BodyFootCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/BodyFootJPosCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/TransitionCtrl.hpp>
 #include <Utils/DataManager.hpp>
 
@@ -30,26 +31,23 @@ StanceSwingTest::StanceSwingTest(RobotSystem* robot):Test(robot){
         printf("[Stance Swing Test] Incorrect Foot Setting\n");
         exit(0);
     }
-printf("swing foot: %d\n", swing_foot_);
     jpos_ctrl_ = new JPosTargetCtrl(robot);
     body_up_ctrl_ = new ContactTransBodyCtrl(robot);
     body_fix_ctrl_ = new CoMzRxRyRzCtrl(robot);
-
-printf("swing foot: %d\n", swing_foot_);
 
     swing_start_trans_ctrl_ = 
         new TransitionCtrl(robot, swing_foot_, false);
     swing_ctrl_ = 
         new BodyFootCtrl(robot, swing_foot_);
+    jpos_swing_ctrl_ = new BodyFootJPosCtrl(robot, swing_foot_);
 
-printf("swing foot: %d\n", swing_foot_);
     state_list_.clear();
     state_list_.push_back(jpos_ctrl_);
     state_list_.push_back(body_up_ctrl_);
     state_list_.push_back(body_fix_ctrl_);
     state_list_.push_back(swing_start_trans_ctrl_);
-    state_list_.push_back(swing_ctrl_);
-
+    //state_list_.push_back(swing_ctrl_);
+    state_list_.push_back(jpos_swing_ctrl_);
 
     _SettingParameter(handler);
 
@@ -80,6 +78,7 @@ StanceSwingTest::~StanceSwingTest(){
     for(int i(0); i<state_list_.size(); ++i){
         delete state_list_[i];
     }
+    state_list_.clear();
 }
 
 void StanceSwingTest::TestInitialization(){
@@ -91,6 +90,7 @@ void StanceSwingTest::TestInitialization(){
     swing_start_trans_ctrl_->CtrlInitialization("CTRL_trans");
     // Swing
     swing_ctrl_->CtrlInitialization("CTRL_stance_swing");
+    jpos_swing_ctrl_->CtrlInitialization("CTRL_stance_swing");
 }
 
 int StanceSwingTest::_NextPhase(const int & phase){
@@ -120,6 +120,7 @@ void StanceSwingTest::_SettingParameter(ParamHandler& handler){
 
     ((TransitionCtrl*)swing_start_trans_ctrl_)->setStanceHeight(tmp);
     ((BodyFootCtrl*)swing_ctrl_)->setStanceHeight(tmp);
+    ((BodyFootJPosCtrl*)jpos_swing_ctrl_)->setStanceHeight(tmp);
 
     //// Timing Setup
     handler.getValue("jpos_initialization_time", tmp);
@@ -135,17 +136,23 @@ void StanceSwingTest::_SettingParameter(ParamHandler& handler){
     // Swing
     handler.getValue("swing_duration", tmp);
     ((BodyFootCtrl*)swing_ctrl_)->setSwingTime(tmp);
+    ((BodyFootJPosCtrl*)jpos_swing_ctrl_)->setSwingTime(tmp);
     handler.getValue("moving_preparation_time", tmp);
     ((BodyFootCtrl*)swing_ctrl_)->setMovingTime(tmp);
+    ((BodyFootJPosCtrl*)jpos_swing_ctrl_)->setMovingTime(tmp);
     handler.getValue("swing_height", tmp);
     ((BodyFootCtrl*)swing_ctrl_)->setSwingHeight(tmp);
+    ((BodyFootJPosCtrl*)jpos_swing_ctrl_)->setSwingHeight(tmp);
 
     handler.getVector("amplitude", tmp_vec);
     ((BodyFootCtrl*)swing_ctrl_)->setAmplitude(tmp_vec);
+    ((BodyFootJPosCtrl*)jpos_swing_ctrl_)->setAmplitude(tmp_vec);
     handler.getVector("frequency", tmp_vec);
     ((BodyFootCtrl*)swing_ctrl_)->setFrequency(tmp_vec);
+    ((BodyFootJPosCtrl*)jpos_swing_ctrl_)->setFrequency(tmp_vec);
     handler.getVector("phase", tmp_vec);
     ((BodyFootCtrl*)swing_ctrl_)->setPhase(tmp_vec);
+    ((BodyFootJPosCtrl*)jpos_swing_ctrl_)->setPhase(tmp_vec);
 
     printf("[Stance Swing Test] Complete to Setup Parameters\n");
 }

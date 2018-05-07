@@ -40,6 +40,21 @@ namespace mercury_link{
     constexpr int LED_BODY_2 = 30;
 };
 
+namespace mercury_joint{
+    constexpr int virtual_X = 0;
+    constexpr int virtual_Y = 1;
+    constexpr int virtual_Z = 2;
+    constexpr int virtual_Rx = 3;
+    constexpr int virtual_Ry = 4;
+    constexpr int virtual_Rz = 5;
+    constexpr int rightAbduction = 6;
+    constexpr int rightHip = 7;
+    constexpr int rightKnee = 8;
+    constexpr int leftAbduction = 9;
+    constexpr int leftHip = 10;
+    constexpr int leftKnee = 11;
+};
+
 namespace mercury_trj_type{
     constexpr int sinusoidal = 0;
     constexpr int ramp = 1;
