@@ -9,12 +9,15 @@ data_location=$PATH_PACKAGE
 mkdir -p ${target_folder}/${folder_name}
 mkdir -p ${target_folder}/${folder_name}/Config
 
+echo "Copying txt files..."
 cp ${mercury_nodelet}/config/* ${target_folder}/${folder_name}/
 cp ${data_location}/DynaController/Mercury_Controller/MercuryTestConfig/* ${target_folder}/${folder_name}/Config/
-cp ${data_location}/experiment_data/* ${target_folder}/${folder_name}/
-cp ${data_location}/experiment_data/* ${data_location}/experiment_data_check/
-
-
+cp ${data_location}/experiment_data/*.txt ${target_folder}/${folder_name}/
+cp ${data_location}/experiment_data/*.txt ${data_location}/experiment_data_check/
+echo "Finished copying txt files"
+echo "Copying movie files if it exists..."
+cp ${data_location}/experiment_data/*.mp4 ${target_folder}/${folder_name}/
+echo "Copying operations finished"
 # Move experiment data to the other folder to plot data
 
 # Remove every data for the next experiment

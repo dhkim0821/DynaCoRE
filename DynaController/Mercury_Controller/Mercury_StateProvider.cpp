@@ -20,7 +20,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 rotor_inertia_(mercury::num_act_joint),
                                 b_rfoot_contact_(0),
                                 b_lfoot_contact_(0),
-                                estimated_com_state_(4)
+                                estimated_com_state_(4),
+                                global_foot_height_(0.)
 {
   Q_.setZero();
   Qdot_.setZero();
