@@ -53,6 +53,7 @@ namespace mercury_joint{
     constexpr int leftAbduction = 9;
     constexpr int leftHip = 10;
     constexpr int leftKnee = 11;
+    constexpr int virtual_Rw = 12;
 };
 
 namespace mercury_trj_type{

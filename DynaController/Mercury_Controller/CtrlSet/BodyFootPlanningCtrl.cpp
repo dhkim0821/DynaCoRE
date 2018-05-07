@@ -480,6 +480,13 @@ void BodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_file_n
         wbdc_data_->tau_min[i] = tmp_vec[i];
     }
 
-    ((Reversal_LIPM_Planner*)planner_)->CheckEigenValues(double_stance_ratio_*stance_time_ + transition_phase_ratio_*transition_time_ + end_time_);
-    printf("[Body Foot Planning Ctrl] Parameter Setup Completed\n");
+    static bool b_compute_eigenvalue(true);
+    if(b_compute_eigenvalue){
+        ((Reversal_LIPM_Planner*)planner_)->
+            CheckEigenValues(double_stance_ratio_*stance_time_ + 
+                    transition_phase_ratio_*transition_time_ + 
+                    end_time_);
+        b_compute_eigenvalue = false;
+    }
+    //printf("[Body Foot Planning Ctrl] Parameter Setup Completed\n");
 }

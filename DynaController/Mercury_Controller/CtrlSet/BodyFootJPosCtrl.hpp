@@ -3,6 +3,7 @@
 
 #include <Controller.hpp>
 #include <Utils/BSplineBasic.h>
+#include <Mercury_Controller/Mercury_InvKinematics.hpp>
 
 class Mercury_StateProvider;
 class RobotSystem;
@@ -78,6 +79,7 @@ class BodyFootJPosCtrl:public Controller{
         void _body_foot_ctrl(dynacore::Vector & gamma);
 
         Mercury_StateProvider* sp_;
+        Mercury_InvKinematics inv_kin_;
         double ctrl_start_time_;
 };
 #endif
