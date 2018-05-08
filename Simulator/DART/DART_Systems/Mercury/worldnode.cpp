@@ -281,8 +281,8 @@ void WorldNode::holdhorizontal(){
     for(int i(0); i<3 ;i++){
         //Kp(i,i) = 5.0;
         //Kd(i,i) = 0.3;
-        Kp(i,i) = 1000.0;
-        Kd(i,i) = 100.0;
+        Kp(i,i) = 2000.0;
+        Kd(i,i) = 200.0;
     }
 
     Eigen::Vector3d Force;
