@@ -123,6 +123,8 @@ void BodyFootJPosPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
         (wbdc_rotor_data_->opt_result_).tail(single_contact_->getDim());
     for(int i(0); i<3; ++i)
         sp_->reaction_forces_[i + offset] = reaction_force[i];
+
+    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
 }
 
 
@@ -262,11 +264,13 @@ void BodyFootJPosPlanningCtrl::FirstVisit(){
     robot_sys_->getPos(swing_foot_, ini_foot_pos_);
     dynacore::Vect3 zero;
     zero.setZero();
-    default_target_loc_[0] = sp_->Q_[0];
-    default_target_loc_[2] = ini_foot_pos_[2];
+    dynacore::Vect3 target_loc = default_target_loc_;
+    target_loc[0] = sp_->Q_[0];
+    target_loc[1] += sp_->Q_[1];
+    target_loc[2] = ini_foot_pos_[2];
     //default_target_loc_[2] = 0.0;
     default_target_loc_[2] -= push_down_height_;
-    _SetBspline(ini_swing_leg_config_, zero, zero, default_target_loc_);
+    _SetBspline(ini_swing_leg_config_, zero, zero, target_loc);
 
     // _Replanning();
     num_planning_ = 0;
@@ -281,8 +285,8 @@ void BodyFootJPosPlanningCtrl::FirstVisit(){
     com_estimator_->EstimatorInitialization(input_state);
     _CoMEstiamtorUpdate();
 
-     dynacore::pretty_print(ini_foot_pos_, std::cout, "ini foot pos");
-     dynacore::pretty_print(default_target_loc_, std::cout, "default target loc");
+     //dynacore::pretty_print(ini_foot_pos_, std::cout, "ini foot pos");
+     //dynacore::pretty_print(target_loc, std::cout, "target loc");
 }
 
 void BodyFootJPosPlanningCtrl::_CoMEstiamtorUpdate(){
@@ -329,10 +333,7 @@ void BodyFootJPosPlanningCtrl::_SetBspline(
     inv_kin_.getLegConfigAtVerticalPosture(swing_foot_, middle_pos, 
             sp_->Q_, config_sol);
     dynacore::Vect3 mid_config = config_sol.segment(swing_leg_jidx_, 3);
-    // TEST 
-    //dynacore::Vect3 mid_config = st_config;
-    mid_config[1] -=0.4;
-    mid_config[2] += 0.3;
+    
     for(int i(0); i<3; ++i){
         // Initial
         init[i] = st_config[i];

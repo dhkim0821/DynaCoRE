@@ -10,10 +10,10 @@ jpos_initialization_time: 1.3
 com_lifting_time: 2.0
 
 ## Experiment
-swing_time: 0.5
-st_transition_time: 0.1
-end_transition_time: 0.1
-stance_time: 0.04
+swing_time: 0.40
+st_transition_time: 0.08
+end_transition_time: 0.08
+stance_time: 0.03
 
 ## Simulation
 # swing_time: 0.355

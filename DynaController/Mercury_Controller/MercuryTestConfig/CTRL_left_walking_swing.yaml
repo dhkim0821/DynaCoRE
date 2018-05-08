@@ -1,8 +1,8 @@
 planner_name: velocity_reversal_lipm
-swing_height: 0.08
-push_down_height: 0.02
+swing_height: 0.17
+push_down_height: 0.01
 #push_down_height: 0.02
-default_target_foot_location: [0.0, 0.16, 0.0]
+default_target_foot_location: [0.0, 0.1, 0.0]
 
 ## Feedback Gain
 # CoMx, CoMy, CoMz, Rx, Ry, Rz, Foot_x, Foot_y, Foot_z
@@ -13,8 +13,8 @@ default_target_foot_location: [0.0, 0.16, 0.0]
 # Kp: [0.0, 0.0, 100., 90., 90., 0., 250, 250, 350]
 # Kd: [0.0, 0.0,   0.,  0.,  0.,  0.,  10,  10,  20]
 
-Kp: [0.0, 0.0, 100., 90., 90., 0., 200, 200, 200]
-Kd: [0.0, 0.0,   0.,  0.,  0.,  0.,  5,  5,  5]
+Kp: [0.0, 0.0, 100., 100., 90., 0., 250, 300, 350]
+Kd: [0.0, 0.0,   0.,  0.,  0.,  0.,  12,  17, 17]
 
 # Torque limt (Nm)
 torque_max: [50, 50, 50, 30, 30, 50]
