@@ -4,6 +4,8 @@ PATH_PACKAGE=$(dirname "$(pwd)")
 mercury_nodelet="/home/hcrl/ros/mercury_nodelet"
 
 folder_name=$(date +%Y%m%d_%H_%M_%S)
+export LATEST_FOLDER_NAME=${folder_name}
+
 target_folder="/home/hcrl/MyCloud/Apptronik/Mercury_Test_2018/"
 data_location=$PATH_PACKAGE
 mkdir -p ${target_folder}/${folder_name}
@@ -15,12 +17,7 @@ cp ${data_location}/DynaController/Mercury_Controller/MercuryTestConfig/* ${targ
 cp ${data_location}/experiment_data/*.txt ${target_folder}/${folder_name}/
 cp ${data_location}/experiment_data/*.txt ${data_location}/experiment_data_check/
 echo "Finished copying txt files"
-echo "Copying movie files if it exists..."
-cp ${data_location}/experiment_data/*.mp4 ${target_folder}/${folder_name}/
-echo "Copying operations finished"
-# Move experiment data to the other folder to plot data
-
 # Remove every data for the next experiment
-rm $PATH_PACKAGE/experiment_data/*
+rm $PATH_PACKAGE/experiment_data/*.txt
 
-exit 0
+
