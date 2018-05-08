@@ -32,8 +32,9 @@ def save_latest_video():
         video_links = ['http://'+camera_ip+link['href'] for link in links if link['href'].endswith('MP4')] #extract the MP4 Link
         media_url = video_links[-1]                             # get the last video of the list
 
-        for item in video_links:
-            print item
+        # Prints all the media url
+        #for item in video_links: 
+        #    print item
 
         print 'URL of the Latest media: ', media_url  #print the url
         video = requests.get(media_url,stream=True)

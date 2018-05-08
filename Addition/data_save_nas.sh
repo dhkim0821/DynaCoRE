@@ -1,6 +1,6 @@
 #! /bin/bash
-#PATH_PACKAGE="/home/hcrl/Repository/dynacore"
-PATH_PACKAGE=$(dirname "$(pwd)")
+PATH_PACKAGE="/home/hcrl/Repository/dynacore"
+#PATH_PACKAGE=$(dirname "$(pwd)")
 mercury_nodelet="/home/hcrl/ros/mercury_nodelet"
 
 folder_name=$(date +%Y%m%d_%H_%M_%S)
