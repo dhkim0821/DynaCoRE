@@ -4,6 +4,7 @@
 #include <Controller.hpp>
 #include <Utils/BSplineBasic.h>
 #include <Mercury_Controller/StateEstimator/LIPM_KalmanFilter.hpp>
+#include <Mercury_Controller/Mercury_InvKinematics.hpp>
 
 class Mercury_StateProvider;
 class RobotSystem;
@@ -42,21 +43,16 @@ public:
   }
   void setContactSwitchCheck(bool switch_check){ b_contact_switch_check_ = switch_check; }
 
-  dynacore::Vect3 curr_foot_pos_des_;
-  dynacore::Vect3 curr_foot_vel_des_;
-  dynacore::Vect3 curr_foot_acc_des_;
-
-  dynacore::Vect3 curr_foot_pos_;
-  dynacore::Vect3 curr_foot_vel_;
-  dynacore::Vect3 curr_foot_acc_;
-
+  dynacore::Vect3 curr_jpos_des_;
+  dynacore::Vect3 curr_jvel_des_;
+  dynacore::Vect3 curr_jacc_des_;
 
 protected:
   void _CoMEstiamtorUpdate();
 
-  void _SetBspline(const dynacore::Vect3 & st_pos,
-                   const dynacore::Vect3 & st_vel,
-                   const dynacore::Vect3 & st_acc,
+  void _SetBspline(const dynacore::Vect3 & st_config,
+                   const dynacore::Vect3 & st_jvel,
+                   const dynacore::Vect3 & st_jacc,
                    const dynacore::Vect3 & target_pos);
   double replan_moment_;
 
@@ -69,8 +65,12 @@ protected:
 
   int swing_foot_;
   double swing_height_;
+  int swing_leg_jidx_;
   double push_down_height_; // push foot below the ground at landing
   dynacore::Vect3 default_target_loc_;
+  dynacore::Vector ini_swing_leg_config_;
+  dynacore::Vector mid_swing_leg_config_;
+  dynacore::Vector target_swing_leg_config_;
 
   double planning_frequency_;
   int num_planning_;
@@ -102,6 +102,7 @@ protected:
   
   CoMStateEstimator* com_estimator_;
   Mercury_StateProvider* sp_;
+  Mercury_InvKinematics inv_kin_;
   double ctrl_start_time_;
 };
 

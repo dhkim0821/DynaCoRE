@@ -1,5 +1,5 @@
 planner_name: velocity_reversal_lipm
-swing_height: 0.15
+swing_height: 0.10
 push_down_height: 0.0
 #push_down_height: 0.02
 default_target_foot_location: [0.0, -0.20, 0.0]

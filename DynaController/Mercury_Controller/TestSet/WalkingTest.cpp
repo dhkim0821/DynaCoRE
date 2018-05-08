@@ -5,6 +5,7 @@
 #include <Mercury_Controller/CtrlSet/ContactTransBodyCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/CoMzRxRyRzCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/BodyFootPlanningCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/BodyFootJPosPlanningCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/TransitionCtrl.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Planner/PIPM_FootPlacementPlanner/Reversal_LIPM_Planner.hpp>
@@ -34,6 +35,8 @@ robot_sys_ = robot;
       new TransitionCtrl(robot, mercury_link::rightFoot, false);
   right_swing_ctrl_ = 
       new BodyFootPlanningCtrl(robot, mercury_link::rightFoot, reversal_planner_);
+  jpos_right_swing_ctrl_ = 
+      new BodyFootJPosPlanningCtrl(robot, mercury_link::rightFoot, reversal_planner_);
   right_swing_end_trans_ctrl_ = 
       new TransitionCtrl(robot, mercury_link::rightFoot, true);
   // Left
@@ -41,6 +44,8 @@ robot_sys_ = robot;
       new TransitionCtrl(robot, mercury_link::leftFoot, false);
   left_swing_ctrl_ = 
       new BodyFootPlanningCtrl(robot, mercury_link::leftFoot, reversal_planner_);
+  jpos_left_swing_ctrl_ = 
+      new BodyFootJPosPlanningCtrl(robot, mercury_link::leftFoot, reversal_planner_);
   left_swing_end_trans_ctrl_ = 
       new TransitionCtrl(robot, mercury_link::leftFoot, true);
 
@@ -48,11 +53,15 @@ robot_sys_ = robot;
   state_list_.push_back(body_up_ctrl_);
   state_list_.push_back(body_fix_ctrl_);
   state_list_.push_back(right_swing_start_trans_ctrl_);
-  state_list_.push_back(right_swing_ctrl_);
+  // OP or JPos foot position control
+  //state_list_.push_back(right_swing_ctrl_);
+  state_list_.push_back(jpos_right_swing_ctrl_);
   state_list_.push_back(right_swing_end_trans_ctrl_);
   state_list_.push_back(body_fix_ctrl_);
   state_list_.push_back(left_swing_start_trans_ctrl_);
-  state_list_.push_back(left_swing_ctrl_);
+  // OP or JPos foot position control
+  //state_list_.push_back(left_swing_ctrl_);
+  state_list_.push_back(jpos_left_swing_ctrl_);
   state_list_.push_back(left_swing_end_trans_ctrl_);
 
   _SettingParameter();
@@ -98,6 +107,9 @@ void WalkingTest::TestInitialization(){
   // Swing
   right_swing_ctrl_->CtrlInitialization("CTRL_right_walking_swing");
   left_swing_ctrl_->CtrlInitialization("CTRL_left_walking_swing");
+
+  jpos_right_swing_ctrl_->CtrlInitialization("CTRL_right_walking_swing");
+  jpos_left_swing_ctrl_->CtrlInitialization("CTRL_left_walking_swing");
 }
 
 int WalkingTest::_NextPhase(const int & phase){
@@ -168,6 +180,8 @@ void WalkingTest::_SettingParameter(){
 
   ((BodyFootPlanningCtrl*)right_swing_ctrl_)->setStanceHeight(tmp);
   ((BodyFootPlanningCtrl*)left_swing_ctrl_)->setStanceHeight(tmp);
+  ((BodyFootJPosPlanningCtrl*)jpos_right_swing_ctrl_)->setStanceHeight(tmp);
+  ((BodyFootJPosPlanningCtrl*)jpos_left_swing_ctrl_)->setStanceHeight(tmp);
   ((Reversal_LIPM_Planner*)reversal_planner_)->setOmega(tmp);
 
   //// Timing Setup
@@ -187,6 +201,9 @@ void WalkingTest::_SettingParameter(){
   ((BodyFootPlanningCtrl*)right_swing_ctrl_)->setSwingTime(tmp);
   ((BodyFootPlanningCtrl*)left_swing_ctrl_)->setSwingTime(tmp);
 
+  ((BodyFootJPosPlanningCtrl*)jpos_right_swing_ctrl_)->setSwingTime(tmp);
+  ((BodyFootJPosPlanningCtrl*)jpos_left_swing_ctrl_)->setSwingTime(tmp);
+
   // Transition Time
   handler.getValue("st_transition_time", tmp);
   ((TransitionCtrl*)right_swing_start_trans_ctrl_)->setTransitionTime(tmp);
@@ -197,22 +214,38 @@ void WalkingTest::_SettingParameter(){
   ((BodyFootPlanningCtrl*)right_swing_ctrl_)->notifyTransitionTime(tmp);
   ((BodyFootPlanningCtrl*)left_swing_ctrl_)->notifyTransitionTime(tmp);
 
+  ((BodyFootJPosPlanningCtrl*)jpos_right_swing_ctrl_)->notifyTransitionTime(tmp);
+  ((BodyFootJPosPlanningCtrl*)jpos_left_swing_ctrl_)->notifyTransitionTime(tmp);
+
   //// Planner Setup
   handler.getValue("planning_frequency", tmp);
   ((BodyFootPlanningCtrl*)right_swing_ctrl_)->setPlanningFrequency(tmp);
   ((BodyFootPlanningCtrl*)left_swing_ctrl_)->setPlanningFrequency(tmp);
 
+  ((BodyFootJPosPlanningCtrl*)jpos_right_swing_ctrl_)->setPlanningFrequency(tmp);
+  ((BodyFootJPosPlanningCtrl*)jpos_left_swing_ctrl_)->setPlanningFrequency(tmp);
+
   handler.getValue("double_stance_mix_ratio", tmp);
   ((BodyFootPlanningCtrl*)right_swing_ctrl_)->setDoubleStanceRatio(tmp);
   ((BodyFootPlanningCtrl*)left_swing_ctrl_)->setDoubleStanceRatio(tmp);
+
+  ((BodyFootJPosPlanningCtrl*)jpos_right_swing_ctrl_)->setDoubleStanceRatio(tmp);
+  ((BodyFootJPosPlanningCtrl*)jpos_left_swing_ctrl_)->setDoubleStanceRatio(tmp);
+
 
   handler.getValue("transition_phase_mix_ratio", tmp);
   ((BodyFootPlanningCtrl*)right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
   ((BodyFootPlanningCtrl*)left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
 
+  ((BodyFootJPosPlanningCtrl*)jpos_right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+  ((BodyFootJPosPlanningCtrl*)jpos_left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+
   handler.getBoolean("contact_switch_check", b_tmp);
   ((BodyFootPlanningCtrl*)right_swing_ctrl_)->setContactSwitchCheck(b_tmp);
   ((BodyFootPlanningCtrl*)left_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+
+  ((BodyFootJPosPlanningCtrl*)jpos_right_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+  ((BodyFootJPosPlanningCtrl*)jpos_left_swing_ctrl_)->setContactSwitchCheck(b_tmp);
 
 
   printf("[Walking Test] Complete to Setup Parameters\n");

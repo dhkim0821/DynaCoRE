@@ -202,7 +202,6 @@ void BodyFootJPosCtrl::_single_contact_setup(){
 }
 
 void BodyFootJPosCtrl::FirstVisit(){
-     printf("[Body Foot Ctrl] Start\n");
     ini_swing_leg_config_ = sp_->Q_.segment(swing_leg_jidx_, 3);
     dynacore::Vect3 target_foot_pos;
     robot_sys_->getPos(swing_foot_, target_foot_pos);
@@ -219,7 +218,7 @@ void BodyFootJPosCtrl::FirstVisit(){
     ctrl_start_time_ = sp_->curr_time_;
     state_machine_time_ = 0.;
 
-     dynacore::pretty_print(ini_swing_leg_config_, std::cout, "ini leg config");
+     //dynacore::pretty_print(ini_swing_leg_config_, std::cout, "ini leg config");
 }
 
 void BodyFootJPosCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
