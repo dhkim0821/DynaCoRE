@@ -28,18 +28,19 @@ BodyFootJPosPlanningCtrl::BodyFootJPosPlanningCtrl(
     b_contact_switch_check_(false)
 {
     planner_ = planner;
-    curr_foot_pos_des_.setZero();
-    curr_foot_vel_des_.setZero();
-    curr_foot_acc_des_.setZero();
-
-    curr_foot_pos_.setZero();
-    curr_foot_vel_.setZero();
+    curr_jpos_des_.setZero();
+    curr_jvel_des_.setZero();
+    curr_jacc_des_.setZero();
 
     body_foot_task_ = new BodyFootJPosTask(robot, swing_foot);
     if(swing_foot == mercury_link::leftFoot) {
-        single_contact_ = new SingleContact(robot, mercury_link::rightFoot); }
+        single_contact_ = new SingleContact(robot, mercury_link::rightFoot); 
+        swing_leg_jidx_ = mercury_joint::leftAbduction;
+    }
     else if(swing_foot == mercury_link::rightFoot) {
-        single_contact_ = new SingleContact(robot, mercury_link::leftFoot); }
+        single_contact_ = new SingleContact(robot, mercury_link::leftFoot);
+        swing_leg_jidx_ = mercury_joint::rightAbduction;
+    }
     else printf("[Warnning] swing foot is not foot: %i\n", swing_foot);
 
     std::vector<bool> act_list;
@@ -150,7 +151,7 @@ void BodyFootJPosPlanningCtrl::_task_setup(){
     _CheckPlanning();
 
     double traj_time = state_machine_time_ - replan_moment_;
-    // Foot Position Task
+    // Swing Foot Config Task
     double pos[3];
     double vel[3];
     double acc[3];
@@ -162,22 +163,21 @@ void BodyFootJPosPlanningCtrl::_task_setup(){
     // printf("pos:%f, %f, %f\n", pos[0], pos[1], pos[2]);
 
     for(int i(0); i<3; ++i){
-        curr_foot_pos_des_[i] = pos[i];
-        curr_foot_vel_des_[i] = vel[i];
-        curr_foot_acc_des_[i] = acc[i];
+        sp_->jpos_des_[swing_leg_jidx_ - mercury::num_virtual + i] = pos[i];
+        sp_->jvel_des_[swing_leg_jidx_ - mercury::num_virtual + i] = vel[i];
 
-        pos_des[i + 7] = curr_foot_pos_des_[i];
-        vel_des[i + 6] = curr_foot_vel_des_[i];
-        acc_des[i + 6] = curr_foot_acc_des_[i];
+        curr_jpos_des_[i] = pos[i];
+        curr_jvel_des_[i] = vel[i];
+        curr_jacc_des_[i] = acc[i];
+ 
+        pos_des[i + 7] = curr_jpos_des_[i];
+        vel_des[i + 6] = curr_jvel_des_[i];
+        acc_des[i + 6] = curr_jacc_des_[i];
     }
     // dynacore::pretty_print(vel_des, std::cout, "[Ctrl] vel des");
     // Push back to task list
     body_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
     task_list_.push_back(body_foot_task_);
-    //
-    // For Save
-    robot_sys_->getPos(swing_foot_, curr_foot_pos_);
-    robot_sys_->getLinearVel(swing_foot_, curr_foot_vel_);
 }
 
 void BodyFootJPosPlanningCtrl::_CheckPlanning(){
@@ -243,7 +243,7 @@ void BodyFootJPosPlanningCtrl::_Replanning(){
     //dynacore::pretty_print(target_loc, std::cout, "next foot loc");
     //curr_foot_acc_des_.setZero();
     //curr_foot_vel_des_.setZero();
-    _SetBspline(curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
+    _SetBspline(curr_jpos_des_, curr_jvel_des_, curr_jacc_des_, target_loc);
 }
 
 void BodyFootJPosPlanningCtrl::_single_contact_setup(){
@@ -252,20 +252,21 @@ void BodyFootJPosPlanningCtrl::_single_contact_setup(){
 }
 
 void BodyFootJPosPlanningCtrl::FirstVisit(){
-    // printf("[Body Foot Ctrl] Start\n");
-
-    robot_sys_->getPos(swing_foot_, ini_foot_pos_);
+   // printf("[Body Foot Ctrl] Start\n");
     ctrl_start_time_ = sp_->curr_time_;
     state_machine_time_ = 0.;
     replan_moment_ = 0.;
 
+    ini_swing_leg_config_ = sp_->Q_.segment(swing_leg_jidx_, 3);
+
+    robot_sys_->getPos(swing_foot_, ini_foot_pos_);
     dynacore::Vect3 zero;
     zero.setZero();
     default_target_loc_[0] = sp_->Q_[0];
     default_target_loc_[2] = ini_foot_pos_[2];
     //default_target_loc_[2] = 0.0;
     default_target_loc_[2] -= push_down_height_;
-    _SetBspline(ini_foot_pos_, zero, zero, default_target_loc_);
+    _SetBspline(ini_swing_leg_config_, zero, zero, default_target_loc_);
 
     // _Replanning();
     num_planning_ = 0;
@@ -280,7 +281,8 @@ void BodyFootJPosPlanningCtrl::FirstVisit(){
     com_estimator_->EstimatorInitialization(input_state);
     _CoMEstiamtorUpdate();
 
-    // dynacore::pretty_print(ini_foot_pos_, std::cout, "ini foot pos");
+     dynacore::pretty_print(ini_foot_pos_, std::cout, "ini foot pos");
+     dynacore::pretty_print(default_target_loc_, std::cout, "default target loc");
 }
 
 void BodyFootJPosPlanningCtrl::_CoMEstiamtorUpdate(){
@@ -294,9 +296,10 @@ void BodyFootJPosPlanningCtrl::_CoMEstiamtorUpdate(){
     com_estimator_->Output(sp_->estimated_com_state_);
 }
 
-void BodyFootJPosPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
-        const dynacore::Vect3 & st_vel,
-        const dynacore::Vect3 & st_acc,
+void BodyFootJPosPlanningCtrl::_SetBspline(
+        const dynacore::Vect3 & st_config,
+        const dynacore::Vect3 & st_jvel,
+        const dynacore::Vect3 & st_jacc,
         const dynacore::Vect3 & target_pos){
     // Trajectory Setup
     double init[9];
@@ -306,24 +309,42 @@ void BodyFootJPosPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
 
     // printf("time (state/end): %f, %f\n", state_machine_time_, end_time_);
     double portion = (1./end_time_) * (end_time_/2. - state_machine_time_);
-    // printf("portion: %f\n\n", portion);
-    // Initial and final position & velocity & acceleration
+
+    // Find Target Config
+    dynacore::Vector config_sol;
+    inv_kin_.getLegConfigAtVerticalPosture(swing_foot_, target_pos, 
+            sp_->Q_, config_sol);
+    dynacore::Vect3 target_config = config_sol.segment(swing_leg_jidx_, 3);
+
+    // Find Mid Config
+    dynacore::Vect3 st_pos;
+    inv_kin_.getFootPosAtVerticalPosture(swing_foot_, st_config, sp_->Q_, st_pos);
+    dynacore::Vect3 middle_pos;
+    if(portion > 0.){
+        middle_pos = (st_pos + target_pos)*portion;
+        middle_pos[2] = swing_height_;
+    } else {
+        middle_pos = (st_pos + target_pos)/2.;
+    }
+    inv_kin_.getLegConfigAtVerticalPosture(swing_foot_, middle_pos, 
+            sp_->Q_, config_sol);
+    dynacore::Vect3 mid_config = config_sol.segment(swing_leg_jidx_, 3);
+    // TEST 
+    //dynacore::Vect3 mid_config = st_config;
+    mid_config[1] -=0.4;
+    mid_config[2] += 0.3;
     for(int i(0); i<3; ++i){
         // Initial
-        init[i] = st_pos[i];
-        init[i+3] = st_vel[i];
-        init[i+6] = st_acc[i];
+        init[i] = st_config[i];
+        init[i+3] = st_jvel[i];
+        init[i+6] = st_jacc[i];
         // Final
-        fin[i] = target_pos[i];
+        fin[i] = target_config[i];
         fin[i+3] = 0.;
         fin[i+6] = 0.;
-
-        if(portion > 0.)
-            middle_pt[0][i] = (st_pos[i] + target_pos[i])*portion;
-        else
-            middle_pt[0][i] = (st_pos[i] + target_pos[i])/2.;
-    }
-    if(portion > 0.)  middle_pt[0][2] = swing_height_;
+        // mid
+        middle_pt[0][i] = mid_config[i];
+   }
 
     foot_traj_.SetParam(init, fin, middle_pt, end_time_ - replan_moment_);
 
