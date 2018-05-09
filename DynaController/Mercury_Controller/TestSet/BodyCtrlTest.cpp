@@ -2,7 +2,7 @@
 
 #include <Mercury_Controller/CtrlSet/JPosTargetCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/ContactTransBodyCtrl.hpp>
-#include <Mercury_Controller/CtrlSet/CoMzRxRyRzCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/BodyRxRyRzCtrl.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury/Mercury_Definition.h>
@@ -13,8 +13,8 @@ BodyCtrlTest::BodyCtrlTest(RobotSystem* robot):Test(robot){
 
   jpos_ctrl_ = new JPosTargetCtrl(robot);
   body_up_ctrl_ = new ContactTransBodyCtrl(robot);
-  body_fix_ctrl_ = new CoMzRxRyRzCtrl(robot);
-  body_shake_ctrl_ = new CoMzRxRyRzCtrl(robot);
+  body_fix_ctrl_ = new BodyRxRyRzCtrl(robot);
+  body_shake_ctrl_ = new BodyRxRyRzCtrl(robot);
 
   state_list_.push_back(jpos_ctrl_);
   state_list_.push_back(body_up_ctrl_);
@@ -60,28 +60,28 @@ void BodyCtrlTest::_SettingParameter(){
   ((JPosTargetCtrl*)jpos_ctrl_)->setTargetPosition(tmp_vec);
 
   // CoM Height
-  handler.getValue("com_height", tmp);
+  handler.getValue("body_height", tmp);
   ((ContactTransBodyCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
-  ((CoMzRxRyRzCtrl*)body_fix_ctrl_)->setStanceHeight(tmp);
-  ((CoMzRxRyRzCtrl*)body_shake_ctrl_)->setStanceHeight(tmp);
+  ((BodyRxRyRzCtrl*)body_fix_ctrl_)->setStanceHeight(tmp);
+  ((BodyRxRyRzCtrl*)body_shake_ctrl_)->setStanceHeight(tmp);
 
   //// Timing Setup
   handler.getValue("jpos_initialization_time", tmp);
   ((JPosTargetCtrl*)jpos_ctrl_)->setMovingTime(tmp);
-  handler.getValue("com_lifting_time", tmp);
+  handler.getValue("body_lifting_time", tmp);
   ((ContactTransBodyCtrl*)body_up_ctrl_)->setStanceTime(tmp);
 
   // Stance Time
   handler.getValue("body_stay_time", tmp);
-  ((CoMzRxRyRzCtrl*)body_fix_ctrl_)->setStanceTime(tmp);
+  ((BodyRxRyRzCtrl*)body_fix_ctrl_)->setStanceTime(tmp);
   handler.getValue("body_ctrl_time", tmp);
-  ((CoMzRxRyRzCtrl*)body_shake_ctrl_)->setStanceTime(tmp);
+  ((BodyRxRyRzCtrl*)body_shake_ctrl_)->setStanceTime(tmp);
 
   // Motion Setup
   handler.getVector("amp", tmp_vec);
-  ((CoMzRxRyRzCtrl*)body_shake_ctrl_)->setAmp(tmp_vec);
+  ((BodyRxRyRzCtrl*)body_shake_ctrl_)->setAmp(tmp_vec);
   handler.getVector("frequency", tmp_vec);
-  ((CoMzRxRyRzCtrl*)body_shake_ctrl_)->setFrequency(tmp_vec);
+  ((BodyRxRyRzCtrl*)body_shake_ctrl_)->setFrequency(tmp_vec);
   handler.getVector("phase", tmp_vec);
-  ((CoMzRxRyRzCtrl*)body_shake_ctrl_)->setPhase(tmp_vec);
+  ((BodyRxRyRzCtrl*)body_shake_ctrl_)->setPhase(tmp_vec);
 }

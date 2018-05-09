@@ -1,13 +1,13 @@
 #ifndef WBDC_COM_BODY_ORIENTATION_FOOT_TASK
 #define WBDC_COM_BODY_ORIENTATION_FOOT_TASK
 
-#include <WBDC_Relax/WBDC_Relax_Task.hpp>
+#include <Task.hpp>
 
 class Mercury_StateProvider;
 class RobotSystem;
 
 // CoM_{x, y, z}, BodyOri_{Rx, Ry, Rz}, Foot (x, y, z)
-class BodyFootTask: public WBDC_Relax_Task{
+class BodyFootTask: public Task{
 public:
   BodyFootTask(RobotSystem*, int swing_foot);
   virtual ~BodyFootTask();
@@ -27,7 +27,7 @@ protected:
   // Update JtDotQdot_
   virtual bool _UpdateTaskJDotQdot();
 
-  const Mercury_StateProvider* sp_;
+  Mercury_StateProvider* sp_;
   const RobotSystem* robot_sys_;
 };
 

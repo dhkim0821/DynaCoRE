@@ -1,9 +1,8 @@
-#ifndef BODY_FOOT_JOINT_POSITION_CONTROL
-#define BODY_FOOT_JOINT_POSITION_CONTROL
+#ifndef COM_STANCE_FOOT_CONTROL
+#define COM_STANCE_FOOT_CONTROL
 
 #include <Controller.hpp>
 #include <Utils/BSplineBasic.h>
-#include <Mercury_Controller/Mercury_InvKinematics.hpp>
 
 class Mercury_StateProvider;
 class RobotSystem;
@@ -11,10 +10,10 @@ class WBDC_ContactSpec;
 class WBDC_Rotor;
 class WBDC_Rotor_ExtraData;
 
-class BodyFootJPosCtrl:public Controller{
+class CoMFootCtrl:public Controller{
     public:
-        BodyFootJPosCtrl(RobotSystem* robot, int swing_foot);
-        ~BodyFootJPosCtrl();
+        CoMFootCtrl(RobotSystem* robot, int swing_foot);
+        ~CoMFootCtrl();
         virtual void OneStep(dynacore::Vector & gamma);
         virtual void FirstVisit();
         virtual void LastVisit();
@@ -23,7 +22,7 @@ class BodyFootJPosCtrl:public Controller{
         virtual void CtrlInitialization(const std::string & setting_file_name);
 
         void setStanceHeight(double height) {
-            des_body_height_ = height;
+            des_com_height_ = height;
             b_set_height_target_ = true;
         }
 
@@ -51,21 +50,19 @@ class BodyFootJPosCtrl:public Controller{
         std::vector<double> phase_;
 
         bool b_set_height_target_;
-        double des_body_height_;
+        double des_com_height_;
 
         int swing_foot_;
-        int swing_leg_jidx_;
         double swing_height_;
-        dynacore::Vector ini_swing_leg_config_;
-        dynacore::Vector target_swing_leg_config_;
+        dynacore::Vect3 foot_pos_set_;
 
-        Task* body_foot_task_;
+        Task* com_foot_task_;
         WBDC_ContactSpec* single_contact_;
 
         WBDC_Rotor* wbdc_rotor_;
         WBDC_Rotor_ExtraData* wbdc_rotor_data_;
 
-        dynacore::Vect3 ini_body_pos_;
+        dynacore::Vect3 ini_com_pos_;
         dynacore::Vect3 ini_foot_pos_;
         dynacore::Vect3 target_foot_pos_;
 
@@ -76,10 +73,9 @@ class BodyFootJPosCtrl:public Controller{
 
         void _task_setup();
         void _single_contact_setup();
-        void _body_foot_ctrl(dynacore::Vector & gamma);
+        void _com_foot_ctrl(dynacore::Vector & gamma);
 
         Mercury_StateProvider* sp_;
-        Mercury_InvKinematics inv_kin_;
         double ctrl_start_time_;
 };
 #endif

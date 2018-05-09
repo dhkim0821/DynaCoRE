@@ -1,14 +1,15 @@
-#include "TransitionCtrl.hpp"
+#include "TransitionCoMCtrl.hpp"
 #include <Configuration.h>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
-#include <Mercury_Controller/TaskSet/BodyOriTask.hpp>
+#include <Mercury_Controller/TaskSet/CoMOriTask.hpp>
 #include <Mercury_Controller/ContactSet/DoubleContactBounding.hpp>
+#include <WBDC_Relax/WBDC_Relax.hpp>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury/Mercury_Definition.h>
 #include <ParamHandler/ParamHandler.hpp>
 
-TransitionCtrl::TransitionCtrl(RobotSystem* robot, int moving_foot, bool b_increase):
+TransitionCoMCtrl::TransitionCoMCtrl(RobotSystem* robot, int moving_foot, bool b_increase):
     Controller(robot),
     b_set_height_target_(false),
     moving_foot_(moving_foot),
@@ -16,19 +17,29 @@ TransitionCtrl::TransitionCtrl(RobotSystem* robot, int moving_foot, bool b_incre
     end_time_(100.),
     ctrl_start_time_(0.)
 {
-    body_task_ = new BodyOriTask();
+    com_task_ = new CoMOriTask(robot);
     double_contact_ = new DoubleContactBounding(robot, moving_foot);
     std::vector<bool> act_list;
     act_list.resize(mercury::num_qdot, true);
     for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
 
+    wbdc_ = new WBDC_Relax(act_list);
+
+    wbdc_data_ = new WBDC_Relax_ExtraData();
+    wbdc_data_->tau_min = dynacore::Vector(mercury::num_act_joint);
+    wbdc_data_->tau_max = dynacore::Vector(mercury::num_act_joint);
+
+    for(int i(0); i<mercury::num_act_joint; ++i){
+        wbdc_data_->tau_max[i] = 100.0;
+        wbdc_data_->tau_min[i] = -100.0;
+    }
     wbdc_rotor_ = new WBDC_Rotor(act_list);
     wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
     wbdc_rotor_data_->A_rotor = 
         dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(
-                body_task_->getDim() + 
+                com_task_->getDim() + 
                 double_contact_->getDim(), 100.0);
 
     wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
@@ -37,33 +48,36 @@ TransitionCtrl::TransitionCtrl(RobotSystem* robot, int moving_foot, bool b_incre
 
     wbdc_rotor_data_->cost_weight.tail(double_contact_->getDim()) = 
         dynacore::Vector::Constant(double_contact_->getDim(), 1.0);
-    wbdc_rotor_data_->cost_weight[body_task_->getDim() + 2]  = 0.001; // Fr_z
-    wbdc_rotor_data_->cost_weight[body_task_->getDim() + 5]  = 0.001; // Fr_z
+    wbdc_rotor_data_->cost_weight[com_task_->getDim() + 2]  = 0.001; // Fr_z
+    wbdc_rotor_data_->cost_weight[com_task_->getDim() + 5]  = 0.001; // Fr_z
 
    sp_ = Mercury_StateProvider::getStateProvider();
      printf("[Transition Controller] Constructed\n");
 }
 
-TransitionCtrl::~TransitionCtrl(){
-    delete body_task_;
+TransitionCoMCtrl::~TransitionCoMCtrl(){
+    delete com_task_;
     delete double_contact_;
+    delete wbdc_;
+    delete wbdc_data_;
 
     delete wbdc_rotor_;
     delete wbdc_rotor_data_;
 }
 
-void TransitionCtrl::OneStep(dynacore::Vector & gamma){
+void TransitionCoMCtrl::OneStep(dynacore::Vector & gamma){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
     gamma.setZero();
     _double_contact_setup();
-    _body_task_setup();
-    _body_ctrl_wbdc_rotor(gamma);
+    _com_task_setup();
+    //_com_ctrl(gamma);
+    _com_ctrl_wbdc_rotor(gamma);
 
     _PostProcessing_Command();
 }
 
-void TransitionCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
+void TransitionCoMCtrl::_com_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     
 #if MEASURE_TIME_WBDC 
     static int time_count(0);
@@ -92,7 +106,7 @@ void TransitionCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     std::chrono::duration<double> time_span1 
         = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
     if(time_count%500 == 1){
-        std::cout << "[body ctrl] WBDC_Rotor took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
+        std::cout << "[com ctrl] WBDC_Rotor took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
     }
 #endif
     
@@ -106,15 +120,24 @@ void TransitionCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     //dynacore::pretty_print(sp_->reflected_reaction_force_, std::cout, "reflected force");
 }
 
-void TransitionCtrl::_body_task_setup(){
+
+void TransitionCoMCtrl::_com_ctrl(dynacore::Vector & gamma){
+    wbdc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    wbdc_->MakeTorque(task_list_, contact_list_, gamma, wbdc_data_);
+
+    for(int i(0); i<6; ++i)
+        sp_->reaction_forces_[i] = wbdc_data_->opt_result_[i];
+}
+
+void TransitionCoMCtrl::_com_task_setup(){
     dynacore::Vector pos_des(3 + 4);
-    dynacore::Vector vel_des(body_task_->getDim());
-    dynacore::Vector acc_des(body_task_->getDim());
+    dynacore::Vector vel_des(com_task_->getDim());
+    dynacore::Vector acc_des(com_task_->getDim());
     pos_des.setZero(); vel_des.setZero(); acc_des.setZero();
 
     // CoM Pos
-    pos_des.head(3) = ini_body_pos_;
-    if(b_set_height_target_) pos_des[2] = des_body_height_;
+    pos_des.head(3) = ini_com_pos_;
+    if(b_set_height_target_) pos_des[2] = des_com_height_;
     // Orientation
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion quat_des;
@@ -126,13 +149,31 @@ void TransitionCtrl::_body_task_setup(){
     pos_des[5] = quat_des.y();
     pos_des[6] = quat_des.z();
 
-    body_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+    com_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+
+    // set relaxed op direction
+    // cost weight setup
+    // bool b_height_relax(false);
+    bool b_height_relax(true);
+    if(b_height_relax){
+        std::vector<bool> relaxed_op(com_task_->getDim(), true);
+        com_task_->setRelaxedOpCtrl(relaxed_op);
+
+        int prev_size(wbdc_data_->cost_weight.rows());
+        wbdc_data_->cost_weight.conservativeResize(prev_size + com_task_->getDim());
+        wbdc_data_->cost_weight[prev_size] = 0.0001;
+        wbdc_data_->cost_weight[prev_size+1] = 0.0001;
+        wbdc_data_->cost_weight[prev_size+2] = 10.;
+        wbdc_data_->cost_weight[prev_size+3] = 10.;
+        wbdc_data_->cost_weight[prev_size+4] = 10.;
+        wbdc_data_->cost_weight[prev_size+5] = 1.;
+    }
 
     // Push back to task list
-    task_list_.push_back(body_task_);
+    task_list_.push_back(com_task_);
 }
 
-void TransitionCtrl::_double_contact_setup(){
+void TransitionCoMCtrl::_double_contact_setup(){
     if(b_increase_){
         ((DoubleContactBounding*)double_contact_)->setFrictionCoeff(0.05, 0.3);
         ((DoubleContactBounding*)double_contact_)->setFzUpperLimit(
@@ -144,26 +185,34 @@ void TransitionCtrl::_double_contact_setup(){
     }
 
     double_contact_->UpdateContactSpec();
+
     contact_list_.push_back(double_contact_);
+
+    wbdc_data_->cost_weight = dynacore::Vector::Zero(double_contact_->getDim());
+    for(int i(0); i<double_contact_->getDim(); ++i){
+        wbdc_data_->cost_weight[i] = 1.;
+    }
+    wbdc_data_->cost_weight[2] = 0.0001;
+    wbdc_data_->cost_weight[5] = 0.0001;
 }
 
-void TransitionCtrl::FirstVisit(){
+void TransitionCoMCtrl::FirstVisit(){
     // printf("[Transition] Start\n");
     ctrl_start_time_ = sp_->curr_time_;
 }
 
-void TransitionCtrl::LastVisit(){
+void TransitionCoMCtrl::LastVisit(){
     // printf("[Transition] End\n");
 }
 
-bool TransitionCtrl::EndOfPhase(){
+bool TransitionCoMCtrl::EndOfPhase(){
     if(state_machine_time_ > end_time_){
         return true;
     }
     return false;
 }
-void TransitionCtrl::CtrlInitialization(const std::string & setting_file_name){
-    robot_sys_->getCoMPosition(ini_body_pos_);
+void TransitionCoMCtrl::CtrlInitialization(const std::string & setting_file_name){
+    robot_sys_->getCoMPosition(ini_com_pos_);
     std::vector<double> tmp_vec;
 
     ParamHandler handler(MercuryConfigPath + setting_file_name + ".yaml");
@@ -173,11 +222,11 @@ void TransitionCtrl::CtrlInitialization(const std::string & setting_file_name){
     // Feedback Gain
     handler.getVector("Kp", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
-        ((BodyOriTask*)body_task_)->Kp_vec_[i] = tmp_vec[i];
+        ((CoMOriTask*)com_task_)->Kp_vec_[i] = tmp_vec[i];
     }
     handler.getVector("Kd", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
-        ((BodyOriTask*)body_task_)->Kd_vec_[i] = tmp_vec[i];
+        ((CoMOriTask*)com_task_)->Kd_vec_[i] = tmp_vec[i];
     }
 
 }

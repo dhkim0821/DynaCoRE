@@ -1,5 +1,5 @@
-#ifndef BODY_FOOT_JOINT_POSITION_WALKING_CONTROL
-#define BODY_FOOT_JOINT_POSITION_WALKING_CONTROL
+#ifndef COM_FOOT_JOINT_POSITION_WALKING_CONTROL
+#define COM_FOOT_JOINT_POSITION_WALKING_CONTROL
 
 #include <Controller.hpp>
 #include <Utils/BSplineBasic.h>
@@ -14,10 +14,10 @@ class WBDC_ContactSpec;
 class WBDC_Rotor;
 class WBDC_Rotor_ExtraData;
 
-class BodyFootJPosPlanningCtrl:public Controller{
+class CoMFootJPosPlanningCtrl:public Controller{
 public:
-  BodyFootJPosPlanningCtrl(RobotSystem* robot, int swing_foot, Planner* planner);
-  ~BodyFootJPosPlanningCtrl();
+  CoMFootJPosPlanningCtrl(RobotSystem* robot, int swing_foot, Planner* planner);
+  ~CoMFootJPosPlanningCtrl();
   virtual void OneStep(dynacore::Vector & gamma);
   virtual void FirstVisit();
   virtual void LastVisit();
@@ -36,10 +36,10 @@ public:
   void setPrimeTimeX(double t_p_x){ t_prime_x_ = t_p_x; }
   void setPrimeTimeY(double t_p_y){ t_prime_y_ = t_p_y; }
   void setStanceHeight(double height) {
-    des_body_height_ = height;
+    des_com_height_ = height;
     b_set_height_target_ = true;
     // CoM estimator
-    com_estimator_->h_ = des_body_height_;
+    com_estimator_->h_ = des_com_height_;
   }
   void setContactSwitchCheck(bool switch_check){ b_contact_switch_check_ = switch_check; }
 
@@ -58,7 +58,7 @@ protected:
 
   bool b_contact_switch_check_;
   bool b_set_height_target_;
-  double des_body_height_;
+  double des_com_height_;
 
   double double_stance_ratio_;
   double transition_phase_ratio_;
@@ -77,7 +77,7 @@ protected:
   double t_prime_x_;
   double t_prime_y_;
 
-  Task* body_foot_task_;
+  Task* com_foot_task_;
   WBDC_ContactSpec* single_contact_;
   WBDC_Rotor* wbdc_rotor_;
   WBDC_Rotor_ExtraData* wbdc_rotor_data_;
@@ -86,7 +86,7 @@ protected:
   void _CheckPlanning();
   void _Replanning();
 
- dynacore::Vect3 ini_body_pos_;
+ dynacore::Vect3 ini_com_pos_;
   dynacore::Vect3 ini_foot_pos_;
   dynacore::Vect3 target_foot_pos_;
 
@@ -98,7 +98,7 @@ protected:
 
   void _task_setup();
   void _single_contact_setup();
-  void _body_foot_ctrl(dynacore::Vector & gamma);
+  void _com_foot_ctrl(dynacore::Vector & gamma);
   
   CoMStateEstimator* com_estimator_;
   Mercury_StateProvider* sp_;

@@ -1,22 +1,19 @@
-#ifndef COM_HEIGHT_RX_RY_RZ_CONTROL
-#define COM_HEIGHT_RX_RY_RZ_CONTROL
+#ifndef BODY_HEIGHT_RX_RY_RZ_CONTROL
+#define BODY_HEIGHT_RX_RY_RZ_CONTROL
 
 #include <Controller.hpp>
 
 class Mercury_StateProvider;
-class WBDC_Relax;
-class WBDC_Relax_ExtraData;
-class WBDC_Relax_Task;
-class WBDC_ContactSpec;
 class RobotSystem;
 
+class WBDC_ContactSpec;
 class WBDC_Rotor;
 class WBDC_Rotor_ExtraData;
 
-class CoMzRxRyRzCtrl: public Controller{
+class BodyRxRyRzCtrl: public Controller{
     public:
-        CoMzRxRyRzCtrl(RobotSystem*);
-        virtual ~CoMzRxRyRzCtrl();
+        BodyRxRyRzCtrl(RobotSystem*);
+        virtual ~BodyRxRyRzCtrl();
 
         virtual void OneStep(dynacore::Vector & gamma);
         virtual void FirstVisit();
@@ -31,7 +28,7 @@ class CoMzRxRyRzCtrl: public Controller{
         void setPhase(const std::vector<double> & phase);
 
         void setStanceHeight(double height) {
-            des_com_height_ = height;
+            des_body_height_ = height;
             b_set_height_target_ = true;
         }
 
@@ -40,23 +37,21 @@ class CoMzRxRyRzCtrl: public Controller{
 
         int dim_ctrl_;
         bool b_set_height_target_;
-        double des_com_height_;
+        double des_body_height_;
 
-        WBDC_Relax* wbdc_;
-        WBDC_Relax_ExtraData* wbdc_data_;
-        WBDC_Relax_Task* com_task_;
+        Task* body_task_;
         WBDC_ContactSpec* double_contact_;
 
         WBDC_Rotor* wbdc_rotor_;
         WBDC_Rotor_ExtraData* wbdc_rotor_data_;
 
-        dynacore::Vect3 ini_com_pos_;
+        dynacore::Vector body_pos_ini_;
+        dynacore::Vect3 ini_body_pos_;
 
         double end_time_;
-        void _com_task_setup();
+        void _body_task_setup();
         void _double_contact_setup();
-        void _com_ctrl(dynacore::Vector & gamma);
-        void _com_ctrl_wbdc_rotor(dynacore::Vector & gamma);
+        void _body_ctrl_wbdc_rotor(dynacore::Vector & gamma);
 
         Mercury_StateProvider* sp_;
         double ctrl_start_time_;
