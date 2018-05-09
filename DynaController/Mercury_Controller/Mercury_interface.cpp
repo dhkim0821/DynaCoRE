@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string>
 #include <Utils/utilities.hpp>
+#include <Utils/pseudo_inverse.hpp>
 #include <Utils/DataManager.hpp>
 #include <Utils/wrap_eigen.hpp>
 #include "Mercury_StateProvider.hpp"
@@ -173,15 +174,31 @@ void Mercury_interface::GetCommand( void* _data,
         }
     }
 
-    // TEST
-    //for(int i(0); i<mercury::num_act_joint; ++i){
-        //command[i + mercury::num_act_joint] = torque_command_[i];
-    //}
-
     running_time_ = (double)(count_) * mercury::servo_rate;
     ++count_;
     // When there is sensed time
     sp_->curr_time_ = running_time_;
+
+
+    // TEST
+    //dynacore::Matrix Jfoot, Jfoot_inv;
+    //dynacore::Vect3 foot_pos;
+    //dynacore::Vector config = sp_->Q_;
+    //for(int i(0); i<3; ++i){
+    //config[i] = 0.;
+    //}
+
+    //int link_id = mercury_link::leftFoot;
+    //robot_sys_->getPos(link_id, foot_pos);
+    //robot_sys_->getFullJacobian(link_id, Jfoot);
+    //dynacore::pseudoInverse(Jfoot.block(3,0, 3, mercury::num_qdot), 0.0001, Jfoot_inv);
+  
+    //dynacore::pretty_print(sp_->Q_, std::cout, "config");
+    //dynacore::pretty_print(foot_pos, std::cout, "foot pos");
+    //dynacore::pretty_print(Jfoot, std::cout, "JFoot");
+    //dynacore::pretty_print(Jfoot_inv, std::cout, "JFoot inv");
+
+
 
     //if(count_%500== 1){
     //dynacore::pretty_print(data->imu_ang_vel, "imu ang vel", 3);

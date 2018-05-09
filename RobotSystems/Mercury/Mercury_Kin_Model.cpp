@@ -226,6 +226,19 @@ void Mercury_Kin_Model::getJacobian(int link_id, dynacore::Matrix &J){
                 model_->mBodies[bodyid].mCenterOfMass,
                 J, false);
     }
+    // Virtual rotation joint axis must be always aligned with the global frame
+    // Orientation
+    J.block(0,3,3,3) = dynacore::Matrix::Identity(3,3);
+    // Linear
+    dynacore::Vect3 p_link, p_body, dp;
+    getPos(link_id, p_link);
+    getPos(mercury_link::body, p_body);
+    dp = p_link - p_body;
+    dynacore::Matrix p_mtx(3,3);
+    p_mtx(0, 0) = 0.;       p_mtx(0, 1) = dp[2];   p_mtx(0, 2) = -dp[1];
+    p_mtx(1, 0) = -dp[2];   p_mtx(1, 1) = 0.;      p_mtx(1, 2) = dp[0];
+    p_mtx(2, 0) = dp[1];    p_mtx(2, 1) = -dp[0];  p_mtx(2, 2) = 0.;
+    J.block(3,3,3,3) = p_mtx;
 }
 
 void Mercury_Kin_Model::getJacobianDot6D_Analytic(int link_id, dynacore::Matrix & Jdot){
