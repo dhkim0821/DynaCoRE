@@ -113,9 +113,9 @@ bool BodyFootJPosTask::_UpdateTaskJDotQdot(){
   // TODO
   JtDotQdot_ = dynacore::Vector::Zero(dim_task_);
 
-  dynacore::Matrix Jfoot_dot;
-  robot_sys_->getFullJacobianDot(swing_foot_, Jfoot_dot);
-  JtDotQdot_.tail(3) = Jfoot_dot.block(3, 0, 3, mercury::num_qdot) * sp_->Qdot_;
+  //dynacore::Matrix Jfoot_dot;
+  //robot_sys_->getFullJacobianDot(swing_foot_, Jfoot_dot);
+  //JtDotQdot_.tail(3) = Jfoot_dot.block(3, 0, 3, mercury::num_qdot) * sp_->Qdot_;
 
   return true;
 }
