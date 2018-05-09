@@ -18,6 +18,10 @@ class Mercury_InvKinematics{
                 int link_id, const dynacore::Vect3 & target_pos,
                 const dynacore::Vector & guess_Q, dynacore::Vector & config_sol);
 
+        void getDoubleSupportLegConfig(const dynacore::Vector & current_Q,
+                                       const dynacore::Quaternion & des_quat,
+                                       const double & des_height, dynacore::Vector & config_sol);
+
     protected:
         int max_iter_;
 

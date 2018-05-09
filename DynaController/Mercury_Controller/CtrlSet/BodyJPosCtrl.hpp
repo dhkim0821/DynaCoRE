@@ -2,6 +2,8 @@
 #define BODY_JOINT_POSITION_CTRL
 
 #include <Controller.hpp>
+#include <Mercury_Controller/Mercury_InvKinematics.hpp>
+
 
 class Mercury_StateProvider;
 class RobotSystem;
@@ -71,6 +73,8 @@ class BodyJPosCtrl: public Controller{
 
         double ctrl_start_time_;
         Mercury_StateProvider* sp_;
+        Mercury_InvKinematics inv_kin_;
+        
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include <rbdl/urdfreader.h>
 #include <Configuration.h>
 #include <Utils/utilities.hpp>
+#include <Utils/pseudo_inverse.hpp>
 
 using namespace RigidBodyDynamics;
 
@@ -125,6 +126,96 @@ void Mercury_InvKinematics::getLegConfigAtVerticalPosture(
             printf("%d iter, err: %f\n", num_iter, err);
         }
     }
+}
+
+void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & current_Q, 
+                                                      const dynacore::Quaternion & des_quat,
+                                                      const double & des_height, dynacore::Vector & config_sol){
+    config_sol = current_Q;
+
+    // Find Foot body id
+    unsigned int left_foot_bodyid = model_->GetBodyId("lfoot");;
+    unsigned int right_foot_bodyid = model_->GetBodyId("rfoot");;
+    unsigned int body_bodyid = model_->GetBodyId("body");
+
+    int left_leg_jidx = mercury_joint::leftAbduction;
+    int right_leg_jidx = mercury_joint::rightAbduction;
+
+    // Initialize Parameters
+    dynacore::Vect3 left_foot_local_com = model_->mFixedBodies[left_foot_bodyid - model_->fixed_body_discriminator].mCenterOfMass;
+    dynacore::Vect3 right_foot_local_com = model_->mFixedBodies[right_foot_bodyid - model_->fixed_body_discriminator].mCenterOfMass;    
+    //dynacore::Vect3 body_local_com = model_->mFixedBodies[body_bodyid - model_->fixed_body_discriminator].mCenterOfMass;    
+    dynacore::Vect3 body_local_com;
+    body_local_com.setZero();
+
+    // Get the Jacobians of the foot
+    dynacore::Matrix J_left_foot = dynacore::Matrix::Zero(3, mercury::num_qdot);
+    dynacore::Matrix J_right_foot = dynacore::Matrix::Zero(3, mercury::num_qdot);    
+
+    CalcPointJacobian(*model_, current_Q, left_foot_bodyid, left_foot_local_com, J_left_foot, true);
+    CalcPointJacobian(*model_, current_Q, right_foot_bodyid, right_foot_local_com, J_right_foot, false);
+
+    dynacore::pretty_print(current_Q, std::cout, "current_Q");
+    dynacore::pretty_print(J_left_foot, std::cout, "J left foot");
+    dynacore::pretty_print(J_right_foot, std::cout, "J right foot");    
+
+    // Stack the Constraint Jacobians
+    dynacore::Matrix J1 = dynacore::Matrix::Zero(6, mercury::num_qdot);
+    J1.block(0,0, 3, mercury::num_qdot) = J_left_foot;
+    J1.block(3,0, 3, mercury::num_qdot) = J_right_foot;
+    //dynacore::pretty_print(J1, std::cout, "J1");
+
+    // Create the Nullspace
+    // dynacore::Matrix J1_pinv;
+    // double threshold = 0.001;
+    // dynacore::pseudoInverse(J1, threshold, J1_pinv);
+    // dynacore::Matrix N1 = dynacore::Matrix::Identity(mercury::num_qdot, mercury::num_qdot) - J1_pinv*J1;
+    // dynacore::pretty_print(N1, std::cout, "N1");
+
+
+    // Get the Jacobian of the body
+    dynacore::Matrix J_body = dynacore::Matrix::Zero(6, mercury::num_qdot);
+    //dynacore::pretty_print(body_local_com, std::cout, "body_local_com");
+
+    //CalcPointJacobian6D(*model_, current_Q, body_bodyid, body_local_com, J_body, false);   
+    J_body.block(0,0,6,6) = dynacore::Matrix::Identity(6,6);
+
+    dynacore::pretty_print(J_body, std::cout, "body Jacobian");
+
+    // Get the Jacobian rows for Body Roll, Pitch and Height
+    dynacore::Matrix J2 = dynacore::Matrix::Zero(3, mercury::num_qdot);
+    J2.block(0, 0, 2, mercury::num_qdot) = J_body.block(0, 0, 2, mercury::num_qdot);  // (Rx, Ry) Roll and Pitch  
+    J2.block(2, 0, 1, mercury::num_qdot) = J_body.block(5, 0, 1, mercury::num_qdot);  //  Z - body height
+    dynacore::pretty_print(J2, std::cout, "J2");
+
+    //Compute Orientation Error
+    // Orientation
+    dynacore::Quaternion curr_quat;
+    curr_quat.w() = current_Q[mercury::num_qdot];
+    curr_quat.x() = current_Q[3];
+    curr_quat.y() = current_Q[4];
+    curr_quat.z() = current_Q[5];
+
+    dynacore::Quaternion err_quat = dynacore::QuatMultiply(des_quat, curr_quat.inverse());
+    dynacore::Vect3 ori_err;
+    dynacore::convert(err_quat, ori_err);
+
+    // dynacore::pretty_print(curr_quat, std::cout, "curr_quat");
+    // dynacore::pretty_print(des_quat, std::cout, "des_quat");    
+    // dynacore::pretty_print(err_quat, std::cout, "err_quat");    
+    // dynacore::pretty_print(ori_err, std::cout, "ori_err");
+
+    // Compute Height Error
+    double current_height = current_Q[2];
+    double height_error = des_height - current_height;
+    // Construct the operational space error
+    dynacore::Vector delta_x = dynacore::Vector::Zero(3);
+    delta_x[0] = ori_err[0];    
+    delta_x[1] = ori_err[1];
+    delta_x[2] = height_error;
+    //dynacore::pretty_print(delta_x, std::cout, "delta_x");
+
+    // delta_q = pinv(J2N1)*delta_x
 }
 
 

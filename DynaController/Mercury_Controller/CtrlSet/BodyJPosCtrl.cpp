@@ -97,6 +97,27 @@ void BodyJPosCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
 }
 
 void BodyJPosCtrl::_jpos_task_setup(){
+    // Calculate IK for a desired height and orientation.
+    dynacore::Vector Q_cur = sp_->Q_;
+    dynacore::Vector config_sol;
+    //dynacore::pretty_print(Q_cur, std::cout, "Q cur");    
+
+    // Set Desired height
+    double des_height = 0.853;// 0.852689 is the current height
+
+    // Desired Orientation
+    dynacore::Vect3 rpy_des;
+    dynacore::Quaternion des_quat;
+    rpy_des.setZero();
+    dynacore::convert(rpy_des, des_quat);    
+
+    
+    inv_kin_.getDoubleSupportLegConfig(Q_cur, des_quat, des_height, config_sol);
+
+
+
+
+
     dynacore::Vector jpos_des(mercury::num_qdot); jpos_des.setZero();
     dynacore::Vector jvel_des(mercury::num_qdot); jvel_des.setZero();
     dynacore::Vector jacc_des(mercury::num_qdot); jacc_des.setZero();
