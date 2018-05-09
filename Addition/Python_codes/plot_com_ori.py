@@ -23,25 +23,20 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     np.genfromtxt(file_path+'global_pos_local.txt', delimiter=None, dtype=(float))
     data_estimated_com = \
     np.genfromtxt(file_path+'estimated_com_state.txt', delimiter=None, dtype=(float))
+    data_com_des = \
+    np.genfromtxt(file_path+'com_pos_des.txt', delimiter=None, dtype=(float))
     data_com = \
     np.genfromtxt(file_path+'com_pos.txt', delimiter=None, dtype=(float))
-    data_body = \
-    np.genfromtxt(file_path+'body_pos.txt', delimiter=None, dtype=(float))
-    data_body_des = \
-    np.genfromtxt(file_path+'body_pos_des.txt', delimiter=None, dtype=(float))
     data_body_ori_des = \
     np.genfromtxt(file_path+'body_ori_des.txt', delimiter=None, dtype=(float))
     data_body_ori = \
     np.genfromtxt(file_path+'body_ori.txt', delimiter=None, dtype=(float))
-    data_body_vel = \
-    np.genfromtxt(file_path+'body_vel.txt', delimiter=None, dtype=(float))
-    data_body_vel_des = \
-    np.genfromtxt(file_path+'body_vel_des.txt', delimiter=None, dtype=(float))
+    data_com_vel_des = \
+    np.genfromtxt(file_path+'com_vel_des.txt', delimiter=None, dtype=(float))
+    data_com_vel = \
+    np.genfromtxt(file_path+'com_vel.txt', delimiter=None, dtype=(float))
     data_qdot = \
     np.genfromtxt(file_path+'qdot.txt', delimiter=None, dtype=(float))
-    data_q = \
-    np.genfromtxt(file_path+'config.txt', delimiter=None, dtype=(float))
-
 
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
 
@@ -61,14 +56,16 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     axes = plt.gca()
  
     ## plot command/jpos
+    # fig = plt.figure(1)
+    # plt.get_current_fig_manager().window.wm_geometry("480x600+0+0")
+
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
-    fig.canvas.set_window_title('body pos')
+    fig.canvas.set_window_title('com pos')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_com[st_idx:end_idx,i-1], "c-", \
-                data_x, data_body_des[st_idx:end_idx,i-1], "r-", \
-                data_x, data_body[st_idx:end_idx,i-1], "b-")
+        plt.plot(data_x, data_com_des[st_idx:end_idx,i-1], "r-", \
+                data_x, data_com[st_idx:end_idx,i-1], "b-")
 
         if i != 3:
             plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1], "c-")
@@ -92,11 +89,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     # plt.get_current_fig_manager().window.wm_geometry("480x600+540+0")
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))    
-    fig.canvas.set_window_title('body vel')
+    fig.canvas.set_window_title('com vel')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_body_vel_des[st_idx:end_idx,i-1], "r-" , \
-                data_x, data_body_vel[st_idx:end_idx,i-1], "b-")
+        plt.plot(data_x, data_com_vel_des[st_idx:end_idx,i-1], "r-" , \
+                data_x, data_com_vel[st_idx:end_idx,i-1], "b-")
 
         if i != 3:
             plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "c-")

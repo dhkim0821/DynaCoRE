@@ -1,7 +1,7 @@
-#include "BodyFootCtrl.hpp"
+#include "CoMFootCtrl.hpp"
 #include <Configuration.h>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
-#include <Mercury_Controller/TaskSet/BodyFootTask.hpp>
+#include <Mercury_Controller/TaskSet/CoMFootTask.hpp>
 #include <Mercury_Controller/ContactSet/SingleContact.hpp>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <Mercury/Mercury_Model.hpp>
@@ -16,7 +16,7 @@
 #include <chrono>
 #endif 
 
-BodyFootCtrl::BodyFootCtrl(RobotSystem* robot, int swing_foot):
+CoMFootCtrl::CoMFootCtrl(RobotSystem* robot, int swing_foot):
     Controller(robot),
     swing_foot_(swing_foot),
     ctrl_start_time_(0.),
@@ -27,8 +27,7 @@ BodyFootCtrl::BodyFootCtrl(RobotSystem* robot, int swing_foot):
     curr_foot_vel_des_.setZero();
     curr_foot_acc_des_.setZero();
 
-
-    body_foot_task_ = new BodyFootTask(robot, swing_foot);
+    com_foot_task_ = new CoMFootTask(robot, swing_foot);
     if(swing_foot == mercury_link::leftFoot) {
         single_contact_ = new SingleContact(robot, mercury_link::rightFoot); }
     else if(swing_foot == mercury_link::rightFoot) {
@@ -46,7 +45,7 @@ BodyFootCtrl::BodyFootCtrl(RobotSystem* robot, int swing_foot):
         dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(
-                body_foot_task_->getDim() + 
+                com_foot_task_->getDim() + 
                 single_contact_->getDim(), 1000.0);
 
     wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
@@ -55,33 +54,33 @@ BodyFootCtrl::BodyFootCtrl(RobotSystem* robot, int swing_foot):
 
     wbdc_rotor_data_->cost_weight.tail(single_contact_->getDim()) = 
         dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
-    wbdc_rotor_data_->cost_weight[body_foot_task_->getDim() + 2]  = 0.001; // Fr_z
+    wbdc_rotor_data_->cost_weight[com_foot_task_->getDim() + 2]  = 0.001; // Fr_z
 
 
     sp_ = Mercury_StateProvider::getStateProvider();
-    // printf("[BodyFoot Controller] Constructed\n");
+     printf("[CoM Foot Controller] Constructed\n");
 }
 
-BodyFootCtrl::~BodyFootCtrl(){
-    delete body_foot_task_;
+CoMFootCtrl::~CoMFootCtrl(){
+    delete com_foot_task_;
     delete single_contact_;
     delete wbdc_rotor_;
     delete wbdc_rotor_data_;
 }
 
-void BodyFootCtrl::OneStep(dynacore::Vector & gamma){
+void CoMFootCtrl::OneStep(dynacore::Vector & gamma){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
     gamma = dynacore::Vector::Zero(mercury::num_act_joint * 2);
     _single_contact_setup();
     _task_setup();
-    _body_foot_ctrl(gamma);
+    _com_foot_ctrl(gamma);
 
     _PostProcessing_Command();
 }
 
-void BodyFootCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
+void CoMFootCtrl::_com_foot_ctrl(dynacore::Vector & gamma){
 #if MEASURE_TIME_WBDC 
     static int time_count(0);
     time_count++;
@@ -105,7 +104,7 @@ void BodyFootCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
     std::chrono::duration<double> time_span1 
         = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
     if(time_count%500 == 1){
-        std::cout << "[body foot planning] WBDC_Rotor took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
+        std::cout << "[com foot planning] WBDC_Rotor took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
     }
 #endif
 
@@ -117,10 +116,10 @@ void BodyFootCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
         sp_->reaction_forces_[i + offset] = reaction_force[i];
 }
 
-void BodyFootCtrl::_task_setup(){
+void CoMFootCtrl::_task_setup(){
     dynacore::Vector pos_des(3 + 4 + 3);
-    dynacore::Vector vel_des(body_foot_task_->getDim());
-    dynacore::Vector acc_des(body_foot_task_->getDim());
+    dynacore::Vector vel_des(com_foot_task_->getDim());
+    dynacore::Vector acc_des(com_foot_task_->getDim());
     pos_des.setZero(); vel_des.setZero(); acc_des.setZero();
 
     // CoM Pos
@@ -176,17 +175,17 @@ void BodyFootCtrl::_task_setup(){
  
    // dynacore::pretty_print(vel_des, std::cout, "[Ctrl] vel des");
     // Push back to task list
-    body_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
-    task_list_.push_back(body_foot_task_);
+    com_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+    task_list_.push_back(com_foot_task_);
 }
 
-void BodyFootCtrl::_single_contact_setup(){
+void CoMFootCtrl::_single_contact_setup(){
     single_contact_->UpdateContactSpec();
     contact_list_.push_back(single_contact_);
 }
 
-void BodyFootCtrl::FirstVisit(){
-    // printf("[Body Foot Ctrl] Start\n");
+void CoMFootCtrl::FirstVisit(){
+    // printf("[CoM Foot Ctrl] Start\n");
 
     robot_sys_->getPos(swing_foot_, ini_foot_pos_);
     robot_sys_->getPos(swing_foot_, foot_pos_set_);
@@ -210,7 +209,7 @@ void BodyFootCtrl::FirstVisit(){
     // dynacore::pretty_print(ini_foot_pos_, std::cout, "ini foot pos");
 }
 
-void BodyFootCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
+void CoMFootCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
         const dynacore::Vect3 & st_vel,
         const dynacore::Vect3 & st_acc,
         const dynacore::Vect3 & target_pos, 
@@ -240,17 +239,17 @@ void BodyFootCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
 }
 
 
-void BodyFootCtrl::LastVisit(){
+void CoMFootCtrl::LastVisit(){
 }
 
-bool BodyFootCtrl::EndOfPhase(){
+bool CoMFootCtrl::EndOfPhase(){
     if(state_machine_time_ > moving_time_ + swing_time_){
         return true;
     } 
     return false;
 }
 
-void BodyFootCtrl::CtrlInitialization(const std::string & setting_file_name){
+void CoMFootCtrl::CtrlInitialization(const std::string & setting_file_name){
     robot_sys_->getCoMPosition(ini_com_pos_);
     std::vector<double> tmp_vec;
     // Setting Parameters
@@ -259,11 +258,11 @@ void BodyFootCtrl::CtrlInitialization(const std::string & setting_file_name){
     // Feedback Gain
     handler.getVector("Kp", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
-        ((BodyFootTask*)body_foot_task_)->Kp_vec_[i] = tmp_vec[i];
+        ((CoMFootTask*)com_foot_task_)->Kp_vec_[i] = tmp_vec[i];
     }
     handler.getVector("Kd", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
-        ((BodyFootTask*)body_foot_task_)->Kd_vec_[i] = tmp_vec[i];
+        ((CoMFootTask*)com_foot_task_)->Kd_vec_[i] = tmp_vec[i];
     }
-    //printf("[Body Foot Ctrl] Parameter Setup Completed\n");
+    //printf("[CoM Foot Ctrl] Parameter Setup Completed\n");
 }

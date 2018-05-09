@@ -1,5 +1,5 @@
-#ifndef BODY_FOOT_CONTROL
-#define BODY_FOOT_CONTROL
+#ifndef COM_FOOT_PLANNING_CONTROL
+#define COM_FOOT_PLANNING_CONTROL
 
 #include <Controller.hpp>
 #include <Utils/BSplineBasic.h>
@@ -16,10 +16,10 @@ class WBDC_ContactSpec;
 class WBDC_Rotor;
 class WBDC_Rotor_ExtraData;
 
-class BodyFootPlanningCtrl:public Controller{
+class CoMFootPlanningCtrl:public Controller{
 public:
-  BodyFootPlanningCtrl(RobotSystem* robot, int swing_foot, Planner* planner);
-  ~BodyFootPlanningCtrl();
+  CoMFootPlanningCtrl(RobotSystem* robot, int swing_foot, Planner* planner);
+  ~CoMFootPlanningCtrl();
   virtual void OneStep(dynacore::Vector & gamma);
   virtual void FirstVisit();
   virtual void LastVisit();
@@ -82,7 +82,7 @@ protected:
 
   WBDC_Relax* wbdc_;
   WBDC_Relax_ExtraData* wbdc_data_;
-  WBDC_Relax_Task* body_foot_task_;
+  WBDC_Relax_Task* com_foot_task_;
   WBDC_ContactSpec* single_contact_;
 
   WBDC_Rotor* wbdc_rotor_;
@@ -104,8 +104,8 @@ protected:
 
   void _task_setup();
   void _single_contact_setup();
-  void _body_foot_ctrl(dynacore::Vector & gamma);
-  void _body_foot_ctrl_wbdc_rotor(dynacore::Vector & gamma);
+  void _com_foot_ctrl(dynacore::Vector & gamma);
+  void _com_foot_ctrl_wbdc_rotor(dynacore::Vector & gamma);
   
   CoMStateEstimator* com_estimator_;
   Mercury_StateProvider* sp_;

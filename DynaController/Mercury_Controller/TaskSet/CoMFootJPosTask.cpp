@@ -1,4 +1,4 @@
-#include "BodyFootJPosTask.hpp"
+#include "CoMFootJPosTask.hpp"
 #include <Configuration.h>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <Mercury/Mercury_Model.hpp>
@@ -6,8 +6,9 @@
 
 #include <Utils/utilities.hpp>
 
-BodyFootJPosTask::BodyFootJPosTask(int swing_foot):
+CoMFootJPosTask::CoMFootJPosTask(RobotSystem* robot, int swing_foot):
     Task(9),
+    robot_sys_(robot),
     swing_foot_(swing_foot)
 {
   Kp_vec_ = dynacore::Vector(dim_task_);
@@ -23,34 +24,30 @@ BodyFootJPosTask::BodyFootJPosTask(int swing_foot):
   }else if(swing_foot_ == mercury_link::leftFoot){
     swing_leg_jidx_ = mercury_joint::leftAbduction;
   }else {
-      printf("[Body Swing Foot JPos Task] Not valid swing foot option\n");
+      printf("[CoM Swing Foot JPos Task] Not valid swing foot option\n");
       exit(0);
   }
 
   sp_ = Mercury_StateProvider::getStateProvider();
   Jt_ = dynacore::Matrix::Zero(dim_task_, mercury::num_qdot);
-   //printf("[Body Swing Foot JPos Task] Constructed\n");
+   printf("[CoM Swing Foot JPos Task] Constructed\n");
 }
 
-BodyFootJPosTask::~BodyFootJPosTask(){}
+CoMFootJPosTask::~CoMFootJPosTask(){}
 
-bool BodyFootJPosTask::_UpdateCommand(void* pos_des,
+bool CoMFootJPosTask::_UpdateCommand(void* pos_des,
                                     const dynacore::Vector & vel_des,
                                     const dynacore::Vector & acc_des){
 
   dynacore::Vector* pos_cmd = (dynacore::Vector*)pos_des;
+  dynacore::Vect3 com_pos, com_vel;
+  robot_sys_->getCoMPosition(com_pos);
+  robot_sys_->getCoMVelocity(com_vel);
   op_cmd_ = dynacore::Vector::Zero(dim_task_);
 
   for(int i(0); i<3; ++i){
-    op_cmd_[i] = acc_des[i] + 
-        Kp_vec_[i] * ((*pos_cmd)[i] - sp_->Q_[i]) + 
-        Kd_vec_[i] * (vel_des[i] - sp_->Qdot_[i]);
-
-    sp_->body_pos_des_[i] = (*pos_cmd)[i];
-    sp_->body_vel_des_[i] = vel_des[i];
-     sp_->body_pos_[i] = sp_->Q_[i];
-    sp_->body_vel_[i] = sp_->Qdot_[i];
- }
+    op_cmd_[i] = acc_des[i] + Kp_vec_[i] * ((*pos_cmd)[i] - com_pos[i]) + Kd_vec_[i] * (vel_des[i] - com_vel[i]);
+  }
 
   // Orientation
   dynacore::Quaternion curr_quat;
@@ -92,17 +89,27 @@ bool BodyFootJPosTask::_UpdateCommand(void* pos_des,
   return true;
 }
 
-bool BodyFootJPosTask::_UpdateTaskJacobian(){
-  Jt_.block(0,0, 6, 6) = dynacore::Matrix::Identity(6,6);
+bool CoMFootJPosTask::_UpdateTaskJacobian(){
+  dynacore::Matrix Jbody, Jcom, Jfoot;
+
+  robot_sys_->getCoMJacobian(Jcom);
+  robot_sys_->getFullJacobian(sp_->stance_foot_, Jfoot);
+
+  // TODO
+  Jt_.block(0,0, 3, mercury::num_qdot) = Jcom - Jfoot.block(3, 0, 3, mercury::num_qdot);
+  Jt_(3, 3) = 1.;
+  Jt_(4, 4) = 1.;
+  Jt_(5, 5) = 1.;
+
   Jt_.block(6, swing_leg_jidx_, 3, 3) = dynacore::Matrix::Identity(3,3);
 
   // dynacore::pretty_print(Jswing, std::cout, "Jswing");
   // dynacore::pretty_print(Jfoot, std::cout, "Jfoot");
-   //dynacore::pretty_print(Jt_, std::cout, "Jt BodyFootJPos");
+   //dynacore::pretty_print(Jt_, std::cout, "Jt CoMFootJPos");
   return true;
 }
 
-bool BodyFootJPosTask::_UpdateTaskJDotQdot(){
+bool CoMFootJPosTask::_UpdateTaskJDotQdot(){
   JtDotQdot_ = dynacore::Vector::Zero(dim_task_);
   return true;
 }

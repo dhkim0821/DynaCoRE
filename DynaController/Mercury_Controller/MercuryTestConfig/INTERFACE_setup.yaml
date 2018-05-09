@@ -1,8 +1,13 @@
 #test_name: body_ctrl_test
+#test_name: com_ctrl_test
 #test_name: foot_ctrl_test
-test_name: walking_test
-#test_name: stance_swing_test
+#test_name: walking_test
+#test_name: walking_body_test
+#test_name: body_stance_swing_test
+#test_name: com_stance_swing_test
 #test_name: joint_ctrl_test
+test_name: body_jpos_ctrl_test
+
 
 base_condition: floating
 #base_condition: fixed

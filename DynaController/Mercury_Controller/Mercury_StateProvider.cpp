@@ -38,6 +38,11 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   CoM_vel_.setZero();
   com_pos_des_.setZero();
   com_vel_des_.setZero();
+  body_pos_.setZero();
+  body_vel_.setZero();
+
+  body_pos_des_.setZero();
+  body_vel_des_.setZero();
 
   body_ori_rpy_.setZero();
   body_ang_vel_.setZero();
@@ -70,6 +75,10 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&CoM_vel_, VECT3, "com_vel", 3);
   data_manager->RegisterData(&com_pos_des_, VECT3, "com_pos_des", 3);
   data_manager->RegisterData(&com_vel_des_, VECT3, "com_vel_des", 3);
+  data_manager->RegisterData(&body_pos_, VECT3, "body_pos", 3);
+  data_manager->RegisterData(&body_vel_, VECT3, "body_vel", 3);
+  data_manager->RegisterData(&body_pos_des_, VECT3, "body_pos_des", 3);
+  data_manager->RegisterData(&body_vel_des_, VECT3, "body_vel_des", 3);
   data_manager->RegisterData(&global_pos_local_, VECT3, "global_pos_local", 3);
 
 

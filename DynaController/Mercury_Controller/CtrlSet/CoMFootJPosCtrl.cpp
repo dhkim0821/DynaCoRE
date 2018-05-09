@@ -1,7 +1,7 @@
-#include "BodyFootJPosCtrl.hpp"
+#include "CoMFootJPosCtrl.hpp"
 #include <Configuration.h>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
-#include <Mercury_Controller/TaskSet/BodyFootJPosTask.hpp>
+#include <Mercury_Controller/TaskSet/CoMFootJPosTask.hpp>
 #include <Mercury_Controller/ContactSet/SingleContact.hpp>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <Mercury/Mercury_Model.hpp>
@@ -17,7 +17,7 @@
 #include <chrono>
 #endif 
 
-BodyFootJPosCtrl::BodyFootJPosCtrl(RobotSystem* robot, int swing_foot):
+CoMFootJPosCtrl::CoMFootJPosCtrl(RobotSystem* robot, int swing_foot):
     Controller(robot),
     swing_foot_(swing_foot),
     ctrl_start_time_(0.),
@@ -28,7 +28,7 @@ BodyFootJPosCtrl::BodyFootJPosCtrl(RobotSystem* robot, int swing_foot):
     curr_foot_vel_des_.setZero();
     curr_foot_acc_des_.setZero();
 
-    body_foot_task_ = new BodyFootJPosTask(swing_foot);
+    com_foot_task_ = new CoMFootJPosTask(robot, swing_foot);
     if(swing_foot == mercury_link::leftFoot) {
         single_contact_ = new SingleContact(robot, mercury_link::rightFoot); 
         swing_leg_jidx_ = mercury_joint::leftAbduction;
@@ -50,7 +50,7 @@ BodyFootJPosCtrl::BodyFootJPosCtrl(RobotSystem* robot, int swing_foot):
         dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(
-                body_foot_task_->getDim() + 
+                com_foot_task_->getDim() + 
                 single_contact_->getDim(), 1000.0);
 
     wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
@@ -59,33 +59,33 @@ BodyFootJPosCtrl::BodyFootJPosCtrl(RobotSystem* robot, int swing_foot):
 
     wbdc_rotor_data_->cost_weight.tail(single_contact_->getDim()) = 
         dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
-    wbdc_rotor_data_->cost_weight[body_foot_task_->getDim() + 2]  = 0.001; // Fr_z
+    wbdc_rotor_data_->cost_weight[com_foot_task_->getDim() + 2]  = 0.001; // Fr_z
 
 
     sp_ = Mercury_StateProvider::getStateProvider();
-     printf("[BodyFootJPos Controller] Constructed\n");
+    // printf("[CoMFoot Controller] Constructed\n");
 }
 
-BodyFootJPosCtrl::~BodyFootJPosCtrl(){
-    delete body_foot_task_;
+CoMFootJPosCtrl::~CoMFootJPosCtrl(){
+    delete com_foot_task_;
     delete single_contact_;
     delete wbdc_rotor_;
     delete wbdc_rotor_data_;
 }
 
-void BodyFootJPosCtrl::OneStep(dynacore::Vector & gamma){
+void CoMFootJPosCtrl::OneStep(dynacore::Vector & gamma){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
     gamma = dynacore::Vector::Zero(mercury::num_act_joint * 2);
     _single_contact_setup();
     _task_setup();
-    _body_foot_ctrl(gamma);
+    _com_foot_ctrl(gamma);
 
     _PostProcessing_Command();
 }
 
-void BodyFootJPosCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
+void CoMFootJPosCtrl::_com_foot_ctrl(dynacore::Vector & gamma){
 #if MEASURE_TIME_WBDC 
     static int time_count(0);
     time_count++;
@@ -109,7 +109,7 @@ void BodyFootJPosCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
     std::chrono::duration<double> time_span1 
         = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
     if(time_count%500 == 1){
-        std::cout << "[body foot jpos ctrl] WBDC_Rotor took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
+        std::cout << "[com foot jpos ctrl] WBDC_Rotor took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
     }
 #endif
 
@@ -121,15 +121,15 @@ void BodyFootJPosCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
         sp_->reaction_forces_[i + offset] = reaction_force[i];
 }
 
-void BodyFootJPosCtrl::_task_setup(){
+void CoMFootJPosCtrl::_task_setup(){
     dynacore::Vector pos_des(3 + 4 + 3);
-    dynacore::Vector vel_des(body_foot_task_->getDim());
-    dynacore::Vector acc_des(body_foot_task_->getDim());
+    dynacore::Vector vel_des(com_foot_task_->getDim());
+    dynacore::Vector acc_des(com_foot_task_->getDim());
     pos_des.setZero(); vel_des.setZero(); acc_des.setZero();
 
-    // Body Pos
-    pos_des.head(3) = ini_body_pos_;
-    if(b_set_height_target_) pos_des[2] = des_body_height_;
+    // CoM Pos
+    pos_des.head(3) = ini_com_pos_;
+    if(b_set_height_target_) pos_des[2] = des_com_height_;
 
     // Orientation
     dynacore::Vect3 rpy_des;
@@ -192,16 +192,16 @@ void BodyFootJPosCtrl::_task_setup(){
 
     // dynacore::pretty_print(vel_des, std::cout, "[Ctrl] vel des");
     // Push back to task list
-    body_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
-    task_list_.push_back(body_foot_task_);
+    com_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+    task_list_.push_back(com_foot_task_);
 }
 
-void BodyFootJPosCtrl::_single_contact_setup(){
+void CoMFootJPosCtrl::_single_contact_setup(){
     single_contact_->UpdateContactSpec();
     contact_list_.push_back(single_contact_);
 }
 
-void BodyFootJPosCtrl::FirstVisit(){
+void CoMFootJPosCtrl::FirstVisit(){
     ini_swing_leg_config_ = sp_->Q_.segment(swing_leg_jidx_, 3);
     dynacore::Vect3 target_foot_pos;
     robot_sys_->getPos(swing_foot_, target_foot_pos);
@@ -221,7 +221,7 @@ void BodyFootJPosCtrl::FirstVisit(){
      //dynacore::pretty_print(ini_swing_leg_config_, std::cout, "ini leg config");
 }
 
-void BodyFootJPosCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
+void CoMFootJPosCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
         const dynacore::Vect3 & st_vel,
         const dynacore::Vect3 & st_acc,
         const dynacore::Vect3 & target_pos, 
@@ -251,18 +251,18 @@ void BodyFootJPosCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
 }
 
 
-void BodyFootJPosCtrl::LastVisit(){
+void CoMFootJPosCtrl::LastVisit(){
 }
 
-bool BodyFootJPosCtrl::EndOfPhase(){
+bool CoMFootJPosCtrl::EndOfPhase(){
     if(state_machine_time_ > moving_time_ + swing_time_){
         return true;
     } 
     return false;
 }
 
-void BodyFootJPosCtrl::CtrlInitialization(const std::string & setting_file_name){
-    ini_body_pos_ = sp_->Q_.head(3);
+void CoMFootJPosCtrl::CtrlInitialization(const std::string & setting_file_name){
+    robot_sys_->getCoMPosition(ini_com_pos_);
     std::vector<double> tmp_vec;
     // Setting Parameters
     ParamHandler handler(MercuryConfigPath + setting_file_name + ".yaml");
@@ -270,11 +270,11 @@ void BodyFootJPosCtrl::CtrlInitialization(const std::string & setting_file_name)
     // Feedback Gain
     handler.getVector("Kp", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
-        ((BodyFootJPosTask*)body_foot_task_)->Kp_vec_[i] = tmp_vec[i];
+        ((CoMFootJPosTask*)com_foot_task_)->Kp_vec_[i] = tmp_vec[i];
     }
     handler.getVector("Kd", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
-        ((BodyFootJPosTask*)body_foot_task_)->Kd_vec_[i] = tmp_vec[i];
+        ((CoMFootJPosTask*)com_foot_task_)->Kd_vec_[i] = tmp_vec[i];
     }
-    //printf("[Body Foot Ctrl] Parameter Setup Completed\n");
+    //printf("[CoM Foot Ctrl] Parameter Setup Completed\n");
 }

@@ -46,6 +46,11 @@ public:
   dynacore::Vect3 com_pos_des_;
   dynacore::Vect3 com_vel_des_;
 
+  dynacore::Vect3 body_pos_;
+  dynacore::Vect3 body_vel_;
+  dynacore::Vect3 body_pos_des_;
+  dynacore::Vect3 body_vel_des_;
+
   dynacore::Vector jpos_des_;
   dynacore::Vector jvel_des_;
 

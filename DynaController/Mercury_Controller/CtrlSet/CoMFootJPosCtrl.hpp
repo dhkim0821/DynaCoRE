@@ -1,8 +1,9 @@
-#ifndef BODY_STANCE_FOOT_CONTROL
-#define BODY_STANCE_FOOT_CONTROL
+#ifndef COM_FOOT_JOINT_POSITION_CONTROL
+#define COM_FOOT_JOINT_POSITION_CONTROL
 
 #include <Controller.hpp>
 #include <Utils/BSplineBasic.h>
+#include <Mercury_Controller/Mercury_InvKinematics.hpp>
 
 class Mercury_StateProvider;
 class RobotSystem;
@@ -10,10 +11,10 @@ class WBDC_ContactSpec;
 class WBDC_Rotor;
 class WBDC_Rotor_ExtraData;
 
-class BodyFootCtrl:public Controller{
+class CoMFootJPosCtrl:public Controller{
     public:
-        BodyFootCtrl(RobotSystem* robot, int swing_foot);
-        ~BodyFootCtrl();
+        CoMFootJPosCtrl(RobotSystem* robot, int swing_foot);
+        ~CoMFootJPosCtrl();
         virtual void OneStep(dynacore::Vector & gamma);
         virtual void FirstVisit();
         virtual void LastVisit();
@@ -53,10 +54,12 @@ class BodyFootCtrl:public Controller{
         double des_com_height_;
 
         int swing_foot_;
+        int swing_leg_jidx_;
         double swing_height_;
-        dynacore::Vect3 foot_pos_set_;
+        dynacore::Vector ini_swing_leg_config_;
+        dynacore::Vector target_swing_leg_config_;
 
-        Task* body_foot_task_;
+        Task* com_foot_task_;
         WBDC_ContactSpec* single_contact_;
 
         WBDC_Rotor* wbdc_rotor_;
@@ -73,9 +76,10 @@ class BodyFootCtrl:public Controller{
 
         void _task_setup();
         void _single_contact_setup();
-        void _body_foot_ctrl(dynacore::Vector & gamma);
+        void _com_foot_ctrl(dynacore::Vector & gamma);
 
         Mercury_StateProvider* sp_;
+        Mercury_InvKinematics inv_kin_;
         double ctrl_start_time_;
 };
 #endif

@@ -1,15 +1,15 @@
-#ifndef WBDC_COM_BODY_ORIENTATION_TASK
-#define WBDC_COM_BODY_ORIENTATION_TASK
+#ifndef WBDC_COM_ORIENTATION_TASK
+#define WBDC_COM_ORIENTATION_TASK
 
 #include <WBDC_Relax/WBDC_Relax_Task.hpp>
 
 class Mercury_StateProvider;
 class RobotSystem;
 
-class CoMBodyOriTask: public WBDC_Relax_Task{
+class CoMOriTask: public WBDC_Relax_Task{
 public:
-  CoMBodyOriTask(RobotSystem* ); // X, Y, Z, Rx, Ry, Rz
-  virtual ~CoMBodyOriTask();
+  CoMOriTask(RobotSystem* ); // X, Y, Z, Rx, Ry, Rz
+  virtual ~CoMOriTask();
 
   dynacore::Vector Kp_vec_;
   dynacore::Vector Kd_vec_;

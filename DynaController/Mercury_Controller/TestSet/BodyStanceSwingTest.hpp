@@ -1,23 +1,23 @@
-#ifndef STANCE_SWING_TEST
-#define STANCE_SWING_TEST
+#ifndef BODY_STANCE_SWING_TEST
+#define BODY_STANCE_SWING_TEST
 
 #include <Test.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 class Mercury_StateProvider;
 
-enum StanceSwingPhase{
-  stance_swing_initiation = 0,
-  stance_swing_lift_up = 1,
-  stance_swing_double_contact_1 = 2,
-  stance_swing_swing_start_trans = 3,
-  stance_swing_swing = 4,
-  NUM_STANCE_SWING_PHASE
+namespace BodyStanceSwingPhase{
+  constexpr int stance_swing_initiation = 0;
+  constexpr int stance_swing_lift_up = 1;
+  constexpr int stance_swing_double_contact_1 = 2;
+  constexpr int stance_swing_swing_start_trans = 3;
+  constexpr int stance_swing_swing = 4;
+  constexpr int NUM_STANCE_SWING_PHASE = 5;
 };
 
-class StanceSwingTest: public Test{
+class BodyStanceSwingTest: public Test{
 public:
-  StanceSwingTest(RobotSystem*);
-  virtual ~StanceSwingTest();
+  BodyStanceSwingTest(RobotSystem*);
+  virtual ~BodyStanceSwingTest();
   virtual void TestInitialization();
 
 protected:

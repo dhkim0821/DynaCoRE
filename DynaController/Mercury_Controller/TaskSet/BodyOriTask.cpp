@@ -1,4 +1,4 @@
-#include "CoMBodyOriTask.hpp"
+#include "BodyOriTask.hpp"
 #include <Configuration.h>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <Mercury/Mercury_Model.hpp>
@@ -6,7 +6,7 @@
 
 #include <Utils/utilities.hpp>
 
-CoMBodyOriTask::CoMBodyOriTask(RobotSystem* robot):WBDC_Relax_Task(6)
+BodyOriTask::BodyOriTask():Task(6)
 {
   Kp_vec_ = dynacore::Vector(dim_task_);
   Kd_vec_ = dynacore::Vector(dim_task_);
@@ -17,30 +17,28 @@ CoMBodyOriTask::CoMBodyOriTask(RobotSystem* robot):WBDC_Relax_Task(6)
   }
 
   sp_ = Mercury_StateProvider::getStateProvider();
-  robot_sys_ = robot;
   Jt_ = dynacore::Matrix::Zero(dim_task_, mercury::num_qdot);
-  // printf("[CoMBodyOri Task] Constructed\n");
+  // printf("[BodyOri Task] Constructed\n");
 }
 
-CoMBodyOriTask::~CoMBodyOriTask(){}
+BodyOriTask::~BodyOriTask(){}
 
-bool CoMBodyOriTask::_UpdateCommand(void* pos_des,
+bool BodyOriTask::_UpdateCommand(void* pos_des,
                                     const dynacore::Vector & vel_des,
                                     const dynacore::Vector & acc_des){
 
   dynacore::Vector* pos_cmd = (dynacore::Vector*)pos_des;
-
-  sp_->com_pos_des_ = (*pos_cmd).head(3);
-  sp_->com_vel_des_ = (vel_des).head(3);
-
-
-  dynacore::Vect3 com_pos, com_vel;
-  robot_sys_->getCoMPosition(com_pos);
-  robot_sys_->getCoMVelocity(com_vel);
   op_cmd_ = dynacore::Vector::Zero(dim_task_);
 
   for(int i(0); i<3; ++i){
-    op_cmd_[i] = acc_des[i] + Kp_vec_[i] * ((*pos_cmd)[i] - com_pos[i]) + Kd_vec_[i] * (vel_des[i] - com_vel[i]);
+    op_cmd_[i] = acc_des[i] + 
+        Kp_vec_[i] * ((*pos_cmd)[i] - sp_->Q_[i]) + 
+        Kd_vec_[i] * (vel_des[i] - sp_->Qdot_[i]);
+
+    sp_->body_pos_des_[i] = (*pos_cmd)[i];
+    sp_->body_vel_des_[i] = vel_des[i];
+    sp_->body_pos_[i] = sp_->Q_[i];
+    sp_->body_vel_[i] = sp_->Qdot_[i];
   }
 
   // Orientation
@@ -74,20 +72,13 @@ bool CoMBodyOriTask::_UpdateCommand(void* pos_des,
   return true;
 }
 
-bool CoMBodyOriTask::_UpdateTaskJacobian(){
-  dynacore::Matrix Jcom;
-  robot_sys_->getCoMJacobian(Jcom);
-
-  Jt_.block(0,0, 3, mercury::num_qdot) = Jcom;
-  Jt_(3, 3) = 1.;
-  Jt_(4, 4) = 1.;
-  Jt_(5, 5) = 1.;
-  // dynacore::pretty_print(Jt_, std::cout, "Jt CoMBodyOri");
+bool BodyOriTask::_UpdateTaskJacobian(){
+  Jt_.block(0,0, 6, 6) = dynacore::Matrix::Identity(6,6);
+  // dynacore::pretty_print(Jt_, std::cout, "Jt BodyOri");
   return true;
 }
 
-bool CoMBodyOriTask::_UpdateTaskJDotQdot(){
-  // TODO
+bool BodyOriTask::_UpdateTaskJDotQdot(){
   JtDotQdot_ = dynacore::Vector::Zero(dim_task_);
   return true;
 }

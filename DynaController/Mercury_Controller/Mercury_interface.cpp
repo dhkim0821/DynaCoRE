@@ -13,9 +13,15 @@
 // Test SET LIST
 #include <Mercury_Controller/TestSet/BodyCtrlTest.hpp>
 #include <Mercury_Controller/TestSet/JointCtrlTest.hpp>
-#include <Mercury_Controller/TestSet/WalkingTest.hpp>
+#include <Mercury_Controller/TestSet/WalkingBodyTest.hpp>
 #include <Mercury_Controller/TestSet/FootCtrlTest.hpp>
-#include <Mercury_Controller/TestSet/StanceSwingTest.hpp>
+#include <Mercury_Controller/TestSet/BodyStanceSwingTest.hpp>
+
+#include <Mercury_Controller/TestSet/CoMCtrlTest.hpp>
+#include <Mercury_Controller/TestSet/WalkingTest.hpp>
+#include <Mercury_Controller/TestSet/CoMStanceSwingTest.hpp>
+
+#include <Mercury_Controller/TestSet/BodyJPosCtrlTest.hpp>
 
 #define MEASURE_TIME 0
 #if MEASURE_TIME
@@ -233,12 +239,20 @@ void Mercury_interface::_ParameterSetting(){
         test_ = new JointCtrlTest(robot_sys_);
     }else if(tmp_string == "walking_test"){
         test_ = new WalkingTest(robot_sys_);
+    }else if(tmp_string == "walking_body_test"){
+        test_ = new WalkingBodyTest(robot_sys_);
     }else if(tmp_string == "body_ctrl_test"){
         test_ = new BodyCtrlTest(robot_sys_);
+    }else if(tmp_string == "com_ctrl_test"){
+        test_ = new CoMCtrlTest(robot_sys_);
     }else if(tmp_string == "foot_ctrl_test"){
         test_ = new FootCtrlTest(robot_sys_);
-    }else if(tmp_string == "stance_swing_test"){
-        test_ = new StanceSwingTest(robot_sys_);
+    }else if(tmp_string == "body_stance_swing_test"){
+        test_ = new BodyStanceSwingTest(robot_sys_);
+    }else if(tmp_string == "com_stance_swing_test"){
+        test_ = new CoMStanceSwingTest(robot_sys_);
+    }else if(tmp_string == "body_jpos_ctrl_test"){
+        test_ = new BodyJPosCtrlTest(robot_sys_);    
     }else {
         printf("[Interfacce] There is no test matching with the name\n");
         exit(0);
