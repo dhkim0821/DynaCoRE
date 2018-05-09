@@ -23,16 +23,20 @@ void WBDC_Rotor::UpdateSetting(const dynacore::Matrix & A,
 
 bool WBDC_Rotor::_CheckNullSpace(const dynacore::Matrix & Npre){
     dynacore::Matrix M_check = Sf_ * A_ * Npre;
-    Eigen::JacobiSVD<dynacore::Matrix> svd(M_check, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    dynacore::pretty_print(M_check,std::cout, "M check");
+    // Eigen::JacobiSVD<dynacore::Matrix> svd(M_check, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    Eigen::JacobiSVD<dynacore::Matrix> svd(Npre, Eigen::ComputeThinU | Eigen::ComputeThinV);
+
     //dynacore::pretty_print(svd.singularValues(), std::cout, "svd singular value");
 
     for(int i(0); i<svd.singularValues().rows(); ++i){
         if(svd.singularValues()[i] > 0.00001) { 
             printf("non singular!!\n"); 
-    dynacore::pretty_print(svd.singularValues(), std::cout, "svd singular value");
+            dynacore::pretty_print(svd.singularValues(), std::cout, "svd singular value");
+            exit(0);
             return false;
         }else{
-            //printf("small enough singular value: %f\n", svd.singularValues()[i]);
+    //        printf("small enough singular value: %f\n", svd.singularValues()[i]);
         }
     }
     return true;
@@ -83,6 +87,8 @@ void WBDC_Rotor::MakeTorque(const std::vector<Task*> & task_list,
     dim_first_task_ = task->getDim();
 
     JtPre = Jt * Npre;
+//    dynacore::pretty_print(Jt, std::cout, "Jt");
+//    dynacore::pretty_print(JtPre, std::cout, "Jt Pre");
     _WeightedInverse(JtPre, Ainv_, JtPreBar);
     Npre = Npre * (dynacore::Matrix::Identity(num_qdot_, num_qdot_)
             - JtPreBar * JtPre);

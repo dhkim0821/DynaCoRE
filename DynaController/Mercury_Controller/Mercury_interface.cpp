@@ -16,6 +16,7 @@
 #include <Mercury_Controller/TestSet/WalkingTest.hpp>
 #include <Mercury_Controller/TestSet/FootCtrlTest.hpp>
 #include <Mercury_Controller/TestSet/StanceSwingTest.hpp>
+#include <Mercury_Controller/TestSet/BodyJPosCtrlTest.hpp>
 
 #define MEASURE_TIME 0
 #if MEASURE_TIME
@@ -239,6 +240,8 @@ void Mercury_interface::_ParameterSetting(){
         test_ = new FootCtrlTest(robot_sys_);
     }else if(tmp_string == "stance_swing_test"){
         test_ = new StanceSwingTest(robot_sys_);
+    }else if(tmp_string == "body_jpos_ctrl_test"){
+        test_ = new BodyJPosCtrlTest(robot_sys_);    
     }else {
         printf("[Interfacce] There is no test matching with the name\n");
         exit(0);
