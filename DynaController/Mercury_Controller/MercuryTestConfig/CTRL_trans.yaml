@@ -1,5 +1,5 @@
 max_rf_z: 90
-min_rf_z: 10
+min_rf_z: 3
 
 ## Feedback Gain
 # CoMx, CoMy, CoMz, Rx, Ry, Rz
