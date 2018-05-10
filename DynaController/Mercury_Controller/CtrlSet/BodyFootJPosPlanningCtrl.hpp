@@ -50,7 +50,8 @@ public:
 protected:
   void _CoMEstiamtorUpdate();
 
-  void _SetBspline(const dynacore::Vect3 & st_config,
+  void _SetBspline(const dynacore::Vector & guess_q,
+          const dynacore::Vect3 & st_config,
                    const dynacore::Vect3 & st_jvel,
                    const dynacore::Vect3 & st_jacc,
                    const dynacore::Vect3 & target_pos);

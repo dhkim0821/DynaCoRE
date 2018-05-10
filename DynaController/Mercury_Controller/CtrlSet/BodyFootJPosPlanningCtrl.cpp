@@ -245,7 +245,14 @@ void BodyFootJPosPlanningCtrl::_Replanning(){
     //dynacore::pretty_print(target_loc, std::cout, "next foot loc");
     //curr_foot_acc_des_.setZero();
     //curr_foot_vel_des_.setZero();
-    _SetBspline(curr_jpos_des_, curr_jvel_des_, curr_jacc_des_, target_loc);
+    
+    // Set guess_q since the x,y,z position is 
+    // used to find the inverse kinematics
+    dynacore::Vector guess_q = sp_->Q_;
+    for(int i(0); i<2; ++i)
+        guess_q[i] = pl_output.switching_state[i] - sp_->global_pos_local_[i];
+
+    _SetBspline(guess_q, curr_jpos_des_, curr_jvel_des_, curr_jacc_des_, target_loc);
 }
 
 void BodyFootJPosPlanningCtrl::_single_contact_setup(){
@@ -270,7 +277,7 @@ void BodyFootJPosPlanningCtrl::FirstVisit(){
     target_loc[2] = ini_foot_pos_[2];
     //default_target_loc_[2] = 0.0;
     default_target_loc_[2] -= push_down_height_;
-    _SetBspline(ini_swing_leg_config_, zero, zero, target_loc);
+    _SetBspline(sp_->Q_, ini_swing_leg_config_, zero, zero, target_loc);
 
     // _Replanning();
     num_planning_ = 0;
@@ -301,6 +308,7 @@ void BodyFootJPosPlanningCtrl::_CoMEstiamtorUpdate(){
 }
 
 void BodyFootJPosPlanningCtrl::_SetBspline(
+        const dynacore::Vector & guess_q,
         const dynacore::Vect3 & st_config,
         const dynacore::Vect3 & st_jvel,
         const dynacore::Vect3 & st_jacc,
@@ -317,12 +325,12 @@ void BodyFootJPosPlanningCtrl::_SetBspline(
     // Find Target Config
     dynacore::Vector config_sol;
     inv_kin_.getLegConfigAtVerticalPosture(swing_foot_, target_pos, 
-            sp_->Q_, config_sol);
+            guess_q, config_sol);
     dynacore::Vect3 target_config = config_sol.segment(swing_leg_jidx_, 3);
 
     // Find Mid Config
     dynacore::Vect3 st_pos;
-    inv_kin_.getFootPosAtVerticalPosture(swing_foot_, st_config, sp_->Q_, st_pos);
+    inv_kin_.getFootPosAtVerticalPosture(swing_foot_, st_config, guess_q, st_pos);
     dynacore::Vect3 middle_pos;
     if(portion > 0.){
         middle_pos = (st_pos + target_pos)*portion;
@@ -331,7 +339,7 @@ void BodyFootJPosPlanningCtrl::_SetBspline(
         middle_pos = (st_pos + target_pos)/2.;
     }
     inv_kin_.getLegConfigAtVerticalPosture(swing_foot_, middle_pos, 
-            sp_->Q_, config_sol);
+            guess_q, config_sol);
     dynacore::Vect3 mid_config = config_sol.segment(swing_leg_jidx_, 3);
     
     for(int i(0); i<3; ++i){
