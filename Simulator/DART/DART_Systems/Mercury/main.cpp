@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
     dart::gui::osg::Viewer viewer;
     // Wrap a worldnode
     osg::ref_ptr<WorldNode> node = new WorldNode(world, msm);
-    node->setNumStepsPerCycle(15);
+    node->setNumStepsPerCycle(15*2);
 
     msm->setLight(viewer.getLightSource(0)->getLight());
     viewer.switchHeadlights(false);
@@ -157,6 +157,7 @@ int main(int argc, char* argv[]) {
             ::osg::Vec3( 0.30,  0.0, 0.6),
             ::osg::Vec3(-0.01, 0.0, 1.0));
     viewer.setCameraManipulator(viewer.getCameraManipulator());
+     //viewer.record(SIM_DATA_PATH"/mercury_recording");
     viewer.run();
 
 }

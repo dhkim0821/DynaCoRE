@@ -43,6 +43,9 @@ BodyFootJPosPlanningCtrl::BodyFootJPosPlanningCtrl(
     }
     else printf("[Warnning] swing foot is not foot: %i\n", swing_foot);
 
+    task_kp_ = dynacore::Vector::Zero(body_foot_task_->getDim());
+    task_kd_ = dynacore::Vector::Zero(body_foot_task_->getDim());
+
     std::vector<bool> act_list;
     act_list.resize(mercury::num_qdot, true);
     for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
@@ -176,6 +179,22 @@ void BodyFootJPosPlanningCtrl::_task_setup(){
         vel_des[i + 6] = curr_jvel_des_[i];
         acc_des[i + 6] = curr_jacc_des_[i];
     }
+    // Feedback gain decreasing
+    if(state_machine_time_ < gain_decreasing_period_portion_ * end_time_){
+        double tot_decreasing_time =gain_decreasing_period_portion_ * end_time_; 
+        double remain_time = tot_decreasing_time - state_machine_time_;
+        dynacore::Vector Kp = task_kp_;
+        dynacore::Vector Kd = task_kd_;
+        Kp = remain_time/tot_decreasing_time * task_kp_ 
+            + (1. - remain_time/tot_decreasing_time) * gain_decreasing_ratio_* task_kp_; 
+        Kd = remain_time/tot_decreasing_time * task_kd_ 
+            + (1. - remain_time/tot_decreasing_time) * gain_decreasing_ratio_* task_kd_; 
+
+        Kp.head(6) = task_kp_.head(6);
+        Kd.head(6) = task_kd_.head(6);
+        _setTaskGain(Kp, Kd);
+    }
+    
     // dynacore::pretty_print(vel_des, std::cout, "[Ctrl] vel des");
     // Push back to task list
     body_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
@@ -389,6 +408,12 @@ bool BodyFootJPosPlanningCtrl::EndOfPhase(){
     return false;
 }
 
+void BodyFootJPosPlanningCtrl::_setTaskGain(
+        const dynacore::Vector & Kp, const dynacore::Vector & Kd){
+    ((BodyFootJPosTask*)body_foot_task_)->Kp_vec_ = Kp;
+    ((BodyFootJPosTask*)body_foot_task_)->Kd_vec_ = Kd;
+}
+
 void BodyFootJPosPlanningCtrl::CtrlInitialization(const std::string & setting_file_name){
     robot_sys_->getCoMPosition(ini_body_pos_);
     std::vector<double> tmp_vec;
@@ -406,12 +431,20 @@ void BodyFootJPosPlanningCtrl::CtrlInitialization(const std::string & setting_fi
     // Feedback Gain
     handler.getVector("Kp", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
-        ((BodyFootJPosTask*)body_foot_task_)->Kp_vec_[i] = tmp_vec[i];
+         task_kp_[i] = tmp_vec[i];
     }
     handler.getVector("Kd", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
-        ((BodyFootJPosTask*)body_foot_task_)->Kd_vec_[i] = tmp_vec[i];
+        task_kd_[i] = tmp_vec[i];
     }
+
+    ((BodyFootJPosTask*)body_foot_task_)->Kp_vec_ = task_kp_;
+    ((BodyFootJPosTask*)body_foot_task_)->Kd_vec_ = task_kd_;
+
+    // Feedback gain decreasing near to the landing moment
+    handler.getValue("gain_decreasing_ratio", gain_decreasing_ratio_);
+    handler.getValue("gain_decreasing_period_portion", 
+            gain_decreasing_period_portion_);
 
     static bool b_bodypute_eigenvalue(true);
     if(b_bodypute_eigenvalue){
@@ -421,5 +454,8 @@ void BodyFootJPosPlanningCtrl::CtrlInitialization(const std::string & setting_fi
                     end_time_);
         b_bodypute_eigenvalue = false;
     }
+
+
+
     //printf("[Body Foot JPos Planning Ctrl] Parameter Setup Completed\n");
 }

@@ -16,6 +16,12 @@ default_target_foot_location: [0.0, -0.1, 0.0]
 Kp: [0.0, 0.0, 150., 150., 150., 0., 250, 300, 350]
 Kd: [0.0, 0.0,   10.,  10.,  10,  0.,  12.,  17., 17.]
 
+#gain_decreasing_ratio: 1.0
+#gain_decreasing_period_portion: 0.0
+
+gain_decreasing_ratio: 0.95
+gain_decreasing_period_portion: 0.01
+
 # Torque limt (Nm)
 torque_max: [30, 30, 50, 50, 50, 50]
 torque_min: [-30, -30, -50, -50, -50, -130]

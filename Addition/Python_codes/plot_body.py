@@ -25,6 +25,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     np.genfromtxt(file_path+'estimated_com_state.txt', delimiter=None, dtype=(float))
     data_com = \
     np.genfromtxt(file_path+'com_pos.txt', delimiter=None, dtype=(float))
+    data_com_vel = \
+    np.genfromtxt(file_path+'com_vel.txt', delimiter=None, dtype=(float))
     data_body = \
     np.genfromtxt(file_path+'body_pos.txt', delimiter=None, dtype=(float))
     data_body_des = \
@@ -69,9 +71,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_com[st_idx:end_idx,i-1], "c-", \
                 data_x, data_body_des[st_idx:end_idx,i-1], "r-", \
                 data_x, data_body[st_idx:end_idx,i-1], "b-")
-
         if i != 3:
-            plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1], "c-")
+            plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1], "k-")
 
         # plt.legend(('command', 'pos'), loc='upper left')
         plt.grid(True)
@@ -96,10 +97,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_body_vel_des[st_idx:end_idx,i-1], "r-" , \
+                data_x, data_com_vel[st_idx:end_idx,i-1], "c-", \
                 data_x, data_body_vel[st_idx:end_idx,i-1], "b-")
 
         if i != 3:
-            plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "c-")
+            plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "k-")
 
         plt.grid(True)
         for j in phseChange:
