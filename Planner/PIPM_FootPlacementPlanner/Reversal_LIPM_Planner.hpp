@@ -15,6 +15,7 @@ public:
 class OutputReversalPL{
 public:
   double time_modification;
+  double switching_state[4];
 };
 
 class Reversal_LIPM_Planner: public Planner{

@@ -45,8 +45,14 @@ void Reversal_LIPM_Planner::getNextFootLocation(
   OutputReversalPL* _output = ((OutputReversalPL*) additional_output);
 
   std::vector<dynacore::Vect2> switch_state(2);
-  _computeSwitchingState(_input-> swing_time, com_pos, com_vel, _input->stance_foot_loc, switch_state);
+  _computeSwitchingState(_input-> swing_time, com_pos, com_vel,
+          _input->stance_foot_loc, switch_state);
 
+  // (x, y, xdot, ydot)
+  _output->switching_state[0] = switch_state[0][0];
+  _output->switching_state[1] = switch_state[1][0];
+  _output->switching_state[2] = switch_state[0][1];
+  _output->switching_state[3] = switch_state[1][1];
   // printf("switching velocity: %f, %f\n", switch_state[0][1], switch_state[1][1]);
   int check_switch(_check_switch_velocity(switch_state));
   double new_swing_time(_input->swing_time);
