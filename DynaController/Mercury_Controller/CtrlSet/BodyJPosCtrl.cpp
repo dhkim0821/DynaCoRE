@@ -102,15 +102,22 @@ void BodyJPosCtrl::_jpos_task_setup(){
     dynacore::Vector config_sol;
     //dynacore::pretty_print(Q_cur, std::cout, "Q cur");   
 
+    // Set Frequency
+    double frequency = 1; //Hz
+    double omega = 2. * M_PI * frequency;
+
     // Set Desired height
     //double des_height = 0.853;//0.853;// 0.852689 is the current height
-    double des_height = 0.75;//0.853;// 0.852689 is the current height
+    //double des_height = 0.75;//0.853;// 0.852689 is the current height
+    double des_height = 0.8 + 0.05*sin(omega * state_machine_time_);
+
 
     // Set Desired Orientation
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
     rpy_des.setZero();
-    rpy_des[1] = 0.5;
+    //rpy_des[1] = 0.5;
+    rpy_des[1] = 0.25 + 0.25*sin(omega * state_machine_time_);
 
     dynacore::convert(rpy_des, des_quat);   
 
