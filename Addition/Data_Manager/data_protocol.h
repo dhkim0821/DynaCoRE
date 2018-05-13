@@ -9,9 +9,10 @@
 #define IP_ADDR_MOCAP "192.168.1.149"
 #define IP_ADDR_MYSELF "127.0.0.1"
 #define IP_ADDR_MAC    "192.168.1.131"
-#define IP_ADDR_DH    "192.168.1.147"
+#define IP_ADDR_DH    "192.168.50.42"
 
-#define IP_ADDR IP_ADDR_MYSELF
+#define IP_ADDR IP_ADDR_DH
+//#define IP_ADDR IP_ADDR_MYSELF
 
 #define LEG_PORT 51129
 #define NUM_JOINT_Q 13

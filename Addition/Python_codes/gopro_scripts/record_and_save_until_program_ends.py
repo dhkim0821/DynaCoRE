@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 import signal
 import sys
 
-SAVE_DIRECTORY='/home/hcrl/Repository/dynacore/experiment_data/'
+SAVE_DIRECTORY='/Users/donghyunkim/Repository/dynacore/experiment_data/'
 
 def signal_handler(signal, frame):
         print '---- Ctrl-C was pressed ---'
@@ -50,7 +50,7 @@ def save_latest_video():
 
 def save_video(video):
     global SAVE_DIRECTORY
-    timestr=time.strftime("%Y%m%d_%H:%M:%S")              # get the current time and use it as a filename
+    timestr=time.strftime("%Y%m%d_%H_%M_%S")              # get the current time and use it as a filename
     filename='record_'+timestr+'.mp4'                     # set the filename
     print 'Save Directory:', SAVE_DIRECTORY
     print "Saving Video..."

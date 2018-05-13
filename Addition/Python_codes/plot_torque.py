@@ -105,8 +105,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot( \
                 data_x, scale[i-1] * data_motor_current[st_idx:end_idx, i-1], "k-", \
                 data_x, data_cmd[st_idx:end_idx, i-1 + 6], "c-", \
-                data_x, data_cmd[st_idx:end_idx,i-1], "r-", \
                 data_x, data_torque[st_idx:end_idx,i-1], "b-")
+
+        
+        plt.plot(data_x, data_cmd[st_idx:end_idx,i-1], "r-", linewidth=3.7)
+
         # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:
