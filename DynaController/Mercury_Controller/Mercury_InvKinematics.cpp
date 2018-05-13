@@ -72,7 +72,7 @@ void Mercury_InvKinematics::getLegConfigAtVerticalPosture(
     //config_sol[mercury_joint::virtual_Rw] = 1.;
 
     // TEST
-    double theta(0.02);
+    double theta(0.0);
     config_sol[mercury_joint::virtual_Rx] = 0.;
     config_sol[mercury_joint::virtual_Ry] = sin(theta/2.0);
     config_sol[mercury_joint::virtual_Rz] = 0.;
@@ -136,7 +136,7 @@ void Mercury_InvKinematics::getLegConfigAtVerticalPosture(
     }
     }
 
-void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & current_Q, 
+void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & current_Q,
                                                       const dynacore::Quaternion & des_quat,
                                                       const double & des_height, dynacore::Vector & config_sol){
     config_sol = current_Q;
@@ -151,14 +151,14 @@ void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & c
 
     // Initialize Parameters
     dynacore::Vect3 left_foot_local_com = model_->mFixedBodies[left_foot_bodyid - model_->fixed_body_discriminator].mCenterOfMass;
-    dynacore::Vect3 right_foot_local_com = model_->mFixedBodies[right_foot_bodyid - model_->fixed_body_discriminator].mCenterOfMass;    
-    //dynacore::Vect3 body_local_com = model_->mFixedBodies[body_bodyid - model_->fixed_body_discriminator].mCenterOfMass;    
+    dynacore::Vect3 right_foot_local_com = model_->mFixedBodies[right_foot_bodyid - model_->fixed_body_discriminator].mCenterOfMass;   
+    //dynacore::Vect3 body_local_com = model_->mFixedBodies[body_bodyid - model_->fixed_body_discriminator].mCenterOfMass;   
     dynacore::Vect3 body_local_com;
     body_local_com.setZero();
 
     // Get the Jacobians of the foot
     dynacore::Matrix J_left_foot = dynacore::Matrix::Zero(3, mercury::num_qdot);
-    dynacore::Matrix J_right_foot = dynacore::Matrix::Zero(3, mercury::num_qdot);    
+    dynacore::Matrix J_right_foot = dynacore::Matrix::Zero(3, mercury::num_qdot);   
 
     CalcPointJacobian(*model_, current_Q, left_foot_bodyid, left_foot_local_com, J_left_foot, true);
     CalcPointJacobian(*model_, current_Q, right_foot_bodyid, right_foot_local_com, J_right_foot, false);
@@ -186,7 +186,7 @@ void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & c
 
     // Get the Jacobian rows for Body Roll, Pitch and Height
     dynacore::Matrix J2 = dynacore::Matrix::Zero(3, mercury::num_qdot);
-    J2.block(0, 0, 2, mercury::num_qdot) = J_body.block(0, 0, 2, mercury::num_qdot);  // (Rx, Ry) Roll and Pitch  
+    J2.block(0, 0, 2, mercury::num_qdot) = J_body.block(0, 0, 2, mercury::num_qdot);  // (Rx, Ry) Roll and Pitch 
     J2.block(2, 0, 1, mercury::num_qdot) = J_body.block(5, 0, 1, mercury::num_qdot);  //  Z - body height
 
     //Compute Orientation Error
@@ -206,7 +206,7 @@ void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & c
     double height_error = des_height - current_height;
     // Construct the operational space error
     dynacore::Vector delta_x = dynacore::Vector::Zero(3);
-    delta_x[0] = ori_err[0];    
+    delta_x[0] = ori_err[0];   
     delta_x[1] = ori_err[1];
     delta_x[2] = height_error;
     dynacore::Matrix J2N1 = J2*N1;
@@ -218,10 +218,6 @@ void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & c
     dynacore::Vector delta_q(mercury::num_qdot); delta_q.setZero();
     delta_q = J2N1_pinv*delta_x;
     //dynacore::pretty_print(delta_q, std::cout, "delta q");
-
-
     config_sol.segment(mercury::num_act_joint, mercury::num_act_joint) += delta_q.segment(mercury::num_act_joint, mercury::num_act_joint);
 
 }
-
-

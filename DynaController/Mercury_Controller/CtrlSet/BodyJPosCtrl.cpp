@@ -100,31 +100,43 @@ void BodyJPosCtrl::_jpos_task_setup(){
     // Calculate IK for a desired height and orientation.
     dynacore::Vector Q_cur = sp_->Q_;
     dynacore::Vector config_sol;
-    //dynacore::pretty_print(Q_cur, std::cout, "Q cur");    
+    //dynacore::pretty_print(Q_cur, std::cout, "Q cur");   
+
+    // Set Frequency
+    double frequency = 1; //Hz
+    double omega = 2. * M_PI * frequency;
 
     // Set Desired height
     double des_height = 0.85;//0.853;// 0.852689 is the current height
+    //double des_height = 0.853;//0.853;// 0.852689 is the current height
+    //double des_height = 0.75;//0.853;// 0.852689 is the current height
+    //double des_height = 0.8 + 0.05*sin(omega * state_machine_time_);
 
-    // Desired Orientation
+    // Set Desired Orientation
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
     rpy_des.setZero();
     //rpy_des[1] = 0.5;
-
     dynacore::convert(rpy_des, des_quat);    
+    //rpy_des[1] = 0.25 + 0.25*sin(omega * state_machine_time_);
 
     dynacore::Vector jpos_des(mercury::num_qdot); jpos_des.setZero();
     dynacore::Vector jvel_des(mercury::num_qdot); jvel_des.setZero();
     dynacore::Vector jacc_des(mercury::num_qdot); jacc_des.setZero();
-   
-    inv_kin_.getDoubleSupportLegConfig(Q_cur, des_quat, des_height, config_sol);
 
-    //dynacore::pretty_print(Q_cur, std::cout, "Q_cur");
-    //dynacore::pretty_print(config_sol, std::cout, "config_sol");
     // Maintain initial joint position desired
     for (int i(0); i<mercury::num_act_joint; ++i){
         //jpos_des[mercury::num_virtual + i] = jpos_ini_[i];//ini_jpos;
-        jpos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];   
+        jpos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];
+    }
+    inv_kin_.getDoubleSupportLegConfig(Q_cur, des_quat, des_height, config_sol);
+
+    dynacore::pretty_print(Q_cur, std::cout, "Q_cur");
+    dynacore::pretty_print(config_sol, std::cout, "config_sol");
+    // Maintain initial joint position desired
+    for (int i(0); i<mercury::num_act_joint; ++i){
+        //jpos_des[mercury::num_virtual + i] = jpos_ini_[i];//ini_jpos;
+        jpos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
         sp_->jpos_des_[i] = jpos_des[mercury::num_virtual + i];
     }
 
@@ -161,6 +173,7 @@ void BodyJPosCtrl::CtrlInitialization(const std::string & setting_file_name){
     handler.getVector("Kp", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
         ((ConfigTask*)jpos_task_)->Kp_vec_[i] = tmp_vec[i];        
+
     }
     handler.getVector("Kd", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){

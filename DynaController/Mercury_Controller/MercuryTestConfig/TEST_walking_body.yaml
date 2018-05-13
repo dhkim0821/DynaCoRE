@@ -11,8 +11,8 @@ com_lifting_time: 2.0
 
 ## Experiment
 swing_time: 0.34
-st_transition_time: 0.03
-end_transition_time: 0.03
+st_transition_time: 0.035
+end_transition_time: 0.035
 stance_time: 0.02
 
 ## Simulation
