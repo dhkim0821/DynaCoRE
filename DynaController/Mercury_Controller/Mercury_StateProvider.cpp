@@ -21,7 +21,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 b_rfoot_contact_(0),
                                 b_lfoot_contact_(0),
                                 estimated_com_state_(4),
-                                global_foot_height_(0.)
+                                global_foot_height_(0.),
+                                com_state_imu_(6)
 {
   Q_.setZero();
   Qdot_.setZero();
@@ -52,6 +53,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   Rfoot_vel_.setZero();
   Lfoot_pos_.setZero();
   Lfoot_vel_.setZero();
+
+  com_state_imu_.setZero();
 
 
   DataManager* data_manager = DataManager::GetDataManager();
@@ -85,6 +88,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&imu_acc_inc_, VECT3, "imu_acc_inc", 3);
   data_manager->RegisterData(&imu_acc_, VECT3, "imu_acc", 3);
   data_manager->RegisterData(&imu_ang_vel_, VECT3, "imu_ang_vel", 3);
+  data_manager->RegisterData(&com_state_imu_, DYN_VEC, "com_state_imu", 6);
 
   data_manager->RegisterData(&body_ori_, QUATERNION, "body_ori", 4);
   data_manager->RegisterData(&body_ori_rpy_, VECT3, "body_ori_rpy", 3);

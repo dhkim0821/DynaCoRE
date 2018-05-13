@@ -6,7 +6,7 @@ mercury_nodelet="/home/hcrl/ros/mercury_nodelet"
 folder_name=$(date +%Y%m%d_%H_%M_%S)
 export LATEST_FOLDER_NAME=${folder_name}
 
-target_folder="/home/hcrl/MyCloud/Apptronik/Mercury_Test_2018/"
+target_folder="/home/hcrl/MyCloud/Mercury_Test_2018_05/"
 data_location=$PATH_PACKAGE
 mkdir -p ${target_folder}/${folder_name}
 mkdir -p ${target_folder}/${folder_name}/Config

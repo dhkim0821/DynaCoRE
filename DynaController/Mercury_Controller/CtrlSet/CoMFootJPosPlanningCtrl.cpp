@@ -213,6 +213,10 @@ void CoMFootJPosPlanningCtrl::_Replanning(){
         com_pos[i] = sp_->estimated_com_state_[i];
         com_vel[i] = sp_->estimated_com_state_[i + 2];
     }
+    // x vel is zero
+    com_vel[0] = 0.;
+    // Using Y vel from imu
+    com_vel[1] = sp_->com_state_imu_[3];
 
     OutputReversalPL pl_output;
     ParamReversalPL pl_param;

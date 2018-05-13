@@ -105,17 +105,34 @@ void Mercury_interface::GetCommand( void* _data,
 #endif
     }
 
-    /// Begin of Torque Limit
+    /// Begin of Torque Limit && NAN command
     static bool isTurnoff(false);
+    static bool isTurnoff_forever(false);
+
+    if(isTurnoff_forever){
+        test_command_.setZero();
+    } else{
+        for(int i(0); i<test_command_.size(); ++i){
+            if(std::isnan(test_command_[i])){ 
+                isTurnoff_forever = true;
+                printf("[Interface] There is nan value in command\n");
+                test_command_.setZero();
+                // TEST
+                exit(0);
+            }
+        }
+    }
+
+
     for (int i(0); i<mercury::num_act_joint; ++i){
-        if(test_command_[i] > torque_limit_max_[i]){
+        if( (test_command_[i] > torque_limit_max_[i]) ){
             //if (count_ % 100 == 0) {
             //printf("%i th torque is too large: %f\n", i, torque_command_[i]);
             //}
             torque_command_[i] = torque_limit_max_[i];
             isTurnoff = true;
             //exit(0);
-        }else if(test_command_[i]< torque_limit_min_[i]){
+        }else if(test_command_[i]< torque_limit_min_[i]) {
             //if (count_ % 100 == 0) {
             //printf("%i th torque is too small: %f\n", i, torque_command_[i]);
             //}

@@ -92,6 +92,8 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     robot_sys_->getCoMPosition(sp_->CoM_pos_);
     robot_sys_->getCoMVelocity(sp_->CoM_vel_);
 
+    ((BasicAccumulation*)ori_est_)->CoMStateInitialization(sp_->CoM_pos_, sp_->CoM_vel_);
+
     // Warning: state provider setup
     sp_->SaveCurrentData();
 
@@ -132,7 +134,7 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     }
     ori_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel);
     ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
-    //dynacore::pretty_print(sp_->body_ori_, std::cout, "dynacore quat");
+    ((BasicAccumulation*)ori_est_)->getEstimatedCoMState(sp_->com_state_imu_);
     //printf("\n");
 
     if(base_cond_ == base_condition::floating){

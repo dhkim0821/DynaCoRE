@@ -37,7 +37,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
     
-    st_idx = 10
+    st_idx = 2000
     end_idx = len(data_x) - 10
     data_x = data_x[st_idx:end_idx]
     # PHASE MARKER #

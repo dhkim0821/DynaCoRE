@@ -4,6 +4,7 @@
 #include <Configuration.h>
 #include <Utils/utilities.hpp>
 #include <Utils/pseudo_inverse.hpp>
+#include <Eigen/QR>
 
 using namespace RigidBodyDynamics;
 
@@ -65,10 +66,18 @@ void Mercury_InvKinematics::getLegConfigAtVerticalPosture(
         const dynacore::Vector & guess_Q, dynacore::Vector & config_sol){
     // Vertial Orientation
     config_sol = guess_Q;
+    //config_sol[mercury_joint::virtual_Rx] = 0.;
+    //config_sol[mercury_joint::virtual_Ry] = 0.;
+    //config_sol[mercury_joint::virtual_Rz] = 0.;
+    //config_sol[mercury_joint::virtual_Rw] = 1.;
+
+    // TEST
+    double theta(0.02);
     config_sol[mercury_joint::virtual_Rx] = 0.;
-    config_sol[mercury_joint::virtual_Ry] = 0.;
+    config_sol[mercury_joint::virtual_Ry] = sin(theta/2.0);
     config_sol[mercury_joint::virtual_Rz] = 0.;
-    config_sol[mercury_joint::virtual_Rw] = 1.;
+    config_sol[mercury_joint::virtual_Rw] = cos(theta/2.0);
+
 
     // Find Foot body id
     unsigned int bodyid;
@@ -111,7 +120,6 @@ void Mercury_InvKinematics::getLegConfigAtVerticalPosture(
         J_leg = J.block(0, leg_jidx, 3, 3);
         //dynacore::pretty_print(J, std::cout, "J");
         //dynacore::pretty_print(J_leg, std::cout, "J leg");
-        //dynacore::pretty_print(target_foot_pos, std::cout, "target foot pos");
         //dynacore::pretty_print(current_pos, std::cout, "current pos");
         //dynacore::pretty_print(Local_CoM, std::cout, "local com");
         Jinv = J_leg.inverse();
@@ -120,13 +128,13 @@ void Mercury_InvKinematics::getLegConfigAtVerticalPosture(
 
         ++num_iter;
         err = err_vec.norm();
-        
-            //printf("%d iter, err: %f\n", num_iter, err);
+
+        //printf("%d iter, err: %f\n", num_iter, err);
         if(num_iter == max_iter_){
             printf("%d iter, err: %f\n", num_iter, err);
         }
     }
-}
+    }
 
 void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & current_Q, 
                                                       const dynacore::Quaternion & des_quat,
@@ -155,38 +163,31 @@ void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & c
     CalcPointJacobian(*model_, current_Q, left_foot_bodyid, left_foot_local_com, J_left_foot, true);
     CalcPointJacobian(*model_, current_Q, right_foot_bodyid, right_foot_local_com, J_right_foot, false);
 
-    dynacore::pretty_print(current_Q, std::cout, "current_Q");
-    dynacore::pretty_print(J_left_foot, std::cout, "J left foot");
-    dynacore::pretty_print(J_right_foot, std::cout, "J right foot");    
-
     // Stack the Constraint Jacobians
     dynacore::Matrix J1 = dynacore::Matrix::Zero(6, mercury::num_qdot);
     J1.block(0,0, 3, mercury::num_qdot) = J_left_foot;
     J1.block(3,0, 3, mercury::num_qdot) = J_right_foot;
     //dynacore::pretty_print(J1, std::cout, "J1");
 
-    // Create the Nullspace
-    // dynacore::Matrix J1_pinv;
-    // double threshold = 0.001;
-    // dynacore::pseudoInverse(J1, threshold, J1_pinv);
-    // dynacore::Matrix N1 = dynacore::Matrix::Identity(mercury::num_qdot, mercury::num_qdot) - J1_pinv*J1;
-    // dynacore::pretty_print(N1, std::cout, "N1");
 
+    // Create the Nullspace
+    //dynacore::Matrix J1_pinv;
+    //double threshold = 0.001;
+    //dynacore::pseudoInverse(J1, threshold, J1_pinv);
+    dynacore::Matrix J1_pinv = J1.completeOrthogonalDecomposition().pseudoInverse();
+    dynacore::Matrix N1 = dynacore::Matrix::Identity(mercury::num_qdot, mercury::num_qdot) - J1_pinv*J1;
 
     // Get the Jacobian of the body
     dynacore::Matrix J_body = dynacore::Matrix::Zero(6, mercury::num_qdot);
-    //dynacore::pretty_print(body_local_com, std::cout, "body_local_com");
 
-    //CalcPointJacobian6D(*model_, current_Q, body_bodyid, body_local_com, J_body, false);   
-    J_body.block(0,0,6,6) = dynacore::Matrix::Identity(6,6);
-
-    dynacore::pretty_print(J_body, std::cout, "body Jacobian");
+    CalcPointJacobian6D(*model_, current_Q, body_bodyid, body_local_com, J_body, false);   
+    //J_body.block(0,0,6,6) = dynacore::Matrix::Identity(6,6);
+    //dynacore::pretty_print(J_body, std::cout, "J_body");
 
     // Get the Jacobian rows for Body Roll, Pitch and Height
     dynacore::Matrix J2 = dynacore::Matrix::Zero(3, mercury::num_qdot);
     J2.block(0, 0, 2, mercury::num_qdot) = J_body.block(0, 0, 2, mercury::num_qdot);  // (Rx, Ry) Roll and Pitch  
     J2.block(2, 0, 1, mercury::num_qdot) = J_body.block(5, 0, 1, mercury::num_qdot);  //  Z - body height
-    dynacore::pretty_print(J2, std::cout, "J2");
 
     //Compute Orientation Error
     // Orientation
@@ -200,11 +201,6 @@ void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & c
     dynacore::Vect3 ori_err;
     dynacore::convert(err_quat, ori_err);
 
-    // dynacore::pretty_print(curr_quat, std::cout, "curr_quat");
-    // dynacore::pretty_print(des_quat, std::cout, "des_quat");    
-    // dynacore::pretty_print(err_quat, std::cout, "err_quat");    
-    // dynacore::pretty_print(ori_err, std::cout, "ori_err");
-
     // Compute Height Error
     double current_height = current_Q[2];
     double height_error = des_height - current_height;
@@ -213,9 +209,19 @@ void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & c
     delta_x[0] = ori_err[0];    
     delta_x[1] = ori_err[1];
     delta_x[2] = height_error;
-    //dynacore::pretty_print(delta_x, std::cout, "delta_x");
+    dynacore::Matrix J2N1 = J2*N1;
+    dynacore::Matrix J2N1_pinv = J2N1.completeOrthogonalDecomposition().pseudoInverse();
 
-    // delta_q = pinv(J2N1)*delta_x
+    //dynacore::pretty_print(J2N1, std::cout, "J2N1");
+    //dynacore::pretty_print(J2N1_pinv, std::cout, "J2N1_pinv");
+
+    dynacore::Vector delta_q(mercury::num_qdot); delta_q.setZero();
+    delta_q = J2N1_pinv*delta_x;
+    //dynacore::pretty_print(delta_q, std::cout, "delta q");
+
+
+    config_sol.segment(mercury::num_act_joint, mercury::num_act_joint) += delta_q.segment(mercury::num_act_joint, mercury::num_act_joint);
+
 }
 
 

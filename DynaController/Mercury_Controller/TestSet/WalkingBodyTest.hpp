@@ -5,6 +5,8 @@
 class Mercury_StateProvider;
 class Planner;
 
+#define INITIAL_SWING_FOOT 0 // 0: right, 1: left
+
 namespace WkBodyPhase{
   constexpr int initiation = 0;
   constexpr int lift_up = 1;

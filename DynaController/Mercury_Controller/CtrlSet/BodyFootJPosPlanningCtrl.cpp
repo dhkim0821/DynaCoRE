@@ -179,10 +179,12 @@ void BodyFootJPosPlanningCtrl::_task_setup(){
         vel_des[i + 6] = curr_jvel_des_[i];
         acc_des[i + 6] = curr_jacc_des_[i];
     }
+    
     // Feedback gain decreasing
-    if(state_machine_time_ < gain_decreasing_period_portion_ * end_time_){
-        double tot_decreasing_time =gain_decreasing_period_portion_ * end_time_; 
-        double remain_time = tot_decreasing_time - state_machine_time_;
+    double tot_decreasing_time = gain_decreasing_period_portion_ * end_time_; 
+    double remain_time = end_time_ - state_machine_time_;
+    if(remain_time < 1.0e-5)  remain_time = 1.0e-5;
+    if(remain_time < tot_decreasing_time){        
         dynacore::Vector Kp = task_kp_;
         dynacore::Vector Kd = task_kd_;
         Kp = remain_time/tot_decreasing_time * task_kp_ 
@@ -190,8 +192,8 @@ void BodyFootJPosPlanningCtrl::_task_setup(){
         Kd = remain_time/tot_decreasing_time * task_kd_ 
             + (1. - remain_time/tot_decreasing_time) * gain_decreasing_ratio_* task_kd_; 
 
-        Kp.head(6) = task_kp_.head(6);
-        Kd.head(6) = task_kd_.head(6);
+        Kp.head(7) = task_kp_.head(7);
+        Kd.head(7) = task_kd_.head(7);
         _setTaskGain(Kp, Kd);
     }
     
@@ -261,15 +263,17 @@ void BodyFootJPosPlanningCtrl::_Replanning(){
     target_loc -= sp_->global_pos_local_;
     //target_loc[2] -= push_down_height_;
     target_loc[2] = default_target_loc_[2];
-    //dynacore::pretty_print(target_loc, std::cout, "next foot loc");
+    dynacore::pretty_print(target_loc, std::cout, "next foot loc");
     //curr_foot_acc_des_.setZero();
     //curr_foot_vel_des_.setZero();
     
     // Set guess_q since the x,y,z position is 
     // used to find the inverse kinematics
     dynacore::Vector guess_q = sp_->Q_;
-    for(int i(0); i<2; ++i)
-        guess_q[i] = pl_output.switching_state[i] - sp_->global_pos_local_[i];
+
+    // TEST ignore switching state
+    //for(int i(0); i<2; ++i)
+        //guess_q[i] = pl_output.switching_state[i] - sp_->global_pos_local_[i];
 
     _SetBspline(guess_q, curr_jpos_des_, curr_jvel_des_, curr_jacc_des_, target_loc);
 }
@@ -291,13 +295,13 @@ void BodyFootJPosPlanningCtrl::FirstVisit(){
     dynacore::Vect3 zero;
     zero.setZero();
     dynacore::Vect3 target_loc = default_target_loc_;
-    target_loc[0] = sp_->Q_[0];
+    target_loc[0] += sp_->Q_[0];
     target_loc[1] += sp_->Q_[1];
-    target_loc[2] = ini_foot_pos_[2];
-    //default_target_loc_[2] = 0.0;
-    default_target_loc_[2] -= push_down_height_;
+    target_loc[2] = ini_foot_pos_[2] - push_down_height_;
+
     _SetBspline(sp_->Q_, ini_swing_leg_config_, zero, zero, target_loc);
 
+    default_target_loc_[2] = target_loc[2];
     // _Replanning();
     num_planning_ = 0;
 
@@ -353,7 +357,7 @@ void BodyFootJPosPlanningCtrl::_SetBspline(
     dynacore::Vect3 middle_pos;
     if(portion > 0.){
         middle_pos = (st_pos + target_pos)*portion;
-        middle_pos[2] = swing_height_;
+        middle_pos[2] = swing_height_ + target_pos[2];
     } else {
         middle_pos = (st_pos + target_pos)/2.;
     }

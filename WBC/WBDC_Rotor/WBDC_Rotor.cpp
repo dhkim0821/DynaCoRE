@@ -177,26 +177,26 @@ void WBDC_Rotor::MakeTorque(const std::vector<Task*> & task_list,
     //std::cout<<ci0<<std::endl;
 
 
-    // if(f > 1.e5){
-    //   std::cout << "f: " << f << std::endl;
-    //   std::cout << "x: " << z << std::endl;
-    //   std::cout << "cmd: "<<cmd<<std::endl;
+     //if(f > 1.e5){
+       //std::cout << "f: " << f << std::endl;
+       //std::cout << "x: " << z << std::endl;
+       //std::cout << "cmd: "<<cmd<<std::endl;
 
-    //   printf("G:\n");
-    //   std::cout<<G<<std::endl;
-    //   printf("g0:\n");
-    //   std::cout<<g0<<std::endl;
+       //printf("G:\n");
+       //std::cout<<G<<std::endl;
+       //printf("g0:\n");
+       //std::cout<<g0<<std::endl;
 
-    //   printf("CE:\n");
-    //   std::cout<<CE<<std::endl;
-    //   printf("ce0:\n");
-    //   std::cout<<ce0<<std::endl;
+       //printf("CE:\n");
+       //std::cout<<CE<<std::endl;
+       //printf("ce0:\n");
+       //std::cout<<ce0<<std::endl;
 
-    //   printf("CI:\n");
-    //   std::cout<<CI<<std::endl;
-    //   printf("ci0:\n");
-    //   std::cout<<ci0<<std::endl;
-    // }
+       //printf("CI:\n");
+       //std::cout<<CI<<std::endl;
+       //printf("ci0:\n");
+       //std::cout<<ci0<<std::endl;
+     //}
 
 }
 

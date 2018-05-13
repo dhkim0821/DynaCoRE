@@ -43,6 +43,8 @@ bool DoubleContactBounding::_UpdateJcDotQdot(){
 
    //dynacore::pretty_print(JcDot, std::cout,  "[double contact bounding] JcDot");
   JcDotQdot_ = JcDot * sp_->Qdot_;
+
+  JcDotQdot_.setZero();
   return true;
 }
 

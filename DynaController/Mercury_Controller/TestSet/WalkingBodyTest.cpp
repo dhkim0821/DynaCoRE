@@ -3,9 +3,11 @@
 
 #include <Mercury_Controller/CtrlSet/JPosTargetCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/ContactTransBodyCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/ContactTransCoMCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/BodyRxRyRzCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/BodyFootJPosPlanningCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/TransitionCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/TransitionCoMCtrl.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Planner/PIPM_FootPlacementPlanner/Reversal_LIPM_Planner.hpp>
 #include <Utils/DataManager.hpp>
@@ -13,11 +15,16 @@
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury/Mercury_Definition.h>
 
+
 WalkingBodyTest::WalkingBodyTest(RobotSystem* robot):Test(robot),
                            num_step_(0)
 {
   sp_ = Mercury_StateProvider::getStateProvider();
+#if (INITIAL_SWING_FOOT == 0)
   sp_->stance_foot_ = mercury_link::leftFoot;
+#else
+  sp_->stance_foot_ = mercury_link::rightFoot;
+#endif
   sp_->global_pos_local_[1] = 0.15;
   robot_sys_ = robot;
   reversal_planner_ = new Reversal_LIPM_Planner();
@@ -31,17 +38,21 @@ WalkingBodyTest::WalkingBodyTest(RobotSystem* robot):Test(robot),
   // Right
   right_swing_start_trans_ctrl_ = 
       new TransitionCtrl(robot, mercury_link::rightFoot, false);
+      //new TransitionCoMCtrl(robot, mercury_link::rightFoot, false);
   jpos_right_swing_ctrl_ = 
       new BodyFootJPosPlanningCtrl(robot, mercury_link::rightFoot, reversal_planner_);
   right_swing_end_trans_ctrl_ = 
       new TransitionCtrl(robot, mercury_link::rightFoot, true);
+      //new TransitionCoMCtrl(robot, mercury_link::rightFoot, true);
   // Left
   left_swing_start_trans_ctrl_ = 
       new TransitionCtrl(robot, mercury_link::leftFoot, false);
+      //new TransitionCoMCtrl(robot, mercury_link::leftFoot, false);
   jpos_left_swing_ctrl_ = 
       new BodyFootJPosPlanningCtrl(robot, mercury_link::leftFoot, reversal_planner_);
   left_swing_end_trans_ctrl_ = 
       new TransitionCtrl(robot, mercury_link::leftFoot, true);
+      //new TransitionCoMCtrl(robot, mercury_link::leftFoot, true);
 
   state_list_.push_back(jpos_ctrl_);
   state_list_.push_back(body_up_ctrl_);
@@ -86,7 +97,10 @@ void WalkingBodyTest::TestInitialization(){
 
 int WalkingBodyTest::_NextPhase(const int & phase){
   int next_phase = phase + 1;
-  // printf("next phase: %i\n", next_phase);
+#if (INITIAL_SWING_FOOT == 1)  
+    if(phase == WkBodyPhase::lift_up) { next_phase = WkBodyPhase::double_contact_2; }
+#endif
+   //printf("next phase: %i\n", next_phase);
   
   if(phase == WkBodyPhase::double_contact_1) {
   //if(phase == WkBodyPhase::right_swing_start_trans) {
@@ -120,6 +134,13 @@ int WalkingBodyTest::_NextPhase(const int & phase){
     //dynacore::pretty_print(sp_->global_pos_local_, std::cout, "global local");
     sp_->global_foot_height_ = next_local_frame_location[2];
   }
+
+
+  // TEST
+  if (num_step_ > 10) {
+      exit(0);
+  }
+
   if(next_phase == WkBodyPhase::NUM_WALKING_PHASE) {
     return WkBodyPhase::double_contact_1;
   }

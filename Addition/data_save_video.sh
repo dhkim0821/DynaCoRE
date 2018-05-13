@@ -3,7 +3,7 @@ PATH_PACKAGE="/home/hcrl/Repository/dynacore"
 #PATH_PACKAGE=$(dirname "$(pwd)")
 mercury_nodelet="/home/hcrl/ros/mercury_nodelet"
 
-target_folder="/home/hcrl/MyCloud/Apptronik/Mercury_Test_2018/"
+target_folder="/home/hcrl/MyCloud/Mercury_Test_2018_05/"
 data_location=$PATH_PACKAGE
 
 if [[ -z "${LATEST_FOLDER_NAME}" ]]; then
