@@ -35,7 +35,7 @@ void BodyJPosCtrlTest::TestInitialization(){
   // Yaml file name
   jpos_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
   body_up_ctrl_->CtrlInitialization("CTRL_move_to_target_height");
-  body_jpos_ctrl_->CtrlInitialization("CTRL_body_jpos");
+  body_jpos_ctrl_->CtrlInitialization("CTRL_fix_config");
 }
 
 int BodyJPosCtrlTest::_NextPhase(const int & phase){

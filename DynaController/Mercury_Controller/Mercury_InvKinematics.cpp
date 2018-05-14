@@ -181,15 +181,17 @@ void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & c
     // Get the Jacobian of the body
     dynacore::Matrix J_body = dynacore::Matrix::Zero(6, mercury::num_qdot);
 
-    CalcPointJacobian6D(*model_, current_Q, body_bodyid, body_local_com, J_body, false);   
+    //CalcPointJacobian6D(*model_, current_Q, body_bodyid, body_local_com, J_body, false);   
     //J_body.block(0,0,6,6) = dynacore::Matrix::Identity(6,6);
     //dynacore::pretty_print(J_body, std::cout, "J_body");
 
     // Get the Jacobian rows for Body Roll, Pitch and Height
     dynacore::Matrix J2 = dynacore::Matrix::Zero(3, mercury::num_qdot);
-    J2.block(0, 0, 2, mercury::num_qdot) = J_body.block(0, 0, 2, mercury::num_qdot);  // (Rx, Ry) Roll and Pitch 
-    J2.block(2, 0, 1, mercury::num_qdot) = J_body.block(5, 0, 1, mercury::num_qdot);  //  Z - body height
-
+    //J2.block(0, 0, 2, mercury::num_qdot) = J_body.block(0, 0, 2, mercury::num_qdot);  // (Rx, Ry) Roll and Pitch 
+    //J2.block(2, 0, 1, mercury::num_qdot) = J_body.block(5, 0, 1, mercury::num_qdot);  //  Z - body height
+    J2(0, 3) = 1.;
+    J2(1, 4) = 1.;
+    J2(2, 2) = 1.;
     //Compute Orientation Error
     // Orientation
     dynacore::Quaternion curr_quat;
@@ -272,7 +274,7 @@ void Mercury_InvKinematics::getSingleSupportFullConfig(
     dynacore::Quaternion err_quat = dynacore::QuatMultiply(des_quat, curr_quat.inverse());
     dynacore::Vect3 ori_err;
     dynacore::convert(err_quat, ori_err);
-    err[1] = ori_err[0];
+    err[1] = 2. * ori_err[0];
     err[2] = ori_err[1];
 
     // Foot
@@ -301,9 +303,101 @@ void Mercury_InvKinematics::getSingleSupportFullConfig(
     qdot_cmd = JNc_pinv * xdot;
     qddot_cmd = JNc_pinv * xddot;
 
+
     config_sol.segment(mercury::num_virtual, mercury::num_act_joint) += 
-        qdelta.segment(mercury::num_virtual, mercury::num_act_joint);
+    qdelta.segment(mercury::num_virtual, mercury::num_act_joint);
 
 }
 
 
+void Mercury_InvKinematics::getSingleSupportFullConfigSeperation(
+        const dynacore::Vector & current_Q,
+        const dynacore::Quaternion & des_quat,
+        const double & des_height, 
+        int swing_foot_,
+        const dynacore::Vect3 & foot_pos,
+        const dynacore::Vect3 & foot_vel,
+        const dynacore::Vect3 & foot_acc,
+        dynacore::Vector & config_sol,
+        dynacore::Vector & qdot_cmd, 
+        dynacore::Vector & qddot_cmd){
+
+    unsigned int stance_bodyid = model_->GetBodyId("lfoot");;
+    unsigned int swing_bodyid = model_->GetBodyId("rfoot");;
+
+    if(swing_foot_ == mercury_link::leftFoot) {
+        stance_bodyid = model_->GetBodyId("rfoot");;
+        swing_bodyid = model_->GetBodyId("lfoot");;
+    }
+    config_sol = current_Q;
+    qdot_cmd = dynacore::Vector::Zero(mercury::num_qdot);
+    qddot_cmd = dynacore::Vector::Zero(mercury::num_qdot);
+    dynacore::Vect3 zero_vec; zero_vec.setZero();
+
+    // contact jacobian and null space
+    dynacore::Matrix Jc = dynacore::Matrix::Zero(3, mercury::num_qdot); 
+    CalcPointJacobian(*model_, current_Q, stance_bodyid, zero_vec, Jc, true);
+    //dynacore::pretty_print(Jc, std::cout, "contact jacobian");
+    dynacore::Matrix Jc_pinv = Jc.completeOrthogonalDecomposition().pseudoInverse();
+    //dynacore::pretty_print(Jc_pinv, std::cout, "contact jacobian inver");
+    dynacore::Matrix Nc = dynacore::Matrix::Identity(mercury::num_qdot, mercury::num_qdot) -
+        Jc_pinv * Jc;
+
+    //// Operational Space error (height, Rx, Ry, foot_x, foot_y, foot_z) *****
+    // Height
+    dynacore::Vector err(6);
+    dynacore::Vector xdot(6); xdot.setZero();
+    dynacore::Vector xddot(6); xddot.setZero();
+    err[0] = des_height - current_Q[mercury_joint::virtual_Z];
+    // Orientation
+    dynacore::Quaternion curr_quat;
+    curr_quat.w() = current_Q[mercury::num_qdot];
+    curr_quat.x() = current_Q[3];
+    curr_quat.y() = current_Q[4];
+    curr_quat.z() = current_Q[5];
+
+    dynacore::Quaternion err_quat = dynacore::QuatMultiply(des_quat, curr_quat.inverse());
+    dynacore::Vect3 ori_err;
+    dynacore::convert(err_quat, ori_err);
+    err[1] = 2. * ori_err[0];
+    err[2] = ori_err[1];
+
+    // Foot
+    dynacore::Vect3 swingfoot_pos = CalcBodyToBaseCoordinates(
+            *model_, config_sol, swing_bodyid, zero_vec, false);
+    for(int i(0); i<3; ++i) {
+        err[3+ i] = foot_pos[i] - swingfoot_pos[i];
+        xdot[3 + i] = foot_vel[i];
+        xddot[3 + i] = foot_acc[i];
+    }
+
+
+    //// Operational space Jacobian **********
+
+    dynacore::Matrix Jop(3, mercury::num_qdot); Jop.setZero();
+    Jop(0, 2) = 1.;
+    Jop(1, 3) = 1.;
+    Jop(2, 4) = 1.;
+
+    dynacore::Matrix Jfoot = dynacore::Matrix::Zero(3, mercury::num_qdot);
+    CalcPointJacobian(*model_, current_Q, swing_bodyid, zero_vec, Jfoot, false);
+    //Jop.block(3, 0, 3, mercury::num_qdot) = Jfoot;
+    dynacore::Matrix JNc = Jop * Nc;
+    dynacore::Matrix JNc_pinv = JNc.completeOrthogonalDecomposition().pseudoInverse();
+
+    Jfoot.block(0,0, 3,6) = dynacore::Matrix::Zero(3,6);
+    dynacore::Matrix Jfoot_pinv = Jfoot.completeOrthogonalDecomposition().pseudoInverse();
+
+    dynacore::Vector qdelta = JNc_pinv * err.head(3);
+    qdot_cmd = JNc_pinv * xdot.head(3);
+    qddot_cmd = JNc_pinv * xddot.head(3);
+
+    qdelta += Jfoot_pinv*err.tail(3);
+    qdot_cmd += Jfoot_pinv*err.tail(3);
+    qddot_cmd += Jfoot_pinv*err.tail(3);        
+
+
+    config_sol.segment(mercury::num_virtual, mercury::num_act_joint) += 
+        qdelta.segment(mercury::num_virtual, mercury::num_act_joint);
+
+}

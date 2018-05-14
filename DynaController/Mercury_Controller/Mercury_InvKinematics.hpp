@@ -33,6 +33,16 @@ class Mercury_InvKinematics{
                                        dynacore::Vector & qdot_cmd, 
                                        dynacore::Vector & qddot_cmd);
 
+        void getSingleSupportFullConfigSeperation(const dynacore::Vector & current_Q,
+                                       const dynacore::Quaternion & des_quat,
+                                       const double & des_height, 
+                                       int swing_foot_,
+                                       const dynacore::Vect3 & foot_pos,
+                                       const dynacore::Vect3 & foot_vel,
+                                       const dynacore::Vect3 & foot_acc,
+                                       dynacore::Vector & config_sol,
+                                       dynacore::Vector & qdot_cmd, 
+                                       dynacore::Vector & qddot_cmd);
 
     protected:
         int max_iter_;

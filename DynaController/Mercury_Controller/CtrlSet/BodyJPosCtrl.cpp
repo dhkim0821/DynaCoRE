@@ -34,8 +34,8 @@ BodyJPosCtrl::BodyJPosCtrl(RobotSystem* robot):Controller(robot),
     // for(int i(0); i<mercury::num_virtual; ++i){
     //     wbdc_rotor_data_->cost_weight[i] = 0.00001;
     // }
-    wbdc_rotor_data_->cost_weight[0] = 200;    
-    wbdc_rotor_data_->cost_weight[1] = 200;    
+    wbdc_rotor_data_->cost_weight[0] = 10;    
+    wbdc_rotor_data_->cost_weight[1] = 10;    
     wbdc_rotor_data_->cost_weight[2] = 200;    
 
     wbdc_rotor_data_->cost_weight.tail(double_body_contact_->getDim()) = 
