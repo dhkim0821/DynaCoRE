@@ -13,17 +13,12 @@
 
 BodyJPosCtrl::BodyJPosCtrl(RobotSystem* robot):Controller(robot),
     end_time_(1000.0),
-    b_jpos_set_(false),
-    ctrl_start_time_(0.)
+    ctrl_start_time_(0.),
+    b_set_height_target_(false)
 {
-    set_jpos_.resize(mercury::num_act_joint, 0.);
-    amp_.resize(mercury::num_act_joint, 0.);
-    freq_.resize(mercury::num_act_joint, 0.);
-    phase_.resize(mercury::num_act_joint, 0.);
-
     jpos_task_ = new ConfigTask();
     double_body_contact_ = new DoubleContact(robot);
-//    double_body_contact_ = new FixedBodyContact(robot);
+    
     std::vector<bool> act_list;
     act_list.resize(mercury::num_qdot, true);
     for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
@@ -71,8 +66,6 @@ void BodyJPosCtrl::OneStep(dynacore::Vector & gamma){
     _jpos_task_setup();
     _jpos_ctrl_wbdc_rotor(gamma);
 
-    //dynacore::pretty_print( gamma, std::cout, "gamma");
-
     _PostProcessing_Command();
 }
 
@@ -100,46 +93,31 @@ void BodyJPosCtrl::_jpos_task_setup(){
     // Calculate IK for a desired height and orientation.
     dynacore::Vector Q_cur = sp_->Q_;
     dynacore::Vector config_sol;
-    //dynacore::pretty_print(Q_cur, std::cout, "Q cur");   
 
-    // Set Frequency
-    double frequency = 1; //Hz
-    double omega = 2. * M_PI * frequency;
-
-    // Set Desired height
-    double des_height = 0.85;//0.853;// 0.852689 is the current height
-    //double des_height = 0.853;//0.853;// 0.852689 is the current height
-    //double des_height = 0.75;//0.853;// 0.852689 is the current height
-    //double des_height = 0.8 + 0.05*sin(omega * state_machine_time_);
+    double body_height_cmd;
 
     // Set Desired Orientation
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
     rpy_des.setZero();
-    //rpy_des[1] = 0.5;
     dynacore::convert(rpy_des, des_quat);    
-    //rpy_des[1] = 0.25 + 0.25*sin(omega * state_machine_time_);
 
     dynacore::Vector jpos_des(mercury::num_qdot); jpos_des.setZero();
     dynacore::Vector jvel_des(mercury::num_qdot); jvel_des.setZero();
     dynacore::Vector jacc_des(mercury::num_qdot); jacc_des.setZero();
 
-    // Maintain initial joint position desired
+    if(b_set_height_target_) body_height_cmd = target_body_height_;
+    else body_height_cmd = ini_body_height_;
+    
+    inv_kin_.getDoubleSupportLegConfig(Q_cur, des_quat, body_height_cmd, config_sol);
     for (int i(0); i<mercury::num_act_joint; ++i){
-        //jpos_des[mercury::num_virtual + i] = jpos_ini_[i];//ini_jpos;
-        jpos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];
-    }
-    inv_kin_.getDoubleSupportLegConfig(Q_cur, des_quat, des_height, config_sol);
-
-    dynacore::pretty_print(Q_cur, std::cout, "Q_cur");
-    dynacore::pretty_print(config_sol, std::cout, "config_sol");
-    // Maintain initial joint position desired
-    for (int i(0); i<mercury::num_act_joint; ++i){
-        //jpos_des[mercury::num_virtual + i] = jpos_ini_[i];//ini_jpos;
         jpos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
         sp_->jpos_des_[i] = jpos_des[mercury::num_virtual + i];
     }
 
+    //dynacore::pretty_print(Q_cur, std::cout, "Q_cur");
+    //dynacore::pretty_print(config_sol, std::cout, "config_sol");
+    // Maintain initial joint position desired
     jpos_task_->UpdateTask(&(jpos_des), jvel_des, jacc_des);
     task_list_.push_back(jpos_task_);
 }
@@ -152,6 +130,7 @@ void BodyJPosCtrl::_double_body_contact_setup(){
 void BodyJPosCtrl::FirstVisit(){
     jpos_ini_ = sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint);
     ctrl_start_time_ = sp_->curr_time_;
+    ini_body_height_ = sp_->Q_[mercury_joint::virtual_Z];
 }
 
 void BodyJPosCtrl::LastVisit(){

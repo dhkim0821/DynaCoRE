@@ -20,13 +20,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     file_path = os.getcwd() + "/../../experiment_data_check/"
 
     ## read files
-    data_foot_pos_des = \
-    np.genfromtxt(file_path+'rfoot_pos_des.txt', delimiter=None, dtype=(float))
+   # data_foot_pos_des = \
+   # np.genfromtxt(file_path+'rfoot_pos_des.txt', delimiter=None, dtype=(float))
     data_foot_pos = \
     np.genfromtxt(file_path+'rfoot_pos.txt', delimiter=None, dtype=(float))
 
-    data_foot_vel_des = \
-    np.genfromtxt(file_path+'rfoot_vel_des.txt', delimiter=None, dtype=(float))
+    #data_foot_vel_des = \
+    #np.genfromtxt(file_path+'rfoot_vel_des.txt', delimiter=None, dtype=(float))
     data_foot_vel = \
     np.genfromtxt(file_path+'rfoot_vel.txt', delimiter=None, dtype=(float))
 
@@ -76,9 +76,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('foot pos')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_foot_pos_des[st_idx:end_idx,i-1], "r-", \
-                 data_x, data_foot_pos[st_idx:end_idx,i-1], "b-")
-        # plt.legend(('command', 'pos'), loc='upper left')
+       # plt.plot(data_x, data_foot_pos_des[st_idx:end_idx,i-1], "r-", \
+       #          data_x, data_foot_pos[st_idx:end_idx,i-1], "b-")
+        plt.plot(data_x, data_foot_pos[st_idx:end_idx,i-1], "b-")
+       # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:
             # phase line
@@ -128,8 +129,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('foot vel')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_foot_vel_des[st_idx:end_idx,i-1], "r-", \
-                 data_x, data_foot_vel[st_idx:end_idx,i-1], "b-")
+        #plt.plot(data_x, data_foot_vel_des[st_idx:end_idx,i-1], "r-", \
+        #         data_x, data_foot_vel[st_idx:end_idx,i-1], "b-")
+        plt.plot(data_x, data_foot_vel[st_idx:end_idx,i-1], "b-")
+        
         # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:

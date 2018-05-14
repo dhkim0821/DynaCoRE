@@ -24,24 +24,14 @@ class BodyJPosCtrl: public Controller{
 
         virtual void CtrlInitialization(const std::string & setting_file_name);
 
-        void setMovingTime(double time) { end_time_ = time; }
-        void setPosture(const std::vector<double> & set_jpos){
-            set_jpos_ = set_jpos;
-            b_jpos_set_ = true;
-        }
-
-        void selectTrajectoryType(int type){ trj_type_ = type; }
-        // For sinusoidal trajectory test
-        void setAmplitude(const std::vector<double> & amp){ amp_ = amp; }
-        void setFrequency(const std::vector<double> & freq){ freq_ = freq; }
-        void setPhase(const std::vector<double> & phase){ phase_ = phase; }
-
-        // For ramp trajectory test
-        void setJPosDelta(const std::vector<double> & jpos_delta){ jpos_delta_ = jpos_delta; }
-        void setStartTime(const std::vector<double> & t){ start_time_ = t; }
-        void setDeltaTime(const std::vector<double> & dt){ delta_time_ = dt; }
+        void setStanceTime(double time) { end_time_ = time; }
+        void setStanceHeight(double height){ 
+            target_body_height_ = height;
+            b_set_height_target_ = true;
+         }
 
     protected:
+        bool b_set_height_target_;
         int trj_type_;
         double end_time_;
 
@@ -53,19 +43,10 @@ class BodyJPosCtrl: public Controller{
         dynacore::Vector jpos_ini_;
         dynacore::Vector jpos_target_;
 
+        double target_body_height_;
+        double ini_body_height_;
+
         bool b_jpos_set_;
-        std::vector<double> set_jpos_;
-
-        // For sinusoidal trajectory test
-        std::vector<double> amp_;
-        std::vector<double> freq_;
-        std::vector<double> phase_;
-
-        // For ramp trajectory test
-        std::vector<double> jpos_delta_;
-        std::vector<double> start_time_;
-        std::vector<double> delta_time_;
-
 
         void _jpos_task_setup();
         void _double_body_contact_setup();

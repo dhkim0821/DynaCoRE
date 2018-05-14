@@ -29,7 +29,8 @@ bool ConfigTask::_UpdateCommand(void* pos_des,
                               const dynacore::Vector & vel_des,
                               const dynacore::Vector & acc_des){
   dynacore::Vector* pos_cmd = (dynacore::Vector*)pos_des;
-
+// TODO: Implemented based on the assumption that 
+// we do not control orientation
   for(int i(0); i<mercury::num_qdot; ++i){
     op_cmd_[i] = acc_des[i] 
         + Kp_vec_[i] * ((*pos_cmd)[i] - sp_->Q_[i]) 
