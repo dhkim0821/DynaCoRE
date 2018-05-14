@@ -8,6 +8,27 @@ BasicAccumulation::BasicAccumulation():OriEstimator(), com_state_(6){
   global_ori_.x() = 0.;
   com_state_.setZero();
 
+  count = 0;
+  calibration_time = 2.5; // Seconds
+  reset_once = false;
+
+  // Bias Filter 
+  bias_lp_frequency_cutoff = 2.0*3.1415*1.0; // 1Hz // (2*pi*frequency) rads/s 
+  x_bias_low_pass_filter = new digital_lp_filter(bias_lp_frequency_cutoff, mercury::servo_rate);
+  y_bias_low_pass_filter = new digital_lp_filter(bias_lp_frequency_cutoff, mercury::servo_rate);
+  z_bias_low_pass_filter = new digital_lp_filter(bias_lp_frequency_cutoff, mercury::servo_rate);  
+  x_acc_bias = 0.0;
+  y_acc_bias = 0.0;  
+  z_acc_bias = 0.0;
+
+  //
+  lp_frequency_cutoff = 2.0*3.1415*100; // 100Hz // (2*pi*frequency) rads/s
+  x_acc_low_pass_filter = new digital_lp_filter(lp_frequency_cutoff, mercury::servo_rate);
+  y_acc_low_pass_filter = new digital_lp_filter(lp_frequency_cutoff, mercury::servo_rate);
+  z_acc_low_pass_filter = new digital_lp_filter(lp_frequency_cutoff, mercury::servo_rate);
+
+  gravity_mag = 9.81; // m/s^2;
+  theta_x = 0.0;
 }
 BasicAccumulation::~BasicAccumulation(){}
 
@@ -100,15 +121,88 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
     // com_state_[4] = quat_acc.x() - ini_acc_[0]; 
     // com_state_[5] = quat_acc.y() - ini_acc_[1];
 
+    // Reset filters and velocities once after bias calibration time
+    if (((count*mercury::servo_rate) > calibration_time) && (!reset_once)){
+      // Reset the filters
+      x_acc_low_pass_filter->clear();
+      y_acc_low_pass_filter->clear();
+      z_acc_low_pass_filter->clear();      
+      reset_once = true;
+
+      // Reset local velocities
+      com_state_[2] = 0.0;
+      com_state_[3] = 0.0;     
+
+      // Reset local positions
+      com_state_[0] = 0.0;
+      com_state_[1] = 0.0;      
+
+      // Estimate orientation       
+      IMUOrientationEstimate();
+
+    }else{
+      // Update bias estimate
+      x_bias_low_pass_filter->input(acc[0]);
+      y_bias_low_pass_filter->input(acc[1]);
+      z_bias_low_pass_filter->input(acc[2]);
+
+      x_acc_bias = x_bias_low_pass_filter->output();
+      y_acc_bias = y_bias_low_pass_filter->output(); 
+      z_acc_bias = z_bias_low_pass_filter->output();           
+    }
+
+    // Get Local Acceleration Estimate
+    x_acc_low_pass_filter->input(acc[0] - x_acc_bias);
+    y_acc_low_pass_filter->input(acc[1] - y_acc_bias);
+    z_acc_low_pass_filter->input(acc[2] - z_acc_bias);    
+
+
     // TEST
-    com_state_[4] = acc[0] - ini_acc_[0];
-    com_state_[5] = acc[1] - ini_acc_[1];
+    //com_state_[4] = acc[0] - ini_acc_[0];
+    com_state_[4] = x_acc_low_pass_filter->output();
+    com_state_[5] = y_acc_low_pass_filter->output();
 
     com_state_[2] = com_state_[2] + com_state_[4]*mercury::servo_rate;
     com_state_[3] = com_state_[3] + com_state_[5]*mercury::servo_rate;
 
     com_state_[0] = com_state_[0] + com_state_[2]*mercury::servo_rate;
     com_state_[1] = com_state_[1] + com_state_[3]*mercury::servo_rate;
+
+  // if(count % 100 == 0){
+  //   dynacore::pretty_print(g_A, std::cout, "gravity_dir");
+  //   printf("    gravity_mag = %0.4f \n", gravity_mag);
+  //   printf("    theta_x = %0.4f \n", theta_x);    
+  //   dynacore::pretty_print(g_A_local, std::cout, "rotated gravity_dir");
+  // }    
+
+    //count++;
+}
+
+void BasicAccumulation::IMUOrientationEstimate(){
+  g_A.setZero();
+  g_A[0] = -x_acc_bias;
+  g_A[1] = -y_acc_bias;
+  g_A[2] = -z_acc_bias;    
+  gravity_mag = g_A.norm();
+  g_A /= gravity_mag;
+
+  dynacore::Quaternion q_world_Ry;
+  dynacore::Quaternion q_world_roll;  
+
+  // Prepare to rotate gravity vector
+  g_A_local.w() = 0;
+  g_A_local.x() = g_A[0];  g_A_local.y() = g_A[1]; g_A_local.z() = g_A[2];
+
+
+  // Local xhat direction
+  dynacore::Vect3 xhat_A; xhat_A.setZero(); xhat_A[0] = 1.0;
+  // Compute Pitch to rotate
+  theta_x = acos(xhat_A.dot(g_A));
+  double pitch_val = (M_PI/2.0) - theta_x;
+  //convert(0.0, pitch_val, 0.0, q_world_Ry);
+
+  // Rotate gravity vector 
+  //g_A_local = QuatMultiply( QuatMultiply(q_world_Ry, g_A_local), q_world_Ry.inverse());
 
 
 }

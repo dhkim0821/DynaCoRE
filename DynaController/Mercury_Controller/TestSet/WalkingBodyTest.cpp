@@ -137,7 +137,7 @@ int WalkingBodyTest::_NextPhase(const int & phase){
 
 
   // TEST
-  if (num_step_ > 10) {
+  if (num_step_ > 50) {
       exit(0);
   }
 
