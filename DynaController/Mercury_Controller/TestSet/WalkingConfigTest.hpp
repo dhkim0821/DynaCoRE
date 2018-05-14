@@ -1,13 +1,13 @@
-#ifndef WALKING_BODY_TEST
-#define WALKING_BODY_TEST
+#ifndef WALKING_CONFIGURATION_TEST
+#define WALKING_CONFIGURATION_TEST
 
 #include <Test.hpp>
 class Mercury_StateProvider;
 class Planner;
 
-#define INITIAL_SWING_FOOT 0 // 0: right, 1: left
+#define CONFIG_INITIAL_SWING_FOOT 1 // 0: right, 1: left
 
-namespace WkBodyPhase{
+namespace WkConfigPhase{
   constexpr int initiation = 0;
   constexpr int lift_up = 1;
   constexpr int double_contact_1 = 2;
@@ -21,10 +21,10 @@ namespace WkBodyPhase{
   constexpr int NUM_WALKING_PHASE = 10;
 };
 
-class WalkingBodyTest: public Test{
+class WalkingConfigTest: public Test{
 public:
-  WalkingBodyTest(RobotSystem*);
-  virtual ~WalkingBodyTest();
+  WalkingConfigTest(RobotSystem*);
+  virtual ~WalkingConfigTest();
   virtual void TestInitialization();
 
 protected:
@@ -37,14 +37,14 @@ protected:
 
   Controller* jpos_ctrl_;
   Controller* body_up_ctrl_;
-  Controller* body_fix_ctrl_;
+  Controller* config_body_fix_ctrl_;
   // Right
   Controller* right_swing_start_trans_ctrl_;
-  Controller* jpos_right_swing_ctrl_;
+  Controller* config_right_swing_ctrl_;
   Controller* right_swing_end_trans_ctrl_;
   // Left
   Controller* left_swing_start_trans_ctrl_;
-  Controller* jpos_left_swing_ctrl_;
+  Controller* config_left_swing_ctrl_;
   Controller* left_swing_end_trans_ctrl_;
   const RobotSystem* robot_sys_;
 };

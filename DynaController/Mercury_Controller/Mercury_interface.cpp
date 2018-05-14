@@ -12,17 +12,24 @@
 #include <Mercury/Mercury_Model.hpp>
 
 // Test SET LIST
-#include <Mercury_Controller/TestSet/BodyCtrlTest.hpp>
+// Basic Test
 #include <Mercury_Controller/TestSet/JointCtrlTest.hpp>
-#include <Mercury_Controller/TestSet/WalkingBodyTest.hpp>
 #include <Mercury_Controller/TestSet/FootCtrlTest.hpp>
-#include <Mercury_Controller/TestSet/BodyStanceSwingTest.hpp>
 
-#include <Mercury_Controller/TestSet/CoMCtrlTest.hpp>
+// Walking Test
 #include <Mercury_Controller/TestSet/WalkingTest.hpp>
-#include <Mercury_Controller/TestSet/CoMStanceSwingTest.hpp>
+#include <Mercury_Controller/TestSet/WalkingBodyTest.hpp>
+#include <Mercury_Controller/TestSet/WalkingConfigTest.hpp>
 
+// Body Ctrl Test
+#include <Mercury_Controller/TestSet/CoMCtrlTest.hpp>
+#include <Mercury_Controller/TestSet/BodyCtrlTest.hpp>
 #include <Mercury_Controller/TestSet/BodyJPosCtrlTest.hpp>
+
+// Stance and Swing Test
+#include <Mercury_Controller/TestSet/ConfigStanceSwingTest.hpp>
+#include <Mercury_Controller/TestSet/CoMStanceSwingTest.hpp>
+#include <Mercury_Controller/TestSet/BodyStanceSwingTest.hpp>
 
 #define MEASURE_TIME 0
 #if MEASURE_TIME
@@ -64,15 +71,14 @@ Mercury_interface::Mercury_interface():
             &torque_command_, DYN_VEC, "command", mercury::num_act_joint * 2);
     DataManager::GetDataManager()->RegisterData(
             &motor_current_, DYN_VEC, "motor_current", mercury::num_act_joint);
-    DataManager::GetDataManager()->RegisterData(
-            &jjvel_, DYN_VEC, "joint_jvel", mercury::num_act_joint);
+    //DataManager::GetDataManager()->RegisterData(
+            //&jjvel_, DYN_VEC, "joint_jvel", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &mjpos_, DYN_VEC, "motor_jpos", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &bus_current_, DYN_VEC, "bus_current", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &bus_voltage_, DYN_VEC, "bus_voltage", mercury::num_act_joint);
-
 
     _ParameterSetting();
     printf("[Mercury_interface] Contruct\n");
@@ -105,17 +111,34 @@ void Mercury_interface::GetCommand( void* _data,
 #endif
     }
 
-    /// Begin of Torque Limit
+    /// Begin of Torque Limit && NAN command
     static bool isTurnoff(false);
+    static bool isTurnoff_forever(false);
+
+    if(isTurnoff_forever){
+        test_command_.setZero();
+    } else{
+        for(int i(0); i<test_command_.size(); ++i){
+            if(std::isnan(test_command_[i])){ 
+                isTurnoff_forever = true;
+                printf("[Interface] There is nan value in command\n");
+                test_command_.setZero();
+                // TEST
+                exit(0);
+            }
+        }
+    }
+
+
     for (int i(0); i<mercury::num_act_joint; ++i){
-        if(test_command_[i] > torque_limit_max_[i]){
+        if( (test_command_[i] > torque_limit_max_[i]) ){
             //if (count_ % 100 == 0) {
             //printf("%i th torque is too large: %f\n", i, torque_command_[i]);
             //}
             torque_command_[i] = torque_limit_max_[i];
             isTurnoff = true;
             //exit(0);
-        }else if(test_command_[i]< torque_limit_min_[i]){
+        }else if(test_command_[i]< torque_limit_min_[i]) {
             //if (count_ % 100 == 0) {
             //printf("%i th torque is too small: %f\n", i, torque_command_[i]);
             //}
@@ -178,7 +201,6 @@ void Mercury_interface::GetCommand( void* _data,
     ++count_;
     // When there is sensed time
     sp_->curr_time_ = running_time_;
-
 
     // TEST
     //dynacore::Matrix Jfoot, Jfoot_inv;
@@ -252,24 +274,32 @@ void Mercury_interface::_ParameterSetting(){
     bool b_tmp;
     // Test SETUP
     handler.getString("test_name", tmp_string);
+    // Basic Test ***********************************
     if(tmp_string == "joint_ctrl_test"){
         test_ = new JointCtrlTest(robot_sys_);
-    }else if(tmp_string == "walking_test"){
+    }else if(tmp_string == "foot_ctrl_test"){
+        test_ = new FootCtrlTest(robot_sys_);
+    // Walking Test ***********************************
+    }else if(tmp_string == "walking_com_test"){
         test_ = new WalkingTest(robot_sys_);
     }else if(tmp_string == "walking_body_test"){
         test_ = new WalkingBodyTest(robot_sys_);
+    }else if(tmp_string == "walking_config_test"){
+        test_ = new WalkingConfigTest(robot_sys_);
+    // Body Ctrl Test ***********************************
     }else if(tmp_string == "body_ctrl_test"){
         test_ = new BodyCtrlTest(robot_sys_);
     }else if(tmp_string == "com_ctrl_test"){
         test_ = new CoMCtrlTest(robot_sys_);
-    }else if(tmp_string == "foot_ctrl_test"){
-        test_ = new FootCtrlTest(robot_sys_);
+    }else if(tmp_string == "body_jpos_ctrl_test"){
+        test_ = new BodyJPosCtrlTest(robot_sys_);    
+    // Stance and Swing Test ***********************************
     }else if(tmp_string == "body_stance_swing_test"){
         test_ = new BodyStanceSwingTest(robot_sys_);
     }else if(tmp_string == "com_stance_swing_test"){
         test_ = new CoMStanceSwingTest(robot_sys_);
-    }else if(tmp_string == "body_jpos_ctrl_test"){
-        test_ = new BodyJPosCtrlTest(robot_sys_);    
+    }else if(tmp_string == "config_stance_swing_test"){
+        test_ = new ConfigStanceSwingTest(robot_sys_);
     }else {
         printf("[Interfacce] There is no test matching with the name\n");
         exit(0);

@@ -62,6 +62,7 @@ public:
   int b_lfoot_contact_;
   // (x, y, x_dot, y_dot)
   dynacore::Vector estimated_com_state_;
+  dynacore::Vector com_state_imu_; // (x, y, xdot, ydot, xddot, yddot)
   
   dynacore::Vect3 Rfoot_pos_;
   dynacore::Vect3 Rfoot_vel_;

@@ -69,7 +69,7 @@ void Reversal_LIPM_Planner::getNextFootLocation(
 
     check_switch = _check_switch_velocity(switch_state);
     ++count;
-    if(count > 20) break;
+    if(count > 0) break;
   }
   _output->time_modification = new_swing_time - _input->swing_time;
 
