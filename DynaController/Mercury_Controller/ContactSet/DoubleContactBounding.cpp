@@ -50,7 +50,7 @@ bool DoubleContactBounding::_UpdateJcDotQdot(){
 
 bool DoubleContactBounding::_UpdateUf(){
   double mu_small(0.3);
-
+    // U *x + ineq > 0
   int size_u(5);
   Uf_ = dynacore::Matrix::Zero(size_u*2+1, dim_contact_);
   dynacore::Matrix U;

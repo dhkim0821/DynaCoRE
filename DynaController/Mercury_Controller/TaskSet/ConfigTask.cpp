@@ -36,6 +36,8 @@ bool ConfigTask::_UpdateCommand(void* pos_des,
         + Kp_vec_[i] * ((*pos_cmd)[i] - sp_->Q_[i]) 
         + Kd_vec_[i] * (vel_des[i] - sp_->Qdot_[i]);
   }
+  //dynacore::pretty_print(Kp_vec_, std::cout, "Kp");
+  //dynacore::pretty_print(Kd_vec_, std::cout, "Kd");
    //dynacore::pretty_print(acc_des, std::cout, "acc_des");
    //dynacore::pretty_print(op_cmd_, std::cout, "op cmd");
    //dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");

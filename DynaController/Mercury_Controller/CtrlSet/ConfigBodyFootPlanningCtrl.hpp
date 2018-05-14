@@ -95,7 +95,8 @@ class ConfigBodyFootPlanningCtrl:public Controller{
         dynacore::Vect3 ini_body_pos_;
         dynacore::Vect3 ini_foot_pos_;
         dynacore::Vect3 target_foot_pos_;
-
+        
+        dynacore::Vector ini_config_;
         BS_Basic<3, 3, 1, 2, 2> foot_traj_;
 
         double end_time_;

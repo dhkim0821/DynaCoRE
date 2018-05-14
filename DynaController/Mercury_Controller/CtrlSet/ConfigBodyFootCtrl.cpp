@@ -167,7 +167,11 @@ void ConfigBodyFootCtrl::_task_setup(){
     }
   
     dynacore::Vector config_sol, qdot_cmd, qddot_cmd;
-    inv_kin_.getSingleSupportFullConfig(
+    //inv_kin_.getSingleSupportFullConfig(
+            //sp_->Q_, des_quat, target_height, 
+            //swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
+            //config_sol, qdot_cmd, qddot_cmd);
+     inv_kin_.getSingleSupportFullConfigSeperation( 
             sp_->Q_, des_quat, target_height, 
             swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
             config_sol, qdot_cmd, qddot_cmd);

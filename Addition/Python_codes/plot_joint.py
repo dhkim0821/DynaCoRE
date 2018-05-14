@@ -20,22 +20,32 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     file_path = os.getcwd() + "/../../experiment_data_check/"
 
     data_jpos_des = \
-    np.genfromtxt(file_path+'jpos_des.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'jpos_des.txt', delimiter=None, dtype=(float))
     data_config = \
-    np.genfromtxt(file_path+'config.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'config.txt', delimiter=None, dtype=(float))
     data_jvel_des = \
-    np.genfromtxt(file_path+'jvel_des.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'jvel_des.txt', delimiter=None, dtype=(float))
     data_qdot = \
-    np.genfromtxt(file_path+'qdot.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'qdot.txt', delimiter=None, dtype=(float))
     data_jjvel = \
-    np.genfromtxt(file_path+'joint_jvel.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'jvel_des.txt', delimiter=None, dtype=(float))
     data_mjpos = \
-    np.genfromtxt(file_path+'motor_jpos.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'motor_jpos.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
-    st_idx = 2000;
-    end_idx = len(data_x) - 100
+    st_idx = 1;
+    end_idx = len(data_x) - 1
     data_x = data_x[st_idx:end_idx]
     ##--------------------------------------------------------------------------------
+    # PHASE MARKER #
+    data_phse = np.genfromtxt(file_path+'phase.txt', delimiter=None, dtype=(float))
+    # get phase.txt data #
+    phseChange = []
+    for i in range(0,len(data_x)-1):
+        if data_phse[i] != data_phse[i+1]:
+            phseChange.append(i - st_idx)
+        else:
+            pass
+
 
 
     # Plot Figure --------------------------------------------------------------------
@@ -71,6 +81,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
                 data_x, data_config[st_idx:end_idx,i-1 + 9], "b-", \
                 data_x, data_mjpos[st_idx:end_idx, i-1 +3 ], "c-")
         # plt.legend(('command', 'pos'), loc='upper left')
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+
         plt.grid(True)
     plt.xlabel('time (sec)')
     ## increment figure number and index
@@ -93,6 +108,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
                 data_x, data_qdot[st_idx:end_idx,i-1 + 6], "b-", \
                 data_x, data_jvel_des[st_idx:end_idx, i-1], "r-")
         # plt.legend(('command', 'pos'), loc='upper left')
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
         plt.grid(True)
     plt.xlabel('time (sec)')
     ## increment figure number and index
@@ -114,6 +133,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
                 data_x, data_qdot[st_idx:end_idx,i-1 + 9], "b-", \
                 data_x, data_jvel_des[st_idx:end_idx, i-1 + 3], "r-");
         # plt.legend(('command', 'pos'), loc='upper left')
+         # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
         plt.grid(True)
     plt.xlabel('time (sec)')
 

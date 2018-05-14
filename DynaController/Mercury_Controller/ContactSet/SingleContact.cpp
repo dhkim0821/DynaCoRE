@@ -22,6 +22,7 @@ bool SingleContact::_UpdateJcDotQdot(){
   dynacore::Matrix JcDot;
   robot_sys_->getFullJacobianDot(contact_pt_, JcDot);
   JcDotQdot_ = JcDot.block(3, 0, 3, mercury::num_qdot) * sp_->Qdot_;
+  JcDotQdot_.setZero();
   return true;
 
 }
