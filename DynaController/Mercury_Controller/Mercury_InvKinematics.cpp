@@ -286,7 +286,6 @@ void Mercury_InvKinematics::getSingleSupportFullConfig(
         xddot[3 + i] = foot_acc[i];
     }
 
-
     //// Operational space Jacobian **********
     dynacore::Matrix Jop(6, mercury::num_qdot); Jop.setZero();
     Jop(0, 2) = 1.;
@@ -359,7 +358,7 @@ void Mercury_InvKinematics::getSingleSupportFullConfigSeperation(
     dynacore::Quaternion err_quat = dynacore::QuatMultiply(des_quat, curr_quat.inverse());
     dynacore::Vect3 ori_err;
     dynacore::convert(err_quat, ori_err);
-    err[1] = 2. * ori_err[0];
+    err[1] = ori_err[0];
     err[2] = ori_err[1];
 
     // Foot

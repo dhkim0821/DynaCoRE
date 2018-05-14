@@ -5,7 +5,7 @@
 ## Walking Test ********************************* 
 #test_name: walking_test
 #test_name: walking_body_test # may 10 test
-# test_name: walking_config_test
+test_name: walking_config_test
 
 ## Body Ctrl Test ********************************* 
 #test_name: body_ctrl_test
@@ -15,7 +15,7 @@
 ## Stance and Swing Test ********************************* 
 #test_name: body_stance_swing_test
 #test_name: com_stance_swing_test
-test_name: config_stance_swing_test
+#test_name: config_stance_swing_test
 
 
 base_condition: floating

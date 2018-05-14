@@ -58,6 +58,21 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
   state_list_.push_back(config_left_swing_ctrl_);
   state_list_.push_back(left_swing_end_trans_ctrl_);
 
+  DataManager::GetDataManager()->RegisterData(
+          &(((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->curr_foot_pos_des_), 
+          VECT3, "rfoot_pos_des", 3);
+  DataManager::GetDataManager()->RegisterData(
+          &(((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->curr_foot_pos_des_), 
+          VECT3, "lfoot_pos_des", 3);
+
+  DataManager::GetDataManager()->RegisterData(
+          &(((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->curr_foot_vel_des_), 
+          VECT3, "rfoot_vel_des", 3);
+  DataManager::GetDataManager()->RegisterData(
+          &(((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->curr_foot_vel_des_), 
+          VECT3, "lfoot_vel_des", 3);
+
+
   _SettingParameter();
   printf("[Walking Config Test] Constructed\n");
 }
@@ -93,7 +108,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
 #if (CONFIG_INITIAL_SWING_FOOT == 1)  
     if(phase == WkConfigPhase::lift_up) { next_phase = WkConfigPhase::double_contact_2; }
 #endif
-   printf("next phase: %i\n", next_phase);
+   // printf("next phase: %i\n", next_phase);
   
   if(phase == WkConfigPhase::double_contact_1) {
   //if(phase == WkConfigPhase::right_swing_start_trans) {
@@ -126,7 +141,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
 
   // TEST
   if (num_step_ > 10) {
-      //exit(0);
+      exit(0);
   }
 
   if(next_phase == WkConfigPhase::NUM_WALKING_PHASE) {
@@ -150,7 +165,7 @@ void WalkingConfigTest::_SettingParameter(){
   handler.getVector("initial_jpos", tmp_vec);
   ((JPosTargetCtrl*)jpos_ctrl_)->setTargetPosition(tmp_vec);
   // CoM Height
-  handler.getValue("com_height", tmp);
+  handler.getValue("body_height", tmp);
   ((ContactTransBodyCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
   ((BodyJPosCtrl*)config_body_fix_ctrl_)->setStanceHeight(tmp);
 

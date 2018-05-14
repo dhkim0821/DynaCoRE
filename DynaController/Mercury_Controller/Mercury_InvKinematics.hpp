@@ -33,6 +33,7 @@ class Mercury_InvKinematics{
                                        dynacore::Vector & qdot_cmd, 
                                        dynacore::Vector & qddot_cmd);
 
+
         void getSingleSupportFullConfigSeperation(const dynacore::Vector & current_Q,
                                        const dynacore::Quaternion & des_quat,
                                        const double & des_height, 

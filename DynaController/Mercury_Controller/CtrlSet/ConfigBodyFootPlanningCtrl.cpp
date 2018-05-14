@@ -59,12 +59,10 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(
                 config_body_foot_task_->getDim() + 
-                single_contact_->getDim(), 100.0);
+                single_contact_->getDim(), 200.0);
 
-    wbdc_rotor_data_->cost_weight[0] = 5.;    
-    wbdc_rotor_data_->cost_weight[1] = 5.;    
-    wbdc_rotor_data_->cost_weight[5] = 5.;    
-    //wbdc_rotor_data_->cost_weight[3] = 200;    
+    for(int i(0); i<mercury::num_virtual; ++i) 
+        wbdc_rotor_data_->cost_weight[i] = 350.;
 
     wbdc_rotor_data_->cost_weight.tail(single_contact_->getDim()) = 
         dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
@@ -170,37 +168,43 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
         curr_foot_acc_des_[i] = acc[i];
     }
     dynacore::Vector config_sol, qdot_cmd, qddot_cmd;
-    inv_kin_.getSingleSupportFullConfig(
+     // inv_kin_.getSingleSupportFullConfig(
+     //        sp_->Q_, des_quat, target_height, 
+     //        swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
+     //        config_sol, qdot_cmd, qddot_cmd);
+
+   inv_kin_.getSingleSupportFullConfigSeperation(
             sp_->Q_, des_quat, target_height, 
             swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
             config_sol, qdot_cmd, qddot_cmd);
 
     for (int i(0); i<mercury::num_act_joint; ++i){
         pos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
-        vel_des[mercury::num_virtual + i] = qdot_cmd[mercury::num_virtual + i];
-        acc_des[mercury::num_virtual + i] = qddot_cmd[mercury::num_virtual + i];
+        //vel_des[mercury::num_virtual + i] = qdot_cmd[mercury::num_virtual + i];
+        //acc_des[mercury::num_virtual + i] = qddot_cmd[mercury::num_virtual + i];
         sp_->jpos_des_[i] = pos_des[mercury::num_virtual + i];
+        sp_->jvel_des_[i] = vel_des[mercury::num_virtual + i];
     }
 
     // Feedback gain decreasing
-    double tot_decreasing_time = gain_decreasing_period_portion_ * end_time_; 
-    double remain_time = end_time_ - state_machine_time_;
-    if(remain_time < 1.0e-5)  remain_time = 1.0e-5;
-    if(remain_time < tot_decreasing_time){        
-        dynacore::Vector Kp = task_kp_;
-        dynacore::Vector Kd = task_kd_;
-        Kp.segment(swing_leg_jidx_, 3) = 
-            remain_time/tot_decreasing_time * task_kp_.segment(swing_leg_jidx_, 3) 
-            + (1. - remain_time/tot_decreasing_time) * gain_decreasing_ratio_
-            * task_kp_.segment(swing_leg_jidx_, 3); 
-        Kd.segment(swing_leg_jidx_, 3) = 
-            remain_time/tot_decreasing_time * task_kd_.segment(swing_leg_jidx_, 3) 
-            + (1. - remain_time/tot_decreasing_time) * gain_decreasing_ratio_
-            * task_kd_.segment(swing_leg_jidx_, 3); 
-        _setTaskGain(Kp, Kd);
-    }
+    //double tot_decreasing_time = gain_decreasing_period_portion_ * end_time_; 
+    //double remain_time = end_time_ - state_machine_time_;
+    //if(remain_time < 1.0e-5)  remain_time = 1.0e-5;
+    //if(remain_time < tot_decreasing_time){        
+        //dynacore::Vector Kp = task_kp_;
+        //dynacore::Vector Kd = task_kd_;
+        //Kp.segment(swing_leg_jidx_, 3) = 
+            //remain_time/tot_decreasing_time * task_kp_.segment(swing_leg_jidx_, 3) 
+            //+ (1. - remain_time/tot_decreasing_time) * gain_decreasing_ratio_
+            //* task_kp_.segment(swing_leg_jidx_, 3); 
+        //Kd.segment(swing_leg_jidx_, 3) = 
+            //remain_time/tot_decreasing_time * task_kd_.segment(swing_leg_jidx_, 3) 
+            //+ (1. - remain_time/tot_decreasing_time) * gain_decreasing_ratio_
+            //* task_kd_.segment(swing_leg_jidx_, 3); 
+        //_setTaskGain(Kp, Kd);
+    //}
 
-    // dynacore::pretty_print(vel_des, std::cout, "[Ctrl] vel des");
+     //dynacore::pretty_print(vel_des, std::cout, "[Ctrl] vel des");
     // Push back to task list
     config_body_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
     task_list_.push_back(config_body_foot_task_);
@@ -279,6 +283,7 @@ void ConfigBodyFootPlanningCtrl::_single_contact_setup(){
 }
 
 void ConfigBodyFootPlanningCtrl::FirstVisit(){
+    ini_config_ = sp_->Q_;
     robot_sys_->getPos(swing_foot_, ini_foot_pos_);
     ctrl_start_time_ = sp_->curr_time_;
     state_machine_time_ = 0.;
@@ -291,6 +296,8 @@ void ConfigBodyFootPlanningCtrl::FirstVisit(){
     target_loc[1] += sp_->Q_[1];
     target_loc[2] = ini_foot_pos_[2] - push_down_height_;
 
+    // dynacore::pretty_print(ini_foot_pos_, std::cout, "ini loc");
+    // dynacore::pretty_print(target_loc, std::cout, "target loc");
     _SetBspline(ini_foot_pos_, zero, zero, target_loc);
     default_target_loc_[2] = target_loc[2];
 
