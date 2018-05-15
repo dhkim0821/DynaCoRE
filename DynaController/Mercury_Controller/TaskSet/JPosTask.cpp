@@ -4,7 +4,7 @@
 #include <Mercury/Mercury_Definition.h>
 #include <Utils/utilities.hpp>
 
-JPosTask::JPosTask():WBDC_Relax_Task(mercury::num_act_joint),
+JPosTask::JPosTask():Task(mercury::num_act_joint),
                      Kp_vec_(mercury::num_act_joint),
                      Kd_vec_(mercury::num_act_joint)
 {

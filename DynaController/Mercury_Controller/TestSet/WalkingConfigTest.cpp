@@ -2,8 +2,8 @@
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 
 #include <Mercury_Controller/CtrlSet/JPosTargetCtrl.hpp>
-#include <Mercury_Controller/CtrlSet/ContactTransBodyCtrl.hpp>
-#include <Mercury_Controller/CtrlSet/BodyJPosCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/ContactTransConfigCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/ConfigBodyCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/ConfigBodyFootPlanningCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/TransitionConfigCtrl.hpp>
 #include <ParamHandler/ParamHandler.hpp>
@@ -30,8 +30,8 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
   state_list_.clear();
 
   jpos_ctrl_ = new JPosTargetCtrl(robot);
-  body_up_ctrl_ = new ContactTransBodyCtrl(robot);
-  config_body_fix_ctrl_ = new BodyJPosCtrl(robot);
+  body_up_ctrl_ = new ContactTransConfigCtrl(robot);
+  config_body_fix_ctrl_ = new ConfigBodyCtrl(robot);
   // Right
   right_swing_start_trans_ctrl_ = 
       new TransitionConfigCtrl(robot, mercury_link::rightFoot, false);
@@ -166,8 +166,8 @@ void WalkingConfigTest::_SettingParameter(){
   ((JPosTargetCtrl*)jpos_ctrl_)->setTargetPosition(tmp_vec);
   // CoM Height
   handler.getValue("body_height", tmp);
-  ((ContactTransBodyCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
-  ((BodyJPosCtrl*)config_body_fix_ctrl_)->setStanceHeight(tmp);
+  ((ContactTransConfigCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
+  ((ConfigBodyCtrl*)config_body_fix_ctrl_)->setStanceHeight(tmp);
 
   ((TransitionConfigCtrl*)right_swing_start_trans_ctrl_)->setStanceHeight(tmp);
   ((TransitionConfigCtrl*)right_swing_end_trans_ctrl_)->setStanceHeight(tmp);
@@ -182,11 +182,11 @@ void WalkingConfigTest::_SettingParameter(){
   handler.getValue("jpos_initialization_time", tmp);
   ((JPosTargetCtrl*)jpos_ctrl_)->setMovingTime(tmp);
   handler.getValue("com_lifting_time", tmp);
-  ((ContactTransBodyCtrl*)body_up_ctrl_)->setStanceTime(tmp);
+  ((ContactTransConfigCtrl*)body_up_ctrl_)->setStanceTime(tmp);
 
   // Stance Time
   handler.getValue("stance_time", tmp);
-  ((BodyJPosCtrl*)config_body_fix_ctrl_)->setStanceTime(tmp);
+  ((ConfigBodyCtrl*)config_body_fix_ctrl_)->setStanceTime(tmp);
   ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->notifyStanceTime(tmp);
   ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->notifyStanceTime(tmp);
 

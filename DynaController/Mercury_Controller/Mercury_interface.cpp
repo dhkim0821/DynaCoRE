@@ -14,22 +14,15 @@
 // Test SET LIST
 // Basic Test
 #include <Mercury_Controller/TestSet/JointCtrlTest.hpp>
-#include <Mercury_Controller/TestSet/FootCtrlTest.hpp>
 
 // Walking Test
-#include <Mercury_Controller/TestSet/WalkingTest.hpp>
-#include <Mercury_Controller/TestSet/WalkingBodyTest.hpp>
 #include <Mercury_Controller/TestSet/WalkingConfigTest.hpp>
 
 // Body Ctrl Test
-#include <Mercury_Controller/TestSet/CoMCtrlTest.hpp>
-#include <Mercury_Controller/TestSet/BodyCtrlTest.hpp>
-#include <Mercury_Controller/TestSet/BodyJPosCtrlTest.hpp>
+#include <Mercury_Controller/TestSet/BodyConfigTest.hpp>
 
 // Stance and Swing Test
 #include <Mercury_Controller/TestSet/ConfigStanceSwingTest.hpp>
-#include <Mercury_Controller/TestSet/CoMStanceSwingTest.hpp>
-#include <Mercury_Controller/TestSet/BodyStanceSwingTest.hpp>
 
 #define MEASURE_TIME 0
 #if MEASURE_TIME
@@ -38,8 +31,9 @@
 
 Mercury_interface::Mercury_interface():
     interface(),
-    torque_command_(mercury::num_act_joint* 2),
-    test_command_(mercury::num_act_joint),
+    torque_command_(mercury::num_act_joint),
+    jpos_command_(mercury::num_act_joint),
+    jvel_command_(mercury::num_act_joint),
     sensed_torque_(mercury::num_act_joint),
     torque_limit_max_(mercury::num_act_joint),
     torque_limit_min_(mercury::num_act_joint),
@@ -48,17 +42,20 @@ Mercury_interface::Mercury_interface():
     bus_voltage_(mercury::num_act_joint),
     jjvel_(mercury::num_act_joint),
     mjpos_(mercury::num_act_joint),
+    b_last_config_update_(true),
     waiting_count_(10)
 {
     robot_sys_ = new Mercury_Model();
     sensed_torque_.setZero();
     torque_command_.setZero();
+    jpos_command_.setZero();
     motor_current_.setZero();
     bus_current_.setZero();
     bus_voltage_.setZero();
-    test_command_.setZero();
     jjvel_.setZero();
     mjpos_.setZero();
+
+    test_cmd_ = new Mercury_Command();
 
     sp_ = Mercury_StateProvider::getStateProvider();
     state_estimator_ = new Mercury_StateEstimator(robot_sys_);  
@@ -68,11 +65,11 @@ Mercury_interface::Mercury_interface():
     DataManager::GetDataManager()->RegisterData(
             &sensed_torque_, DYN_VEC, "torque", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
-            &torque_command_, DYN_VEC, "command", mercury::num_act_joint * 2);
+            &jpos_command_, DYN_VEC, "jpos_command", mercury::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &torque_command_, DYN_VEC, "command", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &motor_current_, DYN_VEC, "motor_current", mercury::num_act_joint);
-    //DataManager::GetDataManager()->RegisterData(
-            //&jjvel_, DYN_VEC, "joint_jvel", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &mjpos_, DYN_VEC, "motor_jpos", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
@@ -88,20 +85,17 @@ Mercury_interface::~Mercury_interface(){
     delete test_;
 }
 
-void Mercury_interface::GetCommand( void* _data,
-        std::vector<double> & command){
-    
-    command.resize(mercury::num_act_joint*2, 0.);
+void Mercury_interface::GetCommand( void* _data, void* _command){
+    Mercury_Command* cmd = ((Mercury_Command*)_command);
     Mercury_SensorData* data = ((Mercury_SensorData*)_data);
-    
+
     if(!_Initialization(data)){
 #if MEASURE_TIME
         std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 #endif
         state_estimator_->Update(data);
         // Calcualate Torque
-        test_->getTorqueInput(test_command_);
-
+        test_->getCommand(test_cmd_);
 #if MEASURE_TIME
         std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> time_span1 = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
@@ -111,134 +105,64 @@ void Mercury_interface::GetCommand( void* _data,
 #endif
     }
 
-    /// Begin of Torque Limit && NAN command
-    static bool isTurnoff(false);
+    /// Begin of Torque Limit && NAN command (decide torque & jpos command)
     static bool isTurnoff_forever(false);
 
     if(isTurnoff_forever){
-        test_command_.setZero();
+        torque_command_.setZero();
+        jvel_command_.setZero();
+        jpos_command_ = last_config_;
+        b_last_config_update_ = false;
     } else{
-        for(int i(0); i<test_command_.size(); ++i){
-            if(std::isnan(test_command_[i])){ 
+        for(int i(0); i<mercury::num_act_joint; ++i){
+            // NAN Test
+            if(std::isnan(test_cmd_->jtorque_cmd[i])){ 
                 isTurnoff_forever = true;
                 printf("[Interface] There is nan value in command\n");
-                test_command_.setZero();
-                // TEST
-                exit(0);
+                for(int i(0); i<mercury::num_act_joint; ++i){
+                    torque_command_[i] = 0.;
+                    jpos_command_[i] = last_config_[i];
+                    b_last_config_update_ = false;
+                }
             }
-        }
+            // Torque Limit Truncation
+            if( (test_cmd_->jtorque_cmd[i] > torque_limit_max_[i]) ){
+                torque_command_[i] = torque_limit_max_[i];
+            }else if(test_cmd_->jtorque_cmd[i]< torque_limit_min_[i]) {
+                torque_command_[i] = torque_limit_min_[i];
+            } else{
+                torque_command_[i] = test_cmd_->jtorque_cmd[i];
+            }
+            // JPos Limit Truncation
+            if( (test_cmd_->jpos_cmd[i] > jpos_limit_max_[i]) ){
+                jpos_command_[i] = jpos_limit_max_[i];
+            }else if(test_cmd_->jpos_cmd[i]< jpos_limit_min_[i]) {
+                jpos_command_[i] = jpos_limit_min_[i];
+            } else{
+                jpos_command_[i] = test_cmd_->jpos_cmd[i];
+            }
+       }
     }
 
+    // Update Command (and Data)
+    for(int i(0); i<mercury::num_act_joint; ++i){
+        cmd->jtorque_cmd[i] = torque_command_[i];
+        cmd->jpos_cmd[i] = jpos_command_[i];
+        cmd->jvel_cmd[i] = jvel_command_[i];
 
-    for (int i(0); i<mercury::num_act_joint; ++i){
-        if( (test_command_[i] > torque_limit_max_[i]) ){
-            //if (count_ % 100 == 0) {
-            //printf("%i th torque is too large: %f\n", i, torque_command_[i]);
-            //}
-            torque_command_[i] = torque_limit_max_[i];
-            isTurnoff = true;
-            //exit(0);
-        }else if(test_command_[i]< torque_limit_min_[i]) {
-            //if (count_ % 100 == 0) {
-            //printf("%i th torque is too small: %f\n", i, torque_command_[i]);
-            //}
-            torque_command_[i] = torque_limit_min_[i];
-            isTurnoff = true;
-            //exit(0);
-        } else{
-            torque_command_[i] = test_command_[i];
-        }
-        command[i] = torque_command_[i];
         sensed_torque_[i] = data->jtorque[i];
         motor_current_[i] = data->motor_current[i];
         bus_current_[i] = data->bus_current[i];
         bus_voltage_[i] = data->bus_voltage[i];
         jjvel_[i] = data->joint_jvel[i];
         mjpos_[i] = data->motor_jpos[i];
-    }
-    if (isTurnoff) {
-        //torque_command_.setZero();
-        for(int i(0); i<mercury::num_act_joint; ++i){
-            command[i] = 0.;
-        }
-        isTurnoff = false;
-    }
-    /// End of Torque Limit Check
 
-
-    // IF torque feedforward control is computed
-    if( test_command_.rows() == 2* mercury::num_act_joint ){
-        /// Begin of Torque Limit
-        int k(0);
-        for (int i(mercury::num_act_joint); i<mercury::num_act_joint*2; ++i){
-            k = i - mercury::num_act_joint;
-            if(test_command_[i] > torque_limit_max_[k]){
-                torque_command_[i] = torque_limit_max_[k];
-                isTurnoff = true;
-            }else if(test_command_[i]< torque_limit_min_[k]){
-                torque_command_[i] = torque_limit_min_[k];
-                isTurnoff = true;
-            } else{
-                torque_command_[i] = test_command_[i];
-            }
-            command[i] = torque_command_[i];
-        }
-        if (isTurnoff) {
-            //torque_command_.setZero();
-            for(int i(mercury::num_act_joint); i<2*mercury::num_act_joint; ++i){
-                command[i] = 0.;
-            }
-            isTurnoff = false;
-        }
-        /// End of Torque Limit Check
-    } else {
-        for(int i(0); i<mercury::num_act_joint; ++i){
-            command[i + mercury::num_act_joint] = torque_command_[i];
-        }
+        if(b_last_config_update_) last_config_ = jpos_command_;
     }
-
     running_time_ = (double)(count_) * mercury::servo_rate;
     ++count_;
     // When there is sensed time
     sp_->curr_time_ = running_time_;
-
-    // TEST
-    //dynacore::Matrix Jfoot, Jfoot_inv;
-    //dynacore::Vect3 foot_pos;
-    //dynacore::Vector config = sp_->Q_;
-    //for(int i(0); i<3; ++i){
-    //config[i] = 0.;
-    //}
-
-    //int link_id = mercury_link::leftFoot;
-    //robot_sys_->getPos(link_id, foot_pos);
-    //robot_sys_->getFullJacobian(link_id, Jfoot);
-    //dynacore::pseudoInverse(Jfoot.block(3,0, 3, mercury::num_qdot), 0.0001, Jfoot_inv);
-  
-    //dynacore::pretty_print(sp_->Q_, std::cout, "config");
-    //dynacore::pretty_print(foot_pos, std::cout, "foot pos");
-    //dynacore::pretty_print(Jfoot, std::cout, "JFoot");
-    //dynacore::pretty_print(Jfoot_inv, std::cout, "JFoot inv");
-
-
-
-    //if(count_%500== 1){
-    //dynacore::pretty_print(data->imu_ang_vel, "imu ang vel", 3);
-    //dynacore::pretty_print(data->imu_acc, "imu acc", 3);
-    //dynacore::Quaternion ori = sp_->body_ori_;
-    //dynacore::pretty_print(ori, std::cout, "estimated_quat");
-
-    //double yaw, pitch, roll;
-    //dynacore::convert(ori, yaw, pitch, roll);
-    //printf("rpy: %f, %f, %f\n", roll, pitch, yaw);
-    //printf("\n");
-    //}
-
-     //if(count_%100== 1){
-       //dynacore::pretty_print(global_ori_, std::cout, "sim global quat");
-       //dynacore::pretty_print(sp_->body_ori_, std::cout, "estimated_quat");
-       //printf("\n");
-     //}
 }
 void Mercury_interface::GetReactionForce(std::vector<dynacore::Vect3> & reaction_force ){
     reaction_force.resize(2);
@@ -251,7 +175,11 @@ void Mercury_interface::GetReactionForce(std::vector<dynacore::Vect3> & reaction
 
 bool Mercury_interface::_Initialization(Mercury_SensorData* data){
     if(count_ < waiting_count_){
-        torque_command_.setZero();
+        for(int i(0); i<mercury::num_act_joint; ++i){
+            test_cmd_->jtorque_cmd[i] = 0.;
+            test_cmd_->jpos_cmd[i] = data->joint_jpos[i];
+            test_cmd_->jvel_cmd[i] = 0.;
+        }
         state_estimator_->Initialization(data);
         test_->TestInitialization();
 
@@ -260,7 +188,6 @@ bool Mercury_interface::_Initialization(Mercury_SensorData* data){
         }else{
             waiting_count_ = 10;
         }
-
         DataManager::GetDataManager()->start();
         return true;
     }
@@ -277,27 +204,13 @@ void Mercury_interface::_ParameterSetting(){
     // Basic Test ***********************************
     if(tmp_string == "joint_ctrl_test"){
         test_ = new JointCtrlTest(robot_sys_);
-    }else if(tmp_string == "foot_ctrl_test"){
-        test_ = new FootCtrlTest(robot_sys_);
-    // Walking Test ***********************************
-    }else if(tmp_string == "walking_com_test"){
-        test_ = new WalkingTest(robot_sys_);
-    }else if(tmp_string == "walking_body_test"){
-        test_ = new WalkingBodyTest(robot_sys_);
+        // Walking Test ***********************************
     }else if(tmp_string == "walking_config_test"){
         test_ = new WalkingConfigTest(robot_sys_);
-    // Body Ctrl Test ***********************************
+        // Body Ctrl Test ***********************************
     }else if(tmp_string == "body_ctrl_test"){
-        test_ = new BodyCtrlTest(robot_sys_);
-    }else if(tmp_string == "com_ctrl_test"){
-        test_ = new CoMCtrlTest(robot_sys_);
-    }else if(tmp_string == "body_jpos_ctrl_test"){
-        test_ = new BodyJPosCtrlTest(robot_sys_);    
-    // Stance and Swing Test ***********************************
-    }else if(tmp_string == "body_stance_swing_test"){
-        test_ = new BodyStanceSwingTest(robot_sys_);
-    }else if(tmp_string == "com_stance_swing_test"){
-        test_ = new CoMStanceSwingTest(robot_sys_);
+        test_ = new BodyConfigTest(robot_sys_);    
+        // Stance and Swing Test ***********************************
     }else if(tmp_string == "config_stance_swing_test"){
         test_ = new ConfigStanceSwingTest(robot_sys_);
     }else {
@@ -319,6 +232,10 @@ void Mercury_interface::_ParameterSetting(){
     // Torque limit
     handler.getVector("torque_max", torque_limit_max_);
     handler.getVector("torque_min", torque_limit_min_);
+    // JPos limit
+    handler.getVector("joint_max", jpos_limit_max_);
+    handler.getVector("joint_min", jpos_limit_min_);
+
 
     printf("[Mercury_interface] Parameter setup is done\n");
 }

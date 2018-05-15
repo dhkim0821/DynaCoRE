@@ -9,7 +9,7 @@ public:
   interface():count_(0), running_time_(0.){}
   virtual ~interface(){}
 
-  virtual void GetCommand(void* sensor_data,  std::vector<double> & command) = 0;
+  virtual void GetCommand(void* sensor_data,  void* command) = 0;
 
 protected:
   Test* test_;

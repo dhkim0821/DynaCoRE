@@ -9,7 +9,4 @@ body_lifting_time: 2.0
 body_stay_time: 0.5
 body_ctrl_time: 1000.0
 
-# Body (X, Y, Z, Rx, Ry, Rz) Swing
-amp:       [0.0, 0.0, 0.0, 0., 0.0, 0.]
-frequency: [0.0, 0.0, 0.0, 0., 0.0, 0.] # Hz
-phase:     [0.0, 0.0, 0.0, 0., 0.0, 0.] 
+

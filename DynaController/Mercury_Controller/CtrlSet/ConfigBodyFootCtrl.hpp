@@ -15,7 +15,7 @@ class ConfigBodyFootCtrl:public Controller{
     public:
         ConfigBodyFootCtrl(RobotSystem* robot, int swing_foot);
         ~ConfigBodyFootCtrl();
-        virtual void OneStep(dynacore::Vector & gamma);
+        virtual void OneStep(void*_cmd);
         virtual void FirstVisit();
         virtual void LastVisit();
         virtual bool EndOfPhase();
@@ -67,6 +67,9 @@ class ConfigBodyFootCtrl:public Controller{
         dynacore::Vect3 ini_body_pos_;
         dynacore::Vect3 ini_foot_pos_;
         dynacore::Vect3 target_foot_pos_;
+
+        dynacore::Vector des_jpos_;
+        dynacore::Vector des_jvel_;
 
         BS_Basic<3, 3, 0, 2, 2> foot_traj_;
 

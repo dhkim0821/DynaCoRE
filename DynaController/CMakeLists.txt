@@ -1,5 +1,5 @@
-add_subdirectory(NAO_Exam_Controller)
-add_subdirectory(Valkyrie_Controller)
+#add_subdirectory(NAO_Exam_Controller)
+#add_subdirectory(Valkyrie_Controller)
 add_subdirectory(Mercury_Controller)
 
 install(FILES interface.hpp Test.hpp Controller.hpp DESTINATION

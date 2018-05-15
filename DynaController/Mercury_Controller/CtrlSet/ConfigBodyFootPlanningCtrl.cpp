@@ -25,7 +25,9 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
     replan_moment_(0.),
     push_down_height_(0.),
     ctrl_start_time_(0.),
-    b_contact_switch_check_(false)
+    b_contact_switch_check_(false),
+    des_jpos_(mercury::num_act_joint),
+    des_jvel_(mercury::num_act_joint)
 {
     planner_ = planner;
     curr_foot_pos_des_.setZero();
@@ -80,14 +82,20 @@ ConfigBodyFootPlanningCtrl::~ConfigBodyFootPlanningCtrl(){
     delete wbdc_rotor_data_;
 }
 
-void ConfigBodyFootPlanningCtrl::OneStep(dynacore::Vector & gamma){
+void ConfigBodyFootPlanningCtrl::OneStep(void* _cmd){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
-    gamma = dynacore::Vector::Zero(mercury::num_act_joint * 2);
+    dynacore::Vector gamma;
     _single_contact_setup();
     _task_setup();
     _body_foot_ctrl(gamma);
+
+    for(int i(0); i<mercury::num_act_joint; ++i){
+        ((Mercury_Command*)_cmd)->jtorque_cmd[i] = gamma[i];
+        ((Mercury_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
+        ((Mercury_Command*)_cmd)->jvel_cmd[i] = des_jvel_[i];
+    }
 
     _PostProcessing_Command();
 }
@@ -106,8 +114,7 @@ void ConfigBodyFootPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
     wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
     wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
 
-    gamma.head(mercury::num_act_joint) = fb_cmd;
-    gamma.tail(mercury::num_act_joint) = wbdc_rotor_data_->cmd_ff;
+    gamma = wbdc_rotor_data_->cmd_ff;
 
 #if MEASURE_TIME_WBDC 
     std::chrono::high_resolution_clock::time_point t2 
@@ -182,8 +189,8 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
         pos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
         //vel_des[mercury::num_virtual + i] = qdot_cmd[mercury::num_virtual + i];
         //acc_des[mercury::num_virtual + i] = qddot_cmd[mercury::num_virtual + i];
-        sp_->jpos_des_[i] = pos_des[mercury::num_virtual + i];
-        sp_->jvel_des_[i] = vel_des[mercury::num_virtual + i];
+        des_jpos_[i] = pos_des[mercury::num_virtual + i];
+        des_jvel_[i] = vel_des[mercury::num_virtual + i];
     }
 
     // Feedback gain decreasing

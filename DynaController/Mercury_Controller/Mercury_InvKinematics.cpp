@@ -372,7 +372,6 @@ void Mercury_InvKinematics::getSingleSupportFullConfigSeperation(
 
 
     //// Operational space Jacobian **********
-
     dynacore::Matrix Jop(3, mercury::num_qdot); Jop.setZero();
     Jop(0, 2) = 1.;
     Jop(1, 3) = 1.;

@@ -1,11 +1,11 @@
-#ifndef WBDC_BODY_TASK
-#define WBDC_BODY_TASK
+#ifndef WBDC_JPOS_TASK
+#define WBDC_JPOS_TASK
 
-#include <WBDC_Relax/WBDC_Relax_Task.hpp>
+#include <Task.hpp>
 
 class Mercury_StateProvider;
 
-class JPosTask: public WBDC_Relax_Task{
+class JPosTask: public Task{
 public:
   JPosTask();
   virtual ~JPosTask();
@@ -22,6 +22,7 @@ protected:
   virtual bool _UpdateTaskJacobian();
   // Update JtDotQdot_
   virtual bool _UpdateTaskJDotQdot();
+  virtual bool _AdditionalUpdate(){ return true; }
 
   Mercury_StateProvider* sp_;
 };

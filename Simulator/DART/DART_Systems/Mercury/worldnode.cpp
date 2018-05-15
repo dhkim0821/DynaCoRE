@@ -32,6 +32,7 @@ WorldNode::WorldNode(const dart::simulation::WorldPtr & world_,
 
     interface_ = new Mercury_interface();
     sensor_data_ = new Mercury_SensorData();
+    cmd_ = new Mercury_Command();
 
     base_cond_ = base_condition::fixed;
     _ReadParamFile();
@@ -121,9 +122,13 @@ void WorldNode::_WBDC_Ctrl(){
         sensor_data_->motor_jvel[i] = mQdot[i+6];
         sensor_data_->jtorque[i] = Torques_[i+6];
     }
-    sensor_data_->reflected_rotor_inertia[0] = 2.;
-    sensor_data_->reflected_rotor_inertia[1] = 0.5;
-    sensor_data_->reflected_rotor_inertia[2] = 0.5;
+     //sensor_data_->reflected_rotor_inertia[0] = 2.;
+    //sensor_data_->reflected_rotor_inertia[1] = 0.5;
+    //sensor_data_->reflected_rotor_inertia[2] = 0.5;
+
+   sensor_data_->reflected_rotor_inertia[0] = 0.;
+    sensor_data_->reflected_rotor_inertia[1] = 0.;
+    sensor_data_->reflected_rotor_inertia[2] = 0.;
 
     // Left Leg
     for(int i(0); i<3; ++i){
@@ -132,9 +137,13 @@ void WorldNode::_WBDC_Ctrl(){
         sensor_data_->motor_jvel[i + 3] = mQdot[i+10];
         sensor_data_->jtorque[i + 3] = Torques_[i+10];
     }
-    sensor_data_->reflected_rotor_inertia[3] = 2.;
-    sensor_data_->reflected_rotor_inertia[4] = 0.5;
-    sensor_data_->reflected_rotor_inertia[5] = 0.5;
+     //sensor_data_->reflected_rotor_inertia[3] = 2.;
+    //sensor_data_->reflected_rotor_inertia[4] = 0.5;
+    //sensor_data_->reflected_rotor_inertia[5] = 0.5;
+
+  sensor_data_->reflected_rotor_inertia[3] = 0.;
+    sensor_data_->reflected_rotor_inertia[4] = 0.;
+    sensor_data_->reflected_rotor_inertia[5] = 0.;
 
     for(int i(0); i<3; ++i){
         // X, Y, Z
@@ -166,17 +175,25 @@ void WorldNode::_WBDC_Ctrl(){
     //if(count % 2 == 0)  interface_->GetCommand(sensor_data_, cmd_);
     //dynacore::pretty_print(quat, std::cout, "dart quat");
     interface_->GetCommand(sensor_data_, cmd_);
+    double Kp(150.);
+    double Kd(10.);
 
     for(int i(0); i<3; ++i){
-        mTorqueCommand[i + 6] = cmd_[i];
+        mTorqueCommand[i + 6] = 
+            cmd_->jtorque_cmd[i] + 
+            Kp * (cmd_->jpos_cmd[i] - mQ[i + 6]) + 
+            Kd * (cmd_->jvel_cmd[i] - mQdot[i+6]);
     }
     // Right ankle 
     double kp_ankle(0.1);
     double kd_ankle(0.01);
     mTorqueCommand[9] = kp_ankle * (-0.4 - mQ[9]) + kd_ankle * (0. - mQdot[9]);
     for(int i(0); i<3; ++i){
-        mTorqueCommand[i + 10] = cmd_[i+3];
-    }
+        mTorqueCommand[i + 10] =
+             cmd_->jtorque_cmd[i+3] + 
+            Kp * (cmd_->jpos_cmd[i+3] - mQ[i + 10]) + 
+            Kd * (cmd_->jvel_cmd[i+3] - mQdot[i+10]);
+   }
     // Left ankle
     mTorqueCommand[13] = kp_ankle * (-0.4 - mQ[13]) + kd_ankle * (0. - mQdot[13]);
     //TEST

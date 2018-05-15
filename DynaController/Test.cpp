@@ -9,13 +9,13 @@ Test::Test(RobotSystem* robot):b_first_visit_(true){
 Test::~Test(){
 }
 
-void Test::getTorqueInput(dynacore::Vector & gamma){
+void Test::getCommand(void* command){
   if(b_first_visit_){
     state_list_[phase_]->FirstVisit();
     b_first_visit_ = false;
   }
 
-  state_list_[phase_]->OneStep(gamma);
+  state_list_[phase_]->OneStep(command);
 
   if(state_list_[phase_]->EndOfPhase()){
     state_list_[phase_]->LastVisit();

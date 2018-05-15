@@ -52,10 +52,11 @@ TransitionConfigCtrl::~TransitionConfigCtrl(){
     delete wbdc_rotor_data_;
 }
 
-void TransitionConfigCtrl::OneStep(dynacore::Vector & gamma){
+void TransitionConfigCtrl::OneStep(void* _cmd){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
-    gamma.setZero();
+    dynacore::Vector gamma;
+
     _double_contact_setup();
     _body_task_setup();
     _body_ctrl_wbdc_rotor(gamma);

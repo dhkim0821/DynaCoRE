@@ -70,7 +70,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_com[st_idx:end_idx,i-1], "c-", \
                 data_x, data_body_des[st_idx:end_idx,i-1], "r-", \
-                data_x, data_body[st_idx:end_idx,i-1], "b-")
+                data_x, data_q[st_idx:end_idx,i-1], "b-")
         if i != 3:
             plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1], "k-")
 
@@ -98,7 +98,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_body_vel_des[st_idx:end_idx,i-1], "r-" , \
                 data_x, data_com_vel[st_idx:end_idx,i-1], "c-", \
-                data_x, data_body_vel[st_idx:end_idx,i-1], "b-")
+                data_x, data_qdot[st_idx:end_idx,i-1], "b-")
 
         if i != 3:
             plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "k-")

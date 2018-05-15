@@ -12,7 +12,7 @@ public:
   Controller(RobotSystem* robot):robot_sys_(robot),state_machine_time_(0.){}
   virtual ~Controller(){}
 
-  virtual void OneStep(dynacore::Vector & gamma) = 0;
+  virtual void OneStep(void* command) = 0;
   virtual void FirstVisit() = 0;
   virtual void LastVisit() = 0;
   virtual bool EndOfPhase() = 0;

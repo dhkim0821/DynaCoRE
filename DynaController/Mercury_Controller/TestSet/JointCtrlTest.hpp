@@ -17,7 +17,6 @@ public:
   virtual ~JointCtrlTest();
 
   virtual void TestInitialization();
-  void getTorqueInput(dynacore::Vector & gamma);
 
 protected:
   void _ParameterSetting();

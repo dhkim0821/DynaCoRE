@@ -7,6 +7,7 @@
 #include <osgShadow/LightSpacePerspectiveShadowMap>
 #include "Controller.hpp"
 #include <Mercury_Controller/Mercury_interface.hpp>
+#include <Mercury/Mercury_Definition.h>
 
 class WorldNode : public dart::gui::osg::WorldNode
 {
@@ -24,7 +25,7 @@ public:
 
     interface* interface_;
     Mercury_SensorData* sensor_data_;
-    std::vector<double> cmd_;
+    Mercury_Command* cmd_;
 
 protected:
      double hanging_duration_;

@@ -2,8 +2,8 @@
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 
 #include <Mercury_Controller/CtrlSet/JPosTargetCtrl.hpp>
-#include <Mercury_Controller/CtrlSet/ContactTransBodyCtrl.hpp>
-#include <Mercury_Controller/CtrlSet/BodyJPosCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/ContactTransConfigCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/ConfigBodyCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/ConfigBodyFootCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/TransitionConfigCtrl.hpp>
 #include <Utils/DataManager.hpp>
@@ -31,8 +31,8 @@ ConfigStanceSwingTest::ConfigStanceSwingTest(RobotSystem* robot):Test(robot){
         exit(0);
     }
     jpos_ctrl_ = new JPosTargetCtrl(robot);
-    body_up_ctrl_ = new ContactTransBodyCtrl(robot);
-    config_body_fix_ctrl_ = new BodyJPosCtrl(robot);
+    body_up_ctrl_ = new ContactTransConfigCtrl(robot);
+    config_body_fix_ctrl_ = new ConfigBodyCtrl(robot);
 
     config_swing_start_trans_ctrl_ = 
         new TransitionConfigCtrl(robot, swing_foot_, false);
@@ -88,8 +88,8 @@ void ConfigStanceSwingTest::_SettingParameter(ParamHandler& handler){
     ((JPosTargetCtrl*)jpos_ctrl_)->setTargetPosition(tmp_vec);
     // Body Height
     handler.getValue("body_height", tmp);
-    ((ContactTransBodyCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
-    ((BodyJPosCtrl*)config_body_fix_ctrl_)->setStanceHeight(tmp);
+    ((ContactTransConfigCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
+    ((ConfigBodyCtrl*)config_body_fix_ctrl_)->setStanceHeight(tmp);
 
     ((TransitionConfigCtrl*)config_swing_start_trans_ctrl_)->setStanceHeight(tmp);
     ((ConfigBodyFootCtrl*)config_swing_ctrl_)->setStanceHeight(tmp);
@@ -98,13 +98,13 @@ void ConfigStanceSwingTest::_SettingParameter(ParamHandler& handler){
     handler.getValue("jpos_initialization_time", tmp);
     ((JPosTargetCtrl*)jpos_ctrl_)->setMovingTime(tmp);
     handler.getValue("body_lifting_time", tmp);
-    ((ContactTransBodyCtrl*)body_up_ctrl_)->setStanceTime(tmp);
+    ((ContactTransConfigCtrl*)body_up_ctrl_)->setStanceTime(tmp);
     handler.getValue("transition_time", tmp);
     ((TransitionConfigCtrl*)config_swing_start_trans_ctrl_)->setTransitionTime(tmp);
     
     // Stance Time
     handler.getValue("stance_time", tmp);
-    ((BodyJPosCtrl*)config_body_fix_ctrl_)->setStanceTime(tmp);
+    ((ConfigBodyCtrl*)config_body_fix_ctrl_)->setStanceTime(tmp);
 
     // Swing
     handler.getValue("swing_duration", tmp);

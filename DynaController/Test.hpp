@@ -13,7 +13,7 @@ public:
   virtual ~Test();
 
   virtual void TestInitialization() = 0;
-  void getTorqueInput(dynacore::Vector & gamma);
+  void getCommand(void* _command);
 
 protected:
   virtual int _NextPhase(const int & phase) = 0;

@@ -15,7 +15,7 @@ public:
   TransitionConfigCtrl(RobotSystem* robot, int moving_foot, bool b_increase);
   virtual ~TransitionConfigCtrl();
 
-  virtual void OneStep(dynacore::Vector & gamma);
+  virtual void OneStep(void* _cmd);
   virtual void FirstVisit();
   virtual void LastVisit();
   virtual bool EndOfPhase();
@@ -42,6 +42,8 @@ protected:
   WBDC_ContactSpec* double_contact_;
   WBDC_Rotor* wbdc_rotor_;
   WBDC_Rotor_ExtraData* wbdc_rotor_data_;
+
+
 
   dynacore::Vector body_pos_ini_;
   dynacore::Vect3 ini_body_pos_;

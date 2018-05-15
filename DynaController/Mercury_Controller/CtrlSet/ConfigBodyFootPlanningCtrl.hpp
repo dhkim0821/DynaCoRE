@@ -18,7 +18,7 @@ class ConfigBodyFootPlanningCtrl:public Controller{
     public:
         ConfigBodyFootPlanningCtrl(RobotSystem* robot, int swing_foot, Planner* planner);
         ~ConfigBodyFootPlanningCtrl();
-        virtual void OneStep(dynacore::Vector & gamma);
+        virtual void OneStep(void* _cmd);
         virtual void FirstVisit();
         virtual void LastVisit();
         virtual bool EndOfPhase();
@@ -91,6 +91,9 @@ class ConfigBodyFootPlanningCtrl:public Controller{
         Planner* planner_;
         void _CheckPlanning();
         void _Replanning();
+
+        dynacore::Vector des_jpos_;
+        dynacore::Vector des_jvel_;
 
         dynacore::Vect3 ini_body_pos_;
         dynacore::Vect3 ini_foot_pos_;
