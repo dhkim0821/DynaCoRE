@@ -29,6 +29,18 @@ BasicAccumulation::BasicAccumulation():OriEstimator(), com_state_(6){
 
   gravity_mag = 9.81; // m/s^2;
   theta_x = 0.0;
+  theta_y = 0.0;
+  theta_z = 0.0;
+  // Initialize body orientation to identity.
+  dynacore::Vect3 rpy_init; rpy_init.setZero();
+  dynacore::convert(rpy_init, Oq_B); 
+  dynacore::convert(rpy_init, Oq_B_init_yaw_rotated); 
+  
+  OR_B_init = Oq_B.toRotationMatrix();
+  OR_B_init_yaw_rotated = Oq_B_init_yaw_rotated.toRotationMatrix();  
+
+  OB_xhat_xy.setZero();
+
 }
 BasicAccumulation::~BasicAccumulation(){}
 
@@ -138,7 +150,7 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
       com_state_[1] = 0.0;      
 
       // Estimate orientation       
-      IMUOrientationEstimate();
+      InitIMUOrientationEstimate();
 
     }else{
       // Update bias estimate
@@ -168,41 +180,158 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
     com_state_[0] = com_state_[0] + com_state_[2]*mercury::servo_rate;
     com_state_[1] = com_state_[1] + com_state_[3]*mercury::servo_rate;
 
-  // if(count % 100 == 0){
-  //   dynacore::pretty_print(g_A, std::cout, "gravity_dir");
-  //   printf("    gravity_mag = %0.4f \n", gravity_mag);
-  //   printf("    theta_x = %0.4f \n", theta_x);    
-  //   dynacore::pretty_print(g_A_local, std::cout, "rotated gravity_dir");
-  // }    
+  if(count % 100 == 0){
+    dynacore::pretty_print(g_B, std::cout, "gravity_dir");
+    printf("    gravity_mag = %0.4f \n", gravity_mag);
+    printf("    theta_x = %0.4f \n", theta_x);    
+    printf("    theta_y = %0.4f \n", theta_y);        
+    dynacore::pretty_print(g_B_local, std::cout, "rotated gravity_dir");
+    printf("    norm(g_B_local) = %0.4f \n", g_B_local.norm());
+    dynacore::pretty_print(Oq_B_init, std::cout, "Initial body orientation w.r.t fixed frame: ");
+    dynacore::pretty_print(OR_B_init, std::cout, "OR_B_init: ");
+    // dynacore::pretty_print(OB_xhat_xy, std::cout, "OB_xhat_xy");
+    // printf("    theta_z = %0.4f \n", theta_z);    
+    // dynacore::pretty_print(Oq_B_init_yaw_rotated, std::cout, "Yaw aligned Body orientation w.r.t fixed frame: ");
+    // dynacore::pretty_print(OR_B_init_yaw_rotated, std::cout, "OR_B_init_yaw_rotated: ");
+    // dynacore::pretty_print(Oq_B, std::cout, "Body orientation w.r.t fixed frame: ");
+  }    
 
     //count++;
 }
 
-void BasicAccumulation::IMUOrientationEstimate(){
-  g_A.setZero();
-  g_A[0] = -x_acc_bias;
-  g_A[1] = -y_acc_bias;
-  g_A[2] = -z_acc_bias;    
-  gravity_mag = g_A.norm();
-  g_A /= gravity_mag;
+void BasicAccumulation::InitIMUOrientationEstimate(){
+  // Finds The orientation of the body with respect to the fixed frame O. 
+  // ^OR_B 
+  // The algorithm attempts to solve ^OR_B * f_b = f_o, 
+  // where f_b is the acceleration of gravity in the body frame.
+  // f_o is the acceleration of gravity in the fixed frame
+  // Note that ^OR_B will be equal to the orientation of the body w.r.t the fixed frame.
+
+  // We will rotate the f_b using extrinsic rotation with global R_y (pitch) and R_x (roll) rotations
+  // Thus, we will perform ^OR_x ^OR_y f_b = f_o.
+  // and, ^OR_b = ^OR_x ^OR_y
+
+  // A final yaw alignment is performed with ^OR_z * ^OR_b
+
+  // This assumes that the +z vector of the IMU is in the opposite direction of gravity.
+
+
+  g_B.setZero();
+  g_B[0] = -x_acc_bias; 
+  g_B[1] = -y_acc_bias;
+  g_B[2] = -z_acc_bias; // We expect a negative number
+
+  // Test Vector
+  // f_b = [-0.057744 -0.001452  -0.998330]  
+  // norm(f_b) = 9.7367
+  // g_B[0] = -0.057744;
+  // g_B[1] = -0.001452;
+  // g_B[2] = -0.998330; // We expect a negative number
+
+  gravity_mag = g_B.norm();
+  g_B /= gravity_mag;
 
   dynacore::Quaternion q_world_Ry;
-  dynacore::Quaternion q_world_roll;  
+  dynacore::Quaternion q_world_Rx;      
 
+  // Use Ry to rotate pitch and align gravity vector  ---------------------------
   // Prepare to rotate gravity vector
-  g_A_local.w() = 0;
-  g_A_local.x() = g_A[0];  g_A_local.y() = g_A[1]; g_A_local.z() = g_A[2];
+  g_B_local.w() = 0;
+  g_B_local.x() = g_B[0];  g_B_local.y() = g_B[1]; g_B_local.z() = g_B[2];
 
+  dynacore::Vect3 proj_B; proj_B.setZero();
+  proj_B[1] = g_B[0];
+  proj_B[1] = 0.0;
+  proj_B[2] = g_B[2];
+
+  proj_B /= proj_B.norm();
 
   // Local xhat direction
-  dynacore::Vect3 xhat_A; xhat_A.setZero(); xhat_A[0] = 1.0;
+  dynacore::Vect3 xhat_B; xhat_B.setZero(); xhat_B[1] = 1.0;
   // Compute Pitch to rotate
-  theta_x = acos(xhat_A.dot(g_A));
-  double pitch_val = (M_PI/2.0) - theta_x;
-  //convert(0.0, pitch_val, 0.0, q_world_Ry);
+  // theta_x = acos(xhat_B.dot(g_B));
+  //theta_x = acos(xhat_B.dot(proj_B));
+  theta_x = atan(g_B[0]/g_B[2]);
+  //double pitch_val = (M_PI/2.0) + theta_x;
+  double pitch_val = -theta_x;
+  //dynacore::convert(0.0, pitch_val, 0.0, q_world_Ry);
+  q_world_Ry.w() = cos(pitch_val/2.);
+  q_world_Ry.x() = 0;
+  q_world_Ry.y() = sin(pitch_val/2.);
+  q_world_Ry.z() = 0;  
 
-  // Rotate gravity vector 
-  //g_A_local = QuatMultiply( QuatMultiply(q_world_Ry, g_A_local), q_world_Ry.inverse());
+  // Rotate gravity vector to align the xhat directions
+  g_B_local = dynacore::QuatMultiply( dynacore::QuatMultiply(q_world_Ry, g_B_local), q_world_Ry.inverse());
+  //---------------------------------------------------------------------------
 
+  // Use Rx to rotate the pitch and align gravity vector  ---------------------------
+  // Local yhat direction
+  dynacore::Vect3 yhat_A; yhat_A.setZero(); yhat_A[1] = 1.0;
+
+  dynacore::Vect3 g_B_prime; g_B_prime.setZero();
+
+  g_B_prime[0] = g_B_local.x();
+  g_B_prime[1] = g_B_local.y();
+  g_B_prime[2] = g_B_local.z();  
+  
+  // Compute Roll to rotate
+  //theta_y = acos(yhat_A.dot(g_B_prime));
+  theta_y = atan(g_B_prime[1]/g_B_prime[2]);
+
+  double roll_val = theta_y;//-((M_PI/2.0) - theta_y);
+  //dynacore::convert(0.0, 0.0, roll_val, q_world_Rx);
+  q_world_Rx.w() = cos(roll_val/2.);;
+  q_world_Rx.x() = sin(roll_val/2.);
+  q_world_Rx.y() = 0;
+  q_world_Rx.z() = 0;
+
+
+  //Rotate gravity vector to align the yhat directions
+  g_B_local = dynacore::QuatMultiply( dynacore::QuatMultiply(q_world_Rx, g_B_local), q_world_Rx.inverse());
+
+  // Obtain initial body orientation w.r.t fixed frame.
+  // Oq_B = q_x * q_y * q_b
+  Oq_B_init = dynacore::QuatMultiply(q_world_Rx, q_world_Ry);//dynacore::QuatMultiply( q_world_Rx ,dynacore::QuatMultiply(q_world_Ry, Oq_B));
+  // Set rotation matrix
+  OR_B_init = Oq_B_init.normalized().toRotationMatrix();
+
+  // //---------------------------------------------------------------------------
+  // // Use Rz to rotate the yaw and align the x and y directions of the body orientation to the global frame.
+  // // Extract the xhat direction of OR_B 
+  // dynacore::Vect3 O_xhat_B; O_xhat_B.setZero(); 
+  // O_xhat_B[0] = OR_B_init(0,0);
+  // O_xhat_B[1] = OR_B_init(0,1);
+  // O_xhat_B[2] = OR_B_init(0,2);  
+
+  // // Construct only the x,y components of O_xhat_B
+  // dynacore::Vect3 O_xhat_B_xy; O_xhat_B_xy.setZero(); 
+  // O_xhat_B_xy[0] = OR_B_init(0,0);
+  // O_xhat_B_xy[1] = OR_B_init(1,0);
+
+  // OB_xhat_xy = O_xhat_B_xy;
+
+  // O_xhat_B_xy /= O_xhat_B_xy.norm();
+
+
+  // // Find the yaw to rotate
+  // theta_z = acos(xhat_B.dot(O_xhat_B_xy));
+
+  // // Use the y component to identify which direction to do the yaw rotation.
+  // double xhat_ydir = O_xhat_B[1]; //
+  // if (xhat_ydir > 0){
+  //   theta_z = -theta_z;
+  // }
+  // double yaw_value = theta_z;
+
+  // // // Rotate the quaternion of the body orientation to align the projected x and y directions
+  // // dynacore::Quaternion q_world_Rz;
+  // // dynacore::convert(yaw_value, 0.0, 0.0, q_world_Rz);
+
+  // // // Get the body orientation with yaw aligned to the fixed frame 
+  // // Oq_B_init_yaw_rotated = dynacore::QuatMultiply(q_world_Rz, Oq_B_init);
+  // // OR_B_init_yaw_rotated = Oq_B_init_yaw_rotated.normalized().toRotationMatrix();
+
+  // // // Initialize global orientation
+  // Oq_B = Oq_B_init_yaw_rotated;
 
 }
