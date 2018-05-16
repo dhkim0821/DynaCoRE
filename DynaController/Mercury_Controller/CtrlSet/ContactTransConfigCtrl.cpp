@@ -66,8 +66,10 @@ void ContactTransConfigCtrl::OneStep(void* _cmd){
 	dynacore::Vector gamma;
 	_double_contact_setup();
 	_body_task_setup();
+    printf("cont trans begin\n");
 	_body_ctrl_wbdc_rotor(gamma);
 
+    printf("cont trans begin\n");
 	for(int i(0); i<mercury::num_act_joint; ++i){
 		((Mercury_Command*)_cmd)->jtorque_cmd[i] = gamma[i];
 		((Mercury_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
@@ -154,8 +156,10 @@ void ContactTransConfigCtrl::_body_task_setup(){
     }
     body_task_->UpdateTask(&(pos_des), vel_des, acc_des);
 
+    printf("cont trans begin 1\n");
    // Push back to task list
     task_list_.push_back(body_task_);
+    printf("cont trans begin 1\n");
 }
 
 void ContactTransConfigCtrl::_double_contact_setup(){

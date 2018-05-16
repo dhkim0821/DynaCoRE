@@ -59,13 +59,15 @@ Mercury_interface::Mercury_interface():
 
     sp_ = Mercury_StateProvider::getStateProvider();
     state_estimator_ = new Mercury_StateEstimator(robot_sys_);  
+    DataManager::GetDataManager()->RegisterData(
+            &jpos_command_, DYN_VEC, "jpos_des", mercury::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &jvel_command_, DYN_VEC, "jvel_des", mercury::num_act_joint);
 
     DataManager::GetDataManager()->RegisterData(
             &running_time_, DOUBLE, "running_time");
     DataManager::GetDataManager()->RegisterData(
             &sensed_torque_, DYN_VEC, "torque", mercury::num_act_joint);
-    DataManager::GetDataManager()->RegisterData(
-            &jpos_command_, DYN_VEC, "jpos_command", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &torque_command_, DYN_VEC, "command", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(

@@ -22,7 +22,7 @@ public:
           const dynacore::Vect3 & com_vel);
   void getEstimatedCoMState(dynacore::Vector & com_state);
 
-  void InitIMUOrientationEstimate();
+  void InitIMUOrientationEstimateFromGravity();
 protected:
     dynacore::Vector com_state_;
     dynacore::Vect3 ini_acc_;
@@ -57,13 +57,13 @@ protected:
   dynacore::Quaternion Oq_B_init; // initial quaternion of the body frame w.r.t fixed frame
   dynacore::Matrix OR_B_init; // initial Rot matrix of body w.r.t fixed frame
 
-  double theta_z;
+  dynacore::Vect3 a_o; // body acceleration in fixed frame
+  dynacore::Vect3 g_o; // gravity compensation in fixed frame  
+  dynacore::Vect3 vec_f_o; // IMU acceleration in fixed frame
 
-  dynacore::Quaternion Oq_B_init_yaw_rotated; // initial quaternion of the body frame w.r.t fixed frame with yaw alignment to fixed frame
-// initial Rot matrix of body w.r.t fixed frame. with yaw rotation to align the x and y directions to the fixed frame 
-  dynacore::Matrix OR_B_init_yaw_rotated;
+  dynacore::Vect3 v_o; // body velocity in fixed frame
+  dynacore::Vect3 r_o; // position in fixed frame  
 
-  dynacore::Vect3 OB_xhat_xy;
 
 };
 

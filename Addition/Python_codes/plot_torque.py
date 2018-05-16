@@ -104,7 +104,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         plt.plot( \
                 data_x, scale[i-1] * data_motor_current[st_idx:end_idx, i-1], "k-", \
-                data_x, data_cmd[st_idx:end_idx, i-1 + 6], "c-", \
                 data_x, data_torque[st_idx:end_idx,i-1], "b-")
 
         
@@ -157,7 +156,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         plt.plot(\
                 data_x, scale[i-1] * data_motor_current[st_idx:end_idx, i-1 + 3], "k-", \
-                data_x, data_cmd[st_idx:end_idx, i-1+3 + 6], "c-", \
                 data_x, data_cmd[st_idx:end_idx,i-1 + 3], "r-" , \
                 data_x, data_torque[st_idx:end_idx,i-1 + 3], "b-")
         # phase marker #
