@@ -1,8 +1,8 @@
 ## Basic Test ********************************* 
-#test_name: joint_ctrl_test
+test_name: joint_ctrl_test
 
 ## Walking Test ********************************* 
-test_name: walking_config_test
+#test_name: walking_config_test
 
 ## Body Ctrl Test ********************************* 
 #test_name: body_ctrl_test
@@ -11,8 +11,8 @@ test_name: walking_config_test
 #test_name: config_stance_swing_test
 
 
-base_condition: floating
-#base_condition: fixed
+#base_condition: floating
+base_condition: fixed
 #base_condition: lying
 
 torque_max: [  150,  100,  100,  150,  100,  100]
