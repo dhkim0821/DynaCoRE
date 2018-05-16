@@ -2,12 +2,11 @@
 #include "common/utils.h"
 #include <Utils/wrap_eigen.hpp>
 #include <Utils/utilities.hpp>
-#include <ControlSystem/Mercury/Mercury_Controller/interface.hpp>
-#include <ControlSystem/Mercury/Mercury_Controller/StateProvider.hpp>
+#include <DynaController/Mercury_Controller/Mercury_StateProvider.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 
 // #define SENSOR_NOISE
-#define SENSOR_DELAY 0 // Sensor_delay* SERVO_RATE (sec) = time delay 
+#define SENSOR_DELAY 0 // Sensor_delay* mercury::servo_rate (sec) = time delay 
 
 
 Mercury_Dyn_environment::Mercury_Dyn_environment():
@@ -20,14 +19,16 @@ Mercury_Dyn_environment::Mercury_Dyn_environment():
   m_Space = new srSpace();
   m_ground = new Ground();
 
-  interface_ = new interface();
+  interface_ = new Mercury_interface();
+  data_ = new Mercury_SensorData();
+  cmd_ = new Mercury_Command();
 
   m_Space->AddSystem(m_ground->BuildGround());
   m_Space->AddSystem((srSystem*)m_Mercury);
   m_Space->DYN_MODE_PRESTEP();
 
   m_Space->SET_USER_CONTROL_FUNCTION_2(ContolFunction);
-  m_Space->SetTimestep(SERVO_RATE);
+  m_Space->SetTimestep(mercury::servo_rate);
   m_Space->SetGravity(0.0,0.0,-9.81);
   m_Space->SetNumberofSubstepForRendering(num_substep_rendering_);
 }
@@ -35,8 +36,9 @@ Mercury_Dyn_environment::Mercury_Dyn_environment():
 void Mercury_Dyn_environment::ContolFunction( void* _data ) {
   Mercury_Dyn_environment* pDyn_env = (Mercury_Dyn_environment*)_data;
   Mercury* robot = pDyn_env->m_Mercury;
+  Mercury_SensorData* p_data = pDyn_env->data_;
   ++pDyn_env->count_ ;
-  double alternate_time = SIM_SERVO_RATE * pDyn_env->count_;
+  double alternate_time = mercury::servo_rate * pDyn_env->count_;
   std::vector<double> jpos(6);
   std::vector<double> mjvel(6);
   std::vector<double> jjvel(6);
@@ -50,36 +52,53 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
 
   pDyn_env->getIMU_Data(imu_acc, imu_ang_vel);
 
+  for(int i(0); i<3; ++i){
+      p_data->imu_ang_vel[i] = imu_ang_vel[i];
+      p_data->imu_acc[i] = imu_acc[i];
+      p_data->imu_inc[i] = imu_acc[i];
+  }
+
   int lj_start_idx(4);
   // Right
   for(int i(0); i< 3; ++i){
-    jpos[i] = robot->r_joint_[i]->m_State.m_rValue[0];
-    mjvel[i] = robot->r_joint_[i]->m_State.m_rValue[1];
-    jjvel[i] = robot->r_joint_[i]->m_State.m_rValue[1];
-    jtorque[i] = robot->r_joint_[i]->m_State.m_rValue[3];
+    p_data->joint_jpos[i] = robot->r_joint_[i]->m_State.m_rValue[0];
+    p_data->motor_jvel[i] = robot->r_joint_[i]->m_State.m_rValue[1];
+    p_data->joint_jvel[i] = robot->r_joint_[i]->m_State.m_rValue[1];
+    p_data->jtorque[i] = robot->r_joint_[i]->m_State.m_rValue[3];
   }
   // Left
   for(int i(0); i< 3; ++i){
-    jpos[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[0];
-    mjvel[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[1];
-    jjvel[i] = robot->r_joint_[i]->m_State.m_rValue[1];
-    jtorque[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[3];
+    p_data->joint_jpos[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[0];
+    p_data->motor_jvel[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[1];
+    p_data->joint_jvel[i+3] = robot->r_joint_[i]->m_State.m_rValue[1];
+    p_data->jtorque[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[3];
   }
 
-  pDyn_env->interface_->GetCommand(alternate_time, jpos, mjvel, jjvel, jtorque, imu_acc, imu_ang_vel, imu_acc, rfoot_contact, lfoot_contact, jtorque, torque_command);
+  pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_);
+
+//          alternate_time, jpos, mjvel, jjvel, jtorque, imu_acc, imu_ang_vel, imu_acc, rfoot_contact, lfoot_contact, jtorque, torque_command);
 
   for(int i(0); i<3; ++i){
     robot->vp_joint_[i]->m_State.m_rCommand = 0.0;
     robot->vr_joint_[i]->m_State.m_rCommand = 0.0;
   }
 
+   //double Kp(200.);
+  //double Kd(20.) 
+  double Kp(30.);
+  double Kd(0.5);
   // Right
   for(int i(0); i<3; ++i){
-    robot->r_joint_[i]->m_State.m_rCommand = torque_command[i];
+    robot->r_joint_[i]->m_State.m_rCommand = pDyn_env->cmd_->jtorque_cmd[i] + 
+        Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->joint_jpos[i]) + 
+        Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->motor_jvel[i]);
   }
   // Left
   for(int i(0); i<3; ++i){
-    robot->r_joint_[i+lj_start_idx]->m_State.m_rCommand = torque_command[i+3];
+    robot->r_joint_[i+lj_start_idx]->m_State.m_rCommand = 
+        pDyn_env->cmd_->jtorque_cmd[i+3] + 
+         Kp * (pDyn_env->cmd_->jpos_cmd[i+3] - p_data->joint_jpos[i+3]) + 
+        Kd * (pDyn_env->cmd_->jvel_cmd[i+3] - p_data->motor_jvel[i+3]);
   }
 
   // Ankle Passive
@@ -89,7 +108,7 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
   pDyn_env->PushRobotBody();
 
   // Hold Body
-  if(pDyn_env->count_*SIM_SERVO_RATE < pDyn_env->release_time_){
+  if(pDyn_env->count_*mercury::servo_rate < pDyn_env->release_time_){
     pDyn_env->FixXY();
   }
 }
@@ -98,7 +117,7 @@ void Mercury_Dyn_environment::PushRobotBody(){
   static int push_idx(0);
   if(push_time_.size() > push_idx){
 
-    if(count_ * SIM_SERVO_RATE > push_time_[push_idx]){
+    if(count_ * mercury::servo_rate > push_time_[push_idx]){
       int body_lk_idx(m_Mercury->link_idx_map_.find("body")->second);
       // Force Setting
       double force_size(push_force_[push_idx]);
@@ -110,7 +129,7 @@ void Mercury_Dyn_environment::PushRobotBody(){
       dse3 ext_force(0., 0., 0.,force_x, force_y, 0.);
       m_Mercury->link_[body_lk_idx]->AddUserExternalForce(ext_force);
 
-      if(count_*SERVO_RATE > push_time_[push_idx] + 0.1){
+      if(count_*mercury::servo_rate > push_time_[push_idx] + 0.1){
         ++push_idx;
       }
     }
@@ -147,7 +166,7 @@ void Mercury_Dyn_environment::Rendering_Fnc(){}
 
 
 void Mercury_Dyn_environment::_ParamterSetup(){
-  ParamHandler handler(CONFIG_PATH"SIM_sr_sim_setting.yaml");
+  ParamHandler handler(MercuryConfigPath"SIM_sr_sim_setting.yaml");
 
   handler.getInteger("num_substep_rendering", num_substep_rendering_);
   handler.getValue("releasing_time", release_time_);
@@ -173,19 +192,19 @@ void Mercury_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
     imu_frame(1,0), imu_frame(1,1), imu_frame(1,2),
     imu_frame(2,0), imu_frame(2,1), imu_frame(2,2);
 
-  sejong::Vect3 grav; grav.setZero();
+  dynacore::Vect3 grav; grav.setZero();
   grav[2] = 9.81;
-  sejong::Vect3 local_grav = Rot.transpose() * grav;
+  dynacore::Vect3 local_grav = Rot.transpose() * grav;
 
   for(int i(0); i<3; ++i){
     imu_ang_vel[i] = imu_se3_vel[i] + imu_ang_vel_bias_[i] +
-      sejong::generator_white_noise(0., imu_ang_vel_var_[i]);
+      dynacore::generator_white_noise(0., imu_ang_vel_var_[i]);
     imu_acc[i] = imu_se3_acc[i+3] + local_grav[i];
   }
 
   Eigen::Matrix<double, 3, 1> ang_vel;
   ang_vel<<imu_se3_vel[0], imu_se3_vel[1], imu_se3_vel[2];
-  sejong::Vect3 global_ang_vel = Rot * ang_vel;
+  dynacore::Vect3 global_ang_vel = Rot * ang_vel;
   Eigen::Quaterniond quat(Rot);
 
   bool b_printout(false);
@@ -195,8 +214,8 @@ void Mercury_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
     std::cout<<imu_se3_acc<<std::endl;
     std::cout<<imu_frame<<std::endl;
 
-    sejong::pretty_print(imu_ang_vel, "imu ang vel");
-    sejong::pretty_print(imu_acc, "imu_acc");
+    dynacore::pretty_print(imu_ang_vel, "imu ang vel");
+    dynacore::pretty_print(imu_acc, "imu_acc");
 
     printf("global ang vel\n");
     std::cout<<global_ang_vel<<std::endl;
@@ -205,5 +224,4 @@ void Mercury_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
     std::cout<<quat.w()<<std::endl;
     std::cout<<quat.vec()<<std::endl;
   }
-  interface_->global_ori_ = quat;
 }

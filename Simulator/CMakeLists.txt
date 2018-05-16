@@ -1,5 +1,5 @@
-add_subdirectory(DART)
-#add_subdirectory(srSimulator)
+#add_subdirectory(DART)
+add_subdirectory(srSimulator)
 
 SET (SIM_MODEL_PATH "${PROJECT_SOURCE_DIR}/Simulator/SimulationModel" )
 SET (SIM_DATA_PATH "${PROJECT_SOURCE_DIR}/Simulator/ResultData")

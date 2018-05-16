@@ -9,9 +9,9 @@
 #include <stack>
 #include "srDyn/srSpace.h"
 
-typedef boost::shared_ptr<urdf::Link> URDFLinkPtr;
-typedef boost::shared_ptr<urdf::Joint> URDFJointPtr;
-typedef boost::shared_ptr<urdf::ModelInterface> URDFModelPtr;
+typedef boost::shared_ptr<dynacore::urdf::Link> URDFLinkPtr;
+typedef boost::shared_ptr<dynacore::urdf::Joint> URDFJointPtr;
+typedef boost::shared_ptr<dynacore::urdf::ModelInterface> URDFModelPtr;
 typedef std::vector<URDFLinkPtr> URDFLinkVector;
 typedef std::vector<URDFJointPtr> URDFJointVector;
 typedef std::map<std::string, URDFLinkPtr> URDFLinkMap;

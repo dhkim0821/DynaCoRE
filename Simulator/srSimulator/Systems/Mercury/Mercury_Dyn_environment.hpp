@@ -7,6 +7,7 @@
 #include "Ground.h"
 #include <vector>
 #include "Configuration.h"
+#include <DynaController/Mercury_Controller/Mercury_interface.hpp>
 
 class interface;
 
@@ -26,6 +27,8 @@ public:
   void PushRobotBody();
   
   interface* interface_;
+  Mercury_SensorData* data_;
+  Mercury_Command* cmd_;
   Mercury*	m_Mercury;
   srSpace*	m_Space;
   Ground*	m_ground;

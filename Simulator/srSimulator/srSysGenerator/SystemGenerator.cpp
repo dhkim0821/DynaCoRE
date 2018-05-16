@@ -15,7 +15,8 @@ SystemGenerator::SystemGenerator() :
 SystemGenerator::~SystemGenerator(){
 }
 
-void SystemGenerator::BuildRobot(Vec3 location, srSystem::BASELINKTYPE base_link_type, srJoint::ACTTYPE joint_type, std::string filename){
+void SystemGenerator::BuildRobot(Vec3 location, srSystem::BASELINKTYPE base_link_type, srJoint::ACTTYPE joint_type, 
+        std::string filename){
     _Parsing(filename);
     _SetLinkIdx();
     _SetControlJointIdx();
@@ -163,7 +164,7 @@ void SystemGenerator::_SetJointParam(int idx){
     SE3 Axis010Frame(EulerZYX(Vec3(0, 0, -SR_PI_HALF), Vec3(0., 0., 0.)));
     SE3 Axis100Frame(EulerZYX(Vec3(0, SR_PI_HALF, 0), Vec3(0,0,0)));
 
-    if(Jointidxiter->second->type == urdf::Joint::FIXED){
+    if(Jointidxiter->second->type == dynacore::urdf::Joint::FIXED){
         fixed_joint_[WJidx_]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
         map<string,int>::iterator Linkidxiter=link_idx_map_.find(p_Linkidxiter->first);
         fixed_joint_[WJidx_]->SetParentLink(link_[Linkidxiter->second]);
@@ -174,7 +175,7 @@ void SystemGenerator::_SetJointParam(int idx){
         WJidx_++;
     }
 
-    else if(Jointidxiter->second->type == urdf::Joint::REVOLUTE || Jointidxiter->second->type == urdf::Joint::CONTINUOUS){
+    else if(Jointidxiter->second->type == dynacore::urdf::Joint::REVOLUTE || Jointidxiter->second->type == dynacore::urdf::Joint::CONTINUOUS){
         double axis_x(Jointidxiter->second->axis.x);
         double axis_y(Jointidxiter->second->axis.y);
         double axis_z(Jointidxiter->second->axis.z);
@@ -258,7 +259,7 @@ void SystemGenerator::_SetJointParam(int idx){
         }
     }
 
-    else if(Jointidxiter->second->type == urdf::Joint::PRISMATIC){
+    else if(Jointidxiter->second->type == dynacore::urdf::Joint::PRISMATIC){
         std::cout << "todo : srSysGenerator/SystemGenerator.cpp(joint param - prismatic part)" << std::endl;
         exit(0);
     }
@@ -291,8 +292,8 @@ void SystemGenerator::_SetLinkParam(int idx){
         link_visual_xyz[2]=Linkidxiter->second->visual->origin.position.z;
         Linkidxiter->second->visual->origin.rotation.getRPY (link_visual_rpy[2], link_visual_rpy[1], link_visual_rpy[0]);
 
-        if((Linkidxiter->second->visual_array[0]->geometry->type)==urdf::Geometry::MESH){
-            boost::shared_ptr<urdf::Mesh>mesh=boost::dynamic_pointer_cast<urdf::Mesh>(Linkidxiter->second->visual_array[0]->geometry);
+        if((Linkidxiter->second->visual_array[0]->geometry->type)==dynacore::urdf::Geometry::MESH){
+            boost::shared_ptr<dynacore::urdf::Mesh>mesh=boost::dynamic_pointer_cast<dynacore::urdf::Mesh>(Linkidxiter->second->visual_array[0]->geometry);
             _SplitString(first_str,mesh->filename,tok1);
             _SplitString(second_str,first_str[5],tok2);
             string ModelFileName_=ModelPath"meshes/" + second_str[0] + ds3D;
@@ -302,27 +303,27 @@ void SystemGenerator::_SetLinkParam(int idx){
             link_[idx]->GetGeomInfo().SetFileName(modelnamepath);
         }
 
-        if((Linkidxiter->second->visual_array[0]->geometry->type)==urdf::Geometry::BOX){
-            boost::shared_ptr<urdf::Box>box=boost::dynamic_pointer_cast<urdf::Box>(Linkidxiter->second->visual_array[0]->geometry);
+        if((Linkidxiter->second->visual_array[0]->geometry->type)==dynacore::urdf::Geometry::BOX){
+            boost::shared_ptr<dynacore::urdf::Box>box=boost::dynamic_pointer_cast<dynacore::urdf::Box>(Linkidxiter->second->visual_array[0]->geometry);
             link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::BOX);
             link_[idx]->GetGeomInfo().SetDimension(box->dim.x,box->dim.y,box->dim.z);
         }
 
-        if((Linkidxiter->second->visual_array[0]->geometry->type)==urdf::Geometry::CYLINDER){
-            boost::shared_ptr<urdf::Cylinder>cylinder=boost::dynamic_pointer_cast<urdf::Cylinder>(Linkidxiter->second->visual_array[0]->geometry);
+        if((Linkidxiter->second->visual_array[0]->geometry->type)==dynacore::urdf::Geometry::CYLINDER){
+            boost::shared_ptr<dynacore::urdf::Cylinder>cylinder=boost::dynamic_pointer_cast<dynacore::urdf::Cylinder>(Linkidxiter->second->visual_array[0]->geometry);
             link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::CYLINDER);
             link_[idx]->GetGeomInfo().SetDimension(cylinder->radius,cylinder->length,0);
         }
 
-        if((Linkidxiter->second->visual_array[0]->geometry->type)==urdf::Geometry::SPHERE){
-            boost::shared_ptr<urdf::Sphere>sphere=boost::dynamic_pointer_cast<urdf::Sphere>(Linkidxiter->second->visual_array[0]->geometry);
+        if((Linkidxiter->second->visual_array[0]->geometry->type)==dynacore::urdf::Geometry::SPHERE){
+            boost::shared_ptr<dynacore::urdf::Sphere>sphere=boost::dynamic_pointer_cast<dynacore::urdf::Sphere>(Linkidxiter->second->visual_array[0]->geometry);
             link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
             link_[idx]->GetGeomInfo().SetDimension(sphere->radius,0,0);
         }
     }
     else{
         link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::BOX);
-        link_[idx]->GetGeomInfo().SetDimension(Vec3(0.00001,0.00001,0.00001));
+        link_[idx]->GetGeomInfo().SetDimension(Vec3(0.3,0.2,0.1));
     }
 
     if(Linkidxiter->second->inertial!=0){
@@ -413,7 +414,7 @@ void SystemGenerator::_SetPassiveJoint(srJoint::ACTTYPE joint_type){
 
 //joint_name_
 void SystemGenerator::_Parsing(std::string filename){
-    std::string full_path(ModelPath + filename);
+    std::string full_path(filename);
     std::ifstream model_file( full_path.c_str() );
     if (!model_file) {
         std::cerr << "Error opening file '" << full_path << "'." << std::endl;
@@ -428,7 +429,7 @@ void SystemGenerator::_Parsing(std::string filename){
     model_xml_string.assign((std::istreambuf_iterator<char>(model_file)), std::istreambuf_iterator<char>());
     model_file.close();
 
-    URDFModelPtr urdf_model = urdf::parseURDF (model_xml_string);
+    URDFModelPtr urdf_model = dynacore::urdf::parseURDF (model_xml_string);
     link_map_ = urdf_model->links_;
     joint_map_ = urdf_model->joints_;
     URDFLinkPtr urdf_root_ptr;
@@ -481,15 +482,15 @@ void SystemGenerator::_SetControlJointIdx(){
     for(int i(0); i<joint_names_.size(); ++i){
         Jointidxiter = joint_map_.find(joint_names_[i]);
 
-        if(Jointidxiter->second->type == urdf::Joint::REVOLUTE || Jointidxiter->second->type == urdf::Joint::CONTINUOUS){
+        if(Jointidxiter->second->type == dynacore::urdf::Joint::REVOLUTE || Jointidxiter->second->type == dynacore::urdf::Joint::CONTINUOUS){
             r_joint_idx_map_.insert( make_pair(joint_names_[i], num_r_joint_));
             ++num_r_joint_;
         }
-        else if(Jointidxiter->second->type == urdf::Joint::PRISMATIC){
+        else if(Jointidxiter->second->type == dynacore::urdf::Joint::PRISMATIC){
             p_joint_idx_map_.insert( make_pair(joint_names_[i], num_p_joint_));
             ++num_p_joint_;
         }
-        else if(Jointidxiter->second->type == urdf::Joint::FIXED){
+        else if(Jointidxiter->second->type == dynacore::urdf::Joint::FIXED){
             fixed_joint_idx_map_.insert( make_pair(joint_names_[i], num_fixed_joint_));
             ++num_fixed_joint_;
         }

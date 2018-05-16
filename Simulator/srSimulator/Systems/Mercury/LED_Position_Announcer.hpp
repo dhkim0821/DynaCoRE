@@ -1,11 +1,11 @@
 #ifndef LED_POS_ANNOUNCER
 #define LED_POS_ANNOUNCER
 
-#include "Utils/Sejong_Thread.hpp"
+#include "Utils/dynacore_pThread.hpp"
 
 class Mercury_Dyn_environment;
 
-class LED_Position_Announcer: public Sejong_Thread{
+class LED_Position_Announcer: public dynacore_pThread{
 public:
 
     LED_Position_Announcer(Mercury_Dyn_environment* );

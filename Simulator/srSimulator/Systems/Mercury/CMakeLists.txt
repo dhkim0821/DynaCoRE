@@ -11,11 +11,10 @@ target_link_libraries (simulation_mercury
   Renderer
   util
   ${OPENGL_LIBRARIES}
-  SJurdf
+  dynacore_urdf
   ${CTRL_SYS}_Controller
- SR_Terrain
- SJutils
- SJparam_handler
+ dynacore_utils
+ dynacore_param_handler
 )
 
 if (APPLE)

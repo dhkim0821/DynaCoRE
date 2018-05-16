@@ -3,7 +3,8 @@
 #include "Mercury_Dyn_environment.hpp"
 
 
-LED_Position_Announcer::LED_Position_Announcer(Mercury_Dyn_environment* dyn_env):socket_(0){
+LED_Position_Announcer::LED_Position_Announcer(Mercury_Dyn_environment* dyn_env):
+    socket_(0){
     dyn_env_ = dyn_env;
 }
 

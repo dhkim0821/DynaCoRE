@@ -9,11 +9,12 @@ Mercury::Mercury(const  Vec3 & location, BASELINKTYPE base_link_type, srJoint::A
   SystemGenerator(),
   initial_posture_(1)
 {
-  ParamHandler handler(CONFIG_PATH"SIM_sr_sim_setting.yaml");
+  ParamHandler handler(MercuryConfigPath"SIM_sr_sim_setting.yaml");
   handler.getInteger("initial_posture", initial_posture_);
   handler.getValue("hanging_height", hanging_height_);
 
-  BuildRobot(location, base_link_type, joint_type, "urdf/mercury.urdf");
+  BuildRobot(location, base_link_type, joint_type, 
+          THIS_COM"Simulator/SimulationModel/Mercury_Model/mercury_no_visual.urdf");
   printf("[Mercury] END of Mercury assemble\n");
 }
 Mercury::~Mercury(){
