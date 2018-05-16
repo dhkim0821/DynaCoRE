@@ -237,8 +237,8 @@ void BasicAccumulation::InitIMUOrientationEstimateFromGravity(){
   // Use Rx to rotate the roll and align gravity vector  -
   // Compute Roll to rotate
   // The following method can handle any initial vector due to gravity
-  theta_y = atan2(g_B_local.z(), g_B_local.y()); // Returns angle \in [-pi, pi] between z and y projected vectors.
-  double roll_val = (-M_PI/2.0 - theta_y);      // (-pi/2 - theta_x)
+  theta_x = atan2(g_B_local.z(), g_B_local.y()); // Returns angle \in [-pi, pi] between z and y projected vectors.
+  double roll_val = (-M_PI/2.0 - theta_x);      // (-pi/2 - theta_x)
 
   //dynacore::convert(0.0, 0.0, roll_val, q_world_Rx);
   // Create Roll Quaternion
@@ -257,8 +257,8 @@ void BasicAccumulation::InitIMUOrientationEstimateFromGravity(){
   // double pitch_val = -theta_x;
 
   // The following method can handle any initial vector due to gravity
-  theta_x = atan2(g_B_local.z(), g_B_local.x()); // Returns angle \in [-pi, pi] between z and x projected vectors.
-  double pitch_val = -((-M_PI/2.0) - theta_x);   // This is actually -(-pi/2 - theta_x)
+  theta_y = atan2(g_B_local.z(), g_B_local.x()); // Returns angle \in [-pi, pi] between z and x projected vectors.
+  double pitch_val = -((-M_PI/2.0) - theta_y);   // This is actually -(-pi/2 - theta_y)
 
   //dynacore::convert(0.0, pitch_val, 0.0, q_world_Ry);
   // Create Pitch Quaternion
