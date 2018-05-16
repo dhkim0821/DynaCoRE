@@ -35,6 +35,13 @@ BasicAccumulation::BasicAccumulation():OriEstimator(), com_state_(6){
   dynacore::convert(rpy_init, Oq_B); 
   OR_B_init = Oq_B.toRotationMatrix();
 
+  a_o.setZero();// body acceleration in fixed frame
+  g_o.setZero();// gravity compensation in fixed frame  
+  vec_f_o.setZero();// IMU acceleration in fixed frame
+  v_o; v_o.setZero();// body velocity in fixed frame
+  r_o; r_o.setZero();// body position in fixed frame  
+
+
 }
 BasicAccumulation::~BasicAccumulation(){}
 
@@ -176,6 +183,44 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
     com_state_[1] = com_state_[1] + com_state_[3]*mercury::servo_rate;
 
 
+  // Convert body omega into a delta quaternion ------------------------------
+  dynacore::Vect3 body_omega; body_omega.setZero();
+  for(size_t i = 0; i < 3; i++){
+    body_omega[i] = ang_vel[i];
+  }
+  dynacore::Quaternion delta_quat_body;
+  dynacore::convert(body_omega*mercury::servo_rate, delta_quat_body);
+
+  // Perform orientation update via integration
+  Oq_B = dynacore::QuatMultiply(Oq_B, delta_quat_body); 
+  // global_ori_ = dynacore::QuatMultiply(global_ori_, delt_quat);
+
+  // Prepare the quantity of the local IMU acceleration
+  dynacore::Quaternion f_b; // local IMU acceleration
+  f_b.w() = 0.;
+  f_b.x() = x_acc_low_pass_filter->output();
+  f_b.y() = y_acc_low_pass_filter->output();
+  f_b.z() = z_acc_low_pass_filter->output();
+
+  // Test Vector
+  // f_b.x() = -0.057744*9.7;
+  // f_b.y() = -0.001452*9.7;
+  // f_b.z() = -0.998330*9.7;
+
+  // Convert the IMU Acceleration to be in the fixed frame
+  dynacore::Quaternion f_o; // local IMU acceleration  
+  f_o = dynacore::QuatMultiply( dynacore::QuatMultiply(Oq_B, f_b), Oq_B.inverse());
+  // Get the body acceleration in the fixed frame:
+  // Initialize vectors
+  vec_f_o[0] = vec_f_o.x(); 
+  vec_f_o[1] = vec_f_o.y(); 
+  vec_f_o[2] = f_o.z(); 
+  g_o[2] = gravity_mag;
+  // Estimated body Acceleration in fixed frame
+  a_o = vec_f_o + g_o;
+  v_o = v_o + a_o*mercury::servo_rate;
+  r_o = r_o + v_o*mercury::servo_rate; 
+
   // if(count % 100 == 0){
   //   dynacore::pretty_print(g_B, std::cout, "gravity_dir");
   //   printf("    gravity_mag = %0.4f \n", gravity_mag);
@@ -187,6 +232,18 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
   //   dynacore::pretty_print(OR_B_init, std::cout, "OR_B_init: ");
   //   dynacore::pretty_print(Oq_B, std::cout, "Body orientation w.r.t fixed frame: ");
   //   printf("\n");
+
+
+  //   dynacore::pretty_print(body_omega, std::cout, "body_omega");
+  //   dynacore::pretty_print(delt_quat, std::cout, "delt_quat");
+  //   dynacore::pretty_print(delta_quat_body, std::cout, "delta_quat_body");
+
+  //   dynacore::pretty_print(f_b, std::cout, "IMU acc in body frame f_b = ");
+  //   dynacore::pretty_print(f_o, std::cout, "IMU acc in fixed frame f_o = ");    
+  //   dynacore::pretty_print(a_o, std::cout, "body acc in fixed frame a_o = ");    
+  //   dynacore::pretty_print(v_o, std::cout, "body vel in fixed frame a_o = ");    
+  //   dynacore::pretty_print(r_o, std::cout, "body pos in fixed frame a_o = ");    
+  //   printf("\n");    
   // }    
 
     //count++;
@@ -221,7 +278,7 @@ void BasicAccumulation::InitIMUOrientationEstimateFromGravity(){
   // g_B[0] = -0.057744;
   // g_B[1] = -0.001452;
   // g_B[2] = -0.998330;  // We expect a negative number if gravity is pointing opposite of the IMU zhat direction
-
+  // g_B *= 9.7;
 
   gravity_mag = g_B.norm();
   g_B /= gravity_mag;
