@@ -28,6 +28,7 @@ void JointCtrlTest::TestInitialization(){
 
 int JointCtrlTest::_NextPhase(const int & phase){
   int nx_phase = phase + 1;
+  printf("[JPos TEST] next phase: %d\n", nx_phase);
   if(phase == NUM_JPOS_TEST){
     nx_phase = JPOS_TEST_SWING;
   }

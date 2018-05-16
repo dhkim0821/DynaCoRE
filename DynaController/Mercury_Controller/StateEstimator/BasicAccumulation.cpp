@@ -126,7 +126,7 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
   global_acc.x() = acc[0];
   global_acc.y() = acc[1];
   global_acc.z() = acc[2];
-
+/*
   dynacore::Quaternion quat_acc = dynacore::QuatMultiply(global_ori_, global_acc, false);
     quat_acc = dynacore::QuatMultiply(quat_acc, global_ori_.inverse(), false);
 
@@ -180,22 +180,22 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
     com_state_[0] = com_state_[0] + com_state_[2]*mercury::servo_rate;
     com_state_[1] = com_state_[1] + com_state_[3]*mercury::servo_rate;
 
-  if(count % 100 == 0){
-    dynacore::pretty_print(g_B, std::cout, "gravity_dir");
-    printf("    gravity_mag = %0.4f \n", gravity_mag);
-    printf("    theta_x = %0.4f \n", theta_x);    
-    printf("    theta_y = %0.4f \n", theta_y);        
-    dynacore::pretty_print(g_B_local, std::cout, "rotated gravity_dir");
-    printf("    norm(g_B_local) = %0.4f \n", g_B_local.norm());
-    dynacore::pretty_print(Oq_B_init, std::cout, "Initial body orientation w.r.t fixed frame: ");
-    dynacore::pretty_print(OR_B_init, std::cout, "OR_B_init: ");
-    // dynacore::pretty_print(OB_xhat_xy, std::cout, "OB_xhat_xy");
-    // printf("    theta_z = %0.4f \n", theta_z);    
-    // dynacore::pretty_print(Oq_B_init_yaw_rotated, std::cout, "Yaw aligned Body orientation w.r.t fixed frame: ");
-    // dynacore::pretty_print(OR_B_init_yaw_rotated, std::cout, "OR_B_init_yaw_rotated: ");
-    // dynacore::pretty_print(Oq_B, std::cout, "Body orientation w.r.t fixed frame: ");
-  }    
-
+  //if(count % 100 == 0){
+    //dynacore::pretty_print(g_B, std::cout, "gravity_dir");
+    //printf("    gravity_mag = %0.4f \n", gravity_mag);
+    //printf("    theta_x = %0.4f \n", theta_x);    
+    //printf("    theta_y = %0.4f \n", theta_y);        
+    //dynacore::pretty_print(g_B_local, std::cout, "rotated gravity_dir");
+    //printf("    norm(g_B_local) = %0.4f \n", g_B_local.norm());
+    //dynacore::pretty_print(Oq_B_init, std::cout, "Initial body orientation w.r.t fixed frame: ");
+    //dynacore::pretty_print(OR_B_init, std::cout, "OR_B_init: ");
+     //dynacore::pretty_print(OB_xhat_xy, std::cout, "OB_xhat_xy");
+     //printf("    theta_z = %0.4f \n", theta_z);    
+     //dynacore::pretty_print(Oq_B_init_yaw_rotated, std::cout, "Yaw aligned Body orientation w.r.t fixed frame: ");
+     //dynacore::pretty_print(OR_B_init_yaw_rotated, std::cout, "OR_B_init_yaw_rotated: ");
+     //dynacore::pretty_print(Oq_B, std::cout, "Body orientation w.r.t fixed frame: ");
+  //}    
+*/
     //count++;
 }
 

@@ -57,10 +57,14 @@ void TransitionConfigCtrl::OneStep(void* _cmd){
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
     dynacore::Vector gamma;
 
+    printf("trans begin\n");
     _double_contact_setup();
+    printf("trans begin\n");
     _body_task_setup();
+    printf("trans begin\n");
     _body_ctrl_wbdc_rotor(gamma);
 
+    printf("trans begin\n");
     _PostProcessing_Command();
 }
 

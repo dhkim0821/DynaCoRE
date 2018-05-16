@@ -12,7 +12,7 @@
 JPosCtrl::JPosCtrl(RobotSystem* robot):Controller(robot),
     end_time_(1000.0),
     b_jpos_set_(false),
-     des_jpos_(mercury::num_act_joint),
+    des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
    ctrl_start_time_(0.)
 {
@@ -35,7 +35,7 @@ JPosCtrl::JPosCtrl(RobotSystem* robot):Controller(robot),
         dynacore::Vector::Constant(fixed_body_contact_->getDim() + 
                 jpos_task_->getDim(), 100.0);
     wbdc_rotor_data_->cost_weight.tail(fixed_body_contact_->getDim()) = 
-        dynacore::Vector::Constant(fixed_body_contact_->getDim(), 0.001);
+        dynacore::Vector::Constant(fixed_body_contact_->getDim(), 0.1);
 
     sp_ = Mercury_StateProvider::getStateProvider();
 
