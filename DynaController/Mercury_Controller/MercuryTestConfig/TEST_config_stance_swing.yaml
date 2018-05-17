@@ -18,8 +18,8 @@ swing_duration: 100.
 
 # Trajectory
 swing_height: 0.2
-amplitude: [0.0, 0.0, 0.05]
-#amplitude: [0, -0.0, 0.0]
+# amplitude: [0.0, 0.0, 0.05]
+amplitude: [0, -0.0, 0.0]
 frequency: [0.0, 1.0, 1.0]
 phase: [0., 0.,  0.]
 

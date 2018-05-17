@@ -1,7 +1,7 @@
 include_directories ("${PROJECT_SOURCE_DIR}/ExternalSource")
 
 if (WIN32)
-  add_library(SJutils SHARED
+  add_library(dynacore_utils SHARED
     wrap_eigen.hpp wrap_eigen.cpp
     BSplineBasic.h
     LQR.hpp LQR.cpp

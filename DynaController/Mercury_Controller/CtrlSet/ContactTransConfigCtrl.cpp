@@ -15,8 +15,10 @@ ContactTransConfigCtrl::ContactTransConfigCtrl(RobotSystem* robot):
     end_time_(100.),
     body_pos_ini_(4),
 	des_jpos_(mercury::num_act_joint),
-	des_jvel_(mercury::num_act_joint)
+	des_jvel_(mercury::num_act_joint),
+    config_des_(mercury::num_qdot)
 {
+    config_des_.setZero();
     body_task_ = new ConfigTask();
     double_contact_ = new DoubleTransitionContact(robot);
 
@@ -67,13 +69,11 @@ void ContactTransConfigCtrl::OneStep(void* _cmd){
 	_double_contact_setup();
 	_body_task_setup();
 	_body_ctrl_wbdc_rotor(gamma);
-
 	for(int i(0); i<mercury::num_act_joint; ++i){
 		((Mercury_Command*)_cmd)->jtorque_cmd[i] = gamma[i];
 		((Mercury_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
 		((Mercury_Command*)_cmd)->jvel_cmd[i] = des_jvel_[i];
 	}
-
     _PostProcessing_Command();
 }
 
@@ -126,10 +126,9 @@ void ContactTransConfigCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
 
 void ContactTransConfigCtrl::_body_task_setup(){
     double body_height_cmd;
-    dynacore::Vector pos_des(body_task_->getDim());
     dynacore::Vector vel_des(body_task_->getDim());
     dynacore::Vector acc_des(body_task_->getDim());
-    pos_des.setZero(); vel_des.setZero(); acc_des.setZero();
+    vel_des.setZero(); acc_des.setZero();
 
     // Body Pos
     if(b_set_height_target_){
@@ -142,17 +141,17 @@ void ContactTransConfigCtrl::_body_task_setup(){
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
     rpy_des.setZero();
-
     dynacore::convert(rpy_des, des_quat);
     dynacore::Vector config_sol; 
 
     inv_kin_->getDoubleSupportLegConfig(sp_->Q_, des_quat, body_height_cmd, config_sol);
+
     for (int i(0); i<mercury::num_act_joint; ++i){
         des_jpos_[i] = config_sol[mercury::num_virtual + i];
-        pos_des[mercury::num_virtual + i] = des_jpos_[i];
+        config_des_[mercury::num_virtual + i] = des_jpos_[i];
         des_jvel_[i] = 0.;
     }
-    body_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+    body_task_->UpdateTask(&(config_des_), vel_des, acc_des);
 
    // Push back to task list
     task_list_.push_back(body_task_);

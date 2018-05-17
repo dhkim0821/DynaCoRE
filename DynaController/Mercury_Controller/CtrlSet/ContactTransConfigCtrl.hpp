@@ -44,6 +44,10 @@ class ContactTransConfigCtrl: public Controller{
 
         dynacore::Vector des_jpos_;
         dynacore::Vector des_jvel_;
+        
+        
+        dynacore::Vector config_des_;
+
 
         double end_time_;
         void _body_task_setup();

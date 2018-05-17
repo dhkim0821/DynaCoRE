@@ -171,10 +171,10 @@ void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & c
 
 
     // Create the Nullspace
-    //dynacore::Matrix J1_pinv;
-    //double threshold = 0.001;
-    //dynacore::pseudoInverse(J1, threshold, J1_pinv);
-    dynacore::Matrix J1_pinv = J1.completeOrthogonalDecomposition().pseudoInverse();
+    dynacore::Matrix J1_pinv;
+    double threshold = 0.00001;
+    dynacore::pseudoInverse(J1, threshold, J1_pinv);
+    //dynacore::Matrix J1_pinv = J1.completeOrthogonalDecomposition().pseudoInverse();
     dynacore::Matrix N1 = 
         dynacore::Matrix::Identity(mercury::num_qdot, mercury::num_qdot) - J1_pinv*J1;
 
@@ -213,7 +213,10 @@ void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & c
     delta_x[1] = ori_err[1];
     delta_x[2] = height_error;
     dynacore::Matrix J2N1 = J2*N1;
-    dynacore::Matrix J2N1_pinv = J2N1.completeOrthogonalDecomposition().pseudoInverse();
+
+    dynacore::Matrix J2N1_pinv;
+    dynacore::pseudoInverse(J2N1, threshold, J2N1_pinv);
+    //dynacore::Matrix J2N1_pinv = J2N1.completeOrthogonalDecomposition().pseudoInverse();
 
     //dynacore::pretty_print(J2N1, std::cout, "J2N1");
     //dynacore::pretty_print(J2N1_pinv, std::cout, "J2N1_pinv");
@@ -253,7 +256,10 @@ void Mercury_InvKinematics::getSingleSupportFullConfig(
     dynacore::Matrix Jc = dynacore::Matrix::Zero(3, mercury::num_qdot); 
     CalcPointJacobian(*model_, current_Q, stance_bodyid, zero_vec, Jc, true);
     //dynacore::pretty_print(Jc, std::cout, "contact jacobian");
-    dynacore::Matrix Jc_pinv = Jc.completeOrthogonalDecomposition().pseudoInverse();
+    dynacore::Matrix Jc_pinv;
+    double threshold = 0.000001;
+    dynacore::pseudoInverse(Jc, threshold, Jc_pinv);
+    // dynacore::Matrix Jc_pinv = Jc.completeOrthogonalDecomposition().pseudoInverse();
     //dynacore::pretty_print(Jc_pinv, std::cout, "contact jacobian inver");
     dynacore::Matrix Nc = dynacore::Matrix::Identity(mercury::num_qdot, mercury::num_qdot) -
         Jc_pinv * Jc;
@@ -296,7 +302,11 @@ void Mercury_InvKinematics::getSingleSupportFullConfig(
     CalcPointJacobian(*model_, current_Q, swing_bodyid, zero_vec, Jfoot, false);
     Jop.block(3, 0, 3, mercury::num_qdot) = Jfoot;
     dynacore::Matrix JNc = Jop * Nc;
-    dynacore::Matrix JNc_pinv = JNc.completeOrthogonalDecomposition().pseudoInverse();
+
+    dynacore::Matrix JNc_pinv;
+    dynacore::pseudoInverse(JNc, threshold, JNc_pinv);
+
+    // dynacore::Matrix JNc_pinv = JNc.completeOrthogonalDecomposition().pseudoInverse();
 
     dynacore::Vector qdelta = JNc_pinv * err;
     qdot_cmd = JNc_pinv * xdot;
@@ -337,8 +347,12 @@ void Mercury_InvKinematics::getSingleSupportFullConfigSeperation(
     dynacore::Matrix Jc = dynacore::Matrix::Zero(3, mercury::num_qdot); 
     CalcPointJacobian(*model_, current_Q, stance_bodyid, zero_vec, Jc, true);
     //dynacore::pretty_print(Jc, std::cout, "contact jacobian");
-    dynacore::Matrix Jc_pinv = Jc.completeOrthogonalDecomposition().pseudoInverse();
-    //dynacore::pretty_print(Jc_pinv, std::cout, "contact jacobian inver");
+    dynacore::Matrix Jc_pinv;
+    double threshold = 0.0000001;
+    dynacore::pseudoInverse(Jc, threshold, Jc_pinv);
+    
+    // dynacore::Matrix Jc_pinv = Jc.completeOrthogonalDecomposition().pseudoInverse();
+    // //dynacore::pretty_print(Jc_pinv, std::cout, "contact jacobian inver");
     dynacore::Matrix Nc = dynacore::Matrix::Identity(mercury::num_qdot, mercury::num_qdot) -
         Jc_pinv * Jc;
 
@@ -380,11 +394,18 @@ void Mercury_InvKinematics::getSingleSupportFullConfigSeperation(
     dynacore::Matrix Jfoot = dynacore::Matrix::Zero(3, mercury::num_qdot);
     CalcPointJacobian(*model_, current_Q, swing_bodyid, zero_vec, Jfoot, false);
     //Jop.block(3, 0, 3, mercury::num_qdot) = Jfoot;
+
     dynacore::Matrix JNc = Jop * Nc;
-    dynacore::Matrix JNc_pinv = JNc.completeOrthogonalDecomposition().pseudoInverse();
+
+    dynacore::Matrix JNc_pinv;
+    dynacore::pseudoInverse(JNc, threshold, JNc_pinv);
+    // dynacore::Matrix JNc_pinv = JNc.completeOrthogonalDecomposition().pseudoInverse();
 
     Jfoot.block(0,0, 3,6) = dynacore::Matrix::Zero(3,6);
-    dynacore::Matrix Jfoot_pinv = Jfoot.completeOrthogonalDecomposition().pseudoInverse();
+
+    dynacore::Matrix Jfoot_pinv;
+    dynacore::pseudoInverse(Jfoot, threshold, Jfoot_pinv);
+    // dynacore::Matrix Jfoot_pinv = Jfoot.completeOrthogonalDecomposition().pseudoInverse();
 
     dynacore::Vector qdelta = JNc_pinv * err.head(3);
     qdot_cmd = JNc_pinv * xdot.head(3);

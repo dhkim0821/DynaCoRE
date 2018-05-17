@@ -20,7 +20,7 @@ ConfigTask::ConfigTask():Task(mercury::num_qdot),
   }
   sp_ = Mercury_StateProvider::getStateProvider();
   Jt_ = dynacore::Matrix(mercury::num_qdot, mercury::num_qdot);
-  JtDotQdot_ = dynacore::Vector(mercury::num_qdot);
+  JtDotQdot_ = dynacore::Vector::Zero(mercury::num_qdot);
 }
 
 ConfigTask::~ConfigTask(){}
@@ -29,6 +29,7 @@ bool ConfigTask::_UpdateCommand(void* pos_des,
                               const dynacore::Vector & vel_des,
                               const dynacore::Vector & acc_des){
   dynacore::Vector* pos_cmd = (dynacore::Vector*)pos_des;
+
 // TODO: Implemented based on the assumption that 
 // we do not control orientation
   for(int i(0); i<mercury::num_qdot; ++i){
@@ -36,12 +37,12 @@ bool ConfigTask::_UpdateCommand(void* pos_des,
         + Kp_vec_[i] * ((*pos_cmd)[i] - sp_->Q_[i]) 
         + Kd_vec_[i] * (vel_des[i] - sp_->Qdot_[i]);
   }
-  //dynacore::pretty_print(Kp_vec_, std::cout, "Kp");
-  //dynacore::pretty_print(Kd_vec_, std::cout, "Kd");
-   //dynacore::pretty_print(acc_des, std::cout, "acc_des");
-   //dynacore::pretty_print(op_cmd_, std::cout, "op cmd");
-   //dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");
-   //dynacore::pretty_print(sp_->Q_, std::cout, "config");
+  // dynacore::pretty_print(Kp_vec_, std::cout, "Kp");
+  // dynacore::pretty_print(Kd_vec_, std::cout, "Kd");
+  // dynacore::pretty_print(acc_des, std::cout, "acc_des");
+  // dynacore::pretty_print(op_cmd_, std::cout, "op cmd");
+  // dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");
+  // dynacore::pretty_print(sp_->Q_, std::cout, "config");
 
   return true;
 }

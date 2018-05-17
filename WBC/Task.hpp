@@ -19,7 +19,6 @@ public:
     _UpdateTaskJacobian();
     _UpdateTaskJDotQdot();
     _AdditionalUpdate();
-
     b_set_task_ = true;
     return true;
   }

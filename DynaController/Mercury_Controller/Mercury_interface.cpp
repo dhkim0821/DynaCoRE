@@ -45,7 +45,7 @@ Mercury_interface::Mercury_interface():
     jjvel_(mercury::num_act_joint),
     mjpos_(mercury::num_act_joint),
     b_last_config_update_(true),
-    waiting_count_(10)
+    waiting_count_(10000)
 {
     robot_sys_ = new Mercury_Model();
     sensed_torque_.setZero();
@@ -176,7 +176,7 @@ bool Mercury_interface::_Initialization(Mercury_SensorData* data){
         test_initialized = true;
         printf("[Mercury Interface] Test initialization is done\n");
     }
-
+    //printf("count: %d/ %d\n", count_, waiting_count_);
     if(count_ < waiting_count_){
         for(int i(0); i<mercury::num_act_joint; ++i){
             test_cmd_->jtorque_cmd[i] = 0.;
@@ -189,7 +189,7 @@ bool Mercury_interface::_Initialization(Mercury_SensorData* data){
         if(fabs(data->imu_acc[2]) < 0.00001){
             waiting_count_ = 10000000;
         }else{
-            waiting_count_ = 10;
+            waiting_count_ = 100;
         }
         DataManager::GetDataManager()->start();
         //printf("[Mercury Interface] Data logging starts\n");

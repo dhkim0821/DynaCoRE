@@ -83,10 +83,10 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
     robot->vr_joint_[i]->m_State.m_rCommand = 0.0;
   }
 
-   //double Kp(200.);
-  //double Kd(20.) 
-  double Kp(30.);
-  double Kd(0.5);
+  double Kp(200.);
+  double Kd(20.);
+  // double Kp(30.);
+  // double Kd(0.5);
   // Right
   for(int i(0); i<3; ++i){
     robot->r_joint_[i]->m_State.m_rCommand = pDyn_env->cmd_->jtorque_cmd[i] + 

@@ -50,7 +50,7 @@ void WBDC_Rotor::MakeTorque(const std::vector<Task*> & task_list,
     if(!b_updatesetting_) { printf("[Wanning] WBDC_Rotor setting is not done\n"); }
 
     if(extra_data) data_ = static_cast<WBDC_Rotor_ExtraData*>(extra_data);
-
+dynacore::pretty_print(data_->cost_weight, std::cout, "wbdc rotor weight cost");
     // Internal Constraint Check
     Nci_ = dynacore::Matrix::Identity(num_qdot_, num_qdot_);
 
@@ -113,6 +113,21 @@ void WBDC_Rotor::MakeTorque(const std::vector<Task*> & task_list,
     }
     // Set inequality constraints
     _SetInEqualityConstraint();
+
+    printf("G:\n");
+    std::cout<<G<<std::endl;
+    printf("g0:\n");
+    std::cout<<g0<<std::endl;
+
+    printf("CE:\n");
+    std::cout<<CE<<std::endl;
+    printf("ce0:\n");
+    std::cout<<ce0<<std::endl;
+
+    printf("CI:\n");
+    std::cout<<CI<<std::endl;
+    printf("ci0:\n");
+    std::cout<<ci0<<std::endl;
 
     // Optimization
     double f = solve_quadprog(G, g0, CE, ce0, CI, ci0, z);
