@@ -124,11 +124,8 @@ void ConfigBodyCtrl::_jpos_task_setup(){
 }
 
 void ConfigBodyCtrl::_double_body_contact_setup(){
-    printf("confi \n");
     double_body_contact_->UpdateContactSpec();
-    printf("confi \n");
     contact_list_.push_back(double_body_contact_);
-    printf("confi \n");
 }
 
 void ConfigBodyCtrl::FirstVisit(){

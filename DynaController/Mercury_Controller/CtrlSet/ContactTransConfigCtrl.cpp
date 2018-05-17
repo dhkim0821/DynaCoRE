@@ -154,10 +154,9 @@ void ContactTransConfigCtrl::_body_task_setup(){
     }
     body_task_->UpdateTask(&(pos_des), vel_des, acc_des);
 
-    printf("cont trans begin 1\n");
    // Push back to task list
     task_list_.push_back(body_task_);
-    printf("cont trans begin 1\n");
+
 }
 
 void ContactTransConfigCtrl::_double_contact_setup(){
