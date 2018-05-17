@@ -34,7 +34,6 @@ JPosTargetCtrl::JPosTargetCtrl(RobotSystem* robot):Controller(robot),
     wbdc_rotor_data_->cost_weight.tail(fixed_body_contact_->getDim()) = 
         dynacore::Vector::Constant(fixed_body_contact_->getDim(), 1.0);
 
-dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target cost weight");
     sp_ = Mercury_StateProvider::getStateProvider();
 }
 
@@ -46,17 +45,11 @@ JPosTargetCtrl::~JPosTargetCtrl(){
 }
 
 void JPosTargetCtrl::OneStep(void* _cmd){
-    dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target cost weight 0");
-
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
-dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target cost weight 1");
     dynacore::Vector gamma;
-    dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target cost weight fin2");
     _fixed_body_contact_setup();
-        dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target cost weight fin3");
     _jpos_task_setup();
-        dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target cost weight fin4");
     _jpos_ctrl_wbdc_rotor(gamma);
 
     for(int i(0); i<mercury::num_act_joint; ++i){
@@ -74,7 +67,6 @@ void JPosTargetCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
         wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
             = sp_->rotor_inertia_[i];
     }
-    dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target cost weight fin");
 
     wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
     wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
@@ -121,7 +113,6 @@ bool JPosTargetCtrl::EndOfPhase(){
 void JPosTargetCtrl::CtrlInitialization(const std::string & setting_file_name){
     jpos_ini_ = sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint);
     ParamHandler handler(MercuryConfigPath + setting_file_name + ".yaml");
-dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target cost weight 00");
 
     std::vector<double> tmp_vec;
     // Feedback Gain
@@ -129,15 +120,11 @@ dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target co
     for(int i(0); i<tmp_vec.size(); ++i){
         ((JPosTask*)jpos_task_)->Kp_vec_[i] = tmp_vec[i];
     }
-    dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target cost weight 00");
 
     handler.getVector("Kd", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
-        dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target cost weight 02");
-
         ((JPosTask*)jpos_task_)->Kd_vec_[i] = tmp_vec[i];
     }
-dynacore::pretty_print(wbdc_rotor_data_->cost_weight, std::cout, "jpos target cost weight 00");
 
     //printf("JPos Target Ctrl Param Set!\n");
 }

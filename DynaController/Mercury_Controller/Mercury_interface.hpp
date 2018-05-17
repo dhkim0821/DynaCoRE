@@ -22,6 +22,8 @@ public:
 
 private:
   int waiting_count_;
+  double ramp_time_;
+  
   std::vector<double> torque_limit_min_;
   std::vector<double> torque_limit_max_;
   std::vector<double> jpos_limit_min_;

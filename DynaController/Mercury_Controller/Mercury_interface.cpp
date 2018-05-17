@@ -45,7 +45,8 @@ Mercury_interface::Mercury_interface():
     jjvel_(mercury::num_act_joint),
     mjpos_(mercury::num_act_joint),
     b_last_config_update_(true),
-    waiting_count_(10000)
+    waiting_count_(10),
+    ramp_time_(0.5)
 {
     robot_sys_ = new Mercury_Model();
     sensed_torque_.setZero();
@@ -96,6 +97,14 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
     if(!_Initialization(data)){
         state_estimator_->Update(data);
         test_->getCommand(test_cmd_);
+    }
+    // Ramp up the command
+    if(sp_->curr_time_ < ramp_time_){
+        double initialization_time = waiting_count_ * mercury::servo_rate;
+        for(int i(0); i<mercury::num_act_joint; ++i){
+            test_cmd_->jtorque_cmd[i] = test_cmd_->jtorque_cmd[i] *
+             (sp_->curr_time_ - initialization_time)/(ramp_time_-initialization_time);
+        }
     }
 
     /// Begin of Torque Limit && NAN command (decide torque & jpos command)
@@ -189,7 +198,7 @@ bool Mercury_interface::_Initialization(Mercury_SensorData* data){
         if(fabs(data->imu_acc[2]) < 0.00001){
             waiting_count_ = 10000000;
         }else{
-            waiting_count_ = 100;
+            waiting_count_ = 10;
         }
         DataManager::GetDataManager()->start();
         //printf("[Mercury Interface] Data logging starts\n");
