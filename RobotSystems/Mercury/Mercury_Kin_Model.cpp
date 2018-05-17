@@ -131,7 +131,7 @@ void Mercury_Kin_Model::getCoMPos(dynacore::Vect3 & CoM_pos)const {
 void Mercury_Kin_Model::getCoMVel(dynacore::Vect3 & CoM_vel) const {
     dynacore::Vector q, qdot;
     int start_idx = _find_body_idx(mercury_link::body);
-    CoM_vel = dynacore::Vector::Zero(3);
+    CoM_vel.setZero();
     Vector3d link_vel;
 
     Vector3d zero_vector = Vector3d::Zero();

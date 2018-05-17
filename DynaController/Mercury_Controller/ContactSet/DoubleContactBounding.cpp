@@ -41,7 +41,9 @@ bool DoubleContactBounding::_UpdateJcDotQdot(){
   robot_sys_->getFullJacobianDot(mercury_link::leftFoot, jcdot_tmp);
   JcDot.block(3, 0, 3, mercury::num_qdot) = jcdot_tmp.block(3, 0, 3, mercury::num_qdot);
 
-   //dynacore::pretty_print(JcDot, std::cout,  "[double contact bounding] JcDot");
+  //dynacore::pretty_print(JcDot, std::cout,  "[double contact bounding] JcDot");
+  // TEST
+  JcDot.setZero();
   JcDotQdot_ = JcDot * sp_->Qdot_;
 
   JcDotQdot_.setZero();

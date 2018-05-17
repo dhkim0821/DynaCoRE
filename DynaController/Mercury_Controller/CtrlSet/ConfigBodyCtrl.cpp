@@ -56,16 +56,11 @@ void ConfigBodyCtrl::OneStep(void* _cmd){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
-    printf("confi begin\n");
     dynacore::Vector gamma;
-    printf("confi begin\n");
     _double_body_contact_setup();
-    printf("confi begin\n");
     _jpos_task_setup();
-    printf("confi begin\n");
     _jpos_ctrl_wbdc_rotor(gamma);
 
-    printf("confi begin\n");
     for(int i(0); i<mercury::num_act_joint; ++i){
         ((Mercury_Command*)_cmd)->jtorque_cmd[i] = gamma[i];
         ((Mercury_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];

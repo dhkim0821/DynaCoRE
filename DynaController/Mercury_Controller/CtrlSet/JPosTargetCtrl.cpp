@@ -98,6 +98,7 @@ void JPosTargetCtrl::_fixed_body_contact_setup(){
 
 void JPosTargetCtrl::FirstVisit(){
     ctrl_start_time_ = sp_->curr_time_;
+    jpos_ini_ = sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint);
 }
 
 void JPosTargetCtrl::LastVisit(){

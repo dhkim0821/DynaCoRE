@@ -86,18 +86,15 @@ WalkingConfigTest::~WalkingConfigTest(){
 void WalkingConfigTest::TestInitialization(){
   // Planner
   reversal_planner_->PlannerInitialization(MercuryConfigPath"PLANNER_velocity_reversal");
-
   // Yaml file name
   jpos_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
   body_up_ctrl_->CtrlInitialization("CTRL_move_to_target_height");
   config_body_fix_ctrl_->CtrlInitialization("CTRL_fix_config");
-
   // Transition
   right_swing_start_trans_ctrl_->CtrlInitialization("CTRL_config_trans");
   right_swing_end_trans_ctrl_->CtrlInitialization("CTRL_config_trans");
   left_swing_start_trans_ctrl_->CtrlInitialization("CTRL_config_trans");
   left_swing_end_trans_ctrl_->CtrlInitialization("CTRL_config_trans");
-
   // Swing
   config_right_swing_ctrl_->CtrlInitialization("CTRL_config_right_walking_swing");
   config_left_swing_ctrl_->CtrlInitialization("CTRL_config_left_walking_swing");

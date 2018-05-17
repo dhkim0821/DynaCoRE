@@ -5,9 +5,7 @@
 #include "srDyn/srTouchSensor.h"
 
 #include <srConfiguration.h>
-#if ON_RECORD_SIMULATION
- #include <OpenGLRecorder/srRecorder.h>
-#endif
+
 
 srSpace::srSpace()
 {
@@ -145,9 +143,7 @@ void srSpace::DYN_MODE_RUNTIME_SIMULATION_LOOP(void* _pt)
         
       _USER_CONTROL(_pt);
     }
-#if ON_RECORD_SIMULATION
-  srRecorder::GetRecorder()->CaptureCurrentScreen(1/(m_nSubstep_render_fixed * m_Timestep_dyn_fixed));
-#endif
+
 }
 
 

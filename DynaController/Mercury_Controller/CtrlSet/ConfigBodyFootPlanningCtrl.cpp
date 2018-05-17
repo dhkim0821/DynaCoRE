@@ -407,7 +407,7 @@ void ConfigBodyFootPlanningCtrl::_setTaskGain(
 }
 
 void ConfigBodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_file_name){
-    robot_sys_->getCoMPosition(ini_body_pos_);
+    ini_body_pos_ = sp_->Q_.head(3);
     std::vector<double> tmp_vec;
 
     // Setting Parameters

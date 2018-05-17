@@ -57,14 +57,10 @@ void TransitionConfigCtrl::OneStep(void* _cmd){
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
     dynacore::Vector gamma;
 
-    printf("trans begin\n");
     _double_contact_setup();
-    printf("trans begin\n");
     _body_task_setup();
-    printf("trans begin\n");
     _body_ctrl_wbdc_rotor(gamma);
 
-    printf("trans begin\n");
     _PostProcessing_Command();
 }
 
@@ -176,7 +172,6 @@ bool TransitionConfigCtrl::EndOfPhase(){
 void TransitionConfigCtrl::CtrlInitialization(const std::string & setting_file_name){
     robot_sys_->getCoMPosition(ini_body_pos_);
     std::vector<double> tmp_vec;
-
     ParamHandler handler(MercuryConfigPath + setting_file_name + ".yaml");
     handler.getValue("max_rf_z", max_rf_z_);
     handler.getValue("min_rf_z", min_rf_z_);
@@ -186,6 +181,7 @@ void TransitionConfigCtrl::CtrlInitialization(const std::string & setting_file_n
     for(int i(0); i<tmp_vec.size(); ++i){
         ((ConfigTask*)config_task_)->Kp_vec_[i] = tmp_vec[i];
     }
+
     handler.getVector("Kd", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
         ((ConfigTask*)config_task_)->Kd_vec_[i] = tmp_vec[i];

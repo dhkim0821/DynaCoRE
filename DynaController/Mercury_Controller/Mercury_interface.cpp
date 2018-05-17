@@ -36,7 +36,9 @@ Mercury_interface::Mercury_interface():
     jvel_command_(mercury::num_act_joint),
     sensed_torque_(mercury::num_act_joint),
     torque_limit_max_(mercury::num_act_joint),
-    torque_limit_min_(mercury::num_act_joint),
+    torque_limit_min_(mercury::num_act_joint),    
+    jpos_limit_max_(mercury::num_act_joint),
+    jpos_limit_min_(mercury::num_act_joint),
     motor_current_(mercury::num_act_joint),
     bus_current_(mercury::num_act_joint),
     bus_voltage_(mercury::num_act_joint),
@@ -92,19 +94,8 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
     Mercury_SensorData* data = ((Mercury_SensorData*)_data);
 
     if(!_Initialization(data)){
-#if MEASURE_TIME
-        std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-#endif
         state_estimator_->Update(data);
-        // Calcualate Torque
         test_->getCommand(test_cmd_);
-#if MEASURE_TIME
-        std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> time_span1 = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
-        if(count_%1000 == 1){
-            std::cout << "[Mercury_interface] All process took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
-        }
-#endif
     }
 
     /// Begin of Torque Limit && NAN command (decide torque & jpos command)
@@ -128,20 +119,23 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
                 }
             }
             // Torque Limit Truncation
-            if( (test_cmd_->jtorque_cmd[i] > torque_limit_max_[i]) ){
+            if( (test_cmd_->jtorque_cmd[i]) > torque_limit_max_[i] ){
                 torque_command_[i] = torque_limit_max_[i];
-            }else if(test_cmd_->jtorque_cmd[i]< torque_limit_min_[i]) {
+            }else if((test_cmd_->jtorque_cmd[i]) < torque_limit_min_[i]) {
                 torque_command_[i] = torque_limit_min_[i];
             } else{
                 torque_command_[i] = test_cmd_->jtorque_cmd[i];
             }
             // JPos Limit Truncation
-            if( (test_cmd_->jpos_cmd[i] > jpos_limit_max_[i]) ){
+            if( (test_cmd_->jpos_cmd[i]) > jpos_limit_max_[i] ){
                 jpos_command_[i] = jpos_limit_max_[i];
-            }else if(test_cmd_->jpos_cmd[i]< jpos_limit_min_[i]) {
+                jvel_command_[i] = 0.;
+            }else if((test_cmd_->jpos_cmd[i]) < jpos_limit_min_[i]) {
                 jpos_command_[i] = jpos_limit_min_[i];
+                jvel_command_[i] = 0.;
             } else{
                 jpos_command_[i] = test_cmd_->jpos_cmd[i];
+                jvel_command_[i] = test_cmd_->jvel_cmd[i];
             }
        }
     }
@@ -176,6 +170,13 @@ void Mercury_interface::GetReactionForce(std::vector<dynacore::Vect3> & reaction
 }
 
 bool Mercury_interface::_Initialization(Mercury_SensorData* data){
+    static bool test_initialized(false);
+    if(!test_initialized) {
+        test_->TestInitialization();
+        test_initialized = true;
+        printf("[Mercury Interface] Test initialization is done\n");
+    }
+
     if(count_ < waiting_count_){
         for(int i(0); i<mercury::num_act_joint; ++i){
             test_cmd_->jtorque_cmd[i] = 0.;
@@ -183,7 +184,7 @@ bool Mercury_interface::_Initialization(Mercury_SensorData* data){
             test_cmd_->jvel_cmd[i] = 0.;
         }
         state_estimator_->Initialization(data);
-        test_->TestInitialization();
+
 
         if(fabs(data->imu_acc[2]) < 0.00001){
             waiting_count_ = 10000000;
@@ -191,6 +192,7 @@ bool Mercury_interface::_Initialization(Mercury_SensorData* data){
             waiting_count_ = 10;
         }
         DataManager::GetDataManager()->start();
+        //printf("[Mercury Interface] Data logging starts\n");
         return true;
     }
     return false;

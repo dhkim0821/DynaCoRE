@@ -27,7 +27,7 @@ elseif(CTRL_SYS STREQUAL "DracoP1Rot")
     SET(CAD_RATIO 0.001)
 endif()
 
-#CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/Simulator/srSimulator/srconfig.h.cmake ${PROJECT_SOURCE_DIR}/Simulator/srSimulator/srConfiguration.h)
+CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/Simulator/srSimulator/srconfig.h.cmake ${PROJECT_SOURCE_DIR}/Simulator/srSimulator/srConfiguration.h)
 
 
 include_directories ("${PROJECT_SOURCE_DIR}/Simulator/srSimulator")

@@ -39,6 +39,8 @@ bool DoubleTransitionContact::_UpdateJcDotQdot(){
   JcDot.block(3, 0, 3, mercury::num_qdot) = jcdot_tmp.block(3, 0, 3, mercury::num_qdot);
 
    //dynacore::pretty_print(JcDot, std::cout,  "[double transition contact] JcDot");
+  // TEST
+  JcDot.setZero();
   JcDotQdot_ = JcDot * sp_->Qdot_;
   return true;
 }

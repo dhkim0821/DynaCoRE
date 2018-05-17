@@ -60,6 +60,13 @@ void Mercury::_SetInitialConf()
   for(int i(0);i<3; ++i){
     vp_joint_[i]->m_State.m_rValue[0] = 0.;
     vr_joint_[i]->m_State.m_rValue[0] = 0.;
+        vp_joint_[i]->m_State.m_rValue[1] = 0.;
+    vr_joint_[i]->m_State.m_rValue[1] = 0.;
+        vp_joint_[i]->m_State.m_rValue[2] = 0.;
+    vr_joint_[i]->m_State.m_rValue[2] = 0.;
+            vp_joint_[i]->m_State.m_rValue[3] = 0.;
+    vr_joint_[i]->m_State.m_rValue[3] = 0.;
+
   }
   for(int i(0); i<num_r_joint_; ++i){
     r_joint_[i]->m_State.m_rValue[0] = 0.;

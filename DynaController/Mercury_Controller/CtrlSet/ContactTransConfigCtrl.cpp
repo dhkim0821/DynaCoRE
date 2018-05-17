@@ -34,9 +34,9 @@ ContactTransConfigCtrl::ContactTransConfigCtrl(RobotSystem* robot):
                 body_task_->getDim() + 
                 double_contact_->getDim(), 100.0);
 
-    wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
-    wbdc_rotor_data_->cost_weight[1] = 0.0001; // Y
-    wbdc_rotor_data_->cost_weight[5] = 0.0001; // Yaw
+    //wbdc_rotor_data_->cost_weight[0] = 0.0001; // X
+    //wbdc_rotor_data_->cost_weight[1] = 0.0001; // Y
+    //wbdc_rotor_data_->cost_weight[5] = 0.0001; // Yaw
     
     wbdc_rotor_data_->cost_weight.tail(double_contact_->getDim()) = 
         dynacore::Vector::Constant(double_contact_->getDim(), 1.0);
@@ -66,10 +66,8 @@ void ContactTransConfigCtrl::OneStep(void* _cmd){
 	dynacore::Vector gamma;
 	_double_contact_setup();
 	_body_task_setup();
-    printf("cont trans begin\n");
 	_body_ctrl_wbdc_rotor(gamma);
 
-    printf("cont trans begin\n");
 	for(int i(0); i<mercury::num_act_joint; ++i){
 		((Mercury_Command*)_cmd)->jtorque_cmd[i] = gamma[i];
 		((Mercury_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
@@ -191,7 +189,6 @@ void ContactTransConfigCtrl::CtrlInitialization(const std::string & setting_file
     ParamHandler handler(MercuryConfigPath + setting_file_name + ".yaml");
     handler.getValue("max_rf_z", max_rf_z_);
     handler.getValue("min_rf_z", min_rf_z_);
-
     // Feedback Gain
     std::vector<double> tmp_vec;
     handler.getVector("Kp", tmp_vec);

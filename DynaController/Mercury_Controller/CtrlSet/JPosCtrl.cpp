@@ -51,7 +51,7 @@ JPosCtrl::~JPosCtrl(){
 
 void JPosCtrl::OneStep(void* _cmd){
     _PreProcessing_Command();
-    dynacore::Vector gamma;
+    dynacore::Vector gamma = dynacore::Vector::Zero(mercury::num_act_joint);
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
     _fixed_body_contact_setup();
