@@ -2,7 +2,7 @@
 #include <Configuration.h>
 #include <Utils/utilities.hpp>
 #include <Mercury/Mercury_Definition.h>
-//#include <Utils/DataManager.hpp>
+#include <Utils/DataManager.hpp>
 
 
 BasicAccumulation::BasicAccumulation():OriEstimator(), com_state_(6){
@@ -46,9 +46,9 @@ BasicAccumulation::BasicAccumulation():OriEstimator(), com_state_(6){
   v_o; v_o.setZero();// body velocity in fixed frame
   r_o; r_o.setZero();// body position in fixed frame  
 
-  // DataManager::GetDataManager()->RegisterData(&a_o, DYN_VEC, "est_body_acc", 3);
-  // DataManager::GetDataManager()->RegisterData(&v_o, DYN_VEC, "est_body_vel", 3);
-  // DataManager::GetDataManager()->RegisterData(&r_o, DYN_VEC, "est_body_pos", 3);
+  DataManager::GetDataManager()->RegisterData(&a_o, VECT3, "est_body_acc", 3);
+  DataManager::GetDataManager()->RegisterData(&v_o, VECT3, "est_body_vel", 3);
+  DataManager::GetDataManager()->RegisterData(&r_o, VECT3, "est_body_pos", 3);
 
 
 }
@@ -99,6 +99,7 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
     delta_th[i] = ang_vel[i] * mercury::servo_rate;
     theta += delta_th[i] * delta_th[i];
   }
+  theta = sqrt(theta);  
 
   if(fabs(theta) > 1.e-20){
     delt_quat.w() = cos(theta/2.);
@@ -187,7 +188,7 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
     z_acc_low_pass_filter->input(acc[2] - z_acc_bias);    
     // x_acc_low_pass_filter->input(acc[0]);
     // y_acc_low_pass_filter->input(acc[1]);
-    //z_acc_low_pass_filter->input(acc[2]);        
+    // z_acc_low_pass_filter->input(acc[2]);        
 
 
     // TEST
@@ -222,9 +223,10 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
   // Convert the IMU Acceleration to be in the fixed frame
   dynacore::Vect3 f_o; f_o.setZero();// local IMU acceleration  
   dynacore::Matrix OR_B = Oq_B.normalized().toRotationMatrix();
-  f_o = OR_B.transpose()*f_b;
+  f_o = OR_B*f_b;
 
-  // Get the body acceleration in the fixed frame:
+
+   // Get the body acceleration in the fixed frame:
   // Initialize vectors
   g_o[2] = gravity_mag;
   // Estimated body Acceleration in fixed frame
@@ -261,6 +263,7 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
   //   dynacore::pretty_print(v_o, std::cout, "body vel in fixed frame v_o = ");    
   //   dynacore::pretty_print(r_o, std::cout, "body pos in fixed frame r_o = ");    
   //   printf("\n");    
+
   // }    
 
     //count++;
@@ -300,8 +303,8 @@ void BasicAccumulation::InitIMUOrientationEstimateFromGravity(){
   gravity_mag = g_B.norm();
   g_B /= gravity_mag;
 
-  dynacore::Quaternion q_world_Ry;
-  dynacore::Quaternion q_world_Rx;      
+  // dynacore::Quaternion q_world_Ry;
+  // dynacore::Quaternion q_world_Rx;      
 
   // Prepare to rotate gravity vector
   g_B_local.w() = 0;

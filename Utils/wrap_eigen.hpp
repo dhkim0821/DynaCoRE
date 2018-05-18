@@ -45,6 +45,7 @@ namespace dynacore {
   // double array to dynacore::Vector
   void convert(double const * from, size_t length, dynacore::Vector & to);
 
+  // Note: when QuatMultiply is used to rotate a vector, set bound_pi to false.
   Quaternion QuatMultiply(const Quaternion & q1, const Quaternion & q2, bool bound_pi = true);
 
   bool compare(dynacore::Matrix const & lhs, dynacore::Matrix const & rhs, double precision);

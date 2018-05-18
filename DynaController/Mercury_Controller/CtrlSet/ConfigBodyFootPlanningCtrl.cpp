@@ -61,10 +61,10 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(
                 config_body_foot_task_->getDim() + 
-                single_contact_->getDim(), 200.0);
+                single_contact_->getDim(), 100.0);
 
-    for(int i(0); i<mercury::num_virtual; ++i) 
-        wbdc_rotor_data_->cost_weight[i] = 350.;
+    // for(int i(0); i<mercury::num_virtual; ++i) 
+    //     wbdc_rotor_data_->cost_weight[i] = 350.;
 
     wbdc_rotor_data_->cost_weight.tail(single_contact_->getDim()) = 
         dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
@@ -187,8 +187,9 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
 
     for (int i(0); i<mercury::num_act_joint; ++i){
         pos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
-        //vel_des[mercury::num_virtual + i] = qdot_cmd[mercury::num_virtual + i];
-        //acc_des[mercury::num_virtual + i] = qddot_cmd[mercury::num_virtual + i];
+        vel_des[mercury::num_virtual + i] = qdot_cmd[mercury::num_virtual + i];
+        acc_des[mercury::num_virtual + i] = qddot_cmd[mercury::num_virtual + i];
+
         des_jpos_[i] = pos_des[mercury::num_virtual + i];
         des_jvel_[i] = vel_des[mercury::num_virtual + i];
     }

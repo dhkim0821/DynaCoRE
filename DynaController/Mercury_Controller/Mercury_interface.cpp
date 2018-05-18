@@ -52,6 +52,7 @@ Mercury_interface::Mercury_interface():
     sensed_torque_.setZero();
     torque_command_.setZero();
     jpos_command_.setZero();
+    jvel_command_.setZero();
     motor_current_.setZero();
     bus_current_.setZero();
     bus_voltage_.setZero();

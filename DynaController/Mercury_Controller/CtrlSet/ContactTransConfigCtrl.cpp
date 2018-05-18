@@ -85,7 +85,6 @@ void ContactTransConfigCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     std::chrono::high_resolution_clock::time_point t1 
         = std::chrono::high_resolution_clock::now();
 #endif
-   gamma = dynacore::Vector::Zero(mercury::num_act_joint * 2); 
     
    dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
     for (int i(0); i<mercury::num_act_joint; ++i){
@@ -136,7 +135,6 @@ void ContactTransConfigCtrl::_body_task_setup(){
     }else{
         printf("[Warning] The body height is not specified\n");
     }
-
     // Orientation
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
@@ -145,6 +143,8 @@ void ContactTransConfigCtrl::_body_task_setup(){
     dynacore::Vector config_sol; 
 
     inv_kin_->getDoubleSupportLegConfig(sp_->Q_, des_quat, body_height_cmd, config_sol);
+    sp_->body_pos_des_[2] = body_height_cmd;
+    sp_->body_ori_des_ = des_quat;
 
     for (int i(0); i<mercury::num_act_joint; ++i){
         des_jpos_[i] = config_sol[mercury::num_virtual + i];

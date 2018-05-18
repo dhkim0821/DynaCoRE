@@ -16,10 +16,10 @@ com_lifting_time: 2.0
 # stance_time: 0.01
 
 ## Simulation
-swing_time: 0.3
-st_transition_time: 0.04
-end_transition_time: 0.04
-stance_time: 0.01
+swing_time: 0.4
+st_transition_time: 0.06
+end_transition_time: 0.06
+stance_time: 0.02
 
 # 0: default stepping test (no planning)
 planning_frequency: 0

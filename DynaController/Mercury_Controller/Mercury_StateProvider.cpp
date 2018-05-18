@@ -76,8 +76,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
 
   data_manager->RegisterData(&CoM_pos_, VECT3, "com_pos", 3);
   data_manager->RegisterData(&CoM_vel_, VECT3, "com_vel", 3);
-  data_manager->RegisterData(&com_pos_des_, VECT3, "com_pos_des", 3);
-  data_manager->RegisterData(&com_vel_des_, VECT3, "com_vel_des", 3);
+  // data_manager->RegisterData(&com_pos_des_, VECT3, "com_pos_des", 3);
+  // data_manager->RegisterData(&com_vel_des_, VECT3, "com_vel_des", 3);
   data_manager->RegisterData(&body_pos_, VECT3, "body_pos", 3);
   data_manager->RegisterData(&body_vel_, VECT3, "body_vel", 3);
   data_manager->RegisterData(&body_pos_des_, VECT3, "body_pos_des", 3);
@@ -91,7 +91,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&com_state_imu_, DYN_VEC, "com_state_imu", 6);
 
   data_manager->RegisterData(&body_ori_, QUATERNION, "body_ori", 4);
-  data_manager->RegisterData(&body_ori_rpy_, VECT3, "body_ori_rpy", 3);
+  // data_manager->RegisterData(&body_ori_rpy_, VECT3, "body_ori_rpy", 3);
   data_manager->RegisterData(&body_ori_des_, QUATERNION, "body_ori_des", 4);
   data_manager->RegisterData(&body_ang_vel_des_, VECT3, "body_ang_vel_des", 3);
   data_manager->RegisterData(&body_ang_vel_, VECT3, "body_ang_vel", 3);

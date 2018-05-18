@@ -44,7 +44,9 @@ protected:
   WBDC_Rotor_ExtraData* wbdc_rotor_data_;
 
 
-
+  dynacore::Vector des_jpos_;
+  dynacore::Vector des_jvel_;
+  
   dynacore::Vector body_pos_ini_;
   dynacore::Vect3 ini_body_pos_;
 

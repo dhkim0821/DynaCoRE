@@ -14,7 +14,9 @@ TransitionConfigCtrl::TransitionConfigCtrl(RobotSystem* robot, int moving_foot, 
     moving_foot_(moving_foot),
     b_increase_(b_increase),
     end_time_(100.),
-    ctrl_start_time_(0.)
+    ctrl_start_time_(0.),
+    des_jpos_(mercury::num_act_joint),
+    des_jvel_(mercury::num_act_joint)
 {
     config_task_ = new ConfigTask();
     double_contact_ = new DoubleContactBounding(robot, moving_foot);
@@ -31,9 +33,9 @@ TransitionConfigCtrl::TransitionConfigCtrl(RobotSystem* robot, int moving_foot, 
                 config_task_->getDim() + 
                 double_contact_->getDim(), 100.0);
 
-    wbdc_rotor_data_->cost_weight[0] = 200;    
-    wbdc_rotor_data_->cost_weight[1] = 200;    
-    wbdc_rotor_data_->cost_weight[2] = 200;    
+    // wbdc_rotor_data_->cost_weight[0] = 200;    
+    // wbdc_rotor_data_->cost_weight[1] = 200;    
+    // wbdc_rotor_data_->cost_weight[2] = 200;    
 
     wbdc_rotor_data_->cost_weight.tail(double_contact_->getDim()) = 
         dynacore::Vector::Constant(double_contact_->getDim(), 1.0);
@@ -60,7 +62,11 @@ void TransitionConfigCtrl::OneStep(void* _cmd){
     _double_contact_setup();
     _body_task_setup();
     _body_ctrl_wbdc_rotor(gamma);
-
+    for(int i(0); i<mercury::num_act_joint; ++i){
+        ((Mercury_Command*)_cmd)->jtorque_cmd[i] = gamma[i];
+        ((Mercury_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
+        ((Mercury_Command*)_cmd)->jvel_cmd[i] = des_jvel_[i];
+    }
     _PostProcessing_Command();
 }
 
@@ -72,20 +78,17 @@ void TransitionConfigCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     std::chrono::high_resolution_clock::time_point t1 
         = std::chrono::high_resolution_clock::now();
 #endif
-   gamma = dynacore::Vector::Zero(mercury::num_act_joint * 2); 
     
    dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
     for (int i(0); i<mercury::num_act_joint; ++i){
         wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
             = sp_->rotor_inertia_[i];
     }
-
     
     wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
     wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
 
-    gamma.head(mercury::num_act_joint) = fb_cmd;
-    gamma.tail(mercury::num_act_joint) = wbdc_rotor_data_->cmd_ff;
+    gamma = wbdc_rotor_data_->cmd_ff;
 
 #if MEASURE_TIME_WBDC 
     std::chrono::high_resolution_clock::time_point t2 
@@ -131,7 +134,8 @@ void TransitionConfigCtrl::_body_task_setup(){
     inv_kin_.getDoubleSupportLegConfig(sp_->Q_, quat_des, target_height, config_sol);
     for (int i(0); i<mercury::num_act_joint; ++i){
         pos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
-        sp_->jpos_des_[i] = pos_des[mercury::num_virtual + i];
+        des_jpos_[i] = pos_des[mercury::num_virtual + i];
+        des_jvel_[i] = 0.;
     }
     config_task_->UpdateTask(&(pos_des), vel_des, acc_des);
 

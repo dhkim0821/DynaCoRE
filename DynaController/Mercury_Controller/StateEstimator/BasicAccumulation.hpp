@@ -60,6 +60,10 @@ protected:
   double theta_y;  
   dynacore::Quaternion Oq_B; // quaternion of the body frame w.r.t fixed frame
   dynacore::Quaternion Oq_B_init; // initial quaternion of the body frame w.r.t fixed frame
+
+  dynacore::Quaternion q_world_Rx; 
+  dynacore::Quaternion q_world_Ry; 
+
   dynacore::Matrix OR_B_init; // initial Rot matrix of body w.r.t fixed frame
 
   dynacore::Vect3 a_o; // body acceleration in fixed frame

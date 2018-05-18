@@ -30,12 +30,12 @@ ConfigBodyCtrl::ConfigBodyCtrl(RobotSystem* robot):Controller(robot),
     dynacore::Vector::Constant(
         jpos_task_->getDim() + double_body_contact_->getDim(), 100.0);
 
-    wbdc_rotor_data_->cost_weight[0] = 10;    
-    wbdc_rotor_data_->cost_weight[1] = 10;    
-    wbdc_rotor_data_->cost_weight[2] = 200;    
+    // wbdc_rotor_data_->cost_weight[0] = 10;    
+    // wbdc_rotor_data_->cost_weight[1] = 10;    
+    // wbdc_rotor_data_->cost_weight[2] = 200;    
 
     wbdc_rotor_data_->cost_weight.tail(double_body_contact_->getDim()) = 
-        dynacore::Vector::Constant(double_body_contact_->getDim(), 100);
+        dynacore::Vector::Constant(double_body_contact_->getDim(), 1.);
 
     wbdc_rotor_data_->cost_weight[jpos_task_->getDim() + 2] = 0.001;
     wbdc_rotor_data_->cost_weight[jpos_task_->getDim() + 5] = 0.001;
@@ -110,6 +110,9 @@ void ConfigBodyCtrl::_jpos_task_setup(){
     else body_height_cmd = ini_body_height_;
     
     inv_kin_.getDoubleSupportLegConfig(Q_cur, des_quat, body_height_cmd, config_sol);
+    sp_->body_pos_des_[2] = body_height_cmd;
+    sp_->body_ori_des_ = des_quat;
+
     for (int i(0); i<mercury::num_act_joint; ++i){
         des_jpos_[i] = config_sol[mercury::num_virtual + i];
         pos_des[mercury::num_virtual + i] = des_jpos_[i];

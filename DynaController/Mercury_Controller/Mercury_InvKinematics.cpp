@@ -412,8 +412,8 @@ void Mercury_InvKinematics::getSingleSupportFullConfigSeperation(
     qddot_cmd = JNc_pinv * xddot.head(3);
 
     qdelta += Jfoot_pinv*err.tail(3);
-    qdot_cmd += Jfoot_pinv*err.tail(3);
-    qddot_cmd += Jfoot_pinv*err.tail(3);        
+    qdot_cmd += Jfoot_pinv*xdot.tail(3);
+    qddot_cmd += Jfoot_pinv*xddot.tail(3);        
 
 
     config_sol.segment(mercury::num_virtual, mercury::num_act_joint) += 
