@@ -138,7 +138,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
 
   // TEST
   if (num_step_ > 10) {
-      exit(0);
+      // exit(0);
   }
 
   if(next_phase == WkConfigPhase::NUM_WALKING_PHASE) {
