@@ -2,6 +2,8 @@
 #include <Configuration.h>
 #include <Utils/utilities.hpp>
 #include <Mercury/Mercury_Definition.h>
+//#include <Utils/DataManager.hpp>
+
 
 BasicAccumulation::BasicAccumulation():OriEstimator(), com_state_(6){
   global_ori_.w() = 1.;
@@ -27,19 +29,26 @@ BasicAccumulation::BasicAccumulation():OriEstimator(), com_state_(6){
   y_acc_low_pass_filter = new digital_lp_filter(lp_frequency_cutoff, mercury::servo_rate);
   z_acc_low_pass_filter = new digital_lp_filter(lp_frequency_cutoff, mercury::servo_rate);
 
+
+  imu_acc.setZero(); // initialize IMU acceleration data
+  
   gravity_mag = 9.81; // m/s^2;
   theta_x = 0.0;
   theta_y = 0.0;
   // Initialize body orientation to identity.
+  g_B_local_vec.setZero();
   dynacore::Vect3 rpy_init; rpy_init.setZero();
   dynacore::convert(rpy_init, Oq_B); 
   OR_B_init = Oq_B.toRotationMatrix();
 
-  a_o.setZero();// body acceleration in fixed frame
   g_o.setZero();// gravity compensation in fixed frame  
-  vec_f_o.setZero();// IMU acceleration in fixed frame
+  a_o.setZero();// body acceleration in fixed frame 
   v_o; v_o.setZero();// body velocity in fixed frame
   r_o; r_o.setZero();// body position in fixed frame  
+
+  // DataManager::GetDataManager()->RegisterData(&a_o, DYN_VEC, "est_body_acc", 3);
+  // DataManager::GetDataManager()->RegisterData(&v_o, DYN_VEC, "est_body_vel", 3);
+  // DataManager::GetDataManager()->RegisterData(&r_o, DYN_VEC, "est_body_pos", 3);
 
 
 }
@@ -77,6 +86,11 @@ void BasicAccumulation::EstimatorInitialization(const dynacore::Quaternion & ini
 void BasicAccumulation::setSensorData(const std::vector<double> & acc,
                                       const std::vector<double> & acc_inc,
                                       const std::vector<double> & ang_vel){
+  // Set IMU acceleration data
+  for(size_t i = 0; i < 3; i++){
+    imu_acc[i] = acc[i];
+  }
+
   // Orientation
   dynacore::Quaternion delt_quat;
   dynacore::Vect3 delta_th;
@@ -153,6 +167,8 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
 
       // Estimate orientation       
       InitIMUOrientationEstimateFromGravity();
+      v_o.setZero();
+      r_o.setZero();
 
     }else{
       // Update bias estimate
@@ -169,6 +185,9 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
     x_acc_low_pass_filter->input(acc[0] - x_acc_bias);
     y_acc_low_pass_filter->input(acc[1] - y_acc_bias);
     z_acc_low_pass_filter->input(acc[2] - z_acc_bias);    
+    // x_acc_low_pass_filter->input(acc[0]);
+    // y_acc_low_pass_filter->input(acc[1]);
+    //z_acc_low_pass_filter->input(acc[2]);        
 
 
     // TEST
@@ -193,31 +212,23 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
 
   // Perform orientation update via integration
   Oq_B = dynacore::QuatMultiply(Oq_B, delta_quat_body); 
-  // global_ori_ = dynacore::QuatMultiply(global_ori_, delt_quat);
 
   // Prepare the quantity of the local IMU acceleration
-  dynacore::Quaternion f_b; // local IMU acceleration
-  f_b.w() = 0.;
-  f_b.x() = x_acc_low_pass_filter->output();
-  f_b.y() = y_acc_low_pass_filter->output();
-  f_b.z() = z_acc_low_pass_filter->output();
-
-  // Test Vector
-  // f_b.x() = -0.057744*9.7;
-  // f_b.y() = -0.001452*9.7;
-  // f_b.z() = -0.998330*9.7;
+  dynacore::Vect3 f_b; f_b.setZero(); // local IMU acceleration
+  f_b.x() = -x_acc_low_pass_filter->output();
+  f_b.y() = -y_acc_low_pass_filter->output();
+  f_b.z() = -z_acc_low_pass_filter->output();
 
   // Convert the IMU Acceleration to be in the fixed frame
-  dynacore::Quaternion f_o; // local IMU acceleration  
-  f_o = dynacore::QuatMultiply( dynacore::QuatMultiply(Oq_B, f_b), Oq_B.inverse());
+  dynacore::Vect3 f_o; f_o.setZero();// local IMU acceleration  
+  dynacore::Matrix OR_B = Oq_B.normalized().toRotationMatrix();
+  f_o = OR_B.transpose()*f_b;
+
   // Get the body acceleration in the fixed frame:
   // Initialize vectors
-  vec_f_o[0] = vec_f_o.x(); 
-  vec_f_o[1] = vec_f_o.y(); 
-  vec_f_o[2] = f_o.z(); 
   g_o[2] = gravity_mag;
   // Estimated body Acceleration in fixed frame
-  a_o = vec_f_o + g_o;
+  a_o = f_o; //+ g_o;
   v_o = v_o + a_o*mercury::servo_rate;
   r_o = r_o + v_o*mercury::servo_rate; 
 
@@ -226,7 +237,11 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
   //   printf("    gravity_mag = %0.4f \n", gravity_mag);
   //   printf("    theta_x = %0.4f \n", theta_x);    
   //   printf("    theta_y = %0.4f \n", theta_y);        
+  //   printf("    roll_value_comp = %0.4f \n", roll_value_comp);
+  //   printf("    pitch_value_comp = %0.4f \n", pitch_value_comp);
   //   dynacore::pretty_print(g_B_local, std::cout, "rotated gravity_dir");
+  //   dynacore::pretty_print(g_B_local_vec, std::cout, "g_B_local_vec");    
+
   //   printf("    norm(g_B_local) = %0.4f \n", g_B_local.norm());
   //   dynacore::pretty_print(Oq_B_init, std::cout, "Initial body orientation w.r.t fixed frame: ");
   //   dynacore::pretty_print(OR_B_init, std::cout, "OR_B_init: ");
@@ -238,11 +253,13 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
   //   dynacore::pretty_print(delt_quat, std::cout, "delt_quat");
   //   dynacore::pretty_print(delta_quat_body, std::cout, "delta_quat_body");
 
+  //   dynacore::pretty_print(imu_acc, std::cout, "Data IMU acc = ");
+
   //   dynacore::pretty_print(f_b, std::cout, "IMU acc in body frame f_b = ");
   //   dynacore::pretty_print(f_o, std::cout, "IMU acc in fixed frame f_o = ");    
   //   dynacore::pretty_print(a_o, std::cout, "body acc in fixed frame a_o = ");    
-  //   dynacore::pretty_print(v_o, std::cout, "body vel in fixed frame a_o = ");    
-  //   dynacore::pretty_print(r_o, std::cout, "body pos in fixed frame a_o = ");    
+  //   dynacore::pretty_print(v_o, std::cout, "body vel in fixed frame v_o = ");    
+  //   dynacore::pretty_print(r_o, std::cout, "body pos in fixed frame r_o = ");    
   //   printf("\n");    
   // }    
 
@@ -289,13 +306,18 @@ void BasicAccumulation::InitIMUOrientationEstimateFromGravity(){
   // Prepare to rotate gravity vector
   g_B_local.w() = 0;
   g_B_local.x() = g_B[0];  g_B_local.y() = g_B[1]; g_B_local.z() = g_B[2];
+  g_B_local_vec[0] = g_B[0];   g_B_local_vec[1] = g_B[1];   g_B_local_vec[2] = g_B[2];
 
   //---------------------------------------------------------------------------
   // Use Rx to rotate the roll and align gravity vector  -
   // Compute Roll to rotate
+  // theta_x = atan(g_B[1]/g_B[2]);
+  // double roll_val = theta_x;      
+
   // The following method can handle any initial vector due to gravity
-  theta_x = atan2(g_B_local.z(), g_B_local.y()); // Returns angle \in [-pi, pi] between z and y projected vectors.
+  theta_x = atan2(g_B_local_vec[2], g_B_local_vec[1]); // Returns angle \in [-pi, pi] between z and y projected vectors.
   double roll_val = (-M_PI/2.0 - theta_x);      // (-pi/2 - theta_x)
+  roll_value_comp = roll_val;
 
   //dynacore::convert(0.0, 0.0, roll_val, q_world_Rx);
   // Create Roll Quaternion
@@ -305,17 +327,21 @@ void BasicAccumulation::InitIMUOrientationEstimateFromGravity(){
   q_world_Rx.z() = 0;
 
   //Rotate gravity vector to align the yhat directions
+  dynacore::Matrix Rx = q_world_Rx.normalized().toRotationMatrix();
+  g_B_local_vec = Rx*g_B_local_vec;
+  // Note that quat multiply sometimes wraps around...
   g_B_local = dynacore::QuatMultiply( dynacore::QuatMultiply(q_world_Rx, g_B_local), q_world_Rx.inverse());
 
 
   // Use Ry to rotate pitch and align gravity vector  ---------------------------
   // Compute Pitch to rotate
-  // theta_x = atan(g_B[0]/g_B[2]);
-  // double pitch_val = -theta_x;
+  // theta_y = atan(g_B_local.x()/g_B_local.z());
+  // double pitch_val = -theta_y;
 
   // The following method can handle any initial vector due to gravity
-  theta_y = atan2(g_B_local.z(), g_B_local.x()); // Returns angle \in [-pi, pi] between z and x projected vectors.
+  theta_y = atan2(g_B_local_vec[2], g_B_local_vec[0]); // Returns angle \in [-pi, pi] between z and x projected vectors.
   double pitch_val = -((-M_PI/2.0) - theta_y);   // This is actually -(-pi/2 - theta_y)
+  pitch_value_comp = pitch_val;
 
   //dynacore::convert(0.0, pitch_val, 0.0, q_world_Ry);
   // Create Pitch Quaternion
@@ -325,6 +351,9 @@ void BasicAccumulation::InitIMUOrientationEstimateFromGravity(){
   q_world_Ry.z() = 0;  
 
   // Rotate gravity vector to align the xhat directions
+  dynacore::Matrix Ry = q_world_Ry.normalized().toRotationMatrix();
+  g_B_local_vec = Ry*g_B_local_vec;  
+  // Note that quat multiply sometimes wraps around...   
   g_B_local = dynacore::QuatMultiply( dynacore::QuatMultiply(q_world_Ry, g_B_local), q_world_Ry.inverse());
 
   // Obtain initial body orientation w.r.t fixed frame.

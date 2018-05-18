@@ -47,8 +47,13 @@ protected:
     digital_lp_filter* z_acc_low_pass_filter;        
     double lp_frequency_cutoff;
 
+  dynacore::Vect3 imu_acc; // imu acceleration data
+
 	dynacore::Vect3 g_B; // gravity direction in local frame
 	dynacore::Quaternion g_B_local; // rotated gravity direction 
+  dynacore::Vect3 g_B_local_vec; // rotated gravity direction 
+
+
 	double gravity_mag; 
 
 	double theta_x;
@@ -59,11 +64,12 @@ protected:
 
   dynacore::Vect3 a_o; // body acceleration in fixed frame
   dynacore::Vect3 g_o; // gravity compensation in fixed frame  
-  dynacore::Vect3 vec_f_o; // IMU acceleration in fixed frame
 
   dynacore::Vect3 v_o; // body velocity in fixed frame
   dynacore::Vect3 r_o; // position in fixed frame  
 
+  double roll_value_comp;
+  double pitch_value_comp;  
 
 };
 
