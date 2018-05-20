@@ -182,6 +182,7 @@ void EKF_RotellaEstimator::computeNewFootLocations(const int foot_link_id){
 		x_prior.segment(dim_rvq_states + O_p_l.size(), O_p_r.size()) = O_p_r;
 	}	
 
+
 }
 
 
@@ -209,10 +210,10 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
 	doFilterCalculations();
 
 	// Print Statements
-	if (count % 100 == 0){
-		//showPrintOutStatements();
-	}
-	count++;
+	// if (count % 100 == 0){
+	// 	showPrintOutStatements();
+	// }
+	// count++;
 
 	// Update foot contact booleans
 	prev_lf_contact = lf_contact;
@@ -224,14 +225,12 @@ void EKF_RotellaEstimator::handleFootContacts(){
 	// if the foot location is lost, set wp to a high number
 	if (lf_contact){
 		wp_l_intensity = wp_intensity_default;
-		printf("\n Left foot contact active\n");
 	}else{
 		wp_l_intensity = wp_intensity_unknown;
 	}
 	// if the foot location is lost, set wp to a high number
 	if (rf_contact){
 		wp_r_intensity = wp_intensity_default;
-		printf("\n Right foot contact active\n");		
 	}else{
 		wp_r_intensity = wp_intensity_unknown;
 	}	
@@ -239,9 +238,11 @@ void EKF_RotellaEstimator::handleFootContacts(){
 	// Check if a new foot location will be used for estimation
 	if ((prev_lf_contact == false) && (lf_contact == true)){
 		computeNewFootLocations(mercury_link::leftFoot); // Update Left foot location
+		//printf("\n New Left foot contact\n");
 	}
 	if ((prev_rf_contact == false) && (rf_contact == true)){
 		computeNewFootLocations(mercury_link::rightFoot); // Update right foot location
+		//printf("\n New Right foot contact\n");
 	}
 
 }
