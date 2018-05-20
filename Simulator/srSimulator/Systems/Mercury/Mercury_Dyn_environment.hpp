@@ -36,6 +36,9 @@ public:
   void getIMU_Data(std::vector<double> & imu_acc,
                    std::vector<double> & imu_ang_vel);
 
+  void getFootContact_Data(bool & left_foot_contact,
+                           bool & right_foot_contact);  
+
 private:
 
   std::vector<double> push_time_;

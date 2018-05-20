@@ -20,32 +20,36 @@
 
 
 Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
-    base_cond_(0){
-        sp_ = Mercury_StateProvider::getStateProvider();
-        robot_sys_ = robot;
+    base_cond_(0),
+    curr_config_(mercury::num_q),
+    curr_qdot_(mercury::num_qdot)
+{
+    sp_ = Mercury_StateProvider::getStateProvider();
+    robot_sys_ = robot;
 
-        body_foot_est_ = new BodyFootPosEstimator(robot);
-        ori_est_ = new BasicAccumulation();
-        ekf_est_ = new EKF_RotellaEstimator(); // EKF
-        // ori_est_ = new OriEstAccObs();
-        // ori_est_ = new NoBias();
-        //ori_est_ = new NoAccState();
-    }
+    body_foot_est_ = new BodyFootPosEstimator(robot);
+    ori_est_ = new BasicAccumulation();
+    ekf_est_ = new EKF_RotellaEstimator(); // EKF
+    // ori_est_ = new OriEstAccObs();
+    // ori_est_ = new NoBias();
+    //ori_est_ = new NoAccState();
+
+}
 
 Mercury_StateEstimator::~Mercury_StateEstimator(){
     delete ori_est_;
 }
 
 void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
-    sp_->Q_.setZero();
-    sp_->Qdot_.setZero();
-    sp_->Q_[mercury::num_qdot] = 1.;
+    curr_config_.setZero();
+    curr_qdot_.setZero();
+    curr_config_[mercury::num_qdot] = 1.;
 
     // Joint Set
     for (int i(0); i<mercury::num_act_joint; ++i){
-        sp_->Q_[mercury::num_virtual + i] = data->joint_jpos[i];
-        //sp_->Q_[mercury::num_virtual + i] = data->motor_jpos[i];
-        sp_->Qdot_[mercury::num_virtual + i] = data->motor_jvel[i];
+        curr_config_[mercury::num_virtual + i] = data->joint_jpos[i];
+        //curr_config_[mercury::num_virtual + i] = data->motor_jpos[i];
+        curr_qdot_[mercury::num_virtual + i] = data->motor_jvel[i];
 
         sp_->rotor_inertia_[i] = data->reflected_rotor_inertia[i];
     }
@@ -64,37 +68,40 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
 
     // Local Frame Setting
     if(base_cond_ == base_condition::floating){
-        sp_->Q_[3] = sp_->body_ori_.x();
-        sp_->Q_[4] = sp_->body_ori_.y();
-        sp_->Q_[5] = sp_->body_ori_.z();
-        sp_->Q_[mercury::num_qdot] = sp_->body_ori_.w();
+        curr_config_[3] = sp_->body_ori_.x();
+        curr_config_[4] = sp_->body_ori_.y();
+        curr_config_[5] = sp_->body_ori_.z();
+        curr_config_[mercury::num_qdot] = sp_->body_ori_.w();
 
-        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+        robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
 
         dynacore::Vect3 foot_pos, foot_vel;
         robot_sys_->getPos(sp_->stance_foot_, foot_pos);
         robot_sys_->getLinearVel(sp_->stance_foot_, foot_vel);
-        sp_->Q_[0] = -foot_pos[0];
-        sp_->Q_[1] = -foot_pos[1];
-        sp_->Q_[2] = -foot_pos[2];
-        sp_->Qdot_[0] = -foot_vel[0];
-        sp_->Qdot_[1] = -foot_vel[1];
-        sp_->Qdot_[2] = -foot_vel[2];
+        curr_config_[0] = -foot_pos[0];
+        curr_config_[1] = -foot_pos[1];
+        curr_config_[2] = -foot_pos[2];
+        curr_qdot_[0] = -foot_vel[0];
+        curr_qdot_[1] = -foot_vel[1];
+        curr_qdot_[2] = -foot_vel[2];
 
-        //sp_->Q_[0] += sp_->global_pos_local_[0];
-        //sp_->Q_[1] += sp_->global_pos_local_[1];
-        //sp_->Q_[2] += sp_->global_foot_height_;
-        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+        //curr_config_[0] += sp_->global_pos_local_[0];
+        //curr_config_[1] += sp_->global_pos_local_[1];
+        //curr_config_[2] += sp_->global_foot_height_;
+        robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
     } else if (base_cond_ == base_condition::fixed){
-        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+        robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
         
     } else if (base_cond_ == base_condition::lying){
         // pitch rotation (PI/2)
-        sp_->Q_[4] = sin(M_PI/2.0/2.0);
-        sp_->Q_[mercury::num_qdot] = cos(M_PI/2.0/2.0);
+        curr_config_[4] = sin(M_PI/2.0/2.0);
+        curr_config_[mercury::num_qdot] = cos(M_PI/2.0/2.0);
 
-        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+        robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
     }
+    sp_->Q_ = curr_config_;
+    sp_->Qdot_ = curr_qdot_;
+
     robot_sys_->getCoMPosition(sp_->CoM_pos_);
     robot_sys_->getCoMVelocity(sp_->CoM_vel_);
 
@@ -118,14 +125,14 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
 }
 
 void Mercury_StateEstimator::Update(Mercury_SensorData* data){
-    sp_->Q_.setZero();
-    sp_->Qdot_.setZero();
-    sp_->Q_[mercury::num_qdot] = 1.;
+    curr_config_.setZero();
+    curr_qdot_.setZero();
+    curr_config_[mercury::num_qdot] = 1.;
 
     for (int i(0); i<mercury::num_act_joint; ++i){
-        sp_->Q_[mercury::num_virtual + i] = data->joint_jpos[i];
-        //sp_->Q_[mercury::num_virtual + i] = data->motor_jpos[i];
-        sp_->Qdot_[mercury::num_virtual + i] = data->motor_jvel[i];
+        curr_config_[mercury::num_virtual + i] = data->joint_jpos[i];
+        //curr_config_[mercury::num_virtual + i] = data->motor_jpos[i];
+        curr_qdot_[mercury::num_virtual + i] = data->motor_jvel[i];
         
         sp_->rotor_inertia_[i] = data->reflected_rotor_inertia[i];
     }
@@ -147,51 +154,54 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     ekf_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel, 
                             data->lfoot_contact, 
                             data->rfoot_contact,
-                            sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint));
+                            curr_config_.segment(mercury::num_virtual, mercury::num_act_joint));
 
     if(base_cond_ == base_condition::floating){
-        sp_->Q_[3] = sp_->body_ori_.x();
-        sp_->Q_[4] = sp_->body_ori_.y();
-        sp_->Q_[5] = sp_->body_ori_.z();
-        sp_->Q_[mercury::num_qdot] = sp_->body_ori_.w();
+        curr_config_[3] = sp_->body_ori_.x();
+        curr_config_[4] = sp_->body_ori_.y();
+        curr_config_[5] = sp_->body_ori_.z();
+        curr_config_[mercury::num_qdot] = sp_->body_ori_.w();
 
         for(int i(0); i<3; ++i)
-            sp_->Qdot_[i+3] = sp_->body_ang_vel_[i];
+            curr_qdot_[i+3] = sp_->body_ang_vel_[i];
 
-        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+        robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
 
         // Foot position based offset
         dynacore::Vect3 foot_pos, foot_vel;
         robot_sys_->getPos(sp_->stance_foot_, foot_pos);
         robot_sys_->getLinearVel(sp_->stance_foot_, foot_vel);
 
-        sp_->Q_[0] = -foot_pos[0];
-        sp_->Q_[1] = -foot_pos[1];
-        sp_->Q_[2] = -foot_pos[2];
-        sp_->Qdot_[0] = -foot_vel[0];
-        sp_->Qdot_[1] = -foot_vel[1];
-        sp_->Qdot_[2] = -foot_vel[2];
+        curr_config_[0] = -foot_pos[0];
+        curr_config_[1] = -foot_pos[1];
+        curr_config_[2] = -foot_pos[2];
+        curr_qdot_[0] = -foot_vel[0];
+        curr_qdot_[1] = -foot_vel[1];
+        curr_qdot_[2] = -foot_vel[2];
 
-        //sp_->Q_[0] += sp_->global_pos_local_[0];
-        //sp_->Q_[1] += sp_->global_pos_local_[1];
-        //sp_->Q_[2] += sp_->global_foot_height_;
+        //curr_config_[0] += sp_->global_pos_local_[0];
+        //curr_config_[1] += sp_->global_pos_local_[1];
+        //curr_config_[2] += sp_->global_foot_height_;
 
-        //sp_->Q_[2] += sp_->global_pos_local_[2];
-        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+        //curr_config_[2] += sp_->global_pos_local_[2];
+        robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
 
     } else if (base_cond_ == base_condition::fixed){
-        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+        robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
         
     } else if (base_cond_ == base_condition::lying){
         // pitch rotation (PI/2)
-        sp_->Q_[4] = sin(M_PI/2.0/2.0);
-        sp_->Q_[mercury::num_qdot] = cos(M_PI/2.0/2.0);
+        curr_config_[4] = sin(M_PI/2.0/2.0);
+        curr_config_[mercury::num_qdot] = cos(M_PI/2.0/2.0);
 
-        robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+        robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
     } else {
         printf("[Error] Incorrect base condition setup\n");
         exit(0);
     }
+    sp_->Q_ = curr_config_;
+    sp_->Qdot_ = curr_qdot_;
+
 
     // Warning: Save Sensor Data in StateProvider
     sp_->SaveCurrentData();

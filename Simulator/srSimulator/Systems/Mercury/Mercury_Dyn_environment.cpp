@@ -58,6 +58,12 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
       p_data->imu_inc[i] = imu_acc[i];
   }
 
+  // Simulated foot contact data
+  pDyn_env->getFootContact_Data(lfoot_contact, rfoot_contact);
+  p_data->lfoot_contact = lfoot_contact;
+  p_data->rfoot_contact = rfoot_contact;  
+
+
   int lj_start_idx(4);
   // Right
   for(int i(0); i< 3; ++i){
@@ -75,6 +81,8 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
   }
 
   pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_);
+
+
 
 //          alternate_time, jpos, mjvel, jjvel, jtorque, imu_acc, imu_ang_vel, imu_acc, rfoot_contact, lfoot_contact, jtorque, torque_command);
 
@@ -177,6 +185,32 @@ void Mercury_Dyn_environment::_ParamterSetup(){
   handler.getVector("push_force", push_force_);
   handler.getVector("push_direction", push_direction_);
 }
+
+void Mercury_Dyn_environment::getFootContact_Data(bool & left_foot_contact,
+                                                  bool & right_foot_contact){
+
+  // Check for foot contact
+  SE3 lfoot_frame = m_Mercury->link_[m_Mercury->link_idx_map_.find("lfoot")->second]->GetFrame();
+  SE3 rfoot_frame = m_Mercury->link_[m_Mercury->link_idx_map_.find("rfoot")->second]->GetFrame();
+
+  // std::cout << "lfoot(" << 2 << ",3) = " << lfoot_frame(2,3) << std::endl;
+  // std::cout << "rfoot(" << 2 << ",3) = " << rfoot_frame(2,3) << std::endl;     
+  // Contact occurs when lfoot_z is less than 0.022
+  double ground_contact_height = 0.0227;
+
+  if (lfoot_frame(2,3) <= ground_contact_height){
+    left_foot_contact = true;
+  }else{
+    left_foot_contact = false;
+  }
+  if (rfoot_frame(2,3) <= ground_contact_height){
+    right_foot_contact = true;
+  } else{
+    right_foot_contact = false;
+  }
+
+}
+
 
 void Mercury_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
                                           std::vector<double> & imu_ang_vel){

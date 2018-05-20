@@ -35,7 +35,16 @@ public:
 
   dynacore::Matrix getSkewSymmetricMatrix(dynacore::Vector vec_in);
 
+
+  void handleFootContacts();
+  void computeNewFootLocations(const int foot_link_id);
+  void setStateVariablesToPrior();
+
+  void showPrintOutStatements();
+
   void doFilterCalculations();
+  void predictionStep();
+  void updateStep();
 
 protected:
   dynacore::Vector O_p_l; // global left foot position
@@ -47,15 +56,28 @@ protected:
   dynacore::Vector f_imu;  // imu frame acceleration
   dynacore::Vector omega_imu;  // imu frame angular velocity  
 
+  dynacore::Vector f_imu_input;  // imu frame acceleration
+  dynacore::Vector omega_imu_input;  // imu frame angular velocity  
+
+
   bool lf_contact; // value of left foot contact
   bool rf_contact; // value of right foot contact
+
+  bool prev_lf_contact; // previous value of the left foot contact
+  bool prev_rf_contact; // previous value of the right foot contact
 
   RigidBodyDynamics::Model* robot_model;
 
   dynacore::Vector Q_config; // configuration of the robot_model
 
+  int count;
   // EKF Variables-----------------------------------
+  double local_gravity;
+  dynacore::Vector gravity_vec;
+  double dt;
+
   int dim_states;
+  int dim_rvq_states;
   int dim_process_errors;
   int dim_error_states;  
   int dim_obs;  
@@ -70,6 +92,10 @@ protected:
   double ww_intensity;  // angular velocity noise intensity  
   double wp_l_intensity;  // left foot location noise intensity  
   double wp_r_intensity;  // right foot location noise intensity
+
+  double wp_intensity_default; // default foot location noise intensity
+  double wp_intensity_unknown; // noise intensity when there is no foot contact
+
   double wbf_intensity; // imu bias intensity
   double wbw_intensity; // angular velocity bias intensity
 
