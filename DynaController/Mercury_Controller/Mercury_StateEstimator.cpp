@@ -15,6 +15,9 @@
 #include <Mercury_Controller/StateEstimator/NoBias.hpp>
 #include <Mercury_Controller/StateEstimator/NoAccState.hpp>
 
+// EKF based estimators
+#include <Mercury_Controller/StateEstimator/EKF_RotellaEstimator.hpp> // EKF
+
 
 Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
     base_cond_(0){
@@ -23,6 +26,7 @@ Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
 
         body_foot_est_ = new BodyFootPosEstimator(robot);
         ori_est_ = new BasicAccumulation();
+        ekf_est_ = new EKF_RotellaEstimator(); // EKF
         // ori_est_ = new OriEstAccObs();
         // ori_est_ = new NoBias();
         //ori_est_ = new NoAccState();
@@ -56,6 +60,8 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     }
 
     ori_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel);
+    ekf_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel); // EKF
+
     // Local Frame Setting
     if(base_cond_ == base_condition::floating){
         sp_->Q_[3] = sp_->body_ori_.x();
@@ -136,6 +142,12 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
     ((BasicAccumulation*)ori_est_)->getEstimatedCoMState(sp_->com_state_imu_);
     //printf("\n");
+
+    // EKF set sensor data
+    ekf_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel, 
+                            data->lfoot_contact, 
+                            data->rfoot_contact,
+                            sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint));
 
     if(base_cond_ == base_condition::floating){
         sp_->Q_[3] = sp_->body_ori_.x();

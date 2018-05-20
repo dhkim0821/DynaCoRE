@@ -8,6 +8,7 @@ class Mercury_StateProvider;
 class RobotSystem;
 class filter;
 class OriEstimator;
+class EKF_PoseEstimator; // EKF estimator
 class BodyFootPosEstimator;
 class Mercury_SensorData;
 
@@ -30,6 +31,7 @@ protected:
 
   OriEstimator* ori_est_;
   BodyFootPosEstimator* body_foot_est_;
+  EKF_PoseEstimator* ekf_est_;  // EKF estimator
   std::vector<filter*> jvel_filter_;
 };
 
