@@ -72,13 +72,6 @@ void TransitionConfigCtrl::OneStep(void* _cmd){
 
 void TransitionConfigCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     
-#if MEASURE_TIME_WBDC 
-    static int time_count(0);
-    time_count++;
-    std::chrono::high_resolution_clock::time_point t1 
-        = std::chrono::high_resolution_clock::now();
-#endif
-    
    dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
     for (int i(0); i<mercury::num_act_joint; ++i){
         wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
@@ -89,16 +82,6 @@ void TransitionConfigCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
 
     gamma = wbdc_rotor_data_->cmd_ff;
-
-#if MEASURE_TIME_WBDC 
-    std::chrono::high_resolution_clock::time_point t2 
-        = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> time_span1 
-        = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
-    if(time_count%500 == 1){
-        std::cout << "[body ctrl] WBDC_Rotor took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
-    }
-#endif
     
     dynacore::Vector reaction_force = 
         (wbdc_rotor_data_->opt_result_).tail(double_contact_->getDim());
