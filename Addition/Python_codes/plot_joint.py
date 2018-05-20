@@ -60,6 +60,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
                 data_x, data_config[st_idx:end_idx,i-1 + 6], "b-", \
                 data_x, data_mjpos[st_idx:end_idx, i-1], "c-")
         # plt.legend(('command', 'pos'), loc='upper left')
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
         plt.grid(True)
     plt.xlabel('time (sec)')
     ## increment figure number and index

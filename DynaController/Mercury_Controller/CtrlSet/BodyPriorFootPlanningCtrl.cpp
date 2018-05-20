@@ -1,7 +1,8 @@
-#include "ConfigBodyFootPlanningCtrl.hpp"
+#include "BodyPriorFootPlanningCtrl.hpp"
 #include <Configuration.h>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
-#include <Mercury_Controller/TaskSet/ConfigTask.hpp>
+#include <Mercury_Controller/TaskSet/StanceTask.hpp>
+#include <Mercury_Controller/TaskSet/JPosSwingTask.hpp>
 #include <Mercury_Controller/ContactSet/SingleContact.hpp>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <Mercury/Mercury_Model.hpp>
@@ -16,7 +17,7 @@
 #include <chrono>
 #endif 
 
-ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
+BodyPriorFootPlanningCtrl::BodyPriorFootPlanningCtrl(
         RobotSystem* robot, int swing_foot, Planner* planner):
     Controller(robot),
     swing_foot_(swing_foot),
@@ -34,24 +35,32 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
     curr_foot_vel_des_.setZero();
     curr_foot_acc_des_.setZero();
 
-    config_body_foot_task_ = new ConfigTask();
     if(swing_foot == mercury_link::leftFoot) {
-        single_contact_ = new SingleContact(robot, mercury_link::rightFoot); 
+        single_contact_ = new SingleContact(robot, mercury_link::rightFoot);
+        stance_task_ = new StanceTask(mercury_link::rightFoot);
+        jpos_swing_task_ = new JPosSwingTask(swing_foot_);
+
         swing_leg_jidx_ = mercury_joint::leftAbduction;
+        stance_leg_jidx_ = mercury_joint::rightAbduction;
     }
     else if(swing_foot == mercury_link::rightFoot) {
         single_contact_ = new SingleContact(robot, mercury_link::leftFoot);
+        stance_task_ = new StanceTask(mercury_link::leftFoot);
+        jpos_swing_task_ = new JPosSwingTask(swing_foot_);
+
         swing_leg_jidx_ = mercury_joint::rightAbduction;
+        stance_leg_jidx_ = mercury_joint::leftAbduction;
     }
     else printf("[Warnning] swing foot is not foot: %i\n", swing_foot);
 
-    task_kp_ = dynacore::Vector::Zero(config_body_foot_task_->getDim());
-    task_kd_ = dynacore::Vector::Zero(config_body_foot_task_->getDim());
+    task_kp_ = dynacore::Vector::Zero(
+            stance_task_->getDim() + jpos_swing_task_->getDim());
+    task_kd_ = dynacore::Vector::Zero(
+            stance_task_->getDim() + jpos_swing_task_->getDim());
 
     std::vector<bool> act_list;
     act_list.resize(mercury::num_qdot, true);
     for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
-
 
     wbdc_rotor_ = new WBDC_Rotor(act_list);
     wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
@@ -60,29 +69,27 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
 
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(
-                config_body_foot_task_->getDim() + 
+                stance_task_->getDim() + 
                 single_contact_->getDim(), 100.0);
-
-    // for(int i(0); i<mercury::num_virtual; ++i) 
-    //     wbdc_rotor_data_->cost_weight[i] = 350.;
 
     wbdc_rotor_data_->cost_weight.tail(single_contact_->getDim()) = 
         dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
-    wbdc_rotor_data_->cost_weight[config_body_foot_task_->getDim() + 2]  = 0.001; // Fr_z
+    wbdc_rotor_data_->cost_weight[stance_task_->getDim() + 2]  = 0.001; // Fr_z
 
     com_estimator_ = new LIPM_KalmanFilter();
     sp_ = Mercury_StateProvider::getStateProvider();
     printf("[BodyFootJPosPlanning Controller] Constructed\n");
 }
 
-ConfigBodyFootPlanningCtrl::~ConfigBodyFootPlanningCtrl(){
-    delete config_body_foot_task_;
+BodyPriorFootPlanningCtrl::~BodyPriorFootPlanningCtrl(){
+    delete jpos_swing_task_;
+    delete stance_task_;
     delete single_contact_;
     delete wbdc_rotor_;
     delete wbdc_rotor_data_;
 }
 
-void ConfigBodyFootPlanningCtrl::OneStep(void* _cmd){
+void BodyPriorFootPlanningCtrl::OneStep(void* _cmd){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
@@ -99,7 +106,7 @@ void ConfigBodyFootPlanningCtrl::OneStep(void* _cmd){
 
     _PostProcessing_Command();
 }
-void ConfigBodyFootPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
+void BodyPriorFootPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
 #if MEASURE_TIME_WBDC 
     static int time_count(0);
     time_count++;
@@ -137,11 +144,16 @@ void ConfigBodyFootPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
 }
 
 
-void ConfigBodyFootPlanningCtrl::_task_setup(){
-    dynacore::Vector pos_des(config_body_foot_task_->getDim());
-    dynacore::Vector vel_des(config_body_foot_task_->getDim());
-    dynacore::Vector acc_des(config_body_foot_task_->getDim());
-    pos_des.setZero(); vel_des.setZero(); acc_des.setZero();
+void BodyPriorFootPlanningCtrl::_task_setup(){
+    dynacore::Vector stance_pos(stance_task_->getDim());
+    dynacore::Vector stance_vel(stance_task_->getDim());
+    dynacore::Vector stance_acc(stance_task_->getDim());
+    stance_pos.setZero(); stance_vel.setZero(); stance_acc.setZero();
+
+    dynacore::Vector jpos_swing_pos(jpos_swing_task_->getDim());
+    dynacore::Vector jpos_swing_vel(jpos_swing_task_->getDim());
+    dynacore::Vector jpos_swing_acc(jpos_swing_task_->getDim());
+    jpos_swing_pos.setZero(); jpos_swing_vel.setZero(); jpos_swing_acc.setZero();
 
     // Body height
     double target_height = ini_body_pos_[2];
@@ -175,50 +187,44 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
         curr_foot_acc_des_[i] = acc[i];
     }
     dynacore::Vector config_sol, qdot_cmd, qddot_cmd;
-     // inv_kin_.getSingleSupportFullConfig(
-     //        sp_->Q_, des_quat, target_height, 
-     //        swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
-     //        config_sol, qdot_cmd, qddot_cmd);
-
-   inv_kin_.getSingleSupportFullConfigSeperation(
+    inv_kin_.getSingleSupportFullConfigSeperation(
             sp_->Q_, des_quat, target_height, 
             swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
             config_sol, qdot_cmd, qddot_cmd);
 
-    for (int i(0); i<mercury::num_act_joint; ++i){
-        pos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
-        vel_des[mercury::num_virtual + i] = qdot_cmd[mercury::num_virtual + i];
-        acc_des[mercury::num_virtual + i] = qddot_cmd[mercury::num_virtual + i];
+    // Stance Task Setup
+    for (int i(0); i<3; ++i){
+        stance_pos[mercury::num_virtual + i] = config_sol[stance_leg_jidx_ + i];  
+        stance_vel[mercury::num_virtual + i] = qdot_cmd[stance_leg_jidx_ + i];
+        stance_acc[mercury::num_virtual + i] = qddot_cmd[stance_leg_jidx_ + i];
 
-        des_jpos_[i] = pos_des[mercury::num_virtual + i];
-        des_jvel_[i] = vel_des[mercury::num_virtual + i];
+        des_jpos_[stance_leg_jidx_ - mercury::num_virtual + i] = 
+            config_sol[stance_leg_jidx_ + i];
+        des_jvel_[stance_leg_jidx_ - mercury::num_virtual + i] = 
+            qdot_cmd[stance_leg_jidx_ + i];
     }
 
-    // Feedback gain decreasing
-    //double tot_decreasing_time = gain_decreasing_period_portion_ * end_time_; 
-    //double remain_time = end_time_ - state_machine_time_;
-    //if(remain_time < 1.0e-5)  remain_time = 1.0e-5;
-    //if(remain_time < tot_decreasing_time){        
-        //dynacore::Vector Kp = task_kp_;
-        //dynacore::Vector Kd = task_kd_;
-        //Kp.segment(swing_leg_jidx_, 3) = 
-            //remain_time/tot_decreasing_time * task_kp_.segment(swing_leg_jidx_, 3) 
-            //+ (1. - remain_time/tot_decreasing_time) * gain_decreasing_ratio_
-            //* task_kp_.segment(swing_leg_jidx_, 3); 
-        //Kd.segment(swing_leg_jidx_, 3) = 
-            //remain_time/tot_decreasing_time * task_kd_.segment(swing_leg_jidx_, 3) 
-            //+ (1. - remain_time/tot_decreasing_time) * gain_decreasing_ratio_
-            //* task_kd_.segment(swing_leg_jidx_, 3); 
-        //_setTaskGain(Kp, Kd);
-    //}
+    stance_task_->UpdateTask(&(stance_pos), stance_vel, stance_acc);
+    task_list_.push_back(stance_task_);
 
-     //dynacore::pretty_print(vel_des, std::cout, "[Ctrl] vel des");
-    // Push back to task list
-    config_body_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
-    task_list_.push_back(config_body_foot_task_);
+    // Swing Task setup
+     for (int i(0); i<3; ++i){
+        jpos_swing_pos[i] = config_sol[swing_leg_jidx_ + i];  
+        jpos_swing_vel[i] = qdot_cmd[swing_leg_jidx_ + i];
+        jpos_swing_acc[i] = qddot_cmd[swing_leg_jidx_ + i];
+
+        des_jpos_[swing_leg_jidx_ - mercury::num_virtual + i] = 
+            config_sol[swing_leg_jidx_ + i];
+        des_jvel_[swing_leg_jidx_ - mercury::num_virtual + i] = 
+            qdot_cmd[swing_leg_jidx_ + i];
+    }
+
+   jpos_swing_task_->UpdateTask(&(jpos_swing_pos), 
+           jpos_swing_vel, jpos_swing_acc);
+    task_list_.push_back(jpos_swing_task_);
 }
 
-void ConfigBodyFootPlanningCtrl::_CheckPlanning(){
+void BodyPriorFootPlanningCtrl::_CheckPlanning(){
     if( state_machine_time_ > 
             (end_time_/(planning_frequency_ + 1.) * (num_planning_ + 1.) + 0.002) ){
 
@@ -238,7 +244,7 @@ void ConfigBodyFootPlanningCtrl::_CheckPlanning(){
     // printf("num_planning: %i\n", num_planning_);
 }
 
-void ConfigBodyFootPlanningCtrl::_Replanning(){
+void BodyPriorFootPlanningCtrl::_Replanning(){
     dynacore::Vect3 com_pos, com_vel, target_loc;
     // Direct value used
     robot_sys_->getCoMPosition(com_pos);
@@ -285,12 +291,12 @@ void ConfigBodyFootPlanningCtrl::_Replanning(){
     _SetBspline(curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
 }
 
-void ConfigBodyFootPlanningCtrl::_single_contact_setup(){
+void BodyPriorFootPlanningCtrl::_single_contact_setup(){
     single_contact_->UpdateContactSpec();
     contact_list_.push_back(single_contact_);
 }
 
-void ConfigBodyFootPlanningCtrl::FirstVisit(){
+void BodyPriorFootPlanningCtrl::FirstVisit(){
     ini_config_ = sp_->Q_;
     robot_sys_->getPos(swing_foot_, ini_foot_pos_);
     ctrl_start_time_ = sp_->curr_time_;
@@ -326,7 +332,7 @@ void ConfigBodyFootPlanningCtrl::FirstVisit(){
     //dynacore::pretty_print(target_loc, std::cout, "target loc");
 }
 
-void ConfigBodyFootPlanningCtrl::_CoMEstiamtorUpdate(){
+void BodyPriorFootPlanningCtrl::_CoMEstiamtorUpdate(){
     dynacore::Vect3 com_pos, com_vel;
     robot_sys_->getCoMPosition(com_pos);
     robot_sys_->getCoMVelocity(com_vel);
@@ -337,7 +343,7 @@ void ConfigBodyFootPlanningCtrl::_CoMEstiamtorUpdate(){
     com_estimator_->Output(sp_->estimated_com_state_);
 }
 
-void ConfigBodyFootPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
+void BodyPriorFootPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
         const dynacore::Vect3 & st_vel,
         const dynacore::Vect3 & st_acc,
         const dynacore::Vect3 & target_pos){
@@ -374,10 +380,10 @@ void ConfigBodyFootPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
     delete [] middle_pt;
 }
 
-void ConfigBodyFootPlanningCtrl::LastVisit(){
+void BodyPriorFootPlanningCtrl::LastVisit(){
 }
 
-bool ConfigBodyFootPlanningCtrl::EndOfPhase(){
+bool BodyPriorFootPlanningCtrl::EndOfPhase(){
     if(state_machine_time_ > end_time_){
         //printf("[Body Foot Ctrl] End, state_machine time/ end time: (%f, %f)\n", 
         //state_machine_time_, end_time_);
@@ -400,14 +406,7 @@ bool ConfigBodyFootPlanningCtrl::EndOfPhase(){
     }
     return false;
 }
-
-void ConfigBodyFootPlanningCtrl::_setTaskGain(
-        const dynacore::Vector & Kp, const dynacore::Vector & Kd){
-    ((ConfigTask*)config_body_foot_task_)->Kp_vec_ = Kp;
-    ((ConfigTask*)config_body_foot_task_)->Kd_vec_ = Kd;
-}
-
-void ConfigBodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_file_name){
+void BodyPriorFootPlanningCtrl::CtrlInitialization(const std::string & setting_file_name){
     ini_body_pos_ = sp_->Q_.head(3);
     std::vector<double> tmp_vec;
 
@@ -431,9 +430,18 @@ void ConfigBodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_
         task_kd_[i] = tmp_vec[i];
     }
 
-    ((ConfigTask*)config_body_foot_task_)->Kp_vec_ = task_kp_;
-    ((ConfigTask*)config_body_foot_task_)->Kd_vec_ = task_kd_;
+    for(int i(0); i<stance_task_->getDim(); ++i){
+        ((StanceTask*)stance_task_)->Kp_vec_[i] = task_kp_[i];
+        ((StanceTask*)stance_task_)->Kd_vec_[i] = task_kd_[i];
 
+    }
+    for(int i(0); i<jpos_swing_task_->getDim(); ++i){
+        ((JPosSwingTask*)jpos_swing_task_)->Kp_vec_[i] 
+            = task_kp_[stance_task_->getDim() + i];
+        ((JPosSwingTask*)jpos_swing_task_)->Kd_vec_[i] 
+            = task_kd_[stance_task_->getDim() + i];
+
+    }
     // Feedback gain decreasing near to the landing moment
     handler.getValue("gain_decreasing_ratio", gain_decreasing_ratio_);
     handler.getValue("gain_decreasing_period_portion", 

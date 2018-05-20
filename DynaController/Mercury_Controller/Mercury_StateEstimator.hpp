@@ -29,6 +29,9 @@ protected:
   Mercury_StateProvider* sp_;
   RobotSystem* robot_sys_;
 
+  dynacore::Vector curr_config_;
+  dynacore::Vector curr_qdot_;
+
   OriEstimator* ori_est_;
   BodyFootPosEstimator* body_foot_est_;
   EKF_PoseEstimator* ekf_est_;  // EKF estimator

@@ -15,9 +15,9 @@ public:
   }
 
   bool UpdateTask(void* pos_des, const dynacore::Vector & vel_des, const dynacore::Vector & acc_des){
-    _UpdateCommand(pos_des, vel_des, acc_des);
     _UpdateTaskJacobian();
     _UpdateTaskJDotQdot();
+    _UpdateCommand(pos_des, vel_des, acc_des);
     _AdditionalUpdate();
     b_set_task_ = true;
     return true;
