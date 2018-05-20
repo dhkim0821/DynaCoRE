@@ -33,6 +33,10 @@ public:
                                        const std::vector<double> & initial_imu_acc,
                                        const std::vector<double> & initial_imu_ang_vel);
 
+  dynacore::Matrix getSkewSymmetricMatrix(dynacore::Vector vec_in);
+
+  void doFilterCalculations();
+
 protected:
   dynacore::Vector O_p_l; // global left foot position
   dynacore::Vector O_p_r; // global right foot position   
@@ -50,15 +54,43 @@ protected:
 
   dynacore::Vector Q_config; // configuration of the robot_model
 
-  // EKF Variables
+  // EKF Variables-----------------------------------
   int dim_states;
+  int dim_process_errors;
+  int dim_error_states;  
   int dim_obs;  
   int dim_inputs;
-      
+
+  dynacore::Matrix C_rot; // rotation matrix from inerital frame to body frame.
+
+  dynacore::Matrix F_c; // contiouous prediction Jacobian. aka: f_x (linearized error state dynamics)
+  dynacore::Matrix L_c; // continuous process error Jacobian
+  dynacore::Matrix Q_c; // continuous process noise
+  double wf_intensity;  // imu process noise intensity
+  double ww_intensity;  // angular velocity noise intensity  
+  double wp_l_intensity;  // left foot location noise intensity  
+  double wp_r_intensity;  // right foot location noise intensity
+  double wbf_intensity; // imu bias intensity
+  double wbw_intensity; // angular velocity bias intensity
+
+  dynacore::Matrix F_k; // discretized error state prediction matrix
+  dynacore::Matrix H_k; // discretized error state observation matrix
+
+  dynacore::Matrix R_c; // Measurement noise covariance matrix
+  dynacore::Matrix R_k; // Discretized measurement noise covariance matrix  
+  double n_p;           // Measurement noise intensity
+
+  dynacore::Matrix P_prior; // Prior covariance matrix
+  dynacore::Matrix P_predicted; // Predicted covariance matrix  
+  dynacore::Matrix P_posterior; // Posterior covariance matrix
+
   dynacore::Vector x_prior; // Prior EKF States
   dynacore::Vector x_predicted; // Predicted EKF States  
   dynacore::Vector x_posterior; // Posterior EKF States    
 
+  dynacore::Vector delta_x_prior; // Prior error states
+  dynacore::Vector delta_x_posterior; // Posterier error states
+  dynacore::Vector delta_y; // prediction and measurement differences
 
 };
 
