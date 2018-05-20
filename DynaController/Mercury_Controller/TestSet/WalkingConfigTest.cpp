@@ -163,101 +163,6 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         sp_->global_pos_local_ += next_local_frame_location;
         sp_->global_foot_height_ = next_local_frame_location[2];
     }
-
-    // TEST
-    if (num_step_ > 10) {
-        // exit(0);
-    }
-
-    if(next_phase == WkConfigPhase::NUM_WALKING_PHASE) {
-        return WkConfigPhase::double_contact_1;
-    }
-    else{ return next_phase; }
-    }
-
-    void WalkingConfigTest::_SettingParameter(){
-        // Setting Parameters
-        ParamHandler handler(MercuryConfigPath"TEST_walking_config.yaml");
-
-        double tmp; bool b_tmp;
-        std::vector<double> tmp_vec;
-        std::string tmp_str;
-        // Start Phase
-        handler.getInteger("start_phase", phase_);
-
-        //// Posture Setup
-        // Initial JPos
-        handler.getVector("initial_jpos", tmp_vec);
-        ((JPosTargetCtrl*)jpos_ctrl_)->setTargetPosition(tmp_vec);
-        // CoM Height
-        handler.getValue("body_height", tmp);
-        ((ContactTransConfigCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
-        ((ConfigBodyCtrl*)config_body_fix_ctrl_)->setStanceHeight(tmp);
-
-        ((TransitionConfigCtrl*)right_swing_start_trans_ctrl_)->setStanceHeight(tmp);
-        ((TransitionConfigCtrl*)right_swing_end_trans_ctrl_)->setStanceHeight(tmp);
-        ((TransitionConfigCtrl*)left_swing_start_trans_ctrl_)->setStanceHeight(tmp);
-        ((TransitionConfigCtrl*)left_swing_end_trans_ctrl_)->setStanceHeight(tmp);
-
-#if TASK_HIERARCHY
-        ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setStanceHeight(tmp);
-        ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setStanceHeight(tmp);
-#else
-        ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setStanceHeight(tmp);
-        ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setStanceHeight(tmp);
-#endif
-        ((Reversal_LIPM_Planner*)reversal_planner_)->setOmega(tmp);
-
-        //// Timing Setup
-        handler.getValue("jpos_initialization_time", tmp);
-        ((JPosTargetCtrl*)jpos_ctrl_)->setMovingTime(tmp);
-        handler.getValue("com_lifting_time", tmp);
-        ((ContactTransConfigCtrl*)body_up_ctrl_)->setStanceTime(tmp);
-
-        // Stance Time
-        handler.getValue("stance_time", tmp);
-        ((ConfigBodyCtrl*)config_body_fix_ctrl_)->setStanceTime(tmp);
-#if TASK_HIERARCHY
-        ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->notifyStanceTime(tmp);
-        ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->notifyStanceTime(tmp);
-#else
-        ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->notifyStanceTime(tmp);
-        ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->notifyStanceTime(tmp);
-
-#endif
-        // Swing & prime Time
-        handler.getValue("swing_time", tmp);
-#if TASK_HIERARCHY
-        ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setSwingTime(tmp);
-        ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setSwingTime(tmp);
-#else
-        ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setSwingTime(tmp);
-        ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setSwingTime(tmp);
-
-#endif
-        // Transition Time
-        handler.getValue("st_transition_time", tmp);
-        ((TransitionConfigCtrl*)right_swing_start_trans_ctrl_)->setTransitionTime(tmp);
-        ((TransitionConfigCtrl*)right_swing_end_trans_ctrl_)->setTransitionTime(tmp);
-        ((TransitionConfigCtrl*)left_swing_start_trans_ctrl_)->setTransitionTime(tmp);
-        ((TransitionConfigCtrl*)left_swing_end_trans_ctrl_)->setTransitionTime(tmp);
-
-#if TASK_HIERARCHY
-        ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->notifyTransitionTime(tmp);
-        ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->notifyTransitionTime(tmp);
-#else
-        ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->notifyTransitionTime(tmp);
-        ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->notifyTransitionTime(tmp);
-#endif
-
-<<<<<<< HEAD
-    // Global Frame Update
-    dynacore::Vect3 next_local_frame_location;
-    robot_sys_->getPos(mercury_link::rightFoot, next_local_frame_location);
-    sp_->global_pos_local_ += next_local_frame_location;
-    sp_->global_foot_height_ = next_local_frame_location[2];
-  }
-
   // TEST
   if (num_step_ > 19) {
       exit(0);
@@ -268,44 +173,120 @@ int WalkingConfigTest::_NextPhase(const int & phase){
   }
   else{ return next_phase; }
 }
-=======
-        //// Planner Setup
-        handler.getValue("planning_frequency", tmp);
-#if TASK_HIERARCHY
-        ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setPlanningFrequency(tmp);
-        ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setPlanningFrequency(tmp);
-#else
-        ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setPlanningFrequency(tmp);
-        ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setPlanningFrequency(tmp);
-#endif
->>>>>>> e9b0d0549b4b211c526e010e1076dfcf331cb3bb
-
-        handler.getValue("double_stance_mix_ratio", tmp);
-#if TASK_HIERARCHY
-        ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setDoubleStanceRatio(tmp);
-        ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setDoubleStanceRatio(tmp);
-#else
-        ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setDoubleStanceRatio(tmp);
-        ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setDoubleStanceRatio(tmp);
-#endif
 
 
-        handler.getValue("transition_phase_mix_ratio", tmp);
+void WalkingConfigTest::_SettingParameter(){
+    // Setting Parameters
+    ParamHandler handler(MercuryConfigPath"TEST_walking_config.yaml");
+
+    double tmp; bool b_tmp;
+    std::vector<double> tmp_vec;
+    std::string tmp_str;
+    // Start Phase
+    handler.getInteger("start_phase", phase_);
+
+    //// Posture Setup
+    // Initial JPos
+    handler.getVector("initial_jpos", tmp_vec);
+    ((JPosTargetCtrl*)jpos_ctrl_)->setTargetPosition(tmp_vec);
+    // CoM Height
+    handler.getValue("body_height", tmp);
+    ((ContactTransConfigCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
+    ((ConfigBodyCtrl*)config_body_fix_ctrl_)->setStanceHeight(tmp);
+
+    ((TransitionConfigCtrl*)right_swing_start_trans_ctrl_)->setStanceHeight(tmp);
+    ((TransitionConfigCtrl*)right_swing_end_trans_ctrl_)->setStanceHeight(tmp);
+    ((TransitionConfigCtrl*)left_swing_start_trans_ctrl_)->setStanceHeight(tmp);
+    ((TransitionConfigCtrl*)left_swing_end_trans_ctrl_)->setStanceHeight(tmp);
+
 #if TASK_HIERARCHY
-        ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
-        ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+    ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setStanceHeight(tmp);
+    ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setStanceHeight(tmp);
 #else
-        ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
-        ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+    ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setStanceHeight(tmp);
+    ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setStanceHeight(tmp);
+#endif
+    ((Reversal_LIPM_Planner*)reversal_planner_)->setOmega(tmp);
+
+    //// Timing Setup
+    handler.getValue("jpos_initialization_time", tmp);
+    ((JPosTargetCtrl*)jpos_ctrl_)->setMovingTime(tmp);
+    handler.getValue("com_lifting_time", tmp);
+    ((ContactTransConfigCtrl*)body_up_ctrl_)->setStanceTime(tmp);
+
+    // Stance Time
+    handler.getValue("stance_time", tmp);
+    ((ConfigBodyCtrl*)config_body_fix_ctrl_)->setStanceTime(tmp);
+#if TASK_HIERARCHY
+    ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->notifyStanceTime(tmp);
+    ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->notifyStanceTime(tmp);
+#else
+    ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->notifyStanceTime(tmp);
+    ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->notifyStanceTime(tmp);
 #endif
 
-        handler.getBoolean("contact_switch_check", b_tmp);
+    // Swing & prime Time
+    handler.getValue("swing_time", tmp);
 #if TASK_HIERARCHY
-        ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(tmp);
-        ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(tmp);
+    ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setSwingTime(tmp);
+    ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setSwingTime(tmp);
 #else
-        ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(b_tmp);
-        ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+    ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setSwingTime(tmp);
+    ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setSwingTime(tmp);
 #endif
-        printf("[Walking Body Test] Complete to Setup Parameters\n");
-    }
+
+    // Transition Time
+    handler.getValue("st_transition_time", tmp);
+    ((TransitionConfigCtrl*)right_swing_start_trans_ctrl_)->setTransitionTime(tmp);
+    ((TransitionConfigCtrl*)right_swing_end_trans_ctrl_)->setTransitionTime(tmp);
+    ((TransitionConfigCtrl*)left_swing_start_trans_ctrl_)->setTransitionTime(tmp);
+    ((TransitionConfigCtrl*)left_swing_end_trans_ctrl_)->setTransitionTime(tmp);
+
+#if TASK_HIERARCHY
+    ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->notifyTransitionTime(tmp);
+    ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->notifyTransitionTime(tmp);
+#else
+    ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->notifyTransitionTime(tmp);
+    ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->notifyTransitionTime(tmp);
+#endif
+
+    //// Planner Setup
+    handler.getValue("planning_frequency", tmp);
+#if TASK_HIERARCHY
+    ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setPlanningFrequency(tmp);
+    ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setPlanningFrequency(tmp);
+#else
+    ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setPlanningFrequency(tmp);
+    ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setPlanningFrequency(tmp);
+#endif
+
+
+    handler.getValue("double_stance_mix_ratio", tmp);
+#if TASK_HIERARCHY
+    ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setDoubleStanceRatio(tmp);
+    ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setDoubleStanceRatio(tmp);
+#else
+    ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setDoubleStanceRatio(tmp);
+    ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setDoubleStanceRatio(tmp);
+#endif
+
+
+    handler.getValue("transition_phase_mix_ratio", tmp);
+#if TASK_HIERARCHY
+    ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+    ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+#else
+    ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+    ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+#endif
+
+    handler.getBoolean("contact_switch_check", b_tmp);
+#if TASK_HIERARCHY
+    ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(tmp);
+    ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(tmp);
+#else
+    ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+    ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+#endif
+    printf("[Walking Body Test] Complete to Setup Parameters\n");
+}

@@ -13,8 +13,8 @@ default_target_foot_location: [0.0, 0.13, 0.0]
 # Kd: [ 0, 0, 0, 0, 0, 0, 15,  10,  10,  15,  10,  10]
 
 # stance(right) & swing (left)
-Kp: [ 0, 0, 0, 0, 0, 0, 150, 150, 150, 50, 50, 50]
-Kd: [ 0, 0, 0, 0, 0, 0, 10,  10,  10,  5,  5,  5]
+Kp: [ 0, 0, 0, 0, 0, 0, 50, 50, 50, 10, 10, 10]
+Kd: [ 0, 0, 0, 0, 0, 0, 5,  5,  5,  2,  2,  2]
 
 gain_decreasing_ratio: 1.0
 gain_decreasing_period_portion: 0.0
