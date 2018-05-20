@@ -33,7 +33,7 @@ public:
                                        const std::vector<double> & initial_imu_acc,
                                        const std::vector<double> & initial_imu_ang_vel);
 
-  dynacore::Matrix getSkewSymmetricMatrix(dynacore::Vector vec_in);
+  dynacore::Matrix getSkewSymmetricMatrix(dynacore::Vector & vec_in);
 
 
   void handleFootContacts();
@@ -42,9 +42,16 @@ public:
 
   void showPrintOutStatements();
 
-  void doFilterCalculations();
+
+  dynacore::Matrix getMatrix_L_c(dynacore::Quaternion & q_in);
+  dynacore::Matrix getMatrix_Q();
+  void statePredictionStep();
+  void covariancePredictionStep();  
+
   void predictionStep();
   void updateStep();
+  void doFilterCalculations(); 
+
 
 protected:
   dynacore::Vector O_p_l; // global left foot position

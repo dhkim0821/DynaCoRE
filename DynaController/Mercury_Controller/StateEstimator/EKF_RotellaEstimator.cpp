@@ -88,7 +88,7 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 
 	delta_x_prior = dynacore::Vector::Zero(dim_error_states);
 	delta_x_posterior = dynacore::Vector::Zero(dim_error_states);	
-	delta_y = dynacore::Vector(dim_obs);
+	delta_y = dynacore::Vector::Zero(dim_obs);
 
 	// Initialize Covariance parameters
 	// Values are from reference paper. Need to be changed to known IMU parameters
@@ -104,7 +104,6 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 	wbw_intensity = 0.000618; // rad/(s^2)/sqrt(Hz)	 // ang vel bias intensity
 
 	n_p = 0.01; // foot measurement noise intensity.
-
 
 }
 
@@ -133,14 +132,16 @@ void EKF_RotellaEstimator::EstimatorInitialization(const dynacore::Quaternion & 
 
 void EKF_RotellaEstimator::showPrintOutStatements(){
 	// printf("[EKF Rotella Estimator]\n");
-	dynacore::pretty_print(f_imu, std::cout, "body frame f_imu");
-	dynacore::pretty_print(omega_imu, std::cout, "body frame angular velocity");			
+	// dynacore::pretty_print(f_imu, std::cout, "body frame f_imu");
+	// dynacore::pretty_print(omega_imu, std::cout, "body frame angular velocity");			
 
-	dynacore::pretty_print(f_imu_input, std::cout, "f_imu_input");
-	dynacore::pretty_print(omega_imu_input, std::cout, "omega_imu_input");
+	// dynacore::pretty_print(f_imu_input, std::cout, "f_imu_input");
+	// dynacore::pretty_print(omega_imu_input, std::cout, "omega_imu_input");
 
-	dynacore::pretty_print(x_predicted, std::cout, "x_predicted");
+	// dynacore::pretty_print(x_predicted, std::cout, "x_predicted");
 
+	//dynacore::pretty_print(F_c, std::cout, "F_c");
+	//dynacore::pretty_print(F_k, std::cout, "F_k");	
 
 	// printf("Left Foot contact = %d \n", lf_contact);
 	// printf("Right Foot contact = %d \n", rf_contact);	
@@ -209,11 +210,11 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
 	// Perform filter calculations given sensor data
 	doFilterCalculations();
 
-	// Print Statements
-	// if (count % 100 == 0){
-	// 	showPrintOutStatements();
-	// }
-	// count++;
+	//Print Statements
+	if (count % 100 == 0){
+		showPrintOutStatements();
+	}
+	count++;
 
 	// Update foot contact booleans
 	prev_lf_contact = lf_contact;
@@ -247,7 +248,7 @@ void EKF_RotellaEstimator::handleFootContacts(){
 
 }
 
-dynacore::Matrix getSkewSymmetricMatrix(dynacore::Vector vec_in){
+dynacore::Matrix EKF_RotellaEstimator::getSkewSymmetricMatrix(dynacore::Vector & vec_in){
 	dynacore::Matrix ssm = dynacore::Matrix::Zero(3,3);
 	ssm(0,1) = -vec_in[2]; ssm(0,2) = vec_in[1];
 	ssm(1,0) = vec_in[2];  ssm(1,2) = -vec_in[0];	
@@ -272,7 +273,7 @@ void EKF_RotellaEstimator::setStateVariablesToPrior(){
 	B_bw = x_prior.segment(dim_rvq_states + O_p_l.size() + O_p_r.size() + B_bw.size(), B_bw.size());		
 }
 
-void EKF_RotellaEstimator::predictionStep(){
+void EKF_RotellaEstimator::statePredictionStep(){
 	// Prepare state variables
 	setStateVariablesToPrior();
 
@@ -301,6 +302,29 @@ void EKF_RotellaEstimator::predictionStep(){
 	
 	// predict foot position and biases
 	x_predicted.segment(dim_rvq_states, dim_states - dim_rvq_states) = x_prior.segment(dim_rvq_states, dim_states - dim_rvq_states); 
+}
+
+void EKF_RotellaEstimator::covariancePredictionStep(){
+	// Prepare Covariance Prediction Step
+	// Construct linearized error dynamics matrix, F_c
+	F_c = dynacore::Matrix::Zero(dim_error_states, dim_error_states); 
+	F_c.block(0, O_r.size(), 3, 3) = dynacore::Matrix::Identity(3, 3);
+	F_c.block(O_r.size(), O_r.size() + O_v.size(), 3, 3) = -C_rot.transpose()*getSkewSymmetricMatrix(f_imu_input);
+	F_c.block(O_r.size(), dim_rvq_states + O_p_l.size() + O_p_r.size(), 3, 3) = -C_rot.transpose();
+	F_c.block(O_r.size() + O_v.size(), O_r.size() + O_v.size(), 3, 3) = -getSkewSymmetricMatrix(omega_imu_input);
+	F_c.block(O_r.size() + O_v.size(), dim_error_states - B_bw.size(), B_bw.size(), B_bw.size()) = -dynacore::Matrix::Identity(3,3);
+
+	// Discretized linear error dynamics
+	F_k = dynacore::Matrix::Identity(F_c.rows(), F_c.cols()) + F_c*dt;
+
+	// Construct Process noise Jacobian Matrix, L_c
+	L_c = dynacore::Matrix::Zero(dim_error_states, dim_process_errors); 
+
+}
+
+void EKF_RotellaEstimator::predictionStep(){
+	statePredictionStep();
+	covariancePredictionStep();
 }
 
 void EKF_RotellaEstimator::updateStep(){
