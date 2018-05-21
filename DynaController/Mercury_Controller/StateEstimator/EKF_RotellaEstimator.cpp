@@ -97,8 +97,8 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 
 	wp_intensity_default = 0.001;   // m/sqrt(Hz)	 // default foot location noise intensity
 	wp_intensity_unknown = 1000.0;   // m/sqrt(Hz)	 // noise intensity when there is no foot contact
-	wp_l_intensity = wp_intensity_default;   // m/sqrt(Hz)	 // left foot location noise intensity
-	wp_r_intensity = wp_intensity_default;   // m/sqrt(Hz)   // right foot location noise intensity
+	wp_l_intensity = wp_intensity_unknown;   // m/sqrt(Hz)	 // left foot location noise intensity
+	wp_r_intensity = wp_intensity_unknown;   // m/sqrt(Hz)   // right foot location noise intensity
 
 	wbf_intensity = 0.0001;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
 	wbw_intensity = 0.000618; // rad/(s^2)/sqrt(Hz)	 // ang vel bias intensity
@@ -122,6 +122,11 @@ void EKF_RotellaEstimator::EstimatorInitialization(const dynacore::Quaternion & 
 		omega_imu[i] = initial_imu_ang_vel[i];		
 	}
 
+	// Initialize Covariance matrix prior
+	getMatrix_L_c(O_q_B, L_c);
+	getMatrix_Q(Q_c);
+	P_prior = L_c*Q_c;
+
 	// printf("[EKF Rotella Estimator]\n");
 	// dynacore::pretty_print(O_q_B, std::cout, "initial global orientation");
 	// dynacore::pretty_print(f_imu, std::cout, "initial f_imu");
@@ -144,6 +149,8 @@ void EKF_RotellaEstimator::showPrintOutStatements(){
 	//dynacore::pretty_print(F_k, std::cout, "F_k");	
 	//dynacore::pretty_print(L_c, std::cout, "L_c");		
 	//dynacore::pretty_print(Q_c, std::cout, "Q_c");		
+	//dynacore::pretty_print(P_prior, std::cout, "P_prior");		
+
 
 	// printf("Left Foot contact = %d \n", lf_contact);
 	// printf("Right Foot contact = %d \n", rf_contact);	
@@ -240,12 +247,18 @@ void EKF_RotellaEstimator::handleFootContacts(){
 
 	// Check if a new foot location will be used for estimation
 	if ((prev_lf_contact == false) && (lf_contact == true)){
-		computeNewFootLocations(mercury_link::leftFoot); // Update Left foot location
 		//printf("\n New Left foot contact\n");
+		computeNewFootLocations(mercury_link::leftFoot); // Update Left foot location
+		// Update Prior?
+		P_prior.block(9,9,3,3) = wp_intensity_default*dynacore::Matrix::Identity(3,3);
+
 	}
 	if ((prev_rf_contact == false) && (rf_contact == true)){
-		computeNewFootLocations(mercury_link::rightFoot); // Update right foot location
 		//printf("\n New Right foot contact\n");
+		computeNewFootLocations(mercury_link::rightFoot); // Update right foot location
+		// Update Prior?
+		P_prior.block(12,12,3,3) = wp_intensity_default*dynacore::Matrix::Identity(3,3);				
+
 	}
 
 }
@@ -345,6 +358,8 @@ void EKF_RotellaEstimator::covariancePredictionStep(){
 	// Construct Process noise Jacobian Matrix, L_c
 	getMatrix_L_c(O_q_B, L_c);
 	getMatrix_Q(Q_c);
+	P_predicted = F_k*P_prior*F_k.transpose() + F_k*L_c*Q_c*L_c.transpose()*F_k.transpose()*dt;
+
 
 }
 
@@ -356,6 +371,7 @@ void EKF_RotellaEstimator::predictionStep(){
 void EKF_RotellaEstimator::updateStep(){
 	// Update Prior
 	x_prior = x_predicted;
+	P_prior = P_predicted;
 }
 
 
