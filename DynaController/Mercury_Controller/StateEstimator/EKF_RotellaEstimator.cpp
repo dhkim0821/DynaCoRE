@@ -217,13 +217,16 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
 		f_imu[i] = -acc[i];
 		omega_imu[i] = ang_vel[i];		
 	}	
+
 	lf_contact = left_foot_contact;
 	rf_contact = right_foot_contact;	
 	Q_config.segment(mercury::num_virtual, mercury::num_act_joint) = joint_values;
 
 	// Note: the first time contact is activated, the estimator is reset.
 	if ( (!initial_foot_contact) && ((lf_contact) || (rf_contact)) ){
+		printf("\n");
 		printf("[EKF_RotellaEstimator] initial contact triggered. EKF filter will be reset. \n");
+		printf("\n");
 		initial_foot_contact = true;
 		resetFilter();
 	}
@@ -349,6 +352,7 @@ void EKF_RotellaEstimator::statePredictionStep(){
 	// predict position and velocity
 	x_predicted.segment(0, O_r.size()) = O_r + O_v*dt + 0.5*dt*dt*(C_rot.transpose()*f_imu_input + gravity_vec);
 	x_predicted.segment(O_r.size(), O_v.size()) = O_v + dt*(C_rot.transpose()*f_imu_input + gravity_vec);
+
 	// predict orientation
 	dynacore::Quaternion q_predicted = 	dynacore::QuatMultiply(O_q_B, B_q_omega);
 
@@ -491,14 +495,14 @@ void EKF_RotellaEstimator::updateStep(){
 void EKF_RotellaEstimator::updateStatePosterior(){
 	x_posterior = x_predicted;
 	x_posterior.head(O_r.size() + O_v.size()) += delta_x_posterior.head(O_r.size() + O_v.size());
-	x_posterior.tail(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size()) += delta_x_posterior.head(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size());
+	x_posterior.tail(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size()) += delta_x_posterior.tail(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size());
 
 	// Prepare quaternion update
 	dynacore::Quaternion q_prior, q_change, q_posterior;	
-	q_prior.x() = x_posterior[O_r.size()+O_v.size()];
-	q_prior.y() = x_posterior[O_r.size()+O_v.size()+1];
-	q_prior.z() = x_posterior[O_r.size()+O_v.size()+2];		
-	q_prior.w() = x_posterior[O_r.size()+O_v.size()+3];
+	q_prior.x() = x_predicted[O_r.size()+O_v.size()];
+	q_prior.y() = x_predicted[O_r.size()+O_v.size()+1];
+	q_prior.z() = x_predicted[O_r.size()+O_v.size()+2];		
+	q_prior.w() = x_predicted[O_r.size()+O_v.size()+3];
 
 	// Convert delta phi change to quaternion
 	delta_phi[0] = delta_x_posterior[O_r.size() + O_v.size()];
@@ -520,7 +524,7 @@ void EKF_RotellaEstimator::updateStatePosterior(){
 
 void EKF_RotellaEstimator::doFilterCalculations(){
 	predictionStep();
-	//updateStep();
+//	updateStep();
 }
 
 
@@ -541,9 +545,8 @@ void EKF_RotellaEstimator::showPrintOutStatements(){
 	// dynacore::pretty_print(omega_imu_input, std::cout, "omega_imu_input");
 
 
-	//dynacore::pretty_print(x_prior, std::cout, "x_prior");
+	// dynacore::pretty_print(x_prior, std::cout, "x_prior");
 	// dynacore::pretty_print(y_vec, std::cout, "y_vec");
-	//dynacore::pretty_print(x_prior, std::cout, "x_predicted");
 	// dynacore::pretty_print(delta_x_posterior, std::cout, "delta_x_posterior");
 
 	//dynacore::pretty_print(R_k, std::cout, "R_k");	
