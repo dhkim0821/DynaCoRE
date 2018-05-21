@@ -127,6 +127,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_body_ori_des[st_idx:end_idx,i-1], "r-" , \
                 data_x, data_body_ori[st_idx:end_idx,i-1], "b-")
         plt.grid(True)
+
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+            # phase number
+            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
+
     plt.xlabel('time (sec)')
     ## increment figure number and index
     figure_number += 1

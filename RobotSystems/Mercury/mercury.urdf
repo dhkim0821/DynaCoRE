@@ -6,7 +6,7 @@
        <mass value="8.0"/> 
       <!--<mass value="9.5"/>-->
       <!-- <origin xyz="0.00347 0.0 0.22524"/> -->
-      <origin xyz="-0.04 0.0 0.22524"/>
+      <origin xyz="-0.02 0.0 0.22524"/>
       <inertia ixx="0.3006167" ixy="0" ixz="0" iyy="0.23837" iyz="0" izz="0.09690467"/>
     </inertial>
 <!--      <visual>

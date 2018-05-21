@@ -5,6 +5,7 @@
 #include <Configuration.h>
 #include <interface.hpp>
 #include <Mercury/Mercury_Definition.h>
+#include <Filter/filters.hpp>
 
 class Mercury_StateEstimator;
 class Mercury_StateProvider;
@@ -28,11 +29,13 @@ private:
   std::vector<double> torque_limit_max_;
   std::vector<double> jpos_limit_min_;
   std::vector<double> jpos_limit_max_;
+  std::vector<filter*> filter_jtorque_cmd_;
   
   void _ParameterSetting();
   bool _Initialization(Mercury_SensorData* );
 
   Mercury_Command* test_cmd_;
+  dynacore::Vector filtered_torque_command_;
   dynacore::Vector torque_command_;
   dynacore::Vector jpos_command_;
   dynacore::Vector jvel_command_;

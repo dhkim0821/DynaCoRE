@@ -22,7 +22,6 @@ JPosTargetCtrl::JPosTargetCtrl(RobotSystem* robot):Controller(robot),
     act_list.resize(mercury::num_qdot, true);
     for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
 
-
     wbdc_rotor_ = new WBDC_Rotor(act_list);
     wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
     wbdc_rotor_data_->A_rotor = 

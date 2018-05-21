@@ -1,5 +1,5 @@
-#ifndef CONFIGURATION_BODY_FOOT_WALKING_CONTROL
-#define CONFIGURATION_BODY_FOOT_WALKING_CONTROL
+#ifndef BODY_PRIOR_FOOT_CONFIGURATION_WALKING_CONTROL
+#define BODY_PRIOR_FOOT_CONFIGURATION_WALKING_CONTROL
 
 #include <Controller.hpp>
 #include <Utils/BSplineBasic.h>
@@ -14,10 +14,10 @@ class WBDC_ContactSpec;
 class WBDC_Rotor;
 class WBDC_Rotor_ExtraData;
 
-class ConfigBodyFootPlanningCtrl:public Controller{
+class BodyPriorFootPlanningCtrl:public Controller{
     public:
-        ConfigBodyFootPlanningCtrl(RobotSystem* robot, int swing_foot, Planner* planner);
-        ~ConfigBodyFootPlanningCtrl();
+        BodyPriorFootPlanningCtrl(RobotSystem* robot, int swing_foot, Planner* planner);
+        ~BodyPriorFootPlanningCtrl();
         virtual void OneStep(void* _cmd);
         virtual void FirstVisit();
         virtual void LastVisit();
@@ -68,6 +68,7 @@ class ConfigBodyFootPlanningCtrl:public Controller{
         int swing_foot_;
         double swing_height_;
         int swing_leg_jidx_;
+        int stance_leg_jidx_;
         double push_down_height_; // push foot below the ground at landing
         dynacore::Vect3 default_target_loc_;
     
@@ -81,9 +82,9 @@ class ConfigBodyFootPlanningCtrl:public Controller{
 
         double gain_decreasing_ratio_;
         double gain_decreasing_period_portion_;
-        void _setTaskGain(const dynacore::Vector & Kp, const dynacore::Vector & Kd);
 
-        Task* config_body_foot_task_;
+        Task* stance_task_;
+        Task* jpos_swing_task_;
         WBDC_ContactSpec* single_contact_;
         WBDC_Rotor* wbdc_rotor_;
         WBDC_Rotor_ExtraData* wbdc_rotor_data_;
@@ -96,10 +97,8 @@ class ConfigBodyFootPlanningCtrl:public Controller{
         dynacore::Vector des_jvel_;
 
         dynacore::Vect3 ini_body_pos_;
-        dynacore::Vect3 ini_com_pos_;
         dynacore::Vect3 ini_foot_pos_;
         dynacore::Vect3 target_foot_pos_;
-        dynacore::Vect2 body_pt_offset_;
         
         dynacore::Vector ini_config_;
         BS_Basic<3, 3, 1, 2, 2> foot_traj_;

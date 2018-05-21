@@ -387,9 +387,9 @@ void Mercury_InvKinematics::getSingleSupportFullConfigSeperation(
 
     //// Operational space Jacobian **********
     dynacore::Matrix Jop(3, mercury::num_qdot); Jop.setZero();
-    Jop(0, 2) = 1.;
-    Jop(1, 3) = 1.;
-    Jop(2, 4) = 1.;
+    Jop(0, 2) = 1.; // Height
+    Jop(1, 3) = 1.; // Roll
+    Jop(2, 4) = 1.; // Pitch
 
     dynacore::Matrix Jfoot = dynacore::Matrix::Zero(3, mercury::num_qdot);
     CalcPointJacobian(*model_, current_Q, swing_bodyid, zero_vec, Jfoot, false);

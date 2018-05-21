@@ -17,6 +17,7 @@ mercury_nodelet="/home/hcrl/ros/mercury_nodelet"
 
 folder_name=$(date +%Y%m%d_%H_%M_%S)
 export LATEST_FOLDER_NAME=${folder_name}
+echo ${LATEST_FOLDER_NAME}
 
 target_folder="$PATH_PREFIX/$USER/MyCloud/Mercury_Test_2018_05/"
 data_location=$PATH_PACKAGE

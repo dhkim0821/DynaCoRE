@@ -6,6 +6,7 @@ class Mercury_StateProvider;
 class Planner;
 
 #define CONFIG_INITIAL_SWING_FOOT 0 // 0: right, 1: left
+#define TASK_HIERARCHY 0 // 0: false, 1: true
 
 namespace WkConfigPhase{
   constexpr int initiation = 0;

@@ -21,6 +21,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 ## read files
     data_cmd = \
             np.genfromtxt(file_path+'command.txt', delimiter=None, dtype=(float))
+    data_filter_cmd = \
+            np.genfromtxt(file_path+'filtered_cmd.txt', delimiter=None, dtype=(float))
     data_torque = \
             np.genfromtxt(file_path+'torque.txt', delimiter=None, dtype=(float))
     data_motor_current = \
@@ -102,12 +104,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('jtorque (right_leg)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_filter_cmd[st_idx:end_idx,i-1], "c-", linewidth=2.7)
         plt.plot( \
                 data_x, scale[i-1] * data_motor_current[st_idx:end_idx, i-1], "k-", \
-                data_x, data_torque[st_idx:end_idx,i-1], "b-")
+                data_x, data_torque[st_idx:end_idx,i-1], "b-",\
+                data_x, data_cmd[st_idx:end_idx, i-1], "r-")
 
         
-        plt.plot(data_x, data_cmd[st_idx:end_idx,i-1], "r-", linewidth=3.7)
 
         # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
@@ -154,10 +157,12 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('jtorque (left_leg)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_filter_cmd[st_idx:end_idx,i-1+3], "c-", linewidth=2.7)
         plt.plot(\
                 data_x, scale[i-1] * data_motor_current[st_idx:end_idx, i-1 + 3], "k-", \
                 data_x, data_cmd[st_idx:end_idx,i-1 + 3], "r-" , \
                 data_x, data_torque[st_idx:end_idx,i-1 + 3], "b-")
+
         # phase marker #
         for j in phseChange:
             # phase line
