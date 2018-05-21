@@ -38,8 +38,10 @@ public:
 
   void handleFootContacts();
   void computeNewFootLocations(const int foot_link_id);
-  void setStateVariablesToPrior();
 
+  void setStateVariablesToPrior();
+  void setStateVariablesToPredicted();
+  
   void showPrintOutStatements();
 
   void getMatrix_L_c(const dynacore::Quaternion & q_in, dynacore::Matrix & L_c_mat);

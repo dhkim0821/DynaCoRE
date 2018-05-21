@@ -117,6 +117,8 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 	wbf_intensity = 0.0001;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
 	wbw_intensity = 0.000618; // rad/(s^2)/sqrt(Hz)	 // ang vel bias intensity
 
+
+
 	n_p = 0.01; // foot measurement noise intensity.
 
 }
@@ -198,6 +200,10 @@ void EKF_RotellaEstimator::resetFilter(){
 	x_prior.head(O_r.size() + O_v.size()) = dynacore::Vector::Zero(O_r.size() + O_v.size());
 	x_prior.tail(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size()) = dynacore::Vector::Zero(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size());
 
+	computeNewFootLocations(mercury_link::leftFoot); // Update Left foot location
+	computeNewFootLocations(mercury_link::rightFoot); // Update Right foot location
+
+
 }
 
 void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
@@ -217,7 +223,7 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
 
 	// Note: the first time contact is activated, the estimator is reset.
 	if ( (!initial_foot_contact) && ((lf_contact) || (rf_contact)) ){
-		printf("[EKF_RotellaEstimator] initial contact triggered. EKF filter is reset");
+		printf("[EKF_RotellaEstimator] initial contact triggered. EKF filter will be reset. \n");
 		initial_foot_contact = true;
 		resetFilter();
 	}
@@ -307,6 +313,22 @@ void EKF_RotellaEstimator::setStateVariablesToPrior(){
 	B_bw = x_prior.segment(dim_rvq_states + O_p_l.size() + O_p_r.size() + B_bw.size(), B_bw.size());		
 }
 
+void EKF_RotellaEstimator::setStateVariablesToPredicted(){
+	O_r = x_predicted.head(O_r.size());
+	O_v = x_predicted.segment(O_r.size(), O_v.size());
+	O_q_B.x() = x_predicted[O_r.size() + O_v.size()];
+	O_q_B.y() = x_predicted[O_r.size() + O_v.size() + 1];	
+	O_q_B.z() = x_predicted[O_r.size() + O_v.size() + 2];		
+	O_q_B.w() = x_predicted[O_r.size() + O_v.size() + 3];
+
+	C_rot = O_q_B.toRotationMatrix();
+
+	O_p_l = x_predicted.segment(dim_rvq_states, O_p_l.size());
+	O_p_r = x_predicted.segment(dim_rvq_states + O_p_l.size(), O_p_r.size());	
+	B_bf = x_predicted.segment(dim_rvq_states + O_p_l.size() + O_p_r.size(), B_bf.size());
+	B_bw = x_predicted.segment(dim_rvq_states + O_p_l.size() + O_p_r.size() + B_bf.size(), B_bw.size());	
+}
+
 void EKF_RotellaEstimator::statePredictionStep(){
 	// Prepare state variables
 	setStateVariablesToPrior();
@@ -329,6 +351,7 @@ void EKF_RotellaEstimator::statePredictionStep(){
 	x_predicted.segment(O_r.size(), O_v.size()) = O_v + dt*(C_rot.transpose()*f_imu_input + gravity_vec);
 	// predict orientation
 	dynacore::Quaternion q_predicted = 	dynacore::QuatMultiply(O_q_B, B_q_omega);
+
 	x_predicted[O_r.size()+O_v.size()] = q_predicted.x();
 	x_predicted[O_r.size()+O_v.size()+1] = q_predicted.y();
 	x_predicted[O_r.size()+O_v.size()+2] = q_predicted.z();		
@@ -336,6 +359,9 @@ void EKF_RotellaEstimator::statePredictionStep(){
 	
 	// predict foot position and biases
 	x_predicted.segment(dim_rvq_states, dim_states - dim_rvq_states) = x_prior.segment(dim_rvq_states, dim_states - dim_rvq_states); 
+
+	// Set variables to predicted
+	setStateVariablesToPredicted();
 }
 
 void EKF_RotellaEstimator::getMatrix_L_c(const dynacore::Quaternion & q_in, dynacore::Matrix & L_c_mat){
@@ -434,8 +460,8 @@ void EKF_RotellaEstimator::updateStep(){
 	H_k.block(3,12,3,3) = C_rot;
 
 	//Compute the Kalman Gain
-	S_k = H_k*P_prior*H_k.transpose() + R_k;
-	K_k = P_prior*H_k.transpose()*S_k.inverse();
+	S_k = H_k*P_predicted*H_k.transpose() + R_k;
+	K_k = P_predicted*H_k.transpose()*S_k.inverse();
 
 	// Perform Measurement Using Kinematics
 	getCurrentBodyFrameFootPosition(mercury_link::leftFoot, z_lfoot_pos_B);
@@ -453,7 +479,7 @@ void EKF_RotellaEstimator::updateStep(){
 	updateStatePosterior();
 
 	// Update Covariance Matrix
-	P_posterior = (dynacore::Matrix::Identity(dim_error_states, dim_error_states) - K_k*H_k)*P_prior;
+	P_posterior = (dynacore::Matrix::Identity(dim_error_states, dim_error_states) - K_k*H_k)*P_predicted;
 	P_prior = P_posterior;
 
 
@@ -463,7 +489,7 @@ void EKF_RotellaEstimator::updateStep(){
 }
 
 void EKF_RotellaEstimator::updateStatePosterior(){
-	x_posterior = x_prior;
+	x_posterior = x_predicted;
 	x_posterior.head(O_r.size() + O_v.size()) += delta_x_posterior.head(O_r.size() + O_v.size());
 	x_posterior.tail(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size()) += delta_x_posterior.head(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size());
 
@@ -494,17 +520,19 @@ void EKF_RotellaEstimator::updateStatePosterior(){
 
 void EKF_RotellaEstimator::doFilterCalculations(){
 	predictionStep();
-	updateStep();
+	//updateStep();
 }
 
 
 
 
 void EKF_RotellaEstimator::showPrintOutStatements(){
+	//printf("\n");
 	// printf("[EKF Rotella Estimator]\n");
-	//dynacore::pretty_print(f_imu, std::cout, "body frame f_imu");
-
+	// dynacore::pretty_print(f_imu, std::cout, "body frame f_imu");
 	// dynacore::Vector a_o = (C_rot.transpose()*f_imu_input + gravity_vec);
+	// dynacore::pretty_print(O_q_B, std::cout, "O_q_B");	
+	// dynacore::pretty_print(C_rot, std::cout, "C_rot");	
 	// dynacore::pretty_print(a_o, std::cout, "inertial frame f_imu");
 
 	// dynacore::pretty_print(omega_imu, std::cout, "body frame angular velocity");			
@@ -513,10 +541,12 @@ void EKF_RotellaEstimator::showPrintOutStatements(){
 	// dynacore::pretty_print(omega_imu_input, std::cout, "omega_imu_input");
 
 
-	// dynacore::pretty_print(x_prior, std::cout, "x_prior");
+	//dynacore::pretty_print(x_prior, std::cout, "x_prior");
 	// dynacore::pretty_print(y_vec, std::cout, "y_vec");
 	//dynacore::pretty_print(x_prior, std::cout, "x_predicted");
-	//dynacore::pretty_print(delta_x_posterior, std::cout, "delta_x_posterior");
+	// dynacore::pretty_print(delta_x_posterior, std::cout, "delta_x_posterior");
+
+	//dynacore::pretty_print(R_k, std::cout, "R_k");	
 	// dynacore::pretty_print(delta_phi, std::cout, "delta_phi");	
 	// dynacore::pretty_print(x_posterior, std::cout, "x_posterior");
 
@@ -528,7 +558,7 @@ void EKF_RotellaEstimator::showPrintOutStatements(){
 	//dynacore::pretty_print(P_prior, std::cout, "P_prior");		
 	// dynacore::pretty_print(H_k, std::cout, "H_k");		
 
-	//dynacore::pretty_print(K_k, std::cout, "K_k");
+	// dynacore::pretty_print(K_k, std::cout, "K_k");
 
 	// dynacore::pretty_print(z_lfoot_pos_B, std::cout, "z_lfoot");
 	// dynacore::pretty_print(z_rfoot_pos_B, std::cout, "z_rfoot");
