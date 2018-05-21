@@ -13,6 +13,7 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 	O_p_r(3),
 	B_bf(3),
 	B_bw(3),
+	initial_foot_contact(false),
 	lf_contact(false),
 	rf_contact(false),
 	prev_lf_contact(false),
@@ -89,6 +90,8 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 	x_predicted = dynacore::Vector::Zero(dim_states);
 	x_posterior = dynacore::Vector::Zero(dim_states);	
 	x_prior[9] = 1.0; // Set Quaternion to identity.
+	x_posterior[9] = 1.0; // Set Quaternion to identity.
+
 
 	delta_x_prior = dynacore::Vector::Zero(dim_error_states);
 	delta_x_posterior = dynacore::Vector::Zero(dim_error_states);	
@@ -127,6 +130,11 @@ void EKF_RotellaEstimator::EstimatorInitialization(const dynacore::Quaternion & 
                                        const std::vector<double> & initial_imu_ang_vel){
 	// Initialize Global Orientation
 	O_q_B = initial_global_orientation;
+	x_prior[O_r.size()+O_v.size()] = O_q_B.x();
+	x_prior[O_r.size()+O_v.size()+1] = O_q_B.y();
+	x_prior[O_r.size()+O_v.size()+2] = O_q_B.z();		
+	x_prior[O_r.size()+O_v.size()+3] = O_q_B.w();				
+
 	// Initialize IMU values
 	for(size_t i = 0; i < 3; i++){
 		f_imu[i] = initial_imu_acc[i];
@@ -139,47 +147,8 @@ void EKF_RotellaEstimator::EstimatorInitialization(const dynacore::Quaternion & 
 	P_prior = L_c*Q_c;
 
 
-	// printf("[EKF Rotella Estimator]\n");
-	// dynacore::pretty_print(O_q_B, std::cout, "initial global orientation");
-	// dynacore::pretty_print(f_imu, std::cout, "initial f_imu");
-	// dynacore::pretty_print(omega_imu, std::cout, "initial angular velocity");		
-
 }
 
-
-void EKF_RotellaEstimator::showPrintOutStatements(){
-	// printf("[EKF Rotella Estimator]\n");
-	// dynacore::pretty_print(f_imu, std::cout, "body frame f_imu");
-	// dynacore::pretty_print(omega_imu, std::cout, "body frame angular velocity");			
-
-	// dynacore::pretty_print(f_imu_input, std::cout, "f_imu_input");
-	// dynacore::pretty_print(omega_imu_input, std::cout, "omega_imu_input");
-
-	//dynacore::pretty_print(x_predicted, std::cout, "x_predicted");	
-	//dynacore::pretty_print(x_prior, std::cout, "x_prior");
-	//dynacore::pretty_print(delta_x_posterior, std::cout, "delta_x_posterior");
-	// dynacore::pretty_print(delta_phi, std::cout, "delta_phi");	
-	// dynacore::pretty_print(x_posterior, std::cout, "x_posterior");
-
-
-	//dynacore::pretty_print(F_c, std::cout, "F_c");
-	//dynacore::pretty_print(F_k, std::cout, "F_k");	
-	//dynacore::pretty_print(L_c, std::cout, "L_c");		
-	//dynacore::pretty_print(Q_c, std::cout, "Q_c");		
-	//dynacore::pretty_print(P_prior, std::cout, "P_prior");		
-	// dynacore::pretty_print(H_k, std::cout, "H_k");		
-
-	//dynacore::pretty_print(K_k, std::cout, "K_k");
-
-	// dynacore::pretty_print(z_lfoot_pos_B, std::cout, "z_lfoot");
-	// dynacore::pretty_print(z_rfoot_pos_B, std::cout, "z_rfoot");
-	//dynacore::pretty_print(y_vec, std::cout, "y_vec");	
-
-
-	// printf("Left Foot contact = %d \n", lf_contact);
-	// printf("Right Foot contact = %d \n", rf_contact);	
-	// dynacore::pretty_print(Q_config, std::cout, "Q_config");			
-}
 
 void EKF_RotellaEstimator::computeNewFootLocations(const int foot_link_id){
     // Find Foot body id
@@ -219,6 +188,17 @@ void EKF_RotellaEstimator::computeNewFootLocations(const int foot_link_id){
 
 }
 
+void EKF_RotellaEstimator::resetFilter(){
+	// Initialize Covariance matrix prior
+	getMatrix_L_c(O_q_B, L_c);
+	getMatrix_Q(Q_c);
+	P_prior = L_c*Q_c;
+
+	// Initialize state vector except for the orientation
+	x_prior.head(O_r.size() + O_v.size()) = dynacore::Vector::Zero(O_r.size() + O_v.size());
+	x_prior.tail(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size()) = dynacore::Vector::Zero(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size());
+
+}
 
 void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
                              const std::vector<double> & acc_inc,
@@ -235,7 +215,13 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
 	rf_contact = right_foot_contact;	
 	Q_config.segment(mercury::num_virtual, mercury::num_act_joint) = joint_values;
 
-	// Note: the first time the foot contact is activated, the estimator should start running.
+	// Note: the first time contact is activated, the estimator is reset.
+	if ( (!initial_foot_contact) && ((lf_contact) || (rf_contact)) ){
+		printf("[EKF_RotellaEstimator] initial contact triggered. EKF filter is reset");
+		initial_foot_contact = true;
+		resetFilter();
+	}
+
 
 	// Handle changes in foot contact
 	handleFootContacts();	
@@ -479,7 +465,7 @@ void EKF_RotellaEstimator::updateStep(){
 void EKF_RotellaEstimator::updateStatePosterior(){
 	x_posterior = x_prior;
 	x_posterior.head(O_r.size() + O_v.size()) += delta_x_posterior.head(O_r.size() + O_v.size());
-	x_posterior.tail(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size()) = delta_x_posterior.head(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size());
+	x_posterior.tail(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size()) += delta_x_posterior.head(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size());
 
 	// Prepare quaternion update
 	dynacore::Quaternion q_prior, q_change, q_posterior;	
@@ -501,9 +487,7 @@ void EKF_RotellaEstimator::updateStatePosterior(){
 	x_posterior[O_r.size()+O_v.size()+2] = q_posterior.z();		
 	x_posterior[O_r.size()+O_v.size()+3] = q_posterior.w();				
 
-	// update prior
 	x_prior = x_posterior;
-
 }
 
 
@@ -511,4 +495,47 @@ void EKF_RotellaEstimator::updateStatePosterior(){
 void EKF_RotellaEstimator::doFilterCalculations(){
 	predictionStep();
 	updateStep();
+}
+
+
+
+
+void EKF_RotellaEstimator::showPrintOutStatements(){
+	// printf("[EKF Rotella Estimator]\n");
+	//dynacore::pretty_print(f_imu, std::cout, "body frame f_imu");
+
+	// dynacore::Vector a_o = (C_rot.transpose()*f_imu_input + gravity_vec);
+	// dynacore::pretty_print(a_o, std::cout, "inertial frame f_imu");
+
+	// dynacore::pretty_print(omega_imu, std::cout, "body frame angular velocity");			
+
+	// dynacore::pretty_print(f_imu_input, std::cout, "f_imu_input");
+	// dynacore::pretty_print(omega_imu_input, std::cout, "omega_imu_input");
+
+
+	// dynacore::pretty_print(x_prior, std::cout, "x_prior");
+	// dynacore::pretty_print(y_vec, std::cout, "y_vec");
+	//dynacore::pretty_print(x_prior, std::cout, "x_predicted");
+	//dynacore::pretty_print(delta_x_posterior, std::cout, "delta_x_posterior");
+	// dynacore::pretty_print(delta_phi, std::cout, "delta_phi");	
+	// dynacore::pretty_print(x_posterior, std::cout, "x_posterior");
+
+
+	//dynacore::pretty_print(F_c, std::cout, "F_c");
+	//dynacore::pretty_print(F_k, std::cout, "F_k");	
+	//dynacore::pretty_print(L_c, std::cout, "L_c");		
+	//dynacore::pretty_print(Q_c, std::cout, "Q_c");		
+	//dynacore::pretty_print(P_prior, std::cout, "P_prior");		
+	// dynacore::pretty_print(H_k, std::cout, "H_k");		
+
+	//dynacore::pretty_print(K_k, std::cout, "K_k");
+
+	// dynacore::pretty_print(z_lfoot_pos_B, std::cout, "z_lfoot");
+	// dynacore::pretty_print(z_rfoot_pos_B, std::cout, "z_rfoot");
+	//dynacore::pretty_print(y_vec, std::cout, "y_vec");	
+
+
+	// printf("Left Foot contact = %d \n", lf_contact);
+	// printf("Right Foot contact = %d \n", rf_contact);	
+	// dynacore::pretty_print(Q_config, std::cout, "Q_config");			
 }

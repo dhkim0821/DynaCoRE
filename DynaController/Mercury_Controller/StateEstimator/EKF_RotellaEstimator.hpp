@@ -69,6 +69,7 @@ protected:
   dynacore::Vector f_imu_input;  // imu frame acceleration
   dynacore::Vector omega_imu_input;  // imu frame angular velocity  
 
+  bool initial_foot_contact; // checks whether an initial foot contact at startup has occured for the first time.
 
   bool lf_contact; // value of left foot contact
   bool rf_contact; // value of right foot contact
