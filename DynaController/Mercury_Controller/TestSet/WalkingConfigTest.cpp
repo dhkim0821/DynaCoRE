@@ -133,7 +133,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
 #if (CONFIG_INITIAL_SWING_FOOT == 1)  
     if(phase == WkConfigPhase::lift_up) { next_phase = WkConfigPhase::double_contact_2; }
 #endif
-     printf("next phase: %i\n", next_phase);
+    // printf("next phase: %i\n", next_phase);
 
     if(phase == WkConfigPhase::double_contact_1) {
         //if(phase == WkConfigPhase::right_swing_start_trans) {

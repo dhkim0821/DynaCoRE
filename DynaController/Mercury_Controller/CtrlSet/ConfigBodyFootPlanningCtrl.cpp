@@ -224,17 +224,32 @@ void ConfigBodyFootPlanningCtrl::_CheckPlanning(){
 
 void ConfigBodyFootPlanningCtrl::_Replanning(){
     dynacore::Vect3 com_pos, com_vel, target_loc;
+    dynacore::Vect3 del_com_pos;
     // Direct value used
     robot_sys_->getCoMPosition(com_pos);
     robot_sys_->getCoMVelocity(com_vel);
 
     // Estimated value used
-    for(int i(0); i<2; ++i){
-        com_pos[i] = sp_->estimated_com_state_[i];
-        com_vel[i] = sp_->estimated_com_state_[i + 2];
-    }
+    // for(int i(0); i<2; ++i){
+    //     com_pos[i] = sp_->estimated_com_state_[i];
+    //     com_vel[i] = sp_->estimated_com_state_[i + 2];
+    // }
     // TEST
-    com_pos[0] = sp_->Q_[0]-0.01; // use body position
+    // for(int i(0); i<2; ++i){
+    //     del_com_pos[i] = com_pos[i] - ini_com_pos_[i];
+    //     com_vel[i] = del_com_pos[i]/state_machine_time_;
+    // }
+
+    // TEST 2
+    for(int i(0); i<2; ++i){
+        com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
+        del_com_pos[i] = sp_->Q_[i] - ini_config_[i];
+        com_vel[i] = del_com_pos[i]/state_machine_time_;
+    }
+    printf("planning com state: %f, %f, %f, %f\n",
+        com_pos[0], com_pos[1],
+        com_vel[0], com_vel[1]);
+    //com_pos[0] = sp_->Q_[0]-0.01; // use body position
     //com_vel[0] = 0.;  // forward backward velocity is small
     //com_vel[1] = 0.;
 
@@ -300,11 +315,12 @@ void ConfigBodyFootPlanningCtrl::FirstVisit(){
     // _Replanning();
     num_planning_ = 0;
 
-    dynacore::Vect3 com_pos, com_vel;
-    robot_sys_->getCoMPosition(com_pos);
+    dynacore::Vect3 com_vel;
+    robot_sys_->getCoMPosition(ini_com_pos_);
     robot_sys_->getCoMVelocity(com_vel);
     dynacore::Vector input_state(4);
-    input_state[0] = com_pos[0];   input_state[1] = com_pos[1];
+    input_state[0] = ini_com_pos_[0];   
+    input_state[1] = ini_com_pos_[1];
     input_state[2] = com_vel[0];   input_state[3] = com_vel[1];
 
     com_estimator_->EstimatorInitialization(input_state);
@@ -426,6 +442,12 @@ void ConfigBodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_
     handler.getValue("gain_decreasing_ratio", gain_decreasing_ratio_);
     handler.getValue("gain_decreasing_period_portion", 
             gain_decreasing_period_portion_);
+
+    // Body Point offset
+    handler.getVector("body_pt_offset", tmp_vec);
+    for(int i(0); i<2; ++i){
+        body_pt_offset_[i] = tmp_vec[i];
+    }
 
     static bool b_bodypute_eigenvalue(true);
     if(b_bodypute_eigenvalue){
