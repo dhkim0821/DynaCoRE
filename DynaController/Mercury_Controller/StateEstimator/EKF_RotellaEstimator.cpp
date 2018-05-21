@@ -372,13 +372,22 @@ void EKF_RotellaEstimator::getMatrix_L_c(const dynacore::Quaternion & q_in, dyna
 	dynacore::Matrix C_mat = q_in.toRotationMatrix();
 	L_c_mat = dynacore::Matrix::Zero(dim_error_states, dim_process_errors);
 
-	L_c_mat.block(O_r.size(), 0, 3, 3) = -C_mat.transpose();
-	L_c_mat.block(O_r.size() + O_v.size(), f_imu.size(), 3, 3) = -dynacore::Matrix::Identity(3,3);
-	L_c_mat.block(O_r.size() + O_v.size() + 3, f_imu.size() + omega_imu.size(), 3,3) = C_mat.transpose();
-	L_c_mat.block(O_r.size() + O_v.size() + 3 + O_p_l.size(), f_imu.size() + omega_imu.size() + O_p_l.size(), 3, 3) = C_mat.transpose();	
-	L_c_mat.block(O_r.size() + O_v.size() + 3 + O_p_l.size() + O_p_r.size(), f_imu.size() + omega_imu.size() + O_p_l.size() + O_p_r.size(), 3, 3) = dynacore::Matrix::Identity(3,3);	
-	L_c_mat.block(O_r.size() + O_v.size() + 3 + O_p_l.size() + O_p_r.size() + B_bw.size(), 
-				  f_imu.size() + omega_imu.size() + O_p_l.size() + O_p_r.size() + B_bw.size(), 3, 3) = dynacore::Matrix::Identity(3,3);		
+	// L_c_mat.block(O_r.size(), 0, 3, 3) = -C_mat.transpose();
+	// L_c_mat.block(O_r.size() + O_v.size(), f_imu.size(), 3, 3) = -dynacore::Matrix::Identity(3,3);
+	// L_c_mat.block(O_r.size() + O_v.size() + 3, f_imu.size() + omega_imu.size(), 3,3) = C_mat.transpose();
+	// L_c_mat.block(O_r.size() + O_v.size() + 3 + O_p_l.size(), f_imu.size() + omega_imu.size() + O_p_l.size(), 3, 3) = C_mat.transpose();	
+	// L_c_mat.block(O_r.size() + O_v.size() + 3 + O_p_l.size() + O_p_r.size(), f_imu.size() + omega_imu.size() + O_p_l.size() + O_p_r.size(), 3, 3) = dynacore::Matrix::Identity(3,3);	
+	// L_c_mat.block(O_r.size() + O_v.size() + 3 + O_p_l.size() + O_p_r.size() + B_bw.size(), 
+	// 			  f_imu.size() + omega_imu.size() + O_p_l.size() + O_p_r.size() + B_bw.size(), 3, 3) = dynacore::Matrix::Identity(3,3);		
+
+	L_c_mat.block(3, 0, 3, 3) = -C_mat.transpose();
+	L_c_mat.block(6, 3, 3, 3) = -dynacore::Matrix::Identity(3,3);
+	L_c_mat.block(9, 6, 3,3) = C_mat.transpose();
+	L_c_mat.block(12, 9, 3, 3) = C_mat.transpose();	
+	L_c_mat.block(15, 12, 3, 3) = dynacore::Matrix::Identity(3,3);	
+	L_c_mat.block(18, 15, 3, 3) = dynacore::Matrix::Identity(3,3);		
+
+
 }
 
 void EKF_RotellaEstimator::getMatrix_Q(dynacore::Matrix & Q_mat){
@@ -395,11 +404,17 @@ void EKF_RotellaEstimator::covariancePredictionStep(){
 	// Prepare Covariance Prediction Step
 	// Construct linearized error dynamics matrix, F_c
 	F_c = dynacore::Matrix::Zero(dim_error_states, dim_error_states); 
-	F_c.block(0, O_r.size(), 3, 3) = dynacore::Matrix::Identity(3, 3);
-	F_c.block(O_r.size(), O_r.size() + O_v.size(), 3, 3) = -C_rot.transpose()*getSkewSymmetricMatrix(f_imu_input);
-	F_c.block(O_r.size(), dim_rvq_states + O_p_l.size() + O_p_r.size(), 3, 3) = -C_rot.transpose();
-	F_c.block(O_r.size() + O_v.size(), O_r.size() + O_v.size(), 3, 3) = -getSkewSymmetricMatrix(omega_imu_input);
-	F_c.block(O_r.size() + O_v.size(), dim_error_states - B_bw.size(), B_bw.size(), B_bw.size()) = -dynacore::Matrix::Identity(3,3);
+	// F_c.block(0, O_r.size(), 3, 3) = dynacore::Matrix::Identity(3, 3);
+	// F_c.block(O_r.size(), O_r.size() + O_v.size(), 3, 3) = -C_rot.transpose()*getSkewSymmetricMatrix(f_imu_input);
+	// F_c.block(O_r.size(), dim_rvq_states + O_p_l.size() + O_p_r.size(), 3, 3) = -C_rot.transpose();
+	// F_c.block(O_r.size() + O_v.size(), O_r.size() + O_v.size(), 3, 3) = -getSkewSymmetricMatrix(omega_imu_input);
+	// F_c.block(O_r.size() + O_v.size(), dim_error_states - B_bw.size(), B_bw.size(), B_bw.size()) = -dynacore::Matrix::Identity(3,3);
+
+	F_c.block(0, 3, 3, 3) = dynacore::Matrix::Identity(3, 3);
+	F_c.block(3, 6, 3, 3) = -C_rot.transpose()*getSkewSymmetricMatrix(f_imu_input);
+	F_c.block(3, 15, 3, 3) = -C_rot.transpose();
+	F_c.block(6, 6, 3, 3) = -getSkewSymmetricMatrix(omega_imu_input);
+	F_c.block(6, 18, 3,3) = -dynacore::Matrix::Identity(3,3);
 
 	// Discretized linear error dynamics
 	F_k = dynacore::Matrix::Identity(F_c.rows(), F_c.cols()) + F_c*dt;
@@ -465,7 +480,7 @@ void EKF_RotellaEstimator::updateStep(){
 
 	//Compute the Kalman Gain
 	S_k = H_k*P_predicted*H_k.transpose() + R_k;
-	K_k = P_predicted*H_k.transpose()*S_k.inverse();
+	K_k = P_predicted*H_k.transpose()*(S_k.inverse());
 
 	// Perform Measurement Using Kinematics
 	getCurrentBodyFrameFootPosition(mercury_link::leftFoot, z_lfoot_pos_B);
@@ -545,7 +560,7 @@ void EKF_RotellaEstimator::showPrintOutStatements(){
 	// dynacore::pretty_print(omega_imu_input, std::cout, "omega_imu_input");
 
 
-	// dynacore::pretty_print(x_prior, std::cout, "x_prior");
+	// dynacore::pretty_print(x_predicted, std::cout, "x_predicted");
 	// dynacore::pretty_print(y_vec, std::cout, "y_vec");
 	// dynacore::pretty_print(delta_x_posterior, std::cout, "delta_x_posterior");
 
@@ -554,11 +569,11 @@ void EKF_RotellaEstimator::showPrintOutStatements(){
 	// dynacore::pretty_print(x_posterior, std::cout, "x_posterior");
 
 
-	//dynacore::pretty_print(F_c, std::cout, "F_c");
+	// dynacore::pretty_print(F_c, std::cout, "F_c");
 	//dynacore::pretty_print(F_k, std::cout, "F_k");	
-	//dynacore::pretty_print(L_c, std::cout, "L_c");		
-	//dynacore::pretty_print(Q_c, std::cout, "Q_c");		
-	//dynacore::pretty_print(P_prior, std::cout, "P_prior");		
+	// dynacore::pretty_print(L_c, std::cout, "L_c");		
+	// dynacore::pretty_print(Q_c, std::cout, "Q_c");		
+	// dynacore::pretty_print(P_prior, std::cout, "P_prior");		
 	// dynacore::pretty_print(H_k, std::cout, "H_k");		
 
 	// dynacore::pretty_print(K_k, std::cout, "K_k");
