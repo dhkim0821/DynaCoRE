@@ -42,16 +42,19 @@ public:
 
   void showPrintOutStatements();
 
-
   void getMatrix_L_c(const dynacore::Quaternion & q_in, dynacore::Matrix & L_c_mat);
   void getMatrix_Q(dynacore::Matrix & Q_mat);
   void statePredictionStep();
   void covariancePredictionStep();  
 
+  void getCurrentBodyFrameFootPosition(const int foot_link_id, dynacore::Vector & foot_pos_B);
+  void updateStatePosterior();
+
   void predictionStep();
   void updateStep();
   void doFilterCalculations(); 
 
+  void resetFilter();
 
 protected:
   dynacore::Vector O_p_l; // global left foot position
@@ -127,6 +130,12 @@ protected:
   dynacore::Vector delta_x_prior; // Prior error states
   dynacore::Vector delta_x_posterior; // Posterier error states
   dynacore::Vector delta_y; // prediction and measurement differences
+
+  dynacore::Vector z_lfoot_pos_B;
+  dynacore::Vector z_rfoot_pos_B;
+  dynacore::Vector y_vec; // prediction and measurement differences
+
+  dynacore::Vect3 delta_phi;
 
 };
 
