@@ -76,6 +76,7 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 	H_k = dynacore::Matrix::Zero(dim_obs, dim_error_states);
 
 	R_c = dynacore::Matrix::Zero(dim_obs, dim_obs);
+	R_k = dynacore::Matrix::Zero(dim_obs, dim_obs);
 
 	P_prior = dynacore::Matrix::Zero(dim_error_states, dim_error_states);
 	P_predicted = dynacore::Matrix::Zero(dim_error_states, dim_error_states);	
@@ -144,13 +145,14 @@ void EKF_RotellaEstimator::showPrintOutStatements(){
 	// dynacore::pretty_print(omega_imu_input, std::cout, "omega_imu_input");
 
 	// dynacore::pretty_print(x_predicted, std::cout, "x_predicted");
+	// dynacore::pretty_print(x_predicted, std::cout, "x_predicted");	
 
 	//dynacore::pretty_print(F_c, std::cout, "F_c");
 	//dynacore::pretty_print(F_k, std::cout, "F_k");	
 	//dynacore::pretty_print(L_c, std::cout, "L_c");		
 	//dynacore::pretty_print(Q_c, std::cout, "Q_c");		
 	//dynacore::pretty_print(P_prior, std::cout, "P_prior");		
-
+	// dynacore::pretty_print(H_k, std::cout, "H_k");		
 
 	// printf("Left Foot contact = %d \n", lf_contact);
 	// printf("Right Foot contact = %d \n", rf_contact);	
@@ -222,6 +224,7 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
 	//Print Statements
 	if (count % 100 == 0){
 		showPrintOutStatements();
+		count = 0;
 	}
 	count++;
 
@@ -245,6 +248,7 @@ void EKF_RotellaEstimator::handleFootContacts(){
 		wp_r_intensity = wp_intensity_unknown;
 	}	
 
+	// Handle new contact detections
 	// Check if a new foot location will be used for estimation
 	if ((prev_lf_contact == false) && (lf_contact == true)){
 		//printf("\n New Left foot contact\n");
@@ -258,9 +262,16 @@ void EKF_RotellaEstimator::handleFootContacts(){
 		computeNewFootLocations(mercury_link::rightFoot); // Update right foot location
 		// Update Prior?
 		P_prior.block(12,12,3,3) = wp_intensity_default*dynacore::Matrix::Identity(3,3);				
-
 	}
 
+	// Handle loss of contact
+	// Update Covariance when a loss in contact is detected
+	if ((prev_lf_contact == true) && (lf_contact == false)){
+		P_prior.block(9,9,3,3) = wp_intensity_unknown*dynacore::Matrix::Identity(3,3);
+	}
+	if ((prev_rf_contact == true) && (rf_contact == false)){
+		P_prior.block(12,12,3,3) = wp_intensity_unknown*dynacore::Matrix::Identity(3,3);				
+	}
 }
 
 dynacore::Matrix EKF_RotellaEstimator::getSkewSymmetricMatrix(dynacore::Vector & vec_in){
@@ -358,9 +369,9 @@ void EKF_RotellaEstimator::covariancePredictionStep(){
 	// Construct Process noise Jacobian Matrix, L_c
 	getMatrix_L_c(O_q_B, L_c);
 	getMatrix_Q(Q_c);
+
+	// Perform Covariance prediction step
 	P_predicted = F_k*P_prior*F_k.transpose() + F_k*L_c*Q_c*L_c.transpose()*F_k.transpose()*dt;
-
-
 }
 
 void EKF_RotellaEstimator::predictionStep(){
@@ -369,6 +380,22 @@ void EKF_RotellaEstimator::predictionStep(){
 }
 
 void EKF_RotellaEstimator::updateStep(){
+	// Construct Noise Matrix R
+	R_c.block(0,0,dim_obs,dim_obs) = n_p*dynacore::Matrix::Identity(6,6);
+	R_k = R_c/dt;
+
+	// Construct Discretized Observation Matrix
+	H_k.block(0,0,3,3) = -C_rot;
+	dynacore::Vector p_l_B = C_rot*(O_p_l - O_r); // the left foot position in body frame
+	H_k.block(0,6,3,3) = getSkewSymmetricMatrix(p_l_B);	
+	H_k.block(0,9,3,3) = C_rot;
+
+	H_k.block(3,0,3,3) = -C_rot;
+	dynacore::Vector p_r_B = C_rot*(O_p_r - O_r); // the right foot position in body frame	
+	H_k.block(3,6,3,3) = getSkewSymmetricMatrix(p_r_B);	
+	H_k.block(3,12,3,3) = C_rot;
+
+
 	// Update Prior
 	x_prior = x_predicted;
 	P_prior = P_predicted;

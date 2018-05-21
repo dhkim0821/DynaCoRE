@@ -113,6 +113,9 @@ protected:
   dynacore::Matrix R_k; // Discretized measurement noise covariance matrix  
   double n_p;           // Measurement noise intensity
 
+  dynacore::Matrix S_k; // Innovation (residual) covariance
+  dynacore::Matrix K_k; // Kalman gain  
+
   dynacore::Matrix P_prior; // Prior covariance matrix
   dynacore::Matrix P_predicted; // Predicted covariance matrix  
   dynacore::Matrix P_posterior; // Posterior covariance matrix
