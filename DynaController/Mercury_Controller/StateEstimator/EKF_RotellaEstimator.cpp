@@ -142,6 +142,8 @@ void EKF_RotellaEstimator::showPrintOutStatements(){
 
 	//dynacore::pretty_print(F_c, std::cout, "F_c");
 	//dynacore::pretty_print(F_k, std::cout, "F_k");	
+	//dynacore::pretty_print(L_c, std::cout, "L_c");		
+	//dynacore::pretty_print(Q_c, std::cout, "Q_c");		
 
 	// printf("Left Foot contact = %d \n", lf_contact);
 	// printf("Right Foot contact = %d \n", rf_contact);	
@@ -304,6 +306,29 @@ void EKF_RotellaEstimator::statePredictionStep(){
 	x_predicted.segment(dim_rvq_states, dim_states - dim_rvq_states) = x_prior.segment(dim_rvq_states, dim_states - dim_rvq_states); 
 }
 
+void EKF_RotellaEstimator::getMatrix_L_c(const dynacore::Quaternion & q_in, dynacore::Matrix & L_c_mat){
+	dynacore::Matrix C_mat = q_in.toRotationMatrix();
+	L_c_mat = dynacore::Matrix::Zero(dim_error_states, dim_process_errors);
+
+	L_c_mat.block(O_r.size(), 0, 3, 3) = -C_mat.transpose();
+	L_c_mat.block(O_r.size() + O_v.size(), f_imu.size(), 3, 3) = -dynacore::Matrix::Identity(3,3);
+	L_c_mat.block(O_r.size() + O_v.size() + 3, f_imu.size() + omega_imu.size(), 3,3) = C_mat.transpose();
+	L_c_mat.block(O_r.size() + O_v.size() + 3 + O_p_l.size(), f_imu.size() + omega_imu.size() + O_p_l.size(), 3, 3) = C_mat.transpose();	
+	L_c_mat.block(O_r.size() + O_v.size() + 3 + O_p_l.size() + O_p_r.size(), f_imu.size() + omega_imu.size() + O_p_l.size() + O_p_r.size(), 3, 3) = dynacore::Matrix::Identity(3,3);	
+	L_c_mat.block(O_r.size() + O_v.size() + 3 + O_p_l.size() + O_p_r.size() + B_bw.size(), 
+				  f_imu.size() + omega_imu.size() + O_p_l.size() + O_p_r.size() + B_bw.size(), 3, 3) = dynacore::Matrix::Identity(3,3);		
+}
+
+void EKF_RotellaEstimator::getMatrix_Q(dynacore::Matrix & Q_mat){
+	Q_mat = dynacore::Matrix::Zero(dim_process_errors, dim_process_errors);
+	Q_mat.block(0, 0, 3, 3) = wf_intensity*dynacore::Matrix::Identity(3,3);
+	Q_mat.block(3, 3, 3, 3) = ww_intensity*dynacore::Matrix::Identity(3,3);
+	Q_mat.block(6, 6, 3, 3) = wp_l_intensity*dynacore::Matrix::Identity(3,3);
+	Q_mat.block(9, 9, 3, 3) = wp_r_intensity*dynacore::Matrix::Identity(3,3);
+	Q_mat.block(12, 12, 3, 3) = wbf_intensity*dynacore::Matrix::Identity(3,3);
+	Q_mat.block(15, 15, 3, 3) = wbw_intensity*dynacore::Matrix::Identity(3,3);
+}
+
 void EKF_RotellaEstimator::covariancePredictionStep(){
 	// Prepare Covariance Prediction Step
 	// Construct linearized error dynamics matrix, F_c
@@ -318,7 +343,8 @@ void EKF_RotellaEstimator::covariancePredictionStep(){
 	F_k = dynacore::Matrix::Identity(F_c.rows(), F_c.cols()) + F_c*dt;
 
 	// Construct Process noise Jacobian Matrix, L_c
-	L_c = dynacore::Matrix::Zero(dim_error_states, dim_process_errors); 
+	getMatrix_L_c(O_q_B, L_c);
+	getMatrix_Q(Q_c);
 
 }
 

@@ -43,8 +43,8 @@ public:
   void showPrintOutStatements();
 
 
-  dynacore::Matrix getMatrix_L_c(dynacore::Quaternion & q_in);
-  dynacore::Matrix getMatrix_Q();
+  void getMatrix_L_c(const dynacore::Quaternion & q_in, dynacore::Matrix & L_c_mat);
+  void getMatrix_Q(dynacore::Matrix & Q_mat);
   void statePredictionStep();
   void covariancePredictionStep();  
 
