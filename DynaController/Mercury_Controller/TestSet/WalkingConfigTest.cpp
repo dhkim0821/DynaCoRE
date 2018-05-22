@@ -12,10 +12,12 @@
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury/Mercury_Definition.h>
 
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0)
 #include <Mercury_Controller/CtrlSet/BodyPriorFootPlanningCtrl.hpp>
-#else
+#elif (SWING_CTRL_TYPE == 1)
 #include <Mercury_Controller/CtrlSet/ConfigBodyFootPlanningCtrl.hpp>
+#elif (SWING_CTRL_TYPE == 2)
+#include <Mercury_Controller/CtrlSet/BodyJPosSwingPlanningCtrl.hpp>
 #endif
 
 WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
@@ -41,10 +43,12 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     right_swing_start_trans_ctrl_ = 
         new TransitionConfigCtrl(robot, mercury_link::rightFoot, false);
     config_right_swing_ctrl_ = 
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0) 
         new BodyPriorFootPlanningCtrl(robot, mercury_link::rightFoot, reversal_planner_);
-#else
+#elif (SWING_CTRL_TYPE == 1)
     new ConfigBodyFootPlanningCtrl(robot, mercury_link::rightFoot, reversal_planner_);
+#elif (SWING_CTRL_TYPE == 2)
+    new BodyJPosSwingPlanningCtrl(robot, mercury_link::rightFoot, reversal_planner_);
 #endif
     right_swing_end_trans_ctrl_ = 
         new TransitionConfigCtrl(robot, mercury_link::rightFoot, true);
@@ -52,10 +56,12 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     left_swing_start_trans_ctrl_ = 
         new TransitionConfigCtrl(robot, mercury_link::leftFoot, false);
     config_left_swing_ctrl_ = 
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0)
         new BodyPriorFootPlanningCtrl(robot, mercury_link::leftFoot, reversal_planner_);
-#else
+#elif (SWING_CTRL_TYPE == 1)
     new ConfigBodyFootPlanningCtrl(robot, mercury_link::leftFoot, reversal_planner_);
+#elif (SWING_CTRL_TYPE == 2)
+    new BodyJPosSwingPlanningCtrl(robot, mercury_link::leftFoot, reversal_planner_);
 #endif
     left_swing_end_trans_ctrl_ = 
         new TransitionConfigCtrl(robot, mercury_link::leftFoot, true);
@@ -71,7 +77,7 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     state_list_.push_back(config_left_swing_ctrl_);
     state_list_.push_back(left_swing_end_trans_ctrl_);
 
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0)
     DataManager::GetDataManager()->RegisterData(
             &(((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->curr_foot_pos_des_), 
             VECT3, "rfoot_pos_des", 3);
@@ -85,7 +91,7 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     DataManager::GetDataManager()->RegisterData(
             &(((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->curr_foot_vel_des_), 
             VECT3, "lfoot_vel_des", 3);
-#else
+#elif (SWING_CTRL_TYPE == 1)
     DataManager::GetDataManager()->RegisterData(
             &(((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->curr_foot_pos_des_), 
             VECT3, "rfoot_pos_des", 3);
@@ -98,6 +104,20 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
             VECT3, "rfoot_vel_des", 3);
     DataManager::GetDataManager()->RegisterData(
             &(((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->curr_foot_vel_des_), 
+            VECT3, "lfoot_vel_des", 3);
+#elif (SWING_CTRL_TYPE == 2)
+    DataManager::GetDataManager()->RegisterData(
+            &(((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->curr_foot_pos_des_), 
+            VECT3, "rfoot_pos_des", 3);
+    DataManager::GetDataManager()->RegisterData(
+            &(((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->curr_foot_pos_des_), 
+            VECT3, "lfoot_pos_des", 3);
+
+    DataManager::GetDataManager()->RegisterData(
+            &(((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->curr_foot_vel_des_), 
+            VECT3, "rfoot_vel_des", 3);
+    DataManager::GetDataManager()->RegisterData(
+            &(((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->curr_foot_vel_des_), 
             VECT3, "lfoot_vel_des", 3);
 #endif
 
@@ -199,12 +219,15 @@ void WalkingConfigTest::_SettingParameter(){
     ((TransitionConfigCtrl*)left_swing_start_trans_ctrl_)->setStanceHeight(tmp);
     ((TransitionConfigCtrl*)left_swing_end_trans_ctrl_)->setStanceHeight(tmp);
 
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0)
     ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setStanceHeight(tmp);
     ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setStanceHeight(tmp);
-#else
+#elif (SWING_CTRL_TYPE == 1)
     ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setStanceHeight(tmp);
     ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setStanceHeight(tmp);
+#elif (SWING_CTRL_TYPE == 2)
+    ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setStanceHeight(tmp);
+    ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setStanceHeight(tmp);
 #endif
     ((Reversal_LIPM_Planner*)reversal_planner_)->setOmega(tmp);
 
@@ -217,22 +240,28 @@ void WalkingConfigTest::_SettingParameter(){
     // Stance Time
     handler.getValue("stance_time", tmp);
     ((ConfigBodyCtrl*)config_body_fix_ctrl_)->setStanceTime(tmp);
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0)
     ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->notifyStanceTime(tmp);
     ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->notifyStanceTime(tmp);
-#else
+#elif (SWING_CTRL_TYPE == 1)
     ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->notifyStanceTime(tmp);
     ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->notifyStanceTime(tmp);
+#elif (SWING_CTRL_TYPE == 2)
+    ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->notifyStanceTime(tmp);
+    ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->notifyStanceTime(tmp);
 #endif
 
     // Swing & prime Time
     handler.getValue("swing_time", tmp);
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0)
     ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setSwingTime(tmp);
     ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setSwingTime(tmp);
-#else
+#elif (SWING_CTRL_TYPE == 1)
     ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setSwingTime(tmp);
     ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setSwingTime(tmp);
+#elif (SWING_CTRL_TYPE == 2)
+    ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setSwingTime(tmp);
+    ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setSwingTime(tmp);
 #endif
 
     // Transition Time
@@ -242,51 +271,66 @@ void WalkingConfigTest::_SettingParameter(){
     ((TransitionConfigCtrl*)left_swing_start_trans_ctrl_)->setTransitionTime(tmp);
     ((TransitionConfigCtrl*)left_swing_end_trans_ctrl_)->setTransitionTime(tmp);
 
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0)
     ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->notifyTransitionTime(tmp);
     ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->notifyTransitionTime(tmp);
-#else
+#elif (SWING_CTRL_TYPE == 1)
     ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->notifyTransitionTime(tmp);
     ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->notifyTransitionTime(tmp);
+#elif (SWING_CTRL_TYPE == 2)
+    ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->notifyTransitionTime(tmp);
+    ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->notifyTransitionTime(tmp);
 #endif
 
     //// Planner Setup
     handler.getValue("planning_frequency", tmp);
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0)
     ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setPlanningFrequency(tmp);
     ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setPlanningFrequency(tmp);
-#else
+#elif (SWING_CTRL_TYPE == 1)
     ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setPlanningFrequency(tmp);
     ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setPlanningFrequency(tmp);
+#elif (SWING_CTRL_TYPE == 2)
+    ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setPlanningFrequency(tmp);
+    ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setPlanningFrequency(tmp);
 #endif
 
 
     handler.getValue("double_stance_mix_ratio", tmp);
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0)
     ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setDoubleStanceRatio(tmp);
     ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setDoubleStanceRatio(tmp);
-#else
+#elif (SWING_CTRL_TYPE == 1)
     ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setDoubleStanceRatio(tmp);
     ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setDoubleStanceRatio(tmp);
+#elif (SWING_CTRL_TYPE == 2)
+    ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setDoubleStanceRatio(tmp);
+    ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setDoubleStanceRatio(tmp);
 #endif
 
 
     handler.getValue("transition_phase_mix_ratio", tmp);
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0)
     ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
     ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
-#else
+#elif (SWING_CTRL_TYPE == 1)
     ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
     ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+#elif (SWING_CTRL_TYPE == 2)
+    ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+    ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
 #endif
 
     handler.getBoolean("contact_switch_check", b_tmp);
-#if TASK_HIERARCHY
+#if (SWING_CTRL_TYPE == 0)
     ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(tmp);
     ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(tmp);
-#else
+#elif (SWING_CTRL_TYPE == 1)
     ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(b_tmp);
     ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+#elif (SWING_CTRL_TYPE == 2)
+    ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(tmp);
+    ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(tmp);
 #endif
     printf("[Walking Body Test] Complete to Setup Parameters\n");
 }
