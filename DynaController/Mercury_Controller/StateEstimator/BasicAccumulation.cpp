@@ -232,6 +232,9 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
   // Perform orientation update via integration
   Oq_B = dynacore::QuatMultiply(Oq_B, delta_quat_body); 
 
+  global_ori_ = Oq_B; // Use the stored  value
+
+
   // Prepare the quantity of the local IMU acceleration
   dynacore::Vect3 f_b; f_b.setZero(); // local IMU acceleration
   f_b.x() = -x_acc_low_pass_filter->output();
