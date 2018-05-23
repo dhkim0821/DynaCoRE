@@ -46,6 +46,9 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   body_vel_des_.setZero();
 
   body_ori_rpy_.setZero();
+
+  body_ori_.x() = 0;   body_ori_.y() = 0;   body_ori_.z() = 0;   body_ori_.w() = 1;
+
   body_ang_vel_.setZero();
   body_ang_vel_des_.setZero();
 

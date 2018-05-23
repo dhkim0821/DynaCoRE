@@ -13,7 +13,7 @@ num_figures = 8
 
 sim_data_available = False
 
-plot_contact_switches = True
+plot_contact_switches = False
 
 def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no=1, starting_col_index = 0, starting_row_index=0, plot_configuration=PLOT_HORIZONTALLY, use_custom_layout=False):
     global sim_data_available

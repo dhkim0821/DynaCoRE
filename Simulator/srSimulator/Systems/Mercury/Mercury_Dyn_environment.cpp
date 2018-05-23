@@ -229,7 +229,7 @@ void Mercury_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
     imu_frame(2,0), imu_frame(2,1), imu_frame(2,2);
 
   dynacore::Vect3 grav; grav.setZero();
-  grav[2] = 9.81;
+  grav[2] = 9.77;
   dynacore::Vect3 local_grav = Rot.transpose() * grav;
 
   for(int i(0); i<3; ++i){
