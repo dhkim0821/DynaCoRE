@@ -68,6 +68,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_p_rfoot_pos = \
     np.genfromtxt(file_path+'ekf_p_right_B.txt', delimiter=None, dtype=(float))
 
+    data_world_p_lfoot_pos = \
+    np.genfromtxt(file_path+'ekf_p_left_O.txt', delimiter=None, dtype=(float))
+    data_world_p_rfoot_pos = \
+    np.genfromtxt(file_path+'ekf_p_right_O.txt', delimiter=None, dtype=(float))
+
 
     data_f_imu = \
     np.genfromtxt(file_path+'ekf_f_imu.txt', delimiter=None, dtype=(float))
@@ -82,6 +87,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
     data_meas_diff = \
     np.genfromtxt(file_path+'ekf_measured_diff.txt', delimiter=None, dtype=(float))    
+
+
 
 
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
@@ -104,7 +111,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     ## plot command/jpos
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
-    fig.canvas.set_window_title('body world pos(m)')
+    fig.canvas.set_window_title('World body world pos(m)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         if sim_data_available:
@@ -132,7 +139,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     # plt.get_current_fig_manager().window.wm_geometry("480x600+540+0")
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))    
-    fig.canvas.set_window_title('body vel(m/s)')
+    fig.canvas.set_window_title('World body vel(m/s)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
 
@@ -161,7 +168,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     # plt.get_current_fig_manager().window.wm_geometry("480x600+0+650")
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
-    fig.canvas.set_window_title('body ori (quaternion)')
+    fig.canvas.set_window_title('World body ori (quaternion)')
     for i in range(1,5,1):
         ax1 = plt.subplot(4, 1, i)
         plt.plot(data_x, data_body_ori_des[st_idx:end_idx,i-1], "r-" , \
@@ -235,7 +242,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         row_index +=1
 
 
-
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
     fig.canvas.set_window_title('Body frame lfoot position (m)')
@@ -267,6 +273,43 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         col_index += 1
     elif plot_configuration == PLOT_VERTICALLY:
         row_index +=1        
+
+    # Use another row
+    if use_custom_layout:
+        col_index = 0
+        row_index = 2
+
+    fig = plt.figure(figure_number)
+    plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
+    fig.canvas.set_window_title('World frame lfoot position (m)')
+    for i in range(1,4,1):
+        ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_world_p_lfoot_pos[st_idx:end_idx,i-1], "b-")
+        plt.grid(True)
+    plt.xlabel('time (sec)')
+    ## increment figure number and index
+    figure_number += 1
+    if plot_configuration == PLOT_HORIZONTALLY:
+        col_index += 1
+    elif plot_configuration == PLOT_VERTICALLY:
+        row_index +=1  
+
+    fig = plt.figure(figure_number)
+    plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
+    fig.canvas.set_window_title('World frame rfoot position (m)')
+    for i in range(1,4,1):
+        ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_world_p_rfoot_pos[st_idx:end_idx,i-1], "b-")
+        plt.grid(True)
+    plt.xlabel('time (sec)')
+    ## increment figure number and index
+    figure_number += 1
+    if plot_configuration == PLOT_HORIZONTALLY:
+        col_index += 1
+    elif plot_configuration == PLOT_VERTICALLY:
+        row_index +=1               
+
+
 
 
 
