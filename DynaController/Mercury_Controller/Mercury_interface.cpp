@@ -46,7 +46,7 @@ Mercury_interface::Mercury_interface():
     jjvel_(mercury::num_act_joint),
     mjpos_(mercury::num_act_joint),
     b_last_config_update_(true),
-    waiting_count_(10),
+    waiting_count_(1000),
     ramp_time_(0.5)
 {
 
@@ -210,9 +210,9 @@ bool Mercury_interface::_Initialization(Mercury_SensorData* data){
 
         if(fabs(data->imu_acc[2]) < 0.00001){
             waiting_count_ = 10000000;
-        }else{
-            waiting_count_ = 10;
+            dynacore::pretty_print(data->imu_acc, "data->imu_acc", 3);            
         }
+
         DataManager::GetDataManager()->start();
         //printf("[Mercury Interface] Data logging starts\n");
         return true;

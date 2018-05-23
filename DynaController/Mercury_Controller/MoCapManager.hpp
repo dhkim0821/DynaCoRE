@@ -12,7 +12,7 @@ class RobotSystem;
 /////////////////////////////////////////////
 #define MOCAP_DATA_PORT 51128
 #define IP_ADDRESS "192.168.0.144"
-#define NUM_MARKERS 11
+#define NUM_MARKERS 13
 
 typedef struct{
   // float condition[NUM_MARKERS];

@@ -81,6 +81,24 @@ void BasicAccumulation::EstimatorInitialization(const dynacore::Quaternion & ini
       global_ang_vel_[i] = ang_vel[i];
     ini_acc_[i] = acc[i];
     }
+
+  // Update bias estimate
+  x_bias_low_pass_filter->input(acc[0]);
+  y_bias_low_pass_filter->input(acc[1]);
+  z_bias_low_pass_filter->input(acc[2]);
+
+  x_acc_bias = x_bias_low_pass_filter->output();
+  y_acc_bias = y_bias_low_pass_filter->output(); 
+  z_acc_bias = z_bias_low_pass_filter->output();     
+
+  //printf("Basic Accumulation \n");
+  InitIMUOrientationEstimateFromGravity();
+  //dynacore::pretty_print(Oq_B_init, std::cout, "Oq_B_init");
+
+  v_o.setZero();
+  r_o.setZero();
+
+
 }
 
 void BasicAccumulation::setSensorData(const std::vector<double> & acc,
@@ -151,36 +169,36 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
     // com_state_[5] = quat_acc.y() - ini_acc_[1];
 
     // Reset filters and velocities once after bias calibration time
-    if (((count*mercury::servo_rate) > calibration_time) && (!reset_once)){
-      // Reset the filters
-      x_acc_low_pass_filter->clear();
-      y_acc_low_pass_filter->clear();
-      z_acc_low_pass_filter->clear();      
-      reset_once = true;
+    // if (((count*mercury::servo_rate) > calibration_time) && (!reset_once)){
+    //   // Reset the filters
+    //   x_acc_low_pass_filter->clear();
+    //   y_acc_low_pass_filter->clear();
+    //   z_acc_low_pass_filter->clear();      
+    //   reset_once = true;
 
-      // Reset local velocities
-      com_state_[2] = 0.0;
-      com_state_[3] = 0.0;     
+    //   // Reset local velocities
+    //   com_state_[2] = 0.0;
+    //   com_state_[3] = 0.0;     
 
-      // Reset local positions
-      com_state_[0] = 0.0;
-      com_state_[1] = 0.0;      
+    //   // Reset local positions
+    //   com_state_[0] = 0.0;
+    //   com_state_[1] = 0.0;      
 
-      // Estimate orientation       
-      InitIMUOrientationEstimateFromGravity();
-      v_o.setZero();
-      r_o.setZero();
+    //   // Estimate orientation       
+    //   InitIMUOrientationEstimateFromGravity();
+    //   v_o.setZero();
+    //   r_o.setZero();
 
-    }else{
-      // Update bias estimate
-      x_bias_low_pass_filter->input(acc[0]);
-      y_bias_low_pass_filter->input(acc[1]);
-      z_bias_low_pass_filter->input(acc[2]);
+    // }else{
+    //   // Update bias estimate
+    //   x_bias_low_pass_filter->input(acc[0]);
+    //   y_bias_low_pass_filter->input(acc[1]);
+    //   z_bias_low_pass_filter->input(acc[2]);
 
-      x_acc_bias = x_bias_low_pass_filter->output();
-      y_acc_bias = y_bias_low_pass_filter->output(); 
-      z_acc_bias = z_bias_low_pass_filter->output();           
-    }
+    //   x_acc_bias = x_bias_low_pass_filter->output();
+    //   y_acc_bias = y_bias_low_pass_filter->output(); 
+    //   z_acc_bias = z_bias_low_pass_filter->output();           
+    // }
 
     // Get Local Acceleration Estimate
     x_acc_low_pass_filter->input(acc[0] - x_acc_bias);
@@ -214,6 +232,9 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
   // Perform orientation update via integration
   Oq_B = dynacore::QuatMultiply(Oq_B, delta_quat_body); 
 
+  global_ori_ = Oq_B; // Use the stored  value
+
+
   // Prepare the quantity of the local IMU acceleration
   dynacore::Vect3 f_b; f_b.setZero(); // local IMU acceleration
   f_b.x() = -x_acc_low_pass_filter->output();
@@ -234,37 +255,38 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
   v_o = v_o + a_o*mercury::servo_rate;
   r_o = r_o + v_o*mercury::servo_rate; 
 
-  // if(count % 100 == 0){
-  //   dynacore::pretty_print(g_B, std::cout, "gravity_dir");
-  //   printf("    gravity_mag = %0.4f \n", gravity_mag);
-  //   printf("    theta_x = %0.4f \n", theta_x);    
-  //   printf("    theta_y = %0.4f \n", theta_y);        
-  //   printf("    roll_value_comp = %0.4f \n", roll_value_comp);
-  //   printf("    pitch_value_comp = %0.4f \n", pitch_value_comp);
-  //   dynacore::pretty_print(g_B_local, std::cout, "rotated gravity_dir");
-  //   dynacore::pretty_print(g_B_local_vec, std::cout, "g_B_local_vec");    
+  if(count % 100 == 0){
+    // printf("Basic Accumulation\n");
+    // dynacore::pretty_print(g_B, std::cout, "gravity_dir");
+    // printf("    gravity_mag = %0.4f \n", gravity_mag);
+    // printf("    theta_x = %0.4f \n", theta_x);    
+    // printf("    theta_y = %0.4f \n", theta_y);        
+    // printf("    roll_value_comp = %0.4f \n", roll_value_comp);
+    // printf("    pitch_value_comp = %0.4f \n", pitch_value_comp);
+    // dynacore::pretty_print(g_B_local, std::cout, "rotated gravity_dir");
+    // dynacore::pretty_print(g_B_local_vec, std::cout, "g_B_local_vec");    
 
-  //   printf("    norm(g_B_local) = %0.4f \n", g_B_local.norm());
-  //   dynacore::pretty_print(Oq_B_init, std::cout, "Initial body orientation w.r.t fixed frame: ");
-  //   dynacore::pretty_print(OR_B_init, std::cout, "OR_B_init: ");
-  //   dynacore::pretty_print(Oq_B, std::cout, "Body orientation w.r.t fixed frame: ");
-  //   printf("\n");
+    // printf("    norm(g_B_local) = %0.4f \n", g_B_local.norm());
+    // dynacore::pretty_print(Oq_B_init, std::cout, "Initial body orientation w.r.t fixed frame: ");
+    // dynacore::pretty_print(OR_B_init, std::cout, "OR_B_init: ");
+    // dynacore::pretty_print(Oq_B, std::cout, "Body orientation w.r.t fixed frame: ");
+    // printf("\n");
 
 
-  //   dynacore::pretty_print(body_omega, std::cout, "body_omega");
-  //   dynacore::pretty_print(delt_quat, std::cout, "delt_quat");
-  //   dynacore::pretty_print(delta_quat_body, std::cout, "delta_quat_body");
+    // dynacore::pretty_print(body_omega, std::cout, "body_omega");
+    // dynacore::pretty_print(delt_quat, std::cout, "delt_quat");
+    // dynacore::pretty_print(delta_quat_body, std::cout, "delta_quat_body");
 
-  //   dynacore::pretty_print(imu_acc, std::cout, "Data IMU acc = ");
+    // dynacore::pretty_print(imu_acc, std::cout, "Data IMU acc = ");
 
-  //   dynacore::pretty_print(f_b, std::cout, "IMU acc in body frame f_b = ");
-  //   dynacore::pretty_print(f_o, std::cout, "IMU acc in fixed frame f_o = ");    
-  //   dynacore::pretty_print(a_o, std::cout, "body acc in fixed frame a_o = ");    
-  //   dynacore::pretty_print(v_o, std::cout, "body vel in fixed frame v_o = ");    
-  //   dynacore::pretty_print(r_o, std::cout, "body pos in fixed frame r_o = ");    
-  //   printf("\n");    
+    // dynacore::pretty_print(f_b, std::cout, "IMU acc in body frame f_b = ");
+    // dynacore::pretty_print(f_o, std::cout, "IMU acc in fixed frame f_o = ");    
+    // dynacore::pretty_print(a_o, std::cout, "body acc in fixed frame a_o = ");    
+    // dynacore::pretty_print(v_o, std::cout, "body vel in fixed frame v_o = ");    
+    // dynacore::pretty_print(r_o, std::cout, "body pos in fixed frame r_o = ");    
+    // printf("\n");    
 
-  // }    
+  }    
 
     //count++;
 }

@@ -69,6 +69,10 @@ public:
   dynacore::Vect3 Lfoot_pos_;
   dynacore::Vect3 Lfoot_vel_;
 
+  dynacore::Vect3 sim_imu_pos;
+  dynacore::Vect3 sim_imu_vel;
+
+
 private:
   Mercury_StateProvider();
 };

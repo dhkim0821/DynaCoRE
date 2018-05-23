@@ -63,7 +63,7 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
         imu_ang_vel[i] = data->imu_ang_vel[i];
     }
 
-    ori_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel);
+    ori_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel);   
     ekf_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel); // EKF
 
     // Local Frame Setting

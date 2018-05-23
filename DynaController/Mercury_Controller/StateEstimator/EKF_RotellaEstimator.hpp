@@ -3,6 +3,8 @@
 
 #include "EKF_PoseEstimator.hpp"
 #include <rbdl/rbdl.h>
+#include <Filter/filters.hpp>
+
 
 /* This estimator is based on:
 
@@ -57,6 +59,8 @@ public:
   void doFilterCalculations(); 
 
   void resetFilter();
+
+  void calibrateOrientationFromGravity();
 
 protected:
   dynacore::Vector O_p_l; // global left foot position
@@ -134,11 +138,37 @@ protected:
   dynacore::Vector delta_x_posterior; // Posterier error states
   dynacore::Vector delta_y; // prediction and measurement differences
 
-  dynacore::Vector z_lfoot_pos_B;
-  dynacore::Vector z_rfoot_pos_B;
+  dynacore::Vector z_lfoot_pos_B; // Measured body frame left foot position
+  dynacore::Vector z_rfoot_pos_B; // Measured body frame right foot position
+
+  dynacore::Vector p_l_B; // Body frame left foot position
+  dynacore::Vector p_r_B; // Body frame right foot position
+
   dynacore::Vector y_vec; // prediction and measurement differences
 
   dynacore::Vect3 delta_phi;
+
+  // Initialize Orientation Calibration Variables
+  double theta_x;
+  double theta_y;  
+  double gravity_mag; 
+  double roll_value_comp;
+  double pitch_value_comp;  
+
+  dynacore::Vect3 g_B;
+  dynacore::Vect3 g_B_local_vec; // rotated gravity direction 
+  dynacore::Quaternion Oq_B_init; // initial quaternion of the body frame w.r.t fixed frame
+  dynacore::Matrix OR_B_init; // initial Rot matrix of body w.r.t fixed frame
+  dynacore::Quaternion q_world_Rx; 
+  dynacore::Quaternion q_world_Ry; 
+
+  double bias_lp_frequency_cutoff;
+  digital_lp_filter* x_bias_low_pass_filter;
+  digital_lp_filter* y_bias_low_pass_filter;
+  digital_lp_filter* z_bias_low_pass_filter;
+  double x_acc_bias;
+  double y_acc_bias;
+  double z_acc_bias;
 
 };
 

@@ -46,6 +46,9 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   body_vel_des_.setZero();
 
   body_ori_rpy_.setZero();
+
+  body_ori_.x() = 0;   body_ori_.y() = 0;   body_ori_.z() = 0;   body_ori_.w() = 1;
+
   body_ang_vel_.setZero();
   body_ang_vel_des_.setZero();
 
@@ -104,6 +107,16 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&b_rfoot_contact_, INT, "rfoot_contact", 1);
   data_manager->RegisterData(&b_lfoot_contact_, INT, "lfoot_contact", 1);
   data_manager->RegisterData(&estimated_com_state_, DYN_VEC, "estimated_com_state", 4);
+
+
+  // Simulation Ground Truth
+
+  sim_imu_pos.setZero();
+  sim_imu_vel.setZero();    
+  data_manager->RegisterData(&sim_imu_pos, VECT3, "sim_imu_pos", 3);
+  data_manager->RegisterData(&sim_imu_vel, VECT3, "sim_imu_vel", 3);
+
+
 }
 
 

@@ -1,6 +1,7 @@
 # Initialization
 #initial_jpos: [0.07, -0.93, 1.55, -0.0529, -0.93, 1.59]
-initial_jpos: [0.0, -0.50, 1.0, 0.0, -0.50, 1.0]
+# initial_jpos: [0.0, -0.50, 1.0, 0.0, -0.50, 1.0]
+initial_jpos: [0.0, -0.0, 1.0, 0.0, -0.5, 1.0]
 initialization_time: 3.0
 
 # Timing Parameters (sec)
@@ -10,11 +11,11 @@ test_duration: 100.32
 trajectory_type: sinusoidal
 #trajectory_type: ramp
 
-amplitude: [0.0, 0.35, 0.5, 0.0, -0.35, -0.5]
-frequency: [1.0, 0.5, 0.5, 1.0, 0.5, 0.5]
+# amplitude: [0.0, 0.35, 0.5, 0.0, -0.35, -0.5]
+# frequency: [1.0, 0.5, 0.5, 1.0, 0.5, 0.5]
 
-# amplitude: [0, 0.0, 0.0, 0, -0.0, -0.0]
-# frequency: [0, 0, 0, 0, 0, 0]
+amplitude: [0, 0.0, 0.0, 0,  -0.0, 0.6]
+frequency: [0, 0.0, 0.5, 0,  0.5, 0.5]
 phase: [0., 0., 0., 0., 0., 0.]
 
 # jpos_delta: [0., 0., 0.0, 0., 0., 0.]
