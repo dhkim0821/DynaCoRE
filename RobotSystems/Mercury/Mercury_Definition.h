@@ -26,19 +26,20 @@ namespace mercury_link{
     constexpr int imu = 3;
 
     constexpr int LED_BODY_0 = 20;
+    constexpr int LED_BODY_1 = 21;
+    constexpr int LED_BODY_2 = 22;
 
-    constexpr int LED_RLEG_0 = 21;
-    constexpr int LED_RLEG_1 = 22;
-    constexpr int LED_RLEG_2 = 23;
-    constexpr int LED_RLEG_3 = 24;
+    constexpr int LED_RLEG_0 = 23;
+    constexpr int LED_RLEG_1 = 24;
+    constexpr int LED_RLEG_2 = 25;
+    constexpr int LED_RLEG_3 = 26;
+    constexpr int LED_RLEG_4 = 27;
 
-    constexpr int LED_LLEG_0 = 25;
-    constexpr int LED_LLEG_1 = 26;
-    constexpr int LED_LLEG_2 = 27;
-    constexpr int LED_LLEG_3 = 28;
-
-    constexpr int LED_BODY_1 = 29;
-    constexpr int LED_BODY_2 = 30;
+    constexpr int LED_LLEG_0 = 28;
+    constexpr int LED_LLEG_1 = 29;
+    constexpr int LED_LLEG_2 = 30;
+    constexpr int LED_LLEG_3 = 31;
+    constexpr int LED_LLEG_4 = 32;
 };
 
 namespace mercury_joint{
