@@ -134,11 +134,11 @@ protected:
   dynacore::Vector delta_x_posterior; // Posterier error states
   dynacore::Vector delta_y; // prediction and measurement differences
 
-  dynacore::Vector z_lfoot_pos_B;
-  dynacore::Vector z_rfoot_pos_B;
+  dynacore::Vector z_lfoot_pos_B; // Measured body frame left foot position
+  dynacore::Vector z_rfoot_pos_B; // Measured body frame right foot position
 
-  dynacore::Vector p_l_B;
-  dynacore::Vector p_r_B;  
+  dynacore::Vector p_l_B; // Body frame left foot position
+  dynacore::Vector p_r_B; // Body frame right foot position
 
   dynacore::Vector y_vec; // prediction and measurement differences
 

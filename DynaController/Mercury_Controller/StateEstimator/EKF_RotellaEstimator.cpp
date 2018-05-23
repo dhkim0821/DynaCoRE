@@ -135,7 +135,14 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 	DataManager::GetDataManager()->RegisterData(&z_lfoot_pos_B, DYN_VEC, "ekf_z_l_foot_B", 3);
 	DataManager::GetDataManager()->RegisterData(&z_rfoot_pos_B, DYN_VEC, "ekf_z_r_foot_B", 3);
 	DataManager::GetDataManager()->RegisterData(&p_l_B, DYN_VEC, "ekf_p_left_B", 3);
-	DataManager::GetDataManager()->RegisterData(&p_r_B, DYN_VEC, "ekf_p_right_B", 3);}
+	DataManager::GetDataManager()->RegisterData(&p_r_B, DYN_VEC, "ekf_p_right_B", 3);
+
+	DataManager::GetDataManager()->RegisterData(&O_p_l, DYN_VEC, "ekf_p_left_O", 3);
+	DataManager::GetDataManager()->RegisterData(&O_p_r, DYN_VEC, "ekf_p_right_O", 3);
+
+}
+
+
 
 EKF_RotellaEstimator::~EKF_RotellaEstimator(){
 	delete robot_model;
