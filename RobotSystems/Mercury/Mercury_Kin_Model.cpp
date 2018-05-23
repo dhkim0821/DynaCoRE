@@ -286,6 +286,8 @@ unsigned int Mercury_Kin_Model::_find_body_idx(int id) const {
             return model_->GetBodyId("rleg_led2");
         case mercury_link::LED_RLEG_3:
             return model_->GetBodyId("rleg_led3");
+        case mercury_link::LED_RLEG_4:
+            return model_->GetBodyId("rleg_led4");
 
 
         case mercury_link::LED_LLEG_0:
@@ -296,6 +298,8 @@ unsigned int Mercury_Kin_Model::_find_body_idx(int id) const {
             return model_->GetBodyId("lleg_led2");
         case mercury_link::LED_LLEG_3:
             return model_->GetBodyId("lleg_led3");
+        case mercury_link::LED_LLEG_4:
+            return model_->GetBodyId("lleg_led4");
 
     }
     return (unsigned int)(id + 2);
