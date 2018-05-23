@@ -11,7 +11,10 @@ PLOT_HORIZONTALLY = 1
 # number of figures in this plot
 num_figures = 8
 
+sim_data_available = False
+
 def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no=1, starting_col_index = 0, starting_row_index=0, plot_configuration=PLOT_HORIZONTALLY, use_custom_layout=False):
+    global sim_data_available
     figure_number = starting_figure_no
     col_index = starting_col_index
     row_index = starting_row_index
@@ -26,10 +29,17 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_body_ori_des = \
     np.genfromtxt(file_path+'body_ori_des.txt', delimiter=None, dtype=(float)) 
 
-    data_sim_imu_pos = \
-    np.genfromtxt(file_path+'sim_imu_pos.txt', delimiter=None, dtype=(float))    
-    data_sim_imu_vel = \
-    np.genfromtxt(file_path+'sim_imu_vel.txt', delimiter=None, dtype=(float))
+    data_sim_imu_pos = None
+    data_sim_imu_vel = None    
+    try:
+        data_sim_imu_pos = \
+        np.genfromtxt(file_path+'sim_imu_pos.txt', delimiter=None, dtype=(float))    
+        data_sim_imu_vel = \
+        np.genfromtxt(file_path+'sim_imu_vel.txt', delimiter=None, dtype=(float))
+        sim_data_available = True
+    except:
+        print "\n Note: simulated data for position and/or velocity is not available. Will not plot simulated ground truth data\n"
+        sim_data_available = False
 
 
     data_com = \
@@ -97,8 +107,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('body world pos(m)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_sim_imu_pos[st_idx:end_idx,i-1], "r-", \
-                 data_x, data_body_pos[st_idx:end_idx,i-1], "b-", \
+        if sim_data_available:
+            plt.plot(data_x, data_sim_imu_pos[st_idx:end_idx,i-1], "r-")
+
+        plt.plot(data_x, data_body_pos[st_idx:end_idx,i-1], "b-", \
                  data_x, data_com[st_idx:end_idx, i-1], "c-")
 
         # plt.legend(('command', 'pos'), loc='upper left')
@@ -123,9 +135,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('body vel(m/s)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_sim_imu_vel[st_idx:end_idx,i-1], "r-", \
-                 data_x, data_body_vel[st_idx:end_idx, i-1], "b-", \
+
+        if sim_data_available:
+            plt.plot(data_x, data_sim_imu_vel[st_idx:end_idx,i-1], "r-")
+
+        plt.plot(data_x, data_body_vel[st_idx:end_idx, i-1], "b-", \
                  data_x, data_kinematics_com_vel[st_idx:end_idx, i-1], "c-")
+
 
         plt.grid(True)
         for j in phseChange:
