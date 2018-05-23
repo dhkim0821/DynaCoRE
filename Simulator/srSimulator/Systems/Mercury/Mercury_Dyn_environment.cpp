@@ -23,6 +23,8 @@ Mercury_Dyn_environment::Mercury_Dyn_environment():
   data_ = new Mercury_SensorData();
   cmd_ = new Mercury_Command();
 
+  sp_ = Mercury_StateProvider::getStateProvider();
+
   m_Space->AddSystem(m_ground->BuildGround());
   m_Space->AddSystem((srSystem*)m_Mercury);
   m_Space->DYN_MODE_PRESTEP();
@@ -241,21 +243,38 @@ void Mercury_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
   dynacore::Vect3 global_ang_vel = Rot * ang_vel;
   Eigen::Quaterniond quat(Rot);
 
-  bool b_printout(false);
-  if(b_printout){
-    printf("imu info: \n");
-    std::cout<<imu_se3_vel<<std::endl;
-    std::cout<<imu_se3_acc<<std::endl;
-    std::cout<<imu_frame<<std::endl;
+  static int count = 0;
 
-    dynacore::pretty_print(imu_ang_vel, "imu ang vel");
-    dynacore::pretty_print(imu_acc, "imu_acc");
+  static double pos_x_bias = imu_frame(0,3);
+  static double pos_y_bias = imu_frame(1,3);
+  static double pos_z_bias = imu_frame(2,3);
 
-    printf("global ang vel\n");
-    std::cout<<global_ang_vel<<std::endl;
+  std::vector<double> pos_bias; pos_bias.push_back(pos_x_bias); pos_bias.push_back(pos_y_bias); pos_bias.push_back(pos_z_bias);
 
-    printf("quat global:\n");
-    std::cout<<quat.w()<<std::endl;
-    std::cout<<quat.vec()<<std::endl;
+  for(size_t i = 0; i < 3; i++){
+    sp_->sim_imu_pos[i] = imu_frame(i,3) - pos_bias[i];
+    sp_->sim_imu_vel[i] = imu_se3_vel[i+3];
   }
+
+  bool b_printout(false);
+  if (count % 100 == 0){
+    if(b_printout){
+      printf("imu info: \n");
+      std::cout<<imu_se3_vel<<std::endl;
+      std::cout<<imu_se3_acc<<std::endl;
+      std::cout<<imu_frame<<std::endl;
+
+      dynacore::pretty_print(imu_ang_vel, "imu ang vel");
+      dynacore::pretty_print(imu_acc, "imu_acc");
+
+      printf("global ang vel\n");
+      std::cout<<global_ang_vel<<std::endl;
+
+      printf("quat global:\n");
+      std::cout<<quat.w()<<std::endl;
+      std::cout<<quat.vec()<<std::endl;
+    }
+    count = 0;
+  }
+  count++;
 }

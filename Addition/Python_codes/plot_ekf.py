@@ -26,6 +26,12 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_body_ori_des = \
     np.genfromtxt(file_path+'body_ori_des.txt', delimiter=None, dtype=(float)) 
 
+    data_sim_imu_pos = \
+    np.genfromtxt(file_path+'sim_imu_pos.txt', delimiter=None, dtype=(float))    
+    data_sim_imu_vel = \
+    np.genfromtxt(file_path+'sim_imu_vel.txt', delimiter=None, dtype=(float))
+
+
     data_com = \
     np.genfromtxt(file_path+'com_pos.txt', delimiter=None, dtype=(float))
     data_kinematics_com_vel = \
@@ -41,6 +47,16 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_accumulated_body_ori = \
     np.genfromtxt(file_path+'body_ori.txt', delimiter=None, dtype=(float))
 
+
+    data_z_lfoot_pos = \
+    np.genfromtxt(file_path+'ekf_z_l_foot_B.txt', delimiter=None, dtype=(float))
+    data_z_rfoot_pos = \
+    np.genfromtxt(file_path+'ekf_z_r_foot_B.txt', delimiter=None, dtype=(float))
+
+    data_p_lfoot_pos = \
+    np.genfromtxt(file_path+'ekf_p_left_B.txt', delimiter=None, dtype=(float))
+    data_p_rfoot_pos = \
+    np.genfromtxt(file_path+'ekf_p_right_B.txt', delimiter=None, dtype=(float))
 
 
     data_f_imu = \
@@ -81,7 +97,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('body world pos(m)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_body_pos_des[st_idx:end_idx,i-1], "r-", \
+        plt.plot(data_x, data_sim_imu_pos[st_idx:end_idx,i-1], "r-", \
                  data_x, data_body_pos[st_idx:end_idx,i-1], "b-", \
                  data_x, data_com[st_idx:end_idx, i-1], "c-")
 
@@ -107,7 +123,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('body vel(m/s)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_body_vel_des[st_idx:end_idx,i-1], "r-", \
+        plt.plot(data_x, data_sim_imu_vel[st_idx:end_idx,i-1], "r-", \
                  data_x, data_body_vel[st_idx:end_idx, i-1], "b-", \
                  data_x, data_kinematics_com_vel[st_idx:end_idx, i-1], "c-")
 
@@ -183,9 +199,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
     fig.canvas.set_window_title('measured diff (m)')
-    for i in range(1,4,1):
-        ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_meas_diff[st_idx:end_idx,i-1], "r-")
+    for i in range(1,7,1):
+        ax1 = plt.subplot(6, 1, i)
+        plt.plot(data_x, 0*data_meas_diff[st_idx:end_idx,i-1], "r-")
+        plt.plot(data_x, data_meas_diff[st_idx:end_idx,i-1], "b-")
+
         plt.grid(True)
     plt.xlabel('time (sec)')
     ## increment figure number and index
@@ -194,6 +212,42 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         col_index += 1
     elif plot_configuration == PLOT_VERTICALLY:
         row_index +=1
+
+
+
+    fig = plt.figure(figure_number)
+    plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
+    fig.canvas.set_window_title('Body frame lfoot position (m)')
+    for i in range(1,4,1):
+        ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_z_lfoot_pos[st_idx:end_idx,i-1], "r-")
+        plt.plot(data_x, data_p_lfoot_pos[st_idx:end_idx,i-1], "b-")        
+        plt.grid(True)
+    plt.xlabel('time (sec)')
+    ## increment figure number and index
+    figure_number += 1
+    if plot_configuration == PLOT_HORIZONTALLY:
+        col_index += 1
+    elif plot_configuration == PLOT_VERTICALLY:
+        row_index +=1
+
+    fig = plt.figure(figure_number)
+    plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
+    fig.canvas.set_window_title('Body frame rfoot position (m)')
+    for i in range(1,4,1):
+        ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_z_rfoot_pos[st_idx:end_idx,i-1], "r-")
+        plt.plot(data_x, data_p_rfoot_pos[st_idx:end_idx,i-1], "b-")        
+        plt.grid(True)
+    plt.xlabel('time (sec)')
+    ## increment figure number and index
+    figure_number += 1
+    if plot_configuration == PLOT_HORIZONTALLY:
+        col_index += 1
+    elif plot_configuration == PLOT_VERTICALLY:
+        row_index +=1        
+
+
 
 if __name__ == "__main__":
     create_figures()
