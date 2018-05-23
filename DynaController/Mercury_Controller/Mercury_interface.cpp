@@ -209,7 +209,7 @@ bool Mercury_interface::_Initialization(Mercury_SensorData* data){
 
 
         if(fabs(data->imu_acc[2]) < 0.00001){
-            // waiting_count_ = 10000000;
+            waiting_count_ = 10000000;
         }else{
             waiting_count_ = 10;
         }
