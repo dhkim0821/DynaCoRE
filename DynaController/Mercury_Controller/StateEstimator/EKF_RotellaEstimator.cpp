@@ -110,7 +110,7 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 
 	// Initialize Covariance parameters
 	// Values are from reference paper. Need to be changed to known IMU parameters
-	wf_intensity = 1.0;//0.00078;   // m/(s^2)/sqrt(Hz) // imu process noise intensity
+	wf_intensity = 0.01;//0.00078;   // m/(s^2)/sqrt(Hz) // imu process noise intensity
 	ww_intensity = 0.000523;  // rad/s/sqrt(Hz) // angular velocity process noise intensity
 
 	wp_intensity_default = 0.001;   // m/sqrt(Hz)	 // default foot location noise intensity
@@ -118,6 +118,10 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 	wp_l_intensity = wp_intensity_unknown;   // m/sqrt(Hz)	 // left foot location noise intensity
 	wp_r_intensity = wp_intensity_unknown;   // m/sqrt(Hz)   // right foot location noise intensity
 
+	// Simulation params
+	//wbf_intensity = 10.0;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
+
+	// Real sensor params
 	wbf_intensity = 10.0;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
 	wbw_intensity = 0.000618; // rad/(s^2)/sqrt(Hz)	 // ang vel bias intensity
 
@@ -152,11 +156,17 @@ void EKF_RotellaEstimator::EstimatorInitialization(const dynacore::Quaternion & 
                                        const std::vector<double> & initial_imu_acc,
                                        const std::vector<double> & initial_imu_ang_vel){
 	// Initialize Global Orientation
-	O_q_B = initial_global_orientation;
+	//O_q_B = initial_global_orientation;
+
+	O_q_B.x() = 0;
+	O_q_B.y() = 0;
+	O_q_B.z() = 0;
+	O_q_B.w() = 1;
+
 	x_prior[O_r.size()+O_v.size()] = O_q_B.x();
 	x_prior[O_r.size()+O_v.size()+1] = O_q_B.y();
 	x_prior[O_r.size()+O_v.size()+2] = O_q_B.z();		
-	x_prior[O_r.size()+O_v.size()+3] = O_q_B.w();				
+	x_prior[O_r.size()+O_v.size()+3] = O_q_B.w();		
 
 	// Initialize IMU values
 	for(size_t i = 0; i < 3; i++){
@@ -238,10 +248,11 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
                              dynacore::Vector joint_values){
 
 	for(size_t i = 0; i < 3; i++){
-		f_imu[i] = acc[i];
+		f_imu[i] = -acc[i];
 		omega_imu[i] = ang_vel[i];		
 	}	
-	f_imu[2] = -f_imu[2];
+	//f_imu[i] = acc[i];
+	//f_imu[2] = -f_imu[2];
 
 	lf_contact = left_foot_contact;
 	rf_contact = right_foot_contact;	
@@ -293,14 +304,14 @@ void EKF_RotellaEstimator::handleFootContacts(){
 	// Handle new contact detections
 	// Check if a new foot location will be used for estimation
 	if ((prev_lf_contact == false) && (lf_contact == true)){
-		//printf("\n New Left foot contact\n");
+		// printf("\n New Left foot contact\n");
 		computeNewFootLocations(mercury_link::leftFoot); // Update Left foot location
 		// Update Prior?
 		//P_prior.block(9,9,3,3) = wp_intensity_default*dynacore::Matrix::Identity(3,3);
 
 	}
 	if ((prev_rf_contact == false) && (rf_contact == true)){
-		//printf("\n New Right foot contact\n");
+		// printf("\n New Right foot contact\n");
 		computeNewFootLocations(mercury_link::rightFoot); // Update right foot location
 		// Update Prior?
 		//P_prior.block(12,12,3,3) = wp_intensity_default*dynacore::Matrix::Identity(3,3);				
@@ -582,6 +593,7 @@ void EKF_RotellaEstimator::showPrintOutStatements(){
 	//printf("\n");
 	// printf("[EKF Rotella Estimator]\n");
 	// dynacore::pretty_print(f_imu, std::cout, "body frame f_imu");
+	// dynacore::pretty_print(omega_imu, std::cout, "body frame omega_imu");
 	// dynacore::Vector a_o = (C_rot.transpose()*f_imu_input + gravity_vec);
 	// dynacore::pretty_print(O_q_B, std::cout, "O_q_B");	
 	// dynacore::pretty_print(C_rot, std::cout, "C_rot");	
@@ -592,7 +604,7 @@ void EKF_RotellaEstimator::showPrintOutStatements(){
 	// dynacore::pretty_print(f_imu_input, std::cout, "f_imu_input");
 	// dynacore::pretty_print(omega_imu_input, std::cout, "omega_imu_input");
 
-
+	// dynacore::pretty_print(x_prior, std::cout, "x_prior");
 	// dynacore::pretty_print(x_predicted, std::cout, "x_predicted");
 	// dynacore::pretty_print(y_vec, std::cout, "y_vec");
 	// dynacore::pretty_print(delta_x_posterior, std::cout, "delta_x_posterior");

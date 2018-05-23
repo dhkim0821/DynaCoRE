@@ -56,8 +56,8 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
 
   for(int i(0); i<3; ++i){
       p_data->imu_ang_vel[i] = imu_ang_vel[i];
-      p_data->imu_acc[i] = imu_acc[i];
-      p_data->imu_inc[i] = imu_acc[i];
+      p_data->imu_acc[i] = -imu_acc[i];
+      p_data->imu_inc[i] = -imu_acc[i];
   }
 
   // Simulated foot contact data
@@ -235,7 +235,7 @@ void Mercury_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
   for(int i(0); i<3; ++i){
     imu_ang_vel[i] = imu_se3_vel[i] + imu_ang_vel_bias_[i] +
       dynacore::generator_white_noise(0., imu_ang_vel_var_[i]);
-    imu_acc[i] = imu_se3_acc[i+3] + local_grav[i];
+    imu_acc[i] = imu_se3_acc[i+3] - local_grav[i];
   }
 
   Eigen::Matrix<double, 3, 1> ang_vel;
