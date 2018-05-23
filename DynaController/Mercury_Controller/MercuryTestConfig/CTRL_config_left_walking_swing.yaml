@@ -19,4 +19,5 @@ Kd: [ 0, 0, 0, 0, 0, 0, 15,  10,  10,  15,  10,  10]
 gain_decreasing_ratio: 1.0
 gain_decreasing_period_portion: 0.0
 body_pt_offset: [-0.03, 0.0]
+#body_pt_offset: [-0.0, 0.0]
 
