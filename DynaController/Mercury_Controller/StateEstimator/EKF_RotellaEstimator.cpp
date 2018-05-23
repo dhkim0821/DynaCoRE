@@ -102,11 +102,15 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 
 	z_lfoot_pos_B = dynacore::Vector::Zero(O_p_l.size());
 	z_rfoot_pos_B = dynacore::Vector::Zero(O_p_r.size());
+
+	p_l_B = dynacore::Vector::Zero(O_p_l.size());
+	p_r_B = dynacore::Vector::Zero(O_p_r.size());
+
 	y_vec = dynacore::Vector::Zero(dim_obs);
 
 	// Initialize Covariance parameters
 	// Values are from reference paper. Need to be changed to known IMU parameters
-	wf_intensity = 10.0;//0.00078;   // m/(s^2)/sqrt(Hz) // imu process noise intensity
+	wf_intensity = 1.0;//0.00078;   // m/(s^2)/sqrt(Hz) // imu process noise intensity
 	ww_intensity = 0.000523;  // rad/s/sqrt(Hz) // angular velocity process noise intensity
 
 	wp_intensity_default = 0.001;   // m/sqrt(Hz)	 // default foot location noise intensity
@@ -114,7 +118,7 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 	wp_l_intensity = wp_intensity_unknown;   // m/sqrt(Hz)	 // left foot location noise intensity
 	wp_r_intensity = wp_intensity_unknown;   // m/sqrt(Hz)   // right foot location noise intensity
 
-	wbf_intensity = 10.0;//0.0001;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
+	wbf_intensity = 10.0;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
 	wbw_intensity = 0.000618; // rad/(s^2)/sqrt(Hz)	 // ang vel bias intensity
 
 	n_p = 0.01; // foot measurement noise intensity.
@@ -126,8 +130,12 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 	DataManager::GetDataManager()->RegisterData(&omega_imu, DYN_VEC, "ekf_omega_imu", 3);
 	DataManager::GetDataManager()->RegisterData(&B_bf, DYN_VEC, "ekf_B_bf", 3);
 	DataManager::GetDataManager()->RegisterData(&B_bw, DYN_VEC, "ekf_B_bw", 3);
+	DataManager::GetDataManager()->RegisterData(&y_vec, DYN_VEC, "ekf_measured_diff", 6);
 
-}
+	DataManager::GetDataManager()->RegisterData(&z_lfoot_pos_B, DYN_VEC, "ekf_z_l_foot_B", 3);
+	DataManager::GetDataManager()->RegisterData(&z_rfoot_pos_B, DYN_VEC, "ekf_z_r_foot_B", 3);
+	DataManager::GetDataManager()->RegisterData(&p_l_B, DYN_VEC, "ekf_p_left_B", 3);
+	DataManager::GetDataManager()->RegisterData(&p_r_B, DYN_VEC, "ekf_p_right_B", 3);}
 
 EKF_RotellaEstimator::~EKF_RotellaEstimator(){
 	delete robot_model;
@@ -223,9 +231,10 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
                              dynacore::Vector joint_values){
 
 	for(size_t i = 0; i < 3; i++){
-		f_imu[i] = -acc[i];
+		f_imu[i] = acc[i];
 		omega_imu[i] = ang_vel[i];		
 	}	
+	f_imu[2] = -f_imu[2];
 
 	lf_contact = left_foot_contact;
 	rf_contact = right_foot_contact;	
@@ -486,12 +495,12 @@ void EKF_RotellaEstimator::updateStep(){
 
 	// Construct Discretized Observation Matrix
 	H_k.block(0,0,3,3) = -C_rot;
-	dynacore::Vector p_l_B = C_rot*(O_p_l - O_r); // the left foot position in body frame
+	p_l_B = C_rot*(O_p_l - O_r); // the left foot position in body frame
 	H_k.block(0,6,3,3) = getSkewSymmetricMatrix(p_l_B);	
 	H_k.block(0,9,3,3) = C_rot;
 
 	H_k.block(3,0,3,3) = -C_rot;
-	dynacore::Vector p_r_B = C_rot*(O_p_r - O_r); // the right foot position in body frame	
+	p_r_B = C_rot*(O_p_r - O_r); // the right foot position in body frame	
 	H_k.block(3,6,3,3) = getSkewSymmetricMatrix(p_r_B);	
 	H_k.block(3,12,3,3) = C_rot;
 
@@ -557,7 +566,7 @@ void EKF_RotellaEstimator::updateStatePosterior(){
 
 void EKF_RotellaEstimator::doFilterCalculations(){
 	predictionStep();
-	//updateStep();
+	updateStep();
 }
 
 

@@ -14,7 +14,7 @@ PLOT_CONFIG = PLOT_VERTICALLY
 
 # List of valid figures to plot. Must be the names of the plotting script without the .py extension
 valid_figures = ["plot_joint", "plot_body", "plot_motor_current", \
-                 "plot_torque", "plot_rfoot", "plot_lfoot"]
+                 "plot_torque", "plot_rfoot", "plot_lfoot", "plot_ekf"]
 figures_to_plot = {}
 screen_resolution_width = 2920
 screen_resolution_height = 1280

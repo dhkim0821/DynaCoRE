@@ -104,6 +104,16 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&b_rfoot_contact_, INT, "rfoot_contact", 1);
   data_manager->RegisterData(&b_lfoot_contact_, INT, "lfoot_contact", 1);
   data_manager->RegisterData(&estimated_com_state_, DYN_VEC, "estimated_com_state", 4);
+
+
+  // Simulation Ground Truth
+
+  sim_imu_pos.setZero();
+  sim_imu_vel.setZero();    
+  data_manager->RegisterData(&sim_imu_pos, VECT3, "sim_imu_pos", 3);
+  data_manager->RegisterData(&sim_imu_vel, VECT3, "sim_imu_vel", 3);
+
+
 }
 
 
