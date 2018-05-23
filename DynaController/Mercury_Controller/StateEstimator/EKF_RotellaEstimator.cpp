@@ -126,6 +126,8 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 	DataManager::GetDataManager()->RegisterData(&omega_imu, DYN_VEC, "ekf_omega_imu", 3);
 	DataManager::GetDataManager()->RegisterData(&B_bf, DYN_VEC, "ekf_B_bf", 3);
 	DataManager::GetDataManager()->RegisterData(&B_bw, DYN_VEC, "ekf_B_bw", 3);
+	DataManager::GetDataManager()->RegisterData(&y_vec, DYN_VEC, "ekf_measured_diff", 3);
+
 
 }
 
@@ -557,7 +559,7 @@ void EKF_RotellaEstimator::updateStatePosterior(){
 
 void EKF_RotellaEstimator::doFilterCalculations(){
 	predictionStep();
-	//updateStep();
+	updateStep();
 }
 
 
