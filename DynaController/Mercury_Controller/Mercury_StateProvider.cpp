@@ -22,7 +22,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 b_lfoot_contact_(0),
                                 estimated_com_state_(4),
                                 global_foot_height_(0.),
-                                com_state_imu_(6)
+                                com_state_imu_(6),
+                                num_step_copy_(0)
 {
   Q_.setZero();
   Qdot_.setZero();
@@ -59,6 +60,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
 
   com_state_imu_.setZero();
 
+  phase_copy_= 0;
 
   DataManager* data_manager = DataManager::GetDataManager();
 

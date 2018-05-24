@@ -35,6 +35,8 @@ public:
                                        const std::vector<double> & initial_imu_acc,
                                        const std::vector<double> & initial_imu_ang_vel);
 
+  virtual void resetFilter();
+  
   dynacore::Matrix getSkewSymmetricMatrix(dynacore::Vector & vec_in);
 
 
@@ -58,7 +60,7 @@ public:
   void updateStep();
   void doFilterCalculations(); 
 
-  void resetFilter();
+
 
   void calibrateOrientationFromGravity();
 

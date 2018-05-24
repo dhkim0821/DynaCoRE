@@ -48,6 +48,16 @@ private:
   std::vector<double> push_time_;
   std::vector<double> push_force_;
   std::vector<double> push_direction_;
+
+
+  // Numerical differentiation of position and velocity
+  std::vector<double> prev_imu_pos;
+  std::vector<double> cur_imu_pos;  
+  std::vector<double> prev_imu_vel;
+  std::vector<double> cur_imu_vel;  
+  std::vector<double> cur_imu_acc;  
+
+
   
   void _ParamterSetup();
   int num_substep_rendering_;

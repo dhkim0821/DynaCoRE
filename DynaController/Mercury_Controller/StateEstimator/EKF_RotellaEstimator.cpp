@@ -110,19 +110,20 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 
 	// Initialize Covariance parameters
 	// Values are from reference paper. Need to be changed to known IMU parameters
-	wf_intensity = 0.01;//0.00078;   // m/(s^2)/sqrt(Hz) // imu process noise intensity
 	ww_intensity = 0.000523;  // rad/s/sqrt(Hz) // angular velocity process noise intensity
 
-	wp_intensity_default = 0.001;   // m/sqrt(Hz)	 // default foot location noise intensity
+	wp_intensity_default = 0.001;//0.001;   // m/sqrt(Hz)	 // default foot location noise intensity
 	wp_intensity_unknown = 1000.0;   // m/sqrt(Hz)	 // noise intensity when there is no foot contact
 	wp_l_intensity = wp_intensity_unknown;   // m/sqrt(Hz)	 // left foot location noise intensity
 	wp_r_intensity = wp_intensity_unknown;   // m/sqrt(Hz)   // right foot location noise intensity
 
 	// Simulation params
-	//wbf_intensity = 10.0;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
+	wf_intensity = 0.001;//0.00078;   // m/(s^2)/sqrt(Hz) // imu process noise intensity
+	wbf_intensity = 10.0;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
 
 	// Real sensor params
-	wbf_intensity = 10.0;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
+	// wf_intensity = 0.01;//0.00078;   // m/(s^2)/sqrt(Hz) // imu process noise intensity
+	// wbf_intensity = 10.0;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
 	wbw_intensity = 0.000618; // rad/(s^2)/sqrt(Hz)	 // ang vel bias intensity
 
 	n_p = 0.01; // foot measurement noise intensity.
@@ -364,6 +365,7 @@ void EKF_RotellaEstimator::resetFilter(){
 	x_prior.head(O_r.size() + O_v.size()) = dynacore::Vector::Zero(O_r.size() + O_v.size());
 	x_prior.tail(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size()) = dynacore::Vector::Zero(O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size());
 
+	setStateVariablesToPrior();
 	// x_prior = dynacore::Vector::Zero(dim_states);
 	// x_prior[9] = 1.0;
 
@@ -573,6 +575,7 @@ void EKF_RotellaEstimator::getMatrix_Q(dynacore::Matrix & Q_mat){
 	Q_mat.block(9, 9, 3, 3) = wp_r_intensity*dynacore::Matrix::Identity(3,3);
 	Q_mat.block(12, 12, 3, 3) = wbf_intensity*dynacore::Matrix::Identity(3,3);
 	Q_mat.block(15, 15, 3, 3) = wbw_intensity*dynacore::Matrix::Identity(3,3);
+
 }
 
 void EKF_RotellaEstimator::covariancePredictionStep(){
@@ -588,9 +591,9 @@ void EKF_RotellaEstimator::covariancePredictionStep(){
 	F_c.block(0, 3, 3, 3) = dynacore::Matrix::Identity(3, 3);
 	F_c.block(3, 6, 3, 3) = -C_rot.transpose()*getSkewSymmetricMatrix(f_imu_input);
 	F_c.block(3, 15, 3, 3) = -C_rot.transpose();
-	// F_c.block(6, 6, 3, 3) = -getSkewSymmetricMatrix(omega_imu_input);
-	// F_c.block(6, 18, 3,3) = -dynacore::Matrix::Identity(3,3);
-	F_c.block(6, 18, 3,3) = O_q_B.toRotationMatrix(); //-dynacore::Matrix::Identity(3,3);
+	F_c.block(6, 6, 3, 3) = -getSkewSymmetricMatrix(omega_imu_input);
+	F_c.block(6, 18, 3,3) = -dynacore::Matrix::Identity(3,3);
+	// F_c.block(6, 18, 3,3) = O_q_B.toRotationMatrix(); //-dynacore::Matrix::Identity(3,3);
 
 	// Discretized linear error dynamics
 	F_k = dynacore::Matrix::Identity(F_c.rows(), F_c.cols()) + F_c*dt;

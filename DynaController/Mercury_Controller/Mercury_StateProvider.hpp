@@ -72,6 +72,9 @@ public:
   dynacore::Vect3 sim_imu_pos;
   dynacore::Vect3 sim_imu_vel;
 
+  int phase_copy_;
+  int num_step_copy_;
+
 
 private:
   Mercury_StateProvider();

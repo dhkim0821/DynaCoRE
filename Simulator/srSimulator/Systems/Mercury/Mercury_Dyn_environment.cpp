@@ -33,6 +33,18 @@ Mercury_Dyn_environment::Mercury_Dyn_environment():
   m_Space->SetTimestep(mercury::servo_rate);
   m_Space->SetGravity(0.0,0.0,-9.81);
   m_Space->SetNumberofSubstepForRendering(num_substep_rendering_);
+
+  // Initialize differentiation values
+  prev_imu_pos.clear();  cur_imu_pos.clear();
+  prev_imu_vel.clear();  cur_imu_vel.clear();
+  cur_imu_acc.clear();
+  for(int i = 0; i < 3; i++){
+    prev_imu_pos.push_back(0.0);  cur_imu_pos.push_back(0.0);  
+    prev_imu_vel.push_back(0.0); cur_imu_vel.push_back(0.0);
+    cur_imu_acc.push_back(0.0);  
+  }
+
+
 }
 
 void Mercury_Dyn_environment::ContolFunction( void* _data ) {
@@ -229,7 +241,7 @@ void Mercury_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
     imu_frame(2,0), imu_frame(2,1), imu_frame(2,2);
 
   dynacore::Vect3 grav; grav.setZero();
-  grav[2] = 9.77;
+  grav[2] = 9.81;
   dynacore::Vect3 local_grav = Rot.transpose() * grav;
 
   for(int i(0); i<3; ++i){
@@ -256,6 +268,26 @@ void Mercury_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
     sp_->sim_imu_vel[i] = imu_se3_vel[i+3];
   }
 
+
+  // Compute differentiated values -------------------------------
+  for(size_t i = 0; i < 3; i++){
+    // Compute new x, dx, ddx values
+    cur_imu_pos[i] = imu_frame(i,3) - pos_bias[i];
+    cur_imu_vel[i] = (cur_imu_pos[i] - prev_imu_pos[i])/mercury::servo_rate;
+    cur_imu_acc[i] = ((cur_imu_vel[i] - prev_imu_vel[i])/mercury::servo_rate) - local_grav[i] ;
+    // Update previous values
+    prev_imu_pos[i] = cur_imu_pos[i];
+    prev_imu_vel[i] = cur_imu_vel[i];    
+  }
+  // Use numerically computed acceleration values:
+  for(size_t i = 0; i < 3; i++){
+    imu_acc[i] = cur_imu_acc[i];
+  }
+
+
+
+
+
   bool b_printout(false);
   if (count % 100 == 0){
     if(b_printout){
@@ -266,6 +298,11 @@ void Mercury_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
 
       dynacore::pretty_print(imu_ang_vel, "imu ang vel");
       dynacore::pretty_print(imu_acc, "imu_acc");
+
+      dynacore::pretty_print(cur_imu_pos, "sim imu pos");
+      dynacore::pretty_print(cur_imu_vel, "diff imu vel");
+      dynacore::pretty_print(cur_imu_acc, "diff imu acc");
+
 
       printf("global ang vel\n");
       std::cout<<global_ang_vel<<std::endl;
