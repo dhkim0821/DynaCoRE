@@ -12,7 +12,7 @@ test_name: walking_config_test
 
 
 base_condition: floating
-# base_condition: fixed
+#base_condition: fixed
 #base_condition: lying
 
 torque_max: [  150,  100,  100,  150,  100,  100]

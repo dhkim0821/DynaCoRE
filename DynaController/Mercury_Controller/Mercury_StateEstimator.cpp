@@ -133,6 +133,7 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     curr_qdot_.setZero();
     curr_config_[mercury::num_qdot] = 1.;
 
+
     for (int i(0); i<mercury::num_act_joint; ++i){
         curr_config_[mercury::num_virtual + i] = data->joint_jpos[i];
         //curr_config_[mercury::num_virtual + i] = data->motor_jpos[i];
@@ -153,6 +154,15 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
     ((BasicAccumulation*)ori_est_)->getEstimatedCoMState(sp_->com_state_imu_);
     //printf("\n");
+
+
+    static bool reset_ekf_on_double_contact = false;
+    if ((sp_->phase_copy_ == 2) && (!reset_ekf_on_double_contact)){
+        std::cout << "Doube contact detected for the first time!" << std::endl;
+        std::cout << "Reseting EKF filter" << std::endl;
+        ekf_est_->resetFilter();
+        reset_ekf_on_double_contact = true;
+    }
 
     // EKF set sensor data
     ekf_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel, 

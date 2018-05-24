@@ -59,6 +59,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
 
   com_state_imu_.setZero();
 
+  phase_copy_= 0;
 
   DataManager* data_manager = DataManager::GetDataManager();
 
