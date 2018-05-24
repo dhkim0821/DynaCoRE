@@ -160,7 +160,8 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     ekf_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel, 
                             data->lfoot_contact, 
                             data->rfoot_contact,
-                            curr_config_.segment(mercury::num_virtual, mercury::num_act_joint));
+                            curr_config_.segment(mercury::num_virtual, mercury::num_act_joint),
+                            curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
 
     if(base_cond_ == base_condition::floating){
         curr_config_[3] = sp_->body_ori_.x();
