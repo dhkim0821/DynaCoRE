@@ -14,7 +14,8 @@ public:
 
   virtual void TestInitialization() = 0;
   void getCommand(void* _command);
-  int getPhase(){return phase_; }
+
+  int getPhase(){ return phase_;}
 
 protected:
   virtual int _NextPhase(const int & phase) = 0;
@@ -22,6 +23,7 @@ protected:
   bool b_first_visit_;
   int phase_;
   std::vector<Controller*> state_list_;
+
 };
 
 

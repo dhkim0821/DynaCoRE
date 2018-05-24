@@ -9,6 +9,7 @@
 using namespace RigidBodyDynamics;
 
 EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
+	Q_config_dot(mercury::num_qdot),
 	O_p_l(3),
 	O_p_r(3),
 	B_bf(3),
@@ -63,7 +64,7 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 
 	dim_error_states = O_r.size() + O_v.size() + 3 + O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size();
 	dim_process_errors = f_imu.size() + omega_imu.size() + O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size();
-	dim_obs = O_p_l.size() + O_p_r.size();
+	dim_obs = O_p_l.size() + O_p_r.size() + O_v.size();
 	dim_inputs = f_imu.size() + omega_imu.size();
 
 
@@ -106,6 +107,8 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 	p_l_B = dynacore::Vector::Zero(O_p_l.size());
 	p_r_B = dynacore::Vector::Zero(O_p_r.size());
 
+	body_vel_kinematics = dynacore::Vector::Zero(O_v.size());
+
 	y_vec = dynacore::Vector::Zero(dim_obs);
 
 	// Initialize Covariance parameters
@@ -128,6 +131,10 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 
 	n_p = 0.01; // foot measurement noise intensity.
 
+    n_v_default = 0.01;   // default noise intensity of body velocity measurement
+    n_v_unknown = 1000;   // unknown noise intensity from body velocity measurement
+
+    n_v = n_v_default;    // Body velocity from kinematics measurement noise intensity
 
 	// Initialize Orientation Calibration Filters
 	// Bias Filter 
@@ -171,6 +178,10 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 
 	DataManager::GetDataManager()->RegisterData(&O_p_l, DYN_VEC, "ekf_p_left_O", 3);
 	DataManager::GetDataManager()->RegisterData(&O_p_r, DYN_VEC, "ekf_p_right_O", 3);
+
+
+	DataManager::GetDataManager()->RegisterData(&body_vel_kinematics, DYN_VEC, "ekf_body_vel_kin", 3);
+
 
 }
 
@@ -380,7 +391,19 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
                              const std::vector<double> & ang_vel,
                              const bool left_foot_contact,
                              const bool right_foot_contact,
-                             dynacore::Vector joint_values){
+                             const dynacore::Vector & joint_values,
+                             const dynacore::Vector & joint_velocity_values){
+
+	setSensorData(acc, acc_inc, ang_vel, left_foot_contact, right_foot_contact, joint_values);
+	Q_config_dot.segment(mercury::num_virtual, mercury::num_act_joint) = joint_velocity_values;
+}
+
+void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
+                             const std::vector<double> & acc_inc,
+                             const std::vector<double> & ang_vel,
+                             const bool & left_foot_contact,
+                             const bool & right_foot_contact,
+                             const dynacore::Vector & joint_values){
 
 	for(size_t i = 0; i < 3; i++){
 		f_imu[i] = -acc[i];
@@ -412,7 +435,7 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
 	//Print Statements
 	if (count % 100 == 0){
 		showPrintOutStatements();
-		//count = 0;
+		count = 0;
 	}
 	count++;
 
@@ -425,7 +448,7 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
 void EKF_RotellaEstimator::handleFootContacts(){
 	// if the foot location is lost, set wp to a high number
 	if (lf_contact){
-		wp_l_intensity = wp_intensity_default;
+		wp_l_intensity = wp_intensity_default;	
 	}else{
 		wp_l_intensity = wp_intensity_unknown;
 	}
@@ -435,6 +458,13 @@ void EKF_RotellaEstimator::handleFootContacts(){
 	}else{
 		wp_r_intensity = wp_intensity_unknown;
 	}	
+
+	// Set n_v to a high number if neither foot contact is available
+	if (lf_contact || rf_contact){
+		n_v = n_v_default;
+	}else{
+		n_v = n_v_unknown;
+	}
 
 	// Handle new contact detections
 	// Check if a new foot location will be used for estimation
@@ -514,7 +544,8 @@ void EKF_RotellaEstimator::statePredictionStep(){
 	// Prepare filter input:
 	//f_imu_input = C_rot * f_imu;
 	f_imu_input = f_imu - B_bf;
-	omega_imu_input = omega_imu - B_bw;
+//	omega_imu_input = omega_imu - B_bw;
+	omega_imu_input = omega_imu;
 
 	// Prepare rotation values
 	dynacore::Quaternion B_q_omega;
@@ -642,9 +673,57 @@ void EKF_RotellaEstimator::getCurrentBodyFrameFootPosition(const int foot_link_i
     foot_pos_B = CalcBodyToBaseCoordinates(*robot_model, config_copy, bodyid, Local_CoM, true);		
 }
 
+void EKF_RotellaEstimator::getBodyVelFromKinematics(dynacore::Vector & O_body_vel){
+	dynacore::Vect3 vel;
+    dynacore::Vect3 zero;
+
+    unsigned int bodyid;
+    if (lf_contact && rf_contact){
+    	bodyid = robot_model->GetBodyId("lfoot");
+    }else if (lf_contact){
+    	bodyid = robot_model->GetBodyId("lfoot");
+    }else if (rf_contact){
+    	bodyid = robot_model->GetBodyId("rfoot");
+    }else{
+       	bodyid = robot_model->GetBodyId("lfoot");
+    }
+
+    if(bodyid >=robot_model->fixed_body_discriminator){
+        zero = robot_model->mFixedBodies[bodyid - robot_model->fixed_body_discriminator].mCenterOfMass;
+    }
+    else{
+        zero =  robot_model->mBodies[bodyid].mCenterOfMass;
+    }
+
+	dynacore::Vector config_copy = Q_config;
+
+	config_copy.head(O_r.size()) = O_r;
+	config_copy[O_r.size()] = O_q_B.x();
+	config_copy[O_r.size()+1] = O_q_B.y();		
+	config_copy[O_r.size()+2] = O_q_B.z();
+	config_copy[mercury::num_qdot] = O_q_B.w();	
+
+	dynacore::Vector config_dot_copy = Q_config_dot;
+    for(int i(0); i<3; ++i){
+        config_dot_copy[i+3] = omega_imu_input[i];
+    }
+
+    vel = CalcPointVelocity (*robot_model, config_copy, config_dot_copy, bodyid, zero, true);
+
+    // Set body velocity to negative of foot velocity
+    for(size_t i = 0; i < 3; i++){
+    	O_body_vel[i] = -vel[i];
+    }
+}
+
 void EKF_RotellaEstimator::updateStep(){
 	// Construct Noise Matrix R
-	R_c.block(0,0,dim_obs,dim_obs) = n_p*dynacore::Matrix::Identity(6,6);
+	R_c.block(0,0,6,6) = n_p*dynacore::Matrix::Identity(6,6);
+
+	// Get body velocity estimate from kinematics
+	getBodyVelFromKinematics(body_vel_kinematics);
+	R_c.block(6,6,3,3) = n_v*dynacore::Matrix::Identity(3,3);
+
 	R_k = R_c/dt;
 
 	// Construct Discretized Observation Matrix
@@ -658,6 +737,8 @@ void EKF_RotellaEstimator::updateStep(){
 	H_k.block(3,6,3,3) = getSkewSymmetricMatrix(p_r_B);	
 	H_k.block(3,12,3,3) = C_rot;
 
+	H_k.block(6, 3, 3, 3) = dynacore::Matrix::Identity(3,3);
+
 	//Compute the Kalman Gain
 	S_k = H_k*P_predicted*H_k.transpose() + R_k;
 	K_k = P_predicted*H_k.transpose()*(S_k.inverse());
@@ -670,6 +751,7 @@ void EKF_RotellaEstimator::updateStep(){
 	// y_vec = (z - h())
 	y_vec.head(O_p_l.size()) = z_lfoot_pos_B - p_l_B;
 	y_vec.segment(O_p_l.size(), O_p_r.size()) = z_rfoot_pos_B - p_r_B;
+	y_vec.tail(O_v.size()) = body_vel_kinematics - O_v;
 
 	delta_x_posterior = K_k*y_vec;
 	//delta_y = H_k*delta_x_posterior;
@@ -706,8 +788,9 @@ void EKF_RotellaEstimator::updateStatePosterior(){
 	dynacore::convert(delta_phi, q_change);
 
 	// Perform Quaternion update
-	//q_posterior = dynacore::QuatMultiply(q_prediction, q_change);
-	q_posterior = dynacore::QuatMultiply(q_change, q_prediction);	
+	q_posterior = dynacore::QuatMultiply(q_change, q_prediction);
+	q_posterior = q_prediction;
+
 	x_posterior[O_r.size()+O_v.size()] = q_posterior.x();
 	x_posterior[O_r.size()+O_v.size()+1] = q_posterior.y();
 	x_posterior[O_r.size()+O_v.size()+2] = q_posterior.z();		

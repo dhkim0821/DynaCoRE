@@ -11,10 +11,17 @@ public:
   virtual void setSensorData(const std::vector<double> & acc,
                              const std::vector<double> & acc_inc,
                              const std::vector<double> & ang_vel,
+                             const bool & left_foot_contact,
+                             const bool & right_foot_contact,
+                             const dynacore::Vector & joint_values) = 0;
+
+ virtual void setSensorData(const std::vector<double> & acc,
+                             const std::vector<double> & acc_inc,
+                             const std::vector<double> & ang_vel,
                              const bool left_foot_contact,
                              const bool right_foot_contact,
-                             dynacore::Vector joint_values) = 0;
-
+                             const dynacore::Vector & joint_values,
+                             const dynacore::Vector & joint_velocity_values) = 0;
 
   virtual void EstimatorInitialization(const dynacore::Quaternion & initial_global_orientation,
                                        const std::vector<double> & initial_imu_acc,
