@@ -133,8 +133,8 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 
     n_v_default = 0.01;   // default noise intensity of body velocity measurement
     n_v_unknown = 1000;   // unknown noise intensity from body velocity measurement
-    n_v = n_v_default;    // Body velocity from kinematics measurement noise intensity
 
+    n_v = n_v_default;    // Body velocity from kinematics measurement noise intensity
 
 	// Initialize Orientation Calibration Filters
 	// Bias Filter 
@@ -435,7 +435,7 @@ void EKF_RotellaEstimator::setSensorData(const std::vector<double> & acc,
 	//Print Statements
 	if (count % 100 == 0){
 		showPrintOutStatements();
-		//count = 0;
+		count = 0;
 	}
 	count++;
 
@@ -544,7 +544,8 @@ void EKF_RotellaEstimator::statePredictionStep(){
 	// Prepare filter input:
 	//f_imu_input = C_rot * f_imu;
 	f_imu_input = f_imu - B_bf;
-	omega_imu_input = omega_imu - B_bw;
+//	omega_imu_input = omega_imu - B_bw;
+	omega_imu_input = omega_imu;
 
 	// Prepare rotation values
 	dynacore::Quaternion B_q_omega;
@@ -787,8 +788,9 @@ void EKF_RotellaEstimator::updateStatePosterior(){
 	dynacore::convert(delta_phi, q_change);
 
 	// Perform Quaternion update
-	//q_posterior = dynacore::QuatMultiply(q_prediction, q_change);
-	q_posterior = dynacore::QuatMultiply(q_change, q_prediction);	
+	q_posterior = dynacore::QuatMultiply(q_change, q_prediction);
+	q_posterior = q_prediction;
+
 	x_posterior[O_r.size()+O_v.size()] = q_posterior.x();
 	x_posterior[O_r.size()+O_v.size()+1] = q_posterior.y();
 	x_posterior[O_r.size()+O_v.size()+2] = q_posterior.z();		
