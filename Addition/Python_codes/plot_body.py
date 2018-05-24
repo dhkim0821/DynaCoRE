@@ -44,6 +44,22 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_q = \
     np.genfromtxt(file_path+'config.txt', delimiter=None, dtype=(float))
 
+    data_ekf_body_pos = \
+    np.genfromtxt(file_path+'ekf_o_r.txt', delimiter=None, dtype=(float))
+    data_ekf_body_vel = \
+    np.genfromtxt(file_path+'ekf_o_v.txt', delimiter=None, dtype=(float))
+    data_ekf_body_ori = \
+    np.genfromtxt(file_path+'ekf_o_q_b.txt', delimiter=None, dtype=(float))
+
+    data_led_body_pos = \
+    np.genfromtxt(file_path+'LED_Pos.txt', delimiter=None, dtype=(float))
+    data_led_body_vel = \
+    np.genfromtxt(file_path+'Body_LED_vel.txt', delimiter=None, dtype=(float))
+
+
+
+    
+
 
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
 
@@ -68,11 +84,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('body pos')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_com[st_idx:end_idx,i-1], "c-", \
+        plt.plot(data_x, data_com[st_idx:end_idx,i-1] + data_global_pos_offset[st_idx:end_idx, i-1], "c-", \
                 data_x, data_body_des[st_idx:end_idx,i-1], "r-", \
-                data_x, data_q[st_idx:end_idx,i-1], "b-")
+                data_x, data_q[st_idx:end_idx,i-1] + data_global_pos_offset[st_idx:end_idx, i-1], "b-")
+        plt.plot(data_x, data_ekf_body_pos[st_idx:end_idx, i-1], "g-")
+        plt.plot(data_x, data_led_body_pos[st_idx:end_idx, i-1], color="orange", linewidth=1.5)
         if i != 3:
-            plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1], "k-")
+            plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1] + data_global_pos_offset[st_idx:end_idx, i-1], "k-")
 
         # plt.legend(('command', 'pos'), loc='upper left')
         plt.grid(True)
@@ -89,7 +107,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     elif plot_configuration == PLOT_VERTICALLY:
         row_index +=1
 
-    # fig = plt.figure(2)
+    # Body Velocity
     # plt.get_current_fig_manager().window.wm_geometry("480x600+540+0")
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))    
@@ -100,6 +118,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
                 data_x, data_com_vel[st_idx:end_idx,i-1], "c-", \
                 data_x, data_qdot[st_idx:end_idx,i-1], "b-")
 
+        plt.plot(data_x, data_ekf_body_vel[st_idx:end_idx, i-1], "g-")
+        plt.plot(data_x, data_led_body_vel[st_idx:end_idx, i-1], color="orange", linewidth=1.5)
         if i != 3:
             plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "k-")
 
@@ -117,7 +137,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     elif plot_configuration == PLOT_VERTICALLY:
         row_index +=1
         
-    # fig = plt.figure(3)
+    # Body Orientation
     # plt.get_current_fig_manager().window.wm_geometry("480x600+0+650")
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
@@ -126,6 +146,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(4, 1, i)
         plt.plot(data_x, data_body_ori_des[st_idx:end_idx,i-1], "r-" , \
                 data_x, data_body_ori[st_idx:end_idx,i-1], "b-")
+        plt.plot(data_x, data_ekf_body_ori[st_idx:end_idx, i-1], "g-")
         plt.grid(True)
 
         for j in phseChange:
