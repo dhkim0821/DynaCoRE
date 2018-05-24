@@ -3,6 +3,7 @@
 
 #include <Utils/dynacore_pThread.hpp>
 #include <Utils/wrap_eigen.hpp>
+#include <Filter/filters.hpp>
 
 class Mercury_StateProvider;
 class RobotSystem;
@@ -35,9 +36,14 @@ public:
   dynacore::Quaternion body_quat_;
 
 protected:
+  double initialization_duration_;
+  dynacore::Vect3 offset_;
   Mercury_StateProvider * sp_;
+  dynacore::Matrix R_coord_;
+
   void _print_message(const mercury_message & msg);
   void _UpdateLEDPosData(const mercury_message & msg);
+  void _CoordinateUpdate(mercury_message & msg);
   void _CoordinateChange(mercury_message & msg);
   dynacore::Matrix _GetOrientation(const dynacore::Vect3 &, 
           const dynacore::Vect3 &, const dynacore::Vect3 &);
@@ -52,6 +58,9 @@ protected:
 
   int lfoot_idx;
   int rfoot_idx;
+
+  std::vector<filter*> vel_filter_;
+  dynacore::Vect3 body_led_vel_;
 
   const RobotSystem* robot_sys_;
 };

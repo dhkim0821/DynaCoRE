@@ -323,14 +323,14 @@ void WalkingConfigTest::_SettingParameter(){
 
     handler.getBoolean("contact_switch_check", b_tmp);
 #if (SWING_CTRL_TYPE == 0)
-    ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(tmp);
-    ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(tmp);
+    ((BodyPriorFootPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+    ((BodyPriorFootPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(b_tmp);
 #elif (SWING_CTRL_TYPE == 1)
     ((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(b_tmp);
     ((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(b_tmp);
 #elif (SWING_CTRL_TYPE == 2)
-    ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(tmp);
-    ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(tmp);
+    ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+    ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(b_tmp);
 #endif
     printf("[Walking Body Test] Complete to Setup Parameters\n");
 }

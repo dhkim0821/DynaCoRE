@@ -1,6 +1,6 @@
 x_step_length_limit: [-0.25, 0.2]
-y_step_length_limit: [0.1, 0.42]
-#y_step_length_limit: [0.1, 0.38]
+y_step_length_limit: [0.1, 0.35]
+
 
 com_velocity_limit: [0.0, 1.3]
 

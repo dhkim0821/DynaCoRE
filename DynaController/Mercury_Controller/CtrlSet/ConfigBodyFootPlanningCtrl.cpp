@@ -397,7 +397,7 @@ bool ConfigBodyFootPlanningCtrl::EndOfPhase(){
             contact_happen = true;
         }
         if(state_machine_time_ > end_time_ * 0.5 && contact_happen){
-            printf("[Body Foot JPos Ctrl] contact happen, state_machine_time/ end time: (%f, %f)\n",
+            printf("[Config Body Foot Ctrl] contact happen, state_machine_time/ end time: (%f, %f)\n",
                     state_machine_time_, end_time_);
             return true;
         }

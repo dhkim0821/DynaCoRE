@@ -54,7 +54,7 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
         sp_->rotor_inertia_[i] = data->reflected_rotor_inertia[i];
     }
     // Update Orientation w/ Mocap data
-    body_foot_est_->getMoCapBodyOri(sp_->body_ori_);
+    // body_foot_est_->getMoCapBodyOri(sp_->body_ori_);
     std::vector<double> imu_acc(3);
     std::vector<double> imu_ang_vel(3);
 
@@ -64,6 +64,7 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     }
 
     ori_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel);   
+    ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
     ekf_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel); // EKF
 
     // Local Frame Setting
@@ -72,6 +73,9 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
         curr_config_[4] = sp_->body_ori_.y();
         curr_config_[5] = sp_->body_ori_.z();
         curr_config_[mercury::num_qdot] = sp_->body_ori_.w();
+
+        for(int i(0); i<3; ++i)
+            curr_qdot_[i+3] = sp_->body_ang_vel_[i];
 
         robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
 
