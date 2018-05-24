@@ -64,7 +64,7 @@ EKF_RotellaEstimator::EKF_RotellaEstimator():Q_config(mercury::num_q),
 
 	dim_error_states = O_r.size() + O_v.size() + 3 + O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size();
 	dim_process_errors = f_imu.size() + omega_imu.size() + O_p_l.size() + O_p_r.size() + B_bf.size() + B_bw.size();
-	dim_obs = O_p_l.size() + O_p_r.size();
+	dim_obs = O_p_l.size() + O_p_r.size() + O_v.size();
 	dim_inputs = f_imu.size() + omega_imu.size();
 
 
@@ -719,7 +719,9 @@ void EKF_RotellaEstimator::updateStep(){
 	// Construct Noise Matrix R
 	R_c.block(0,0,6,6) = n_p*dynacore::Matrix::Identity(6,6);
 
+	// Get body velocity estimate from kinematics
 	getBodyVelFromKinematics(body_vel_kinematics);
+	R_c.block(6,6,3,3) = n_v*dynacore::Matrix::Identity(3,3);
 
 	R_k = R_c/dt;
 
@@ -734,6 +736,8 @@ void EKF_RotellaEstimator::updateStep(){
 	H_k.block(3,6,3,3) = getSkewSymmetricMatrix(p_r_B);	
 	H_k.block(3,12,3,3) = C_rot;
 
+	H_k.block(6, 3, 3, 3) = dynacore::Matrix::Identity(3,3);
+
 	//Compute the Kalman Gain
 	S_k = H_k*P_predicted*H_k.transpose() + R_k;
 	K_k = P_predicted*H_k.transpose()*(S_k.inverse());
@@ -746,7 +750,7 @@ void EKF_RotellaEstimator::updateStep(){
 	// y_vec = (z - h())
 	y_vec.head(O_p_l.size()) = z_lfoot_pos_B - p_l_B;
 	y_vec.segment(O_p_l.size(), O_p_r.size()) = z_rfoot_pos_B - p_r_B;
-
+	y_vec.tail(O_v.size()) = body_vel_kinematics - O_v;
 
 	delta_x_posterior = K_k*y_vec;
 	//delta_y = H_k*delta_x_posterior;
