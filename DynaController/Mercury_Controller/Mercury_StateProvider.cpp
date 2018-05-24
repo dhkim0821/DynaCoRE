@@ -1,6 +1,7 @@
 #include "Mercury_StateProvider.hpp"
 #include <Utils/DataManager.hpp>
 #include <Mercury/Mercury_Definition.h>
+#include "MoCapManager.hpp"
 
 Mercury_StateProvider* Mercury_StateProvider::getStateProvider(){
     static Mercury_StateProvider state_provider_;
@@ -23,7 +24,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 estimated_com_state_(4),
                                 global_foot_height_(0.),
                                 com_state_imu_(6),
-                                num_step_copy_(0)
+                                num_step_copy_(0),
+                                led_kin_data_(3*NUM_MARKERS)
 {
   Q_.setZero();
   Qdot_.setZero();
@@ -63,6 +65,9 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   phase_copy_= 0;
 
   DataManager* data_manager = DataManager::GetDataManager();
+
+  led_kin_data_.setZero();
+  data_manager->RegisterData(&led_kin_data_, DYN_VEC, "LED_Kin_Pos", 3*NUM_MARKERS);
 
   data_manager->RegisterData(&curr_time_, DOUBLE, "time");
   data_manager->RegisterData(&Q_, DYN_VEC, "config", mercury::num_q);

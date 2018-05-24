@@ -53,7 +53,7 @@ protected:
   std::vector<int> marker_cond_;
 
   dynacore::Vector led_pos_data_;
-  dynacore::Vector led_kin_data_;
+  // dynacore::Vector led_kin_data_;
   dynacore::Vector led_pos_raw_data_;
 
   int lfoot_idx;

@@ -75,6 +75,7 @@ public:
   int phase_copy_;
   int num_step_copy_;
 
+  dynacore::Vector led_kin_data_;
 
 private:
   Mercury_StateProvider();

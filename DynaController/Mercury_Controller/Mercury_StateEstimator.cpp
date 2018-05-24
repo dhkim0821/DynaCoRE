@@ -17,7 +17,7 @@
 
 // EKF based estimators
 #include <Mercury_Controller/StateEstimator/EKF_RotellaEstimator.hpp> // EKF
-
+#include "MoCapManager.hpp"
 
 Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
     base_cond_(0),
@@ -113,6 +113,14 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
 
     // Warning: state provider setup
     sp_->SaveCurrentData();
+    // LED data save  ////////////////////
+    dynacore::Vect3 pos;
+    int led_idx = mercury_link::LED_BODY_0;
+    for(int i(0); i<NUM_MARKERS; ++i){
+        robot_sys_->getPos(mercury_link::LED_BODY_0 + i, pos);
+        for (int j(0); j<3; ++j)  sp_->led_kin_data_[3*i + j] = pos[j];
+    }
+    //////////////////////////////////////
 
     // Right Contact 
     if(data->rfoot_contact) sp_->b_rfoot_contact_ = 1;
@@ -211,6 +219,15 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
 
     // Warning: Save Sensor Data in StateProvider
     sp_->SaveCurrentData();
+    // LED data save  ////////////////////
+    dynacore::Vect3 pos;
+    int led_idx = mercury_link::LED_BODY_0;
+    for(int i(0); i<NUM_MARKERS; ++i){
+        robot_sys_->getPos(mercury_link::LED_BODY_0 + i, pos);
+        for (int j(0); j<3; ++j)  sp_->led_kin_data_[3*i + j] = pos[j];
+    }
+    //////////////////////////////////////
+
     robot_sys_->getCoMPosition(sp_->CoM_pos_);
     robot_sys_->getCoMVelocity(sp_->CoM_vel_);
     // Right Contact 

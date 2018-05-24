@@ -212,7 +212,8 @@ bool Mercury_interface::_Initialization(Mercury_SensorData* data){
 
         if(fabs(data->imu_acc[2]) < 0.00001){
             waiting_count_ = 10000000;
-            dynacore::pretty_print(data->imu_acc, "data->imu_acc", 3);            
+            if(count_%1000 ==1)
+                dynacore::pretty_print(data->imu_acc, "data->imu_acc", 3);            
         }
 
         DataManager::GetDataManager()->start();
