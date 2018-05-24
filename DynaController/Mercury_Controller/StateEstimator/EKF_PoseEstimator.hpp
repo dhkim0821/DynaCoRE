@@ -20,6 +20,8 @@ public:
                                        const std::vector<double> & initial_imu_acc,
                                        const std::vector<double> & initial_imu_ang_vel) = 0;
 
+  virtual void resetFilter() = 0;
+
   void getEstimatedState(dynacore::Vector & global_position,    
                          dynacore::Vector & global_velocity,
                          dynacore::Quaternion & global_orientation){

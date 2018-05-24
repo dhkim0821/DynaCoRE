@@ -156,14 +156,6 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     //printf("\n");
 
 
-    static bool reset_ekf_on_double_contact = false;
-    if ((sp_->phase_copy_ == 2) && (!reset_ekf_on_double_contact)){
-        std::cout << "Doube contact detected for the first time!" << std::endl;
-        std::cout << "Reseting EKF filter" << std::endl;
-        ekf_est_->resetFilter();
-        reset_ekf_on_double_contact = true;
-    }
-
     // EKF set sensor data
     ekf_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel, 
                             data->lfoot_contact, 
