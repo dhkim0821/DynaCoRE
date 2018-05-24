@@ -14,6 +14,7 @@ public:
 
   virtual void TestInitialization() = 0;
   void getCommand(void* _command);
+
   int getPhase(){ return phase_;}
 
 protected:

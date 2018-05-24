@@ -183,6 +183,8 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         sp_->global_pos_local_ += next_local_frame_location;
         sp_->global_foot_height_ = next_local_frame_location[2];
     }
+
+    sp_->num_step_copy_ = num_step_;
   // TEST
   if (num_step_ > 25) {
       exit(0);

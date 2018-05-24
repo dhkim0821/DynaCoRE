@@ -144,7 +144,10 @@ void BodyJPosSwingPlanningCtrl::_task_setup(){
     dynacore::convert(rpy_des, des_quat);
 
     _CoMEstiamtorUpdate();
-    _CheckPlanning();
+
+    // TEST
+    _CheckPlanning();        
+
 
     double traj_time = state_machine_time_ - replan_moment_;
     // Swing Foot Config Task
@@ -261,6 +264,11 @@ void BodyJPosSwingPlanningCtrl::_Replanning(){
         del_com_pos[i] = sp_->Q_[i] - ini_config_[i];
         com_vel[i] = del_com_pos[i]/state_machine_time_;
     }
+    // TEST 3 Y-axis
+    // com_pos[1] = sp_->estimated_com_state_[1];
+    // com_vel[1] = sp_->estimated_com_state_[3];
+
+
     printf("planning com state: %f, %f, %f, %f\n",
         com_pos[0], com_pos[1],
         com_vel[0], com_vel[1]);
@@ -294,6 +302,11 @@ void BodyJPosSwingPlanningCtrl::_Replanning(){
     // dynacore::pretty_print(sp_->global_pos_local_, std::cout, "global loc");
 
     target_loc -= sp_->global_pos_local_;
+
+    if(sp_->num_step_copy_ < 2){
+        target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
+    }
+
     //target_loc[2] -= push_down_height_;
     target_loc[2] = default_target_loc_[2];
     dynacore::pretty_print(target_loc, std::cout, "next foot loc");

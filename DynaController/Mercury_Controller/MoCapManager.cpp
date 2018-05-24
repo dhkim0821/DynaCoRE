@@ -83,7 +83,7 @@ void MoCapManager::_CoordinateUpdate(mercury_message & msg) {
 
     p << len_to_virtual, 0., 0.;    
     offset_ = led_list[0];
-    offset_ -= R_coord_.transpose() * p;
+    // offset_ -= R_coord_.transpose() * p;
 
     for (int i = 0; i < NUM_MARKERS; ++i) {
       local_pos = R_coord_*(led_list[i] - offset_);
