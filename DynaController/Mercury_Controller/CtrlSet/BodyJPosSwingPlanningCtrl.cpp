@@ -349,14 +349,15 @@ void BodyJPosSwingPlanningCtrl::FirstVisit(){
 
 
     if(b_initial_planning_){
+        _Replanning(target_loc);
+
+        // TEST
         // target_loc[0] = (sp_->Q_[0] + body_pt_offset_[0]) + 
         //             kp_x_ * (sp_->Q_[0] + body_pt_offset_[0]);
-
-        _Replanning(target_loc);
-        target_loc[1] = 
-        (sp_->Q_[1] + body_pt_offset_[1])
-         + default_target_loc_[1]
-         + kp_y_ * (sp_->Q_[1] + body_pt_offset_[1]);
+        // target_loc[1] = 
+        // (sp_->Q_[1] + body_pt_offset_[1])
+        //  + default_target_loc_[1]
+        //  + kp_y_ * (sp_->Q_[1] + body_pt_offset_[1]);
     }
     _SetBspline(sp_->Q_, ini_swing_leg_config_, zero, zero, target_loc);
     _SetBspline(ini_foot_pos_, zero, zero, target_loc);
