@@ -55,6 +55,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   body_ang_vel_.setZero();
   body_ang_vel_des_.setZero();
 
+  average_vel_.setZero();
+
   Rfoot_pos_.setZero();
   Rfoot_vel_.setZero();
   Lfoot_pos_.setZero();
@@ -68,6 +70,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
 
   led_kin_data_.setZero();
   data_manager->RegisterData(&led_kin_data_, DYN_VEC, "LED_Kin_Pos", 3*NUM_MARKERS);
+  data_manager->RegisterData(&average_vel_, VECT2, "average_vel", 2);
+
 
   data_manager->RegisterData(&curr_time_, DOUBLE, "time");
   data_manager->RegisterData(&Q_, DYN_VEC, "config", mercury::num_q);

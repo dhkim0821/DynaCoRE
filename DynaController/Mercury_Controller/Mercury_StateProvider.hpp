@@ -51,6 +51,8 @@ public:
   dynacore::Vect3 body_pos_des_;
   dynacore::Vect3 body_vel_des_;
 
+  dynacore::Vect2 average_vel_;
+
   dynacore::Vector jpos_des_;
   dynacore::Vector jvel_des_;
 

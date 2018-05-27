@@ -144,8 +144,6 @@ void BodyJPosSwingPlanningCtrl::_task_setup(){
     dynacore::convert(rpy_des, des_quat);
 
     _CoMEstiamtorUpdate();
-
-    // TEST
     _CheckPlanning();        
 
 
@@ -226,7 +224,13 @@ void BodyJPosSwingPlanningCtrl::_CheckPlanning(){
 
         //if(state_machine_time_ > 0.5 * end_time_ + 0.002 && (num_planning_ < 1)){
         //+ 0.002 is to account one or two more ticks before the end of phase
-        _Replanning();
+        dynacore::Vect3 target_loc;
+        _Replanning(target_loc);
+        dynacore::Vector guess_q = sp_->Q_;
+        _SetBspline(guess_q, 
+            curr_jpos_des_, curr_jvel_des_, curr_jacc_des_, target_loc);
+        _SetBspline(
+            curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
         ++num_planning_;
     }
 
@@ -240,8 +244,8 @@ void BodyJPosSwingPlanningCtrl::_CheckPlanning(){
     // printf("num_planning: %i\n", num_planning_);
 }
 
-void BodyJPosSwingPlanningCtrl::_Replanning(){
-    dynacore::Vect3 com_pos, com_vel, target_loc;
+void BodyJPosSwingPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
+    dynacore::Vect3 com_pos, com_vel;
     dynacore::Vect3 del_com_pos;
     // Direct value used
     robot_sys_->getCoMPosition(com_pos);
@@ -262,7 +266,8 @@ void BodyJPosSwingPlanningCtrl::_Replanning(){
     for(int i(0); i<2; ++i){
         com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
         del_com_pos[i] = sp_->Q_[i] - ini_config_[i];
-        com_vel[i] = del_com_pos[i]/state_machine_time_;
+        //sp_->average_vel_[i] = del_com_pos[i]/state_machine_time_;
+        com_vel[i] = sp_->average_vel_[i]; 
     }
     // TEST 3 Y-axis
     // com_pos[1] = sp_->estimated_com_state_[1];
@@ -303,9 +308,10 @@ void BodyJPosSwingPlanningCtrl::_Replanning(){
 
     target_loc -= sp_->global_pos_local_;
 
-    if(sp_->num_step_copy_ < 2){
-        target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
-    }
+    // TEST
+    // if(sp_->num_step_copy_ < 2){
+    //     target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
+    // }
 
     //target_loc[2] -= push_down_height_;
     target_loc[2] = default_target_loc_[2];
@@ -313,9 +319,10 @@ void BodyJPosSwingPlanningCtrl::_Replanning(){
     //curr_foot_acc_des_.setZero();
     //curr_foot_vel_des_.setZero();
 
-    dynacore::Vector guess_q = sp_->Q_;
-    _SetBspline(guess_q, curr_jpos_des_, curr_jvel_des_, curr_jacc_des_, target_loc);
-    _SetBspline(curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
+
+    // TEST
+    // guess_q[1] += (pl_output.switching_state[1] - sp_->global_pos_local_[1]);
+
 }
 
 void BodyJPosSwingPlanningCtrl::_single_contact_setup(){
@@ -338,12 +345,23 @@ void BodyJPosSwingPlanningCtrl::FirstVisit(){
     target_loc[0] += sp_->Q_[0];
     target_loc[1] += sp_->Q_[1];
     target_loc[2] = ini_foot_pos_[2] - push_down_height_;
-
     // Compute JPos trajectory
+
+
+    if(b_initial_planning_){
+        // target_loc[0] = (sp_->Q_[0] + body_pt_offset_[0]) + 
+        //             kp_x_ * (sp_->Q_[0] + body_pt_offset_[0]);
+
+        _Replanning(target_loc);
+        target_loc[1] = 
+        (sp_->Q_[1] + body_pt_offset_[1])
+         + default_target_loc_[1]
+         + kp_y_ * (sp_->Q_[1] + body_pt_offset_[1]);
+    }
     _SetBspline(sp_->Q_, ini_swing_leg_config_, zero, zero, target_loc);
-    // Compute Foot trajectory
     _SetBspline(ini_foot_pos_, zero, zero, target_loc);
     default_target_loc_[2] = target_loc[2];
+
 
     // _Replanning();
     num_planning_ = 0;
@@ -535,6 +553,10 @@ void BodyJPosSwingPlanningCtrl::CtrlInitialization(const std::string & setting_f
     for(int i(0); i<2; ++i){
         body_pt_offset_[i] = tmp_vec[i];
     }
+
+    handler.getBoolean("initial_planning", b_initial_planning_);
+    handler.getValue("kp_x", kp_x_);
+    handler.getValue("kp_y", kp_y_);
 
     static bool b_bodypute_eigenvalue(true);
     if(b_bodypute_eigenvalue){

@@ -30,6 +30,11 @@ Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
     body_foot_est_ = new BodyFootPosEstimator(robot);
     ori_est_ = new BasicAccumulation();
     ekf_est_ = new EKF_RotellaEstimator(); // EKF
+
+    for(int i(0); i<2; ++i){
+        filter_com_vel_.push_back(
+            new digital_lp_filter(2.*M_PI * 10., mercury::servo_rate));
+    }
     // ori_est_ = new OriEstAccObs();
     // ori_est_ = new NoBias();
     //ori_est_ = new NoAccState();
@@ -108,8 +113,11 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
 
     robot_sys_->getCoMPosition(sp_->CoM_pos_);
     robot_sys_->getCoMVelocity(sp_->CoM_vel_);
-
     ((BasicAccumulation*)ori_est_)->CoMStateInitialization(sp_->CoM_pos_, sp_->CoM_vel_);
+    for(int i(0); i<2; ++i){
+        filter_com_vel_[i]->input(sp_->CoM_vel_[i]); 
+        sp_->average_vel_[i] = filter_com_vel_[i]->output();
+    }
 
     // Warning: state provider setup
     sp_->SaveCurrentData();
@@ -161,7 +169,10 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     ori_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel);
     ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
     ((BasicAccumulation*)ori_est_)->getEstimatedCoMState(sp_->com_state_imu_);
-    //printf("\n");
+    for(int i(0); i<2; ++i){
+        filter_com_vel_[i]->input(sp_->CoM_vel_[i]); 
+        sp_->average_vel_[i] = filter_com_vel_[i]->output();
+    }
 
 
     // EKF set sensor data

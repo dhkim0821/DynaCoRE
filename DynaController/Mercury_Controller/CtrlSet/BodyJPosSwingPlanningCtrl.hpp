@@ -75,6 +75,9 @@ class BodyJPosSwingPlanningCtrl:public Controller{
 
         bool b_contact_switch_check_;
         bool b_set_height_target_;
+        bool b_initial_planning_;
+        double kp_x_;
+        double kp_y_;
         double des_body_height_;
 
         double double_stance_ratio_;
@@ -105,7 +108,7 @@ class BodyJPosSwingPlanningCtrl:public Controller{
 
         Planner* planner_;
         void _CheckPlanning();
-        void _Replanning();
+        void _Replanning(dynacore::Vect3 & target_loc);
 
         dynacore::Vector des_jpos_;
         dynacore::Vector des_jvel_;

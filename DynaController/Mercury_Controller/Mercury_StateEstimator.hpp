@@ -32,6 +32,8 @@ protected:
   dynacore::Vector curr_config_;
   dynacore::Vector curr_qdot_;
 
+  std::vector<filter*> filter_com_vel_;
+
   OriEstimator* ori_est_;
   BodyFootPosEstimator* body_foot_est_;
   EKF_PoseEstimator* ekf_est_;  // EKF estimator
