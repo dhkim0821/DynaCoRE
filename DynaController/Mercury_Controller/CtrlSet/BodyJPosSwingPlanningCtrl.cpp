@@ -283,9 +283,10 @@ void BodyJPosSwingPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 
     OutputReversalPL pl_output;
     ParamReversalPL pl_param;
+    // TEST
     pl_param.swing_time = end_time_ - state_machine_time_
         + transition_time_ * transition_phase_ratio_
-        + stance_time_ * double_stance_ratio_;
+        + stance_time_ * double_stance_ratio_ - swing_time_reduction_;
 
     pl_param.des_loc = sp_->des_location_;
     pl_param.stance_foot_loc = sp_->global_pos_local_;
@@ -558,6 +559,8 @@ void BodyJPosSwingPlanningCtrl::CtrlInitialization(const std::string & setting_f
     handler.getBoolean("initial_planning", b_initial_planning_);
     handler.getValue("kp_x", kp_x_);
     handler.getValue("kp_y", kp_y_);
+
+    handler.getValue("swing_time_reduction", swing_time_reduction_);
 
     static bool b_bodypute_eigenvalue(true);
     if(b_bodypute_eigenvalue){

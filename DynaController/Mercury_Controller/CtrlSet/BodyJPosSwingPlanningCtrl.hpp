@@ -127,6 +127,8 @@ class BodyJPosSwingPlanningCtrl:public Controller{
         double transition_time_;
         double stance_time_;
 
+        double swing_time_reduction_;
+
         void _task_setup();
         void _single_contact_setup();
         void _body_foot_ctrl(dynacore::Vector & gamma);
