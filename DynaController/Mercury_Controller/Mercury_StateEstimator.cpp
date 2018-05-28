@@ -17,6 +17,8 @@
 
 // EKF based estimators
 #include <Mercury_Controller/StateEstimator/EKF_RotellaEstimator.hpp> // EKF
+#include <Mercury_Controller/StateEstimator/EKF_LIPRotellaEstimator.hpp> // EKF
+
 #include "MoCapManager.hpp"
 
 Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
@@ -29,7 +31,8 @@ Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
 
     body_foot_est_ = new BodyFootPosEstimator(robot);
     ori_est_ = new BasicAccumulation();
-    ekf_est_ = new EKF_RotellaEstimator(); // EKF
+//    ekf_est_ = new EKF_RotellaEstimator(); // EKF
+    ekf_est_ = new EKF_LIPRotellaEstimator(); // EKF with Pendulum Dynamics
 
     for(int i(0); i<2; ++i){
         filter_com_vel_.push_back(

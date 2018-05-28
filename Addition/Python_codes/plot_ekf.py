@@ -12,6 +12,7 @@ PLOT_HORIZONTALLY = 1
 num_figures = 8
 
 sim_data_available = False
+kin_com_data_available = False
 
 plot_contact_switches = False
 
@@ -58,6 +59,15 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
     data_body_kin_vel = \
     np.genfromtxt(file_path+'ekf_body_vel_kin.txt', delimiter=None, dtype=(float))
+
+    data_com_kin_vel = None
+    try:
+        data_com_kin_vel = \
+        np.genfromtxt(file_path+'ekf_com_vel_kin.txt', delimiter=None, dtype=(float))
+        kin_com_data_available = True
+    except:
+        print "\n Note: EKF com vel data from kinematicsd not available\n"
+        kin_com_data_available = False
 
     data_accumulated_body_ori = \
     np.genfromtxt(file_path+'body_ori.txt', delimiter=None, dtype=(float))
@@ -213,6 +223,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
         plt.plot(data_x, data_body_vel[st_idx:end_idx, i-1], "b-")
         plt.plot(data_x, data_body_kin_vel[st_idx:end_idx, i-1], color="orange")
+        
+        if kin_com_data_available:
+            plt.plot(data_x, data_com_kin_vel[st_idx:end_idx, i-1], color="black")
 
         if plot_contact_switches:
             # Plot Left Foot Contact 

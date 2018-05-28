@@ -27,6 +27,12 @@ public:
                                        const std::vector<double> & initial_imu_acc,
                                        const std::vector<double> & initial_imu_ang_vel) = 0;
 
+  virtual void EstimatorInitializationWithCOMHeight(const dynacore::Quaternion & initial_global_orientation,
+                                       const std::vector<double> & initial_imu_acc,
+                                       const std::vector<double> & initial_imu_ang_vel,
+                                       const double com_height) {}
+
+
   virtual void resetFilter() = 0;
 
   void getEstimatedState(dynacore::Vect3 & global_position,    
