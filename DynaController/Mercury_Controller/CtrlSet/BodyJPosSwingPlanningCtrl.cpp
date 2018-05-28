@@ -39,6 +39,10 @@ BodyJPosSwingPlanningCtrl::BodyJPosSwingPlanningCtrl(
     curr_jacc_des_.setZero();
 
 
+    prev_ekf_vel.setZero();
+    acc_err_ekf.setZero();
+
+
     config_body_foot_task_ = new ConfigTask();
     if(swing_foot == mercury_link::leftFoot) {
         single_contact_ = new SingleContact(robot, mercury_link::rightFoot); 
@@ -222,16 +226,21 @@ void BodyJPosSwingPlanningCtrl::_CheckPlanning(){
     if( state_machine_time_ > 
             (end_time_/(planning_frequency_ + 1.) * (num_planning_ + 1.) + 0.002) ){
 
+    // if ((state_machine_time_ > (end_time_/2.0)) && num_planning_ == 0){
+
         //if(state_machine_time_ > 0.5 * end_time_ + 0.002 && (num_planning_ < 1)){
         //+ 0.002 is to account one or two more ticks before the end of phase
         dynacore::Vect3 target_loc;
         _Replanning(target_loc);
+        //_getHurstPlan(target_loc);
         dynacore::Vector guess_q = sp_->Q_;
         _SetBspline(guess_q, 
             curr_jpos_des_, curr_jvel_des_, curr_jacc_des_, target_loc);
         _SetBspline(
             curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
         ++num_planning_;
+
+
     }
 
     // Earlier planning
@@ -325,6 +334,127 @@ void BodyJPosSwingPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     // guess_q[1] += (pl_output.switching_state[1] - sp_->global_pos_local_[1]);
 
 }
+
+
+void BodyJPosSwingPlanningCtrl::_getHurstPlan(dynacore::Vect3 & target_loc){
+    dynacore::Vect3 com_pos, com_vel;
+    // Direct value used
+    robot_sys_->getCoMPosition(com_pos);
+    robot_sys_->getCoMVelocity(com_vel);
+    // Set Z height of target locatio
+    target_loc[2] = default_target_loc_[2];
+
+    // Get current swing foot position:
+    dynacore::Vect3 leftFoot_position; leftFoot_position.setZero();
+    dynacore::Vect3 rightFoot_position; rightFoot_position.setZero();    
+    robot_sys_->getPos(mercury_link::leftFoot, leftFoot_position);
+    robot_sys_->getPos(mercury_link::rightFoot, rightFoot_position);
+
+    dynacore::Vect3 localFoot_startPos; localFoot_startPos.setZero();
+
+    double dx_limit_upper = 0.0;
+    double dx_limit_lower = 0.0;     
+    double dy_limit_upper = 0.0;
+    double dy_limit_lower = 0.0;     
+
+    // Right Swing Phase
+    if (sp_->phase_copy_ == 4){
+       printf("right swing phase\n");
+       localFoot_startPos = rightFoot_position - leftFoot_position;
+
+       dx_limit_upper = 0.35;
+       dx_limit_lower = -0.35;  
+
+       // dy_limit_upper = -0.15;
+       // dy_limit_lower = -0.50; 
+       dy_limit_upper = -0.15;
+       dy_limit_lower = -0.55;        
+
+    }else if(sp_-> phase_copy_ == 8){
+       printf("left swing phase\n");
+    // Left Swing Phase:
+       localFoot_startPos = leftFoot_position - rightFoot_position;
+
+       dx_limit_upper = 0.35;
+       dx_limit_lower = -0.35;       
+       // dy_limit_upper = 0.50;
+       // dy_limit_lower = 0.15;
+       dy_limit_upper = 0.55;
+       dy_limit_lower = 0.15;
+
+       // dy_limit_upper = 0.55;
+       // dy_limit_lower = 0.15;
+
+     
+    }
+    // dynacore::pretty_print(localFoot_startPos, std::cout, "localFoot_startPos");
+    // dynacore::pretty_print(sp_->ekf_body_pos_, std::cout, "ekf_body_pos_");
+    // dynacore::pretty_print(sp_->ekf_body_vel_, std::cout, "ekf_body_vel_");        
+
+
+    // double ki_x = 1e-3;
+    // double ki_y = 1e-3;    
+    // double kd_x = 0.01;//1e-6;
+    // double kd_y = 0.01;//1e-6;
+
+    // double ki_x = 0.01;//0.01;
+    // double ki_y = 0.0001;    
+    // double kd_x = 0.01;//0.0 //1e-6;
+    // double kd_y = 0.001;//0.0;//1e-6;    
+
+    double kp_x = 1.0;
+    double kp_y = 1.0;    
+    double ki_x = 0.0;//0.01;
+    double ki_y = 0.0;    
+    double kd_x = 0.0;//0.0 //1e-6;
+    double kd_y = 0.0;//0.0;//1e-6;        
+    target_loc[0] = localFoot_startPos[0] + kp_x*sp_->ekf_body_vel_[0] + ki_x*(sp_->ekf_body_pos_[0]) + kd_x*(sp_->ekf_body_vel_[0] - prev_ekf_vel[0]);
+    target_loc[1] = localFoot_startPos[1] + kp_y*sp_->ekf_body_vel_[1] + ki_y*(sp_->ekf_body_pos_[1]) + kd_y*(sp_->ekf_body_vel_[1] - prev_ekf_vel[1]);
+
+    // With Velocity Tracking
+    // double kv_x = 0.00;
+    // double kv_y = 0.00;    
+    // double des_x_vel = -0.007;
+    // target_loc[0] = localFoot_startPos[0] + kp_x_*(sp_->ekf_body_vel_[0] - des_x_vel) + ki_x*(sp_->ekf_body_pos_[0] - des_x_vel*mercury::servo_rate ) + kd_x*(sp_->ekf_body_vel_[0] - prev_ekf_vel[0]) + kv_x*sp_->ekf_body_vel_[0];
+    // target_loc[1] = localFoot_startPos[1] + kp_y_*sp_->ekf_body_vel_[1] + ki_y*(sp_->ekf_body_pos_[1]) + kd_y*(sp_->ekf_body_vel_[1] - prev_ekf_vel[1]);
+
+    // Accumulated Error
+    // target_loc[0] = localFoot_startPos[0] + kp_x*sp_->ekf_body_vel_[0] + ki_x*(acc_err_ekf[0]) + kd_x*(sp_->ekf_body_vel_[0] - prev_ekf_vel[0]);
+    // target_loc[1] = localFoot_startPos[1] + kp_y*sp_->ekf_body_vel_[1] + ki_y*(acc_err_ekf[1]) + kd_y*(sp_->ekf_body_vel_[1] - prev_ekf_vel[1]);
+    // acc_err_ekf[0] += sp_->ekf_body_pos_[0];
+    // acc_err_ekf[1] += sp_->ekf_body_pos_[1];    
+
+    prev_ekf_vel[0] = sp_->ekf_body_vel_[0];
+    prev_ekf_vel[1] = sp_->ekf_body_vel_[1];
+
+    // target_loc[0] = localFoot_startPos[0] + kp_x_*com_vel[0] + ki_x*(com_pos[0]) + kd_x*(com_vel[0] - com_vel[0]);
+    // target_loc[1] = localFoot_startPos[1] + kp_y_*com_vel[1] + ki_y*(com_pos[1]) + kd_y*(com_vel[1] - com_vel[1]);
+    // prev_ekf_vel[0] = com_vel[0];
+    // prev_ekf_vel[1] = com_vel[1];
+
+
+
+
+    if (target_loc[0] >= dx_limit_upper){
+        target_loc[0] = dx_limit_upper;
+        printf("dx upper limit hit \n");
+    }else if (target_loc[0] <= dx_limit_lower){
+        target_loc[0] = dx_limit_lower;
+        printf("dx lower limit hit \n");
+    }    
+
+
+    if (target_loc[1] >= dy_limit_upper){
+        target_loc[1] = dy_limit_upper;
+        printf("dy upper limit hit \n");        
+    }else if (target_loc[1] <= dy_limit_lower){
+        target_loc[1] = dy_limit_lower;
+        printf("dy lower limit hit \n");        
+    }    
+
+
+}
+
 
 void BodyJPosSwingPlanningCtrl::_single_contact_setup(){
     single_contact_->UpdateContactSpec();

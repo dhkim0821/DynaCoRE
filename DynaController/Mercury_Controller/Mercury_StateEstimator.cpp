@@ -72,6 +72,7 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
     ekf_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel); // EKF
 
+
     // Local Frame Setting
     if(base_cond_ == base_condition::floating){
         curr_config_[3] = sp_->body_ori_.x();
@@ -182,6 +183,10 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
                             curr_config_.segment(mercury::num_virtual, mercury::num_act_joint),
                             curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
 
+    dynacore::Quaternion ekf_quaternion_est;
+    ekf_est_->getEstimatedState(sp_->ekf_body_pos_, sp_->ekf_body_vel_, ekf_quaternion_est); // EKF    
+
+
     if(base_cond_ == base_condition::floating){
         curr_config_[3] = sp_->body_ori_.x();
         curr_config_[4] = sp_->body_ori_.y();
@@ -227,6 +232,14 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     }
     sp_->Q_ = curr_config_;
     sp_->Qdot_ = curr_qdot_;
+
+    // Test
+    // EKF Update position and velocity
+    // if (sp_->phase_copy_ >= 3){
+    //     sp_->Qdot_.head(3) = sp_->ekf_body_vel_.head(3);    
+    // }
+
+
 
 
     // Warning: Save Sensor Data in StateProvider

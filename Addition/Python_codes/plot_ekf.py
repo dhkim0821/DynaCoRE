@@ -140,7 +140,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
 
  
-    ## plot command/jpos
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
     fig.canvas.set_window_title('World body world pos(m)')
@@ -148,9 +147,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         if sim_data_available:
             plt.plot(data_x, data_sim_imu_pos[st_idx:end_idx,i-1], "r-")
+        plt.plot(data_x, data_body_pos[st_idx:end_idx,i-1], "b-")
 
-        plt.plot(data_x, data_body_pos[st_idx:end_idx,i-1], "b-", \
-                 data_x, data_com[st_idx:end_idx, i-1], "c-")
+        # plt.plot(data_x, data_body_pos[st_idx:end_idx,i-1], "b-", \
+        #          data_x, data_com[st_idx:end_idx, i-1], "c-")
 
         if plot_contact_switches:
             # Plot Left Foot Contact 
@@ -208,9 +208,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         if sim_data_available:
             plt.plot(data_x, data_sim_imu_vel[st_idx:end_idx,i-1], "r-")
 
-        plt.plot(data_x, data_body_vel[st_idx:end_idx, i-1], "b-", \
-                 data_x, data_kinematics_com_vel[st_idx:end_idx, i-1], "c-")
+        # plt.plot(data_x, data_body_vel[st_idx:end_idx, i-1], "b-", \
+        #          data_x, data_kinematics_com_vel[st_idx:end_idx, i-1], "c-")
 
+        plt.plot(data_x, data_body_vel[st_idx:end_idx, i-1], "b-")
         plt.plot(data_x, data_body_kin_vel[st_idx:end_idx, i-1], color="orange")
 
         if plot_contact_switches:

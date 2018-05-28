@@ -29,12 +29,15 @@ public:
 
   virtual void resetFilter() = 0;
 
-  void getEstimatedState(dynacore::Vector & global_position,    
-                         dynacore::Vector & global_velocity,
+  void getEstimatedState(dynacore::Vect3 & global_position,    
+                         dynacore::Vect3 & global_velocity,
                          dynacore::Quaternion & global_orientation){
-    global_position = O_r;
-    global_velocity = O_v;
+    for (size_t i = 0; i < 3; i++){
+      global_position[i] = O_r[i];
+      global_velocity[i] = O_v[i];      
+    }
     global_orientation = O_q_B;    
+
   }
 
 protected:

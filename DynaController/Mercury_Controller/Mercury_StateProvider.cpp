@@ -45,6 +45,10 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   body_pos_.setZero();
   body_vel_.setZero();
 
+
+  ekf_body_pos_.setZero();
+  ekf_body_vel_.setZero();  
+
   body_pos_des_.setZero();
   body_vel_des_.setZero();
 
