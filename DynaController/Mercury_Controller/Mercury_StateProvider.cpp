@@ -25,10 +25,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 global_foot_height_(0.),
                                 com_state_imu_(6),
                                 num_step_copy_(0),
-                                led_kin_data_(3*NUM_MARKERS),
-                                ekf_vel_(3)
+                                led_kin_data_(3*NUM_MARKERS)
 {
-  ekf_vel_.setZero();
   Q_.setZero();
   Qdot_.setZero();
   reaction_forces_.setZero();
@@ -46,6 +44,10 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   com_vel_des_.setZero();
   body_pos_.setZero();
   body_vel_.setZero();
+
+
+  ekf_body_pos_.setZero();
+  ekf_body_vel_.setZero();  
 
   body_pos_des_.setZero();
   body_vel_des_.setZero();

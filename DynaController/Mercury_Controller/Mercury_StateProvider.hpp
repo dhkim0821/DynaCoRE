@@ -33,8 +33,6 @@ public:
   Vector Qdot_;
   Vector curr_torque_;
 
-
-  dynacore::Vector ekf_vel_;
   
   dynacore::Vector reaction_forces_;
   dynacore::Vector qddot_cmd_;
@@ -48,6 +46,9 @@ public:
   dynacore::Vect3 CoM_vel_;
   dynacore::Vect3 com_pos_des_;
   dynacore::Vect3 com_vel_des_;
+
+  dynacore::Vect3 ekf_body_pos_;
+  dynacore::Vect3 ekf_body_vel_;
 
   dynacore::Vect3 body_pos_;
   dynacore::Vect3 body_vel_;
