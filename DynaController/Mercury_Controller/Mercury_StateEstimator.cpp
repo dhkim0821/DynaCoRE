@@ -173,11 +173,6 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     ori_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel);
     ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
     ((BasicAccumulation*)ori_est_)->getEstimatedCoMState(sp_->com_state_imu_);
-    // for(int i(0); i<2; ++i){
-    //     filter_com_vel_[i]->input(sp_->CoM_vel_[i]); 
-    //     sp_->average_vel_[i] = filter_com_vel_[i]->output();
-    // }
-
 
     // EKF set sensor data
     ekf_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel, 
@@ -185,6 +180,13 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
                             data->rfoot_contact,
                             curr_config_.segment(mercury::num_virtual, mercury::num_act_joint),
                             curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
+
+    static bool visit_once(false);
+    if ((sp_->phase_copy_ == 2) && (!visit_once)){
+        //ekf_est_->resetFilter();
+        visit_once = true;
+    }
+
 
     dynacore::Quaternion ekf_quaternion_est;
     ekf_est_->getEstimatedState(sp_->ekf_body_pos_, sp_->ekf_body_vel_, ekf_quaternion_est); // EKF    

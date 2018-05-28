@@ -4,6 +4,7 @@
 #include <Mercury/Mercury_Definition.h>
 #include <Utils/DataManager.hpp>
 
+#include <ParamHandler/ParamHandler.hpp>
 #include <rbdl/urdfreader.h>
 
 using namespace RigidBodyDynamics;
@@ -23,7 +24,7 @@ EKF_LIPRotellaEstimator::EKF_LIPRotellaEstimator():Q_config(mercury::num_q),
 	omega_imu(3)	
 {
 
-	lipm_height = 0.87; // Will be set by the initialization process;
+	lipm_height = 0.89; // Will be set by the initialization process;
 
 	// Load Robot Model
 	robot_model = new Model();
@@ -125,9 +126,6 @@ EKF_LIPRotellaEstimator::EKF_LIPRotellaEstimator():Q_config(mercury::num_q),
 
 	wp_intensity_default = 0.001;//0.001;   // m/sqrt(Hz)	 // default foot location noise intensity
 	wp_intensity_unknown = 1000.0;   // m/sqrt(Hz)	 // noise intensity when there is no foot contact
-	wp_l_intensity = wp_intensity_unknown;   // m/sqrt(Hz)	 // left foot location noise intensity
-	wp_r_intensity = wp_intensity_unknown;   // m/sqrt(Hz)   // right foot location noise intensity
-
 	// Simulation params
 	wf_intensity = 0.001;//0.00078;   // m/(s^2)/sqrt(Hz) // imu process noise intensity
 	wbf_intensity = 10.0;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
@@ -137,18 +135,23 @@ EKF_LIPRotellaEstimator::EKF_LIPRotellaEstimator():Q_config(mercury::num_q),
 	// wbf_intensity = 10.0;	  // m/(s^3)/sqrt(Hz)  // imu bias intensity
 	wbw_intensity = 0.000618; // rad/(s^2)/sqrt(Hz)	 // ang vel bias intensity
 
-	n_p = 0.01; // foot measurement noise intensity.
+    n_p = 0.01; // foot measurement noise intensity.
 
     //n_v_default = 0.01;   // default noise intensity of body velocity measurement
     n_v_default = 10.0;   // default noise intensity of body velocity measurement    
     n_v_unknown = 1000;   // unknown noise intensity from body velocity measurement
-    n_v = n_v_unknown;    // Body velocity from kinematics measurement noise intensity
     
     n_com_default = 0.01;   // default noise intensity of body velocity measurement
     n_com_unknown = 1000;   // unknown noise intensity from body velocity measurement
+
+    _SetupParameters();
+    wp_l_intensity = wp_intensity_unknown;   // m/sqrt(Hz)	 // left foot location noise intensity
+    wp_r_intensity = wp_intensity_unknown;   // m/sqrt(Hz)   // right foot location noise intensity
+
+    n_v = n_v_unknown;    // Body velocity from kinematics measurement noise intensity
     n_com = n_com_default;    // Body velocity from kinematics measurement noise intensity
 
-	// Initialize Orientation Calibration Filters
+// Initialize Orientation Calibration Filters
 	// Bias Filter 
 	bias_lp_frequency_cutoff = 2.0*3.1415*1.0; // 1Hz // (2*pi*frequency) rads/s 
 	x_bias_low_pass_filter = new digital_lp_filter(bias_lp_frequency_cutoff, mercury::servo_rate);
@@ -195,6 +198,27 @@ EKF_LIPRotellaEstimator::EKF_LIPRotellaEstimator():Q_config(mercury::num_q),
 	DataManager::GetDataManager()->RegisterData(&body_vel_kinematics, DYN_VEC, "ekf_body_vel_kin", 3);
 	DataManager::GetDataManager()->RegisterData(&body_com_vel_kinematics, DYN_VEC, "ekf_com_vel_kin", 3);
 
+}
+
+void EKF_LIPRotellaEstimator::_SetupParameters(){
+    ParamHandler handler(MercuryConfigPath"ESTIMATOR_ekf_lipm.yaml");
+    handler.getValue("n_p", n_p);
+    handler.getValue("ww_intensity", ww_intensity);
+    handler.getValue("wp_intensity_default", wp_intensity_default);
+    handler.getValue("wp_intensity_unknown", wp_intensity_unknown);
+    // Simulation params
+    handler.getValue("wf_intensity", wf_intensity);
+    handler.getValue("wbf_intensity", wbf_intensity);
+
+    // Real sensor params
+    handler.getValue("wbw_intensity", wbw_intensity);
+    handler.getValue("n_v_default", n_v_default);
+    handler.getValue("n_v_unknown", n_v_unknown); 
+
+    printf("2\n");
+    handler.getValue("n_com_default", n_com_default);
+    handler.getValue("n_com_unknown", n_com_unknown);
+    printf("2\n");
 }
 
 
@@ -402,6 +426,9 @@ void EKF_LIPRotellaEstimator::resetFilter(){
 	setStateVariablesToPrior();
 	// x_prior = dynacore::Vector::Zero(dim_states);
 	// x_prior[9] = 1.0;
+	body_vel_kinematics = dynacore::Vector::Zero(O_v.size());
+	body_com_vel_kinematics = dynacore::Vector::Zero(O_v.size());	
+
 
 	computeNewFootLocations(mercury_link::leftFoot); // Update Left foot location
 	computeNewFootLocations(mercury_link::rightFoot); // Update Right foot location
@@ -587,28 +614,30 @@ void EKF_LIPRotellaEstimator::statePredictionStep(){
 	// Perform Discrete State prediction step;
 	// predict position and velocity
 
-	// if (lf_contact){
-	// 	// Use IP With the left foot swing
-	// 	x_predicted.head(2) = O_r.head(2) + O_v.head(2)*dt + 0.5*dt*dt*(lipm_height/local_gravity)*(O_r.head(2) - O_p_l.head(2));
-	// 	x_predicted[2] = O_r[2] + O_v[2]*dt;
+    double omega(local_gravity/lipm_height);
 
-	// 	x_predicted.segment(3,2) = O_v + dt*(lipm_height/local_gravity)*(O_r.head(2) - O_p_l.head(2));
-	// 	x_predicted[5] = O_v[5];
+     if (lf_contact){
+         // Use IP With the left foot swing
+         x_predicted.head(2) = O_r.head(2) + O_v.head(2)*dt + 0.5*dt*dt*omega*(O_r.head(2) - O_p_l.head(2));
+         x_predicted[2] = O_r[2] + O_v[2]*dt;
 
-	// }else if(rf_contact){
-	// 	// Use IP With the right foot swing		
-	// 	x_predicted.head(2) = O_r.head(2) + O_v.head(2)*dt + 0.5*dt*dt*(lipm_height/local_gravity)*(O_r.head(2) - O_p_r.head(2));
-	// 	x_predicted[2] = O_r[2] + O_v[2]*dt;
+         x_predicted.segment(3,2) = O_v + dt*omega*(O_r.head(2) - O_p_l.head(2));
+         x_predicted[5] = O_v[5];
 
-	// 	x_predicted.segment(3,2) = O_v + dt*(lipm_height/local_gravity)*(O_r.head(2) - O_p_r.head(2));
-	// 	x_predicted[5] = O_v[5];
-	// }else{
-	// 	x_predicted.segment(0, O_r.size()) = O_r + O_v*dt + 0.5*dt*dt*(C_rot.transpose()*f_imu_input + gravity_vec);
-	// 	x_predicted.segment(O_r.size(), O_v.size()) = O_v + dt*(C_rot.transpose()*f_imu_input + gravity_vec);	
-	// }
+     }else if(rf_contact){
+         // Use IP With the right foot swing		
+         x_predicted.head(2) = O_r.head(2) + O_v.head(2)*dt + 0.5*dt*dt*omega*(O_r.head(2) - O_p_r.head(2));
+         x_predicted[2] = O_r[2] + O_v[2]*dt;
 
-	x_predicted.segment(0, O_r.size()) = O_r + O_v*dt + 0.5*dt*dt*(C_rot.transpose()*f_imu_input + gravity_vec);
-	x_predicted.segment(O_r.size(), O_v.size()) = O_v + dt*(C_rot.transpose()*f_imu_input + gravity_vec);	
+         x_predicted.segment(3,2) = O_v + dt*omega*(O_r.head(2) - O_p_r.head(2));
+         x_predicted[5] = O_v[5];
+     }else{
+         x_predicted.segment(0, O_r.size()) = O_r + O_v*dt + 0.5*dt*dt*(C_rot.transpose()*f_imu_input + gravity_vec);
+         x_predicted.segment(O_r.size(), O_v.size()) = O_v + dt*(C_rot.transpose()*f_imu_input + gravity_vec);	
+     }
+
+	//x_predicted.segment(0, O_r.size()) = O_r + O_v*dt + 0.5*dt*dt*(C_rot.transpose()*f_imu_input + gravity_vec);
+	//x_predicted.segment(O_r.size(), O_v.size()) = O_v + dt*(C_rot.transpose()*f_imu_input + gravity_vec);	
 
 	// predict orientation
 	dynacore::Quaternion q_predicted = 	dynacore::QuatMultiply(O_q_B, B_q_omega);
@@ -638,20 +667,21 @@ void EKF_LIPRotellaEstimator::getMatrix_L_c(const dynacore::Quaternion & q_in, d
 	// L_c_mat.block(O_r.size() + O_v.size() + 3 + O_p_l.size() + O_p_r.size() + B_bw.size(), 
 	// 			  f_imu.size() + omega_imu.size() + O_p_l.size() + O_p_r.size() + B_bw.size(), 3, 3) = dynacore::Matrix::Identity(3,3);		
 
-	// dynacore::Matrix hg_mat = dynacore::Matrix::Identity(3,3);
-	// hg_mat(0,0) = (lipm_height/local_gravity);
-	// hg_mat(1,1) = (lipm_height/local_gravity);		
-	// if(lf_contact){
-	// 	L_c_mat.block(3, 0, 3, 3) = hg_mat;		
-	// 	L_c_mat.block(3, 9, 3, 3) = hg_mat;		
-	// }else if(rf_contact){
-	// 	L_c_mat.block(3, 0, 3, 3) = hg_mat;		
-	// 	L_c_mat.block(3, 12, 3, 3) = hg_mat;		
-	// }else{
-	// 	L_c_mat.block(3, 0, 3, 3) = -C_mat.transpose();		
-	// }
+    double omega(local_gravity/lipm_height);
+     dynacore::Matrix hg_mat = dynacore::Matrix::Identity(3,3);
+     hg_mat(0,0) = omega;
+     hg_mat(1,1) = omega;
+     if(lf_contact){
+         L_c_mat.block(3, 0, 3, 3) = hg_mat;		
+         L_c_mat.block(3, 9, 3, 3) = hg_mat;		
+     }else if(rf_contact){
+         L_c_mat.block(3, 0, 3, 3) = hg_mat;		
+         L_c_mat.block(3, 12, 3, 3) = hg_mat;		
+     }else{
+         L_c_mat.block(3, 0, 3, 3) = -C_mat.transpose();		
+     }
 
-	L_c_mat.block(3, 0, 3, 3) = -C_mat.transpose();		
+	//L_c_mat.block(3, 0, 3, 3) = -C_mat.transpose();		
 	L_c_mat.block(6, 3, 3, 3) = -dynacore::Matrix::Identity(3,3);
 	L_c_mat.block(9, 6, 3,3) = C_mat.transpose();
 	L_c_mat.block(12, 9, 3, 3) = C_mat.transpose();	
@@ -685,19 +715,19 @@ void EKF_LIPRotellaEstimator::covariancePredictionStep(){
 
 	F_c.block(0, 3, 3, 3) = dynacore::Matrix::Identity(3, 3);
 
-	// if(lf_contact){
-	// 	F_c.block(3, 0, 2, 2) = (lipm_height/local_gravity)*dynacore::Matrix::Identity(2, 2);		
-	// 	F_c.block(3, 9, 2, 2) = (lipm_height/local_gravity)*dynacore::Matrix::Identity(2, 2);
-	// }else if(rf_contact){
-	// 	F_c.block(3, 0, 3, 3) = (lipm_height/local_gravity)*dynacore::Matrix::Identity(2, 2);		
-	// 	F_c.block(3, 12, 3, 3) = (lipm_height/local_gravity)*dynacore::Matrix::Identity(2, 2);	
-	// }else{
-	// 	F_c.block(3, 6, 3, 3) = -C_rot.transpose()*getSkewSymmetricMatrix(f_imu_input);
-	// 	F_c.block(3, 15, 3, 3) = -C_rot.transpose();
-	// }
+     if(lf_contact){
+         F_c.block(3, 0, 2, 2) = (lipm_height/local_gravity)*dynacore::Matrix::Identity(2, 2);		
+         F_c.block(3, 9, 2, 2) = (lipm_height/local_gravity)*dynacore::Matrix::Identity(2, 2);
+     }else if(rf_contact){
+         F_c.block(3, 0, 3, 3) = (lipm_height/local_gravity)*dynacore::Matrix::Identity(2, 2);		
+         F_c.block(3, 12, 3, 3) = (lipm_height/local_gravity)*dynacore::Matrix::Identity(2, 2);	
+     }else{
+         F_c.block(3, 6, 3, 3) = -C_rot.transpose()*getSkewSymmetricMatrix(f_imu_input);
+         F_c.block(3, 15, 3, 3) = -C_rot.transpose();
+     }
 
-	F_c.block(3, 6, 3, 3) = -C_rot.transpose()*getSkewSymmetricMatrix(f_imu_input);
-	F_c.block(3, 15, 3, 3) = -C_rot.transpose();
+	//F_c.block(3, 6, 3, 3) = -C_rot.transpose()*getSkewSymmetricMatrix(f_imu_input);
+	//F_c.block(3, 15, 3, 3) = -C_rot.transpose();
 	F_c.block(6, 6, 3, 3) = -getSkewSymmetricMatrix(omega_imu_input);
 	F_c.block(6, 18, 3,3) = -dynacore::Matrix::Identity(3,3);
 	// F_c.block(6, 18, 3,3) = O_q_B.toRotationMatrix(); //-dynacore::Matrix::Identity(3,3);
@@ -828,8 +858,6 @@ void EKF_LIPRotellaEstimator::getCoMVelFromKinematics(dynacore::Vector & O_com_v
         tot_mass += mass;
     }
     O_com_vel /= tot_mass;
-
-
 }
 
 void EKF_LIPRotellaEstimator::updateStep(){

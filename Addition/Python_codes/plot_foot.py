@@ -51,6 +51,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]) \
             + (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3]))/2.;
 
+    data_LED_rfoot_out = (data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]) 
+    data_LED_lfoot_out = (data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3])
+    data_LED_rfoot_in = (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]) 
+    data_LED_lfoot_in = (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3])
+
+
+
 
     # PHASE MARKER #
     data_phse = np.genfromtxt(file_path+'phase.txt', delimiter=None, dtype=(float))
@@ -94,9 +101,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_rfoot_pos_des[st_idx:end_idx,i-1], "r-")
-       #          data_x, data_rfoot_pos[st_idx:end_idx,i-1], "b-")
         plt.plot(data_x, data_rfoot_pos[st_idx:end_idx,i-1], "b-")
-        plt.plot(data_x, data_LED_rfoot[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], "k-")
+        plt.plot(data_x, data_LED_rfoot[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
+                linewidth=2.0, color='orange')
+        plt.plot(data_x, data_LED_rfoot_out[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
+                linewidth=1.0, color="indigo")
+        plt.plot(data_x, data_LED_rfoot_in[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
+                linewidth=1.0, color="indigo")
        # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:
@@ -148,9 +159,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_lfoot_pos_des[st_idx:end_idx,i-1], "r-")
-       #          data_x, data_rfoot_pos[st_idx:end_idx,i-1], "b-")
         plt.plot(data_x, data_lfoot_pos[st_idx:end_idx,i-1], "b-")
-        plt.plot(data_x, data_LED_lfoot[st_idx:end_idx, i-1] - data_LED_rfoot[st_idx:end_idx, i-1], "k-")
+        plt.plot(data_x, data_LED_lfoot[st_idx:end_idx, i-1] - data_LED_rfoot[st_idx:end_idx, i-1], \
+                linewidth=2.0, color='orange')
+        plt.plot(data_x, data_LED_lfoot_out[st_idx:end_idx, i-1] - data_LED_rfoot[st_idx:end_idx, i-1], \
+                linewidth=1.0, color="indigo")
+        plt.plot(data_x, data_LED_lfoot_in[st_idx:end_idx, i-1] - data_LED_rfoot[st_idx:end_idx, i-1], \
+                linewidth=1.0, color="indigo")
        # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:

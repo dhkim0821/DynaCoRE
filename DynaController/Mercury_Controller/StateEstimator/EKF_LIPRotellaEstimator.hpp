@@ -114,6 +114,7 @@ protected:
   dynacore::Vector Q_config_dot; // configuration velocity of the robot model
 
 
+  void _SetupParameters();
   int count;
 
   double lipm_height;
