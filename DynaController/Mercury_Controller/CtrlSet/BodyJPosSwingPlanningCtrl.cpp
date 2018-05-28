@@ -243,6 +243,20 @@ void BodyJPosSwingPlanningCtrl::_CheckPlanning(){
 
     }
 
+
+    // To use the Hurst planner, use this block of code and ensure that the initial_planning parameter is false
+    // if ((state_machine_time_ > (end_time_/2.0)) && num_planning_ == 0){
+    //     dynacore::Vect3 target_loc;
+    //     _getHurstPlan(target_loc);
+    //     dynacore::Vector guess_q = sp_->Q_;
+    //     _SetBspline(guess_q, 
+    //         curr_jpos_des_, curr_jvel_des_, curr_jacc_des_, target_loc);
+    //     _SetBspline(
+    //         curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
+    //     ++num_planning_;
+    // }
+
+
     // Earlier planning
     //_Replanning();
     //++num_planning_;
