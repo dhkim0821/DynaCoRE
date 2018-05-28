@@ -227,6 +227,7 @@ void BodyJPosSwingPlanningCtrl::_CheckPlanning(){
         dynacore::Vect3 target_loc;
         _Replanning(target_loc);
         dynacore::Vector guess_q = sp_->Q_;
+        // dynacore::Vector guess_q = ini_config_;
         _SetBspline(guess_q, 
             curr_jpos_des_, curr_jvel_des_, curr_jacc_des_, target_loc);
         _SetBspline(
@@ -251,6 +252,10 @@ void BodyJPosSwingPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     robot_sys_->getCoMPosition(com_pos);
     robot_sys_->getCoMVelocity(com_vel);
 
+    // Average velocity computation
+    for(int i(0); i<2; ++i){ 
+       sp_->average_vel_[i] = (sp_->Q_[i] - ini_config_[i])/state_machine_time_;
+    }
     // Estimated value used
     // for(int i(0); i<2; ++i){
     //     com_pos[i] = sp_->estimated_com_state_[i];
@@ -265,10 +270,10 @@ void BodyJPosSwingPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     // TEST 2
     for(int i(0); i<2; ++i){
         com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
-        del_com_pos[i] = sp_->Q_[i] - ini_config_[i];
-        //sp_->average_vel_[i] = del_com_pos[i]/state_machine_time_;
         com_vel[i] = sp_->average_vel_[i]; 
+        // com_vel[i] = sp_->ekf_vel_[i]; 
     }
+
     // TEST 3 Y-axis
     // com_pos[1] = sp_->estimated_com_state_[1];
     // com_vel[1] = sp_->estimated_com_state_[3];
@@ -310,9 +315,9 @@ void BodyJPosSwingPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     target_loc -= sp_->global_pos_local_;
 
     // TEST
-    // if(sp_->num_step_copy_ < 2){
-    //     target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
-    // }
+    if(sp_->num_step_copy_ < 2){
+        target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
+    }
 
     //target_loc[2] -= push_down_height_;
     target_loc[2] = default_target_loc_[2];
@@ -360,7 +365,7 @@ void BodyJPosSwingPlanningCtrl::FirstVisit(){
         //  + default_target_loc_[1]
         //  + kp_y_ * (sp_->Q_[1] + body_pt_offset_[1]);
     }
-    _SetBspline(sp_->Q_, ini_swing_leg_config_, zero, zero, target_loc);
+    _SetBspline(ini_config_, ini_swing_leg_config_, zero, zero, target_loc);
     _SetBspline(ini_foot_pos_, zero, zero, target_loc);
     default_target_loc_[2] = target_loc[2];
 
@@ -506,6 +511,7 @@ bool BodyJPosSwingPlanningCtrl::EndOfPhase(){
         if(state_machine_time_ > end_time_ * 0.5 && contact_happen){
             printf("[Body Foot JPos Ctrl] contact happen, state_machine_time/ end time: (%f, %f)\n",
                     state_machine_time_, end_time_);
+
             return true;
         }
     }

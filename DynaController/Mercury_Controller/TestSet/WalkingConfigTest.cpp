@@ -187,7 +187,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
     sp_->num_step_copy_ = num_step_;
   // TEST
   if (num_step_ > 25) {
-      // exit(0);
+      exit(0);
   }
 
   if(next_phase == WkConfigPhase::NUM_WALKING_PHASE) {
