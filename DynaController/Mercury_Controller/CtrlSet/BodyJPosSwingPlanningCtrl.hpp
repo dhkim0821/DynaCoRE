@@ -110,6 +110,8 @@ class BodyJPosSwingPlanningCtrl:public Controller{
         void _CheckPlanning();
         void _Replanning(dynacore::Vect3 & target_loc);
 
+        void _getHurstPlan(dynacore::Vect3 & target_loc);
+
         dynacore::Vector des_jpos_;
         dynacore::Vector des_jvel_;
 
@@ -118,6 +120,9 @@ class BodyJPosSwingPlanningCtrl:public Controller{
         dynacore::Vect3 ini_foot_pos_;
         dynacore::Vect3 target_foot_pos_;
         dynacore::Vect2 body_pt_offset_;
+
+        dynacore::Vect2 prev_ekf_vel;
+        dynacore::Vect2 acc_err_ekf;
         
         dynacore::Vector ini_config_;
         BS_Basic<3, 3, 1, 2, 2> foot_traj_;
