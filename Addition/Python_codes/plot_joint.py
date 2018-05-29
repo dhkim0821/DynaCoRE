@@ -11,7 +11,12 @@ PLOT_HORIZONTALLY = 1
 # number of figures in this plot
 num_figures = 4
 
+filtered_vel_available = False
+
+
 def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no=1, starting_col_index = 0, starting_row_index=0, plot_configuration=PLOT_HORIZONTALLY):
+    global filtered_vel_available
+
     figure_number = starting_figure_no
     col_index = starting_col_index
     row_index = starting_row_index
@@ -46,6 +51,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         else:
             pass
 
+    data_filtered_jvel = None
+    try:
+        data_filtered_jvel = np.genfromtxt(file_path+'filtered_jvel.txt', delimiter=None, dtype=(float))
+        filtered_vel_available = True
+    except:
+        filtered_vel_available = False
+        print "Note: Filtered Joint Velocity not available"
 
 
     # Plot Figure --------------------------------------------------------------------
@@ -59,6 +71,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_jpos_des[st_idx:end_idx,i-1], "r-", \
                 data_x, data_config[st_idx:end_idx,i-1 + 6], "b-", \
                 data_x, data_mjpos[st_idx:end_idx, i-1], "c-")
+
         # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:
@@ -86,6 +99,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
                 data_x, data_mjpos[st_idx:end_idx, i-1 +3 ], "c-")
         # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
+
         for j in phseChange:
             # phase line
             plt.axvline(x=data_x[j],color='indigo',linestyle='-')
@@ -111,6 +125,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_jjvel[st_idx:end_idx,i-1], "c-", \
                 data_x, data_qdot[st_idx:end_idx,i-1 + 6], "b-", \
                 data_x, data_jvel_des[st_idx:end_idx, i-1], "r-")
+
+        if filtered_vel_available:
+            plt.plot(data_x, data_filtered_jvel[st_idx:end_idx, i-1], color="orange", linewidth=1.5)
+
         # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:
@@ -136,6 +154,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_jjvel[st_idx:end_idx,i-1 + 3], "c-" , \
                 data_x, data_qdot[st_idx:end_idx,i-1 + 9], "b-", \
                 data_x, data_jvel_des[st_idx:end_idx, i-1 + 3], "r-");
+
+        if filtered_vel_available:
+            plt.plot(data_x, data_filtered_jvel[st_idx:end_idx, i-1 + 3], color="orange", linewidth=1.5)
+        
         # plt.legend(('command', 'pos'), loc='upper left')
          # phase marker #
         for j in phseChange:

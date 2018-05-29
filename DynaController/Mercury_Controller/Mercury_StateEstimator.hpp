@@ -33,6 +33,7 @@ protected:
   dynacore::Vector curr_qdot_;
 
   std::vector<filter*> filter_com_vel_;
+  std::vector<filter*> filter_jpos_vel_;
 
   OriEstimator* ori_est_;
   BodyFootPosEstimator* body_foot_est_;
