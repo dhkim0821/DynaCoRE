@@ -6,7 +6,7 @@ class Mercury_StateProvider;
 class Planner;
 
 #define CONFIG_INITIAL_SWING_FOOT 0 // 0: right, 1: left
-#define SWING_CTRL_TYPE 2 // 0: hierarchy, 1: normal, 2: JPos
+#define SWING_CTRL_TYPE 3 // 0: hierarchy, 1: normal, 2: JPos, 3: JPos Traj
 
 namespace WkConfigPhase{
   constexpr int initiation = 0;

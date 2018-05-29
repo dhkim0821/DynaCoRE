@@ -188,10 +188,10 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
                             curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
 
     static bool visit_once(false);
-    if ((sp_->phase_copy_ == 2) && (!visit_once)){
-        ekf_est_->resetFilter();
-        visit_once = true;
-    }
+    //if ((sp_->phase_copy_ == 2) && (!visit_once)){
+        //ekf_est_->resetFilter();
+        //visit_once = true;
+    //}
 
 
     dynacore::Quaternion ekf_quaternion_est;

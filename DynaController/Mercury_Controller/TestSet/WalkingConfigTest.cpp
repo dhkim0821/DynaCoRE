@@ -18,6 +18,8 @@
 #include <Mercury_Controller/CtrlSet/ConfigBodyFootPlanningCtrl.hpp>
 #elif (SWING_CTRL_TYPE == 2)
 #include <Mercury_Controller/CtrlSet/BodyJPosSwingPlanningCtrl.hpp>
+#elif (SWING_CTRL_TYPE == 3)
+#include <Mercury_Controller/CtrlSet/JPosTrajPlanningCtrl.hpp>
 #endif
 
 WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
@@ -49,6 +51,8 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     new ConfigBodyFootPlanningCtrl(robot, mercury_link::rightFoot, reversal_planner_);
 #elif (SWING_CTRL_TYPE == 2)
     new BodyJPosSwingPlanningCtrl(robot, mercury_link::rightFoot, reversal_planner_);
+#elif (SWING_CTRL_TYPE == 3)
+    new JPosTrajPlanningCtrl(robot, mercury_link::rightFoot, reversal_planner_);
 #endif
     right_swing_end_trans_ctrl_ = 
         new TransitionConfigCtrl(robot, mercury_link::rightFoot, true);
@@ -62,6 +66,8 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     new ConfigBodyFootPlanningCtrl(robot, mercury_link::leftFoot, reversal_planner_);
 #elif (SWING_CTRL_TYPE == 2)
     new BodyJPosSwingPlanningCtrl(robot, mercury_link::leftFoot, reversal_planner_);
+#elif (SWING_CTRL_TYPE == 3)
+    new JPosTrajPlanningCtrl(robot, mercury_link::leftFoot, reversal_planner_);
 #endif
     left_swing_end_trans_ctrl_ = 
         new TransitionConfigCtrl(robot, mercury_link::leftFoot, true);
@@ -118,6 +124,20 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
             VECT3, "rfoot_vel_des", 3);
     DataManager::GetDataManager()->RegisterData(
             &(((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->curr_foot_vel_des_), 
+            VECT3, "lfoot_vel_des", 3);
+#elif (SWING_CTRL_TYPE == 3)
+    DataManager::GetDataManager()->RegisterData(
+            &(((JPosTrajPlanningCtrl*)config_right_swing_ctrl_)->curr_foot_pos_des_), 
+            VECT3, "rfoot_pos_des", 3);
+    DataManager::GetDataManager()->RegisterData(
+            &(((JPosTrajPlanningCtrl*)config_left_swing_ctrl_)->curr_foot_pos_des_), 
+            VECT3, "lfoot_pos_des", 3);
+
+    DataManager::GetDataManager()->RegisterData(
+            &(((JPosTrajPlanningCtrl*)config_right_swing_ctrl_)->curr_foot_vel_des_), 
+            VECT3, "rfoot_vel_des", 3);
+    DataManager::GetDataManager()->RegisterData(
+            &(((JPosTrajPlanningCtrl*)config_left_swing_ctrl_)->curr_foot_vel_des_), 
             VECT3, "lfoot_vel_des", 3);
 #endif
 
@@ -230,6 +250,9 @@ void WalkingConfigTest::_SettingParameter(){
 #elif (SWING_CTRL_TYPE == 2)
     ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setStanceHeight(tmp);
     ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setStanceHeight(tmp);
+#elif (SWING_CTRL_TYPE == 3)
+    ((JPosTrajPlanningCtrl*)config_right_swing_ctrl_)->setStanceHeight(tmp);
+    ((JPosTrajPlanningCtrl*)config_left_swing_ctrl_)->setStanceHeight(tmp);
 #endif
     ((Reversal_LIPM_Planner*)reversal_planner_)->setOmega(tmp);
 
@@ -251,6 +274,9 @@ void WalkingConfigTest::_SettingParameter(){
 #elif (SWING_CTRL_TYPE == 2)
     ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->notifyStanceTime(tmp);
     ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->notifyStanceTime(tmp);
+#elif (SWING_CTRL_TYPE == 3)
+    ((JPosTrajPlanningCtrl*)config_right_swing_ctrl_)->notifyStanceTime(tmp);
+    ((JPosTrajPlanningCtrl*)config_left_swing_ctrl_)->notifyStanceTime(tmp);
 #endif
 
     // Swing & prime Time
@@ -264,6 +290,9 @@ void WalkingConfigTest::_SettingParameter(){
 #elif (SWING_CTRL_TYPE == 2)
     ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setSwingTime(tmp);
     ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setSwingTime(tmp);
+#elif (SWING_CTRL_TYPE == 3)
+    ((JPosTrajPlanningCtrl*)config_right_swing_ctrl_)->setSwingTime(tmp);
+    ((JPosTrajPlanningCtrl*)config_left_swing_ctrl_)->setSwingTime(tmp);
 #endif
 
     // Transition Time
@@ -282,6 +311,9 @@ void WalkingConfigTest::_SettingParameter(){
 #elif (SWING_CTRL_TYPE == 2)
     ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->notifyTransitionTime(tmp);
     ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->notifyTransitionTime(tmp);
+#elif (SWING_CTRL_TYPE == 3)
+    ((JPosTrajPlanningCtrl*)config_right_swing_ctrl_)->notifyTransitionTime(tmp);
+    ((JPosTrajPlanningCtrl*)config_left_swing_ctrl_)->notifyTransitionTime(tmp);
 #endif
 
     //// Planner Setup
@@ -295,6 +327,9 @@ void WalkingConfigTest::_SettingParameter(){
 #elif (SWING_CTRL_TYPE == 2)
     ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setPlanningFrequency(tmp);
     ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setPlanningFrequency(tmp);
+#elif (SWING_CTRL_TYPE == 3)
+    ((JPosTrajPlanningCtrl*)config_right_swing_ctrl_)->setPlanningFrequency(tmp);
+    ((JPosTrajPlanningCtrl*)config_left_swing_ctrl_)->setPlanningFrequency(tmp);
 #endif
 
 
@@ -308,6 +343,9 @@ void WalkingConfigTest::_SettingParameter(){
 #elif (SWING_CTRL_TYPE == 2)
     ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setDoubleStanceRatio(tmp);
     ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setDoubleStanceRatio(tmp);
+#elif (SWING_CTRL_TYPE == 3)
+    ((JPosTrajPlanningCtrl*)config_right_swing_ctrl_)->setDoubleStanceRatio(tmp);
+    ((JPosTrajPlanningCtrl*)config_left_swing_ctrl_)->setDoubleStanceRatio(tmp);
 #endif
 
 
@@ -321,6 +359,9 @@ void WalkingConfigTest::_SettingParameter(){
 #elif (SWING_CTRL_TYPE == 2)
     ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
     ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+#elif (SWING_CTRL_TYPE == 3)
+    ((JPosTrajPlanningCtrl*)config_right_swing_ctrl_)->setTransitionPhaseRatio(tmp);
+    ((JPosTrajPlanningCtrl*)config_left_swing_ctrl_)->setTransitionPhaseRatio(tmp);
 #endif
 
     handler.getBoolean("contact_switch_check", b_tmp);
@@ -333,6 +374,9 @@ void WalkingConfigTest::_SettingParameter(){
 #elif (SWING_CTRL_TYPE == 2)
     ((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(b_tmp);
     ((BodyJPosSwingPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+#elif (SWING_CTRL_TYPE == 3)
+    ((JPosTrajPlanningCtrl*)config_right_swing_ctrl_)->setContactSwitchCheck(b_tmp);
+    ((JPosTrajPlanningCtrl*)config_left_swing_ctrl_)->setContactSwitchCheck(b_tmp);
 #endif
     printf("[Walking Body Test] Complete to Setup Parameters\n");
 }

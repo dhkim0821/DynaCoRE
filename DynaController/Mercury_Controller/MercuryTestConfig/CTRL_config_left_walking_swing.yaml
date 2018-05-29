@@ -18,11 +18,11 @@ Kd: [ 0, 0, 0, 0, 0, 0, 15,  10,  10,  15,  10,  5]
 
 gain_decreasing_ratio: 1.0
 gain_decreasing_period_portion: 0.0
-body_pt_offset: [-0.01, 0.0]
+body_pt_offset: [0.0, 0.0]
 #body_pt_offset: [-0.0, 0.0]
-swing_time_reduction: 0.05
+swing_time_reduction: 0.0
 
-# initial_planning: false
-initial_planning: true
+initial_planning: false
+#initial_planning: true
 kp_x: 1.0
 kp_y: 0.5
