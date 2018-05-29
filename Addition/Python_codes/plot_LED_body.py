@@ -53,6 +53,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_com_kin_vel = \
         np.genfromtxt(file_path+'ekf_com_vel_kin.txt', delimiter=None, dtype=(float))
 
+    data_ave_vel = \
+            np.genfromtxt(file_path+'average_vel.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
 
     data_com_global = data_com + data_global_pos_offset
@@ -173,6 +175,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
  
         if i != 3:
             plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "k-")
+            plt.plot(data_x, data_ave_vel[st_idx:end_idx,i-1], linewidth=1.5, color="olive")
 
         plt.grid(True)
         for j in phseChange:
