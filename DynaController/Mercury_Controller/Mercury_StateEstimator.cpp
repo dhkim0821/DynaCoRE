@@ -38,6 +38,12 @@ Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
         filter_com_vel_.push_back(
             new digital_lp_filter(2.*M_PI * 5., mercury::servo_rate));
     }
+
+    for(int i(0); i < mercury::num_act_joint; i++){
+        filter_jpos_vel_.push_back(
+            new deriv_lp_filter(2.0*M_PI*10.0, mercury::servo_rate));
+    }
+
     // ori_est_ = new OriEstAccObs();
     // ori_est_ = new NoBias();
     //ori_est_ = new NoAccState();
@@ -183,13 +189,19 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
 
     static bool visit_once(false);
     if ((sp_->phase_copy_ == 2) && (!visit_once)){
-        //ekf_est_->resetFilter();
+        ekf_est_->resetFilter();
         visit_once = true;
     }
 
 
     dynacore::Quaternion ekf_quaternion_est;
     ekf_est_->getEstimatedState(sp_->ekf_body_pos_, sp_->ekf_body_vel_, ekf_quaternion_est); // EKF    
+
+    // Try derivative filter on joint position:
+    for (int i(0); i<mercury::num_act_joint; ++i){
+        filter_jpos_vel_[i]->input(data->joint_jpos[i]);       
+        sp_->filtered_jvel_[i] = filter_jpos_vel_[i]->output(); 
+    }        
 
 
     if(base_cond_ == base_condition::floating){
