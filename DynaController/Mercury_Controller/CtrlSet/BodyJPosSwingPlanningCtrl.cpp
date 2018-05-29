@@ -225,9 +225,6 @@ void BodyJPosSwingPlanningCtrl::_task_setup(){
 void BodyJPosSwingPlanningCtrl::_CheckPlanning(){
     if( state_machine_time_ > 
             (end_time_/(planning_frequency_ + 1.) * (num_planning_ + 1.) + 0.002) ){
-
-    // if ((state_machine_time_ > (end_time_/2.0)) && num_planning_ == 0){
-
         //if(state_machine_time_ > 0.5 * end_time_ + 0.002 && (num_planning_ < 1)){
         //+ 0.002 is to account one or two more ticks before the end of phase
         dynacore::Vect3 target_loc;
@@ -240,8 +237,6 @@ void BodyJPosSwingPlanningCtrl::_CheckPlanning(){
         _SetBspline(
             curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
         ++num_planning_;
-
-
     }
 
 
@@ -258,14 +253,7 @@ void BodyJPosSwingPlanningCtrl::_CheckPlanning(){
     // }
 
 
-    // Earlier planning
-    //_Replanning();
-    //++num_planning_;
     //}
-
-    //printf("time (state/end): %f, %f\n", state_machine_time_, end_time_);
-    // printf("planning freq: %f\n", planning_frequency_);
-    // printf("num_planning: %i\n", num_planning_);
 }
 
 void BodyJPosSwingPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
@@ -279,39 +267,23 @@ void BodyJPosSwingPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     for(int i(0); i<2; ++i){ 
        sp_->average_vel_[i] = (sp_->Q_[i] - ini_config_[i])/state_machine_time_;
     }
-    // Estimated value used
-    // for(int i(0); i<2; ++i){
-    //     com_pos[i] = sp_->estimated_com_state_[i];
-    //     com_vel[i] = sp_->estimated_com_state_[i + 2];
-    // }
+
     // TEST
-    // for(int i(0); i<2; ++i){
-    //     del_com_pos[i] = com_pos[i] - ini_com_pos_[i];
-    //     com_vel[i] = del_com_pos[i]/state_machine_time_;
-    // }
-
-    // TEST 2
     for(int i(0); i<2; ++i){
-        com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
-        com_vel[i] = sp_->average_vel_[i]; 
-        // com_vel[i] = sp_->ekf_body_vel_[i]; 
+        // com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
+        com_pos[i] += body_pt_offset_[i];
+        // com_vel[i] = sp_->average_vel_[i]; 
+        com_vel[i] = sp_->ekf_body_vel_[i]; 
     }
-
-    // TEST 3 Y-axis
-    // com_pos[1] = sp_->estimated_com_state_[1];
-    // com_vel[1] = sp_->estimated_com_state_[3];
-
 
     printf("planning com state: %f, %f, %f, %f\n",
         com_pos[0], com_pos[1],
         com_vel[0], com_vel[1]);
-    //com_pos[0] = sp_->Q_[0]-0.01; // use body position
-    //com_vel[0] = 0.;  // forward backward velocity is small
-    //com_vel[1] = 0.;
+
 
     OutputReversalPL pl_output;
     ParamReversalPL pl_param;
-    // TEST
+
     pl_param.swing_time = end_time_ - state_machine_time_
         + transition_time_ * transition_phase_ratio_
         + stance_time_ * double_stance_ratio_ - swing_time_reduction_;
@@ -336,9 +308,12 @@ void BodyJPosSwingPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     // dynacore::pretty_print(sp_->global_pos_local_, std::cout, "global loc");
 
     target_loc -= sp_->global_pos_local_;
+    // target_loc[0] += (sp_->Q_[0] + body_pt_offset_[0] - pl_output.switching_state[0]);
+    // target_loc[1] += (sp_->Q_[1] + body_pt_offset_[1] - pl_output.switching_state[1]);
 
     // TEST
-    if(sp_->num_step_copy_ < 2){
+    if(sp_->num_step_copy_ < 3){
+        target_loc[0] = sp_->Q_[0] + default_target_loc_[0];
         target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
     }
 
@@ -347,11 +322,6 @@ void BodyJPosSwingPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     dynacore::pretty_print(target_loc, std::cout, "next foot loc");
     //curr_foot_acc_des_.setZero();
     //curr_foot_vel_des_.setZero();
-
-
-    // TEST
-    // guess_q[1] += (pl_output.switching_state[1] - sp_->global_pos_local_[1]);
-
 }
 
 
@@ -360,7 +330,7 @@ void BodyJPosSwingPlanningCtrl::_getHurstPlan(dynacore::Vect3 & target_loc){
     // Direct value used
     robot_sys_->getCoMPosition(com_pos);
     robot_sys_->getCoMVelocity(com_vel);
-    // Set Z height of target locatio
+    // Set Z height of target location
     target_loc[2] = default_target_loc_[2];
 
     // Get current swing foot position:
@@ -717,7 +687,7 @@ void BodyJPosSwingPlanningCtrl::CtrlInitialization(const std::string & setting_f
         ((Reversal_LIPM_Planner*)planner_)->
             CheckEigenValues(double_stance_ratio_*stance_time_ + 
                     transition_phase_ratio_*transition_time_ + 
-                    end_time_);
+                    end_time_- swing_time_reduction_);
         b_bodypute_eigenvalue = false;
     }
     //printf("[Body Foot JPos Planning Ctrl] Parameter Setup Completed\n");

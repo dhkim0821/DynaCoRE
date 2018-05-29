@@ -183,7 +183,7 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
 
     static bool visit_once(false);
     if ((sp_->phase_copy_ == 2) && (!visit_once)){
-        //ekf_est_->resetFilter();
+        ekf_est_->resetFilter();
         visit_once = true;
     }
 
