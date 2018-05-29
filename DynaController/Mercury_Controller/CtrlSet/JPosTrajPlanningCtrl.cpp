@@ -36,11 +36,6 @@ JPosTrajPlanningCtrl::JPosTrajPlanningCtrl(
     curr_foot_vel_des_.setZero();
     curr_foot_acc_des_.setZero();
 
-    curr_jpos_des_.setZero();
-    curr_jvel_des_.setZero();
-    curr_jacc_des_.setZero();
-
-
     prev_ekf_vel.setZero();
     acc_err_ekf.setZero();
 
@@ -168,11 +163,12 @@ void JPosTrajPlanningCtrl::_task_setup(){
     }
 
     dynacore::Vector config_sol, qdot_cmd, qddot_cmd;
-   inv_kin_.getSingleSupportFullConfigSeperation(
+    inv_kin_.getSingleSupportFullConfigSeperation(
             sp_->Q_, des_quat, target_height, 
             swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
             config_sol, qdot_cmd, qddot_cmd);
 
+    double ramp_time(0.03);
     if(state_machine_time_ > half_swing_time_){
         double traj_time = state_machine_time_-half_swing_time_;
          for(int i(0); i<3; ++i){
@@ -182,23 +178,24 @@ void JPosTrajPlanningCtrl::_task_setup(){
                     mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
             qddot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_acc(
                     mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
-
-            curr_jpos_des_[i] = pos[i];
-            curr_jvel_des_[i] = vel[i];
-            curr_jacc_des_[i] = acc[i];
+            if(traj_time<ramp_time){
+                qddot_cmd[swing_leg_jidx_ + i] *= traj_time/ramp_time;
+            }
         }
     }else{
          for(int i(0); i<3; ++i){
             config_sol[swing_leg_jidx_ + i] = dynacore::smooth_changing(
-                    ini_swing_leg_config_[i], mid_swing_leg_config_[i], half_swing_time_, state_machine_time_);
+                    ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
+                    half_swing_time_, state_machine_time_);
             qdot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_vel(
-                    ini_swing_leg_config_[i], mid_swing_leg_config_[i], half_swing_time_, state_machine_time_);
+                    ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
+                    half_swing_time_, state_machine_time_);
             qddot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_acc(
-                    ini_swing_leg_config_[i], mid_swing_leg_config_[i], half_swing_time_, state_machine_time_);
-
-            curr_jpos_des_[i] = pos[i];
-            curr_jvel_des_[i] = vel[i];
-            curr_jacc_des_[i] = acc[i];
+                    ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
+                    half_swing_time_, state_machine_time_);
+            if(traj_time<ramp_time){
+                qddot_cmd[swing_leg_jidx_ + i] *= state_machine_time_/ramp_time;
+            }
         }
     }
 

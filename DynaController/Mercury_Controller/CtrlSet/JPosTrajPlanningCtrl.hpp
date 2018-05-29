@@ -47,10 +47,6 @@ class JPosTrajPlanningCtrl:public Controller{
         dynacore::Vect3 curr_foot_vel_des_;
         dynacore::Vect3 curr_foot_acc_des_;
 
-        dynacore::Vect3 curr_jpos_des_;
-        dynacore::Vect3 curr_jvel_des_;
-        dynacore::Vect3 curr_jacc_des_;
-
 
     protected:
         double half_swing_time_;
