@@ -780,8 +780,9 @@ void EKF_LIPRotellaEstimator::getCurrentBodyFrameFootPosition(const int foot_lin
 }
 
 void EKF_LIPRotellaEstimator::getBodyVelFromKinematics(dynacore::Vector & O_body_vel){
-	dynacore::Vect3 vel;
-    dynacore::Vect3 zero;
+	dynacore::Vect3 vel; vel.setZero();
+    dynacore::Vect3 zero; zero.setZero();
+    O_body_vel = dynacore::Vector::Zero(3);
 
     unsigned int bodyid;
     if (lf_contact && rf_contact){
@@ -811,6 +812,7 @@ void EKF_LIPRotellaEstimator::getBodyVelFromKinematics(dynacore::Vector & O_body
 
 	dynacore::Vector config_dot_copy = Q_config_dot;
     for(int i(0); i<3; ++i){
+        config_dot_copy[i] = 0.0; // set 0 velocities for the linear components
         config_dot_copy[i+3] = omega_imu_input[i];
     }
 
@@ -847,6 +849,8 @@ void EKF_LIPRotellaEstimator::getCoMVelFromKinematics(dynacore::Vector & O_com_v
     for(int i(0); i<3; ++i){
         config_dot_copy[i+3] = omega_imu_input[i];
     }
+
+
 
     link_vel = CalcPointVelocity ( *robot_model, config_copy, config_dot_copy, start_idx, robot_model->mBodies[start_idx].mCenterOfMass, true);
     // Find velocities of all the links and weight it by their mass.
@@ -923,8 +927,12 @@ void EKF_LIPRotellaEstimator::updateStep(){
 void EKF_LIPRotellaEstimator::updateStatePosterior(){
 	for(size_t i = 0; i < delta_x_posterior.size(); i++){
 		if (std::isnan(delta_x_posterior[i])){
-			printf("Delta x change Contains isnan value \n");
-			exit(0);
+			printf("Delta x change Contains isnan value. Will replace this with 0.0 \n");
+			delta_x_posterior[i] = 0.0;
+			printf("Here are the debug statements \n");
+			showDebugStatements();
+			//printf("Quitting program... \n");
+			//exit(0);
 		}
 	}
 
@@ -1008,4 +1016,19 @@ void EKF_LIPRotellaEstimator::showPrintOutStatements(){
 	// printf("Left Foot contact = %d \n", lf_contact);
 	// printf("Right Foot contact = %d \n", rf_contact);	
 	// dynacore::pretty_print(Q_config, std::cout, "Q_config");			
+}
+
+void EKF_LIPRotellaEstimator::showDebugStatements(){
+	dynacore::pretty_print(f_imu, std::cout, "f_imu");				
+	dynacore::pretty_print(omega_imu, std::cout, "omega_imu");			
+
+	dynacore::pretty_print(Q_config, std::cout, "Q_config");	
+	dynacore::pretty_print(Q_config_dot, std::cout, "Q_config_dot");		
+
+	dynacore::pretty_print(x_prior, std::cout, "x_prior");	
+	dynacore::pretty_print(x_predicted, std::cout, "x_predicted");	
+	dynacore::pretty_print(x_posterior, std::cout, "x_posterior");	
+
+	dynacore::pretty_print(S_k, std::cout, "S_k");		
+	dynacore::pretty_print(K_k, std::cout, "K_k");	
 }
