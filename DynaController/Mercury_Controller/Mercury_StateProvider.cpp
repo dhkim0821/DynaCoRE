@@ -25,7 +25,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 global_foot_height_(0.),
                                 com_state_imu_(6),
                                 num_step_copy_(0),
-                                led_kin_data_(3*NUM_MARKERS)
+                                led_kin_data_(3*NUM_MARKERS),
+                                filtered_jvel_(mercury::num_act_joint)
 {
   Q_.setZero();
   Qdot_.setZero();
@@ -45,6 +46,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   body_pos_.setZero();
   body_vel_.setZero();
 
+  filtered_jvel_.setZero();
 
   ekf_body_pos_.setZero();
   ekf_body_vel_.setZero();  
@@ -131,6 +133,9 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&sim_imu_pos, VECT3, "sim_imu_pos", 3);
   data_manager->RegisterData(&sim_imu_vel, VECT3, "sim_imu_vel", 3);
 
+
+  //Filtered joint velocity
+  data_manager->RegisterData(&filtered_jvel_, DYN_VEC, "filtered_jvel", mercury::num_act_joint);
 
 }
 

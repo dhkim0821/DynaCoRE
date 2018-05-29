@@ -83,6 +83,9 @@ public:
 
   dynacore::Vector led_kin_data_;
 
+  dynacore::Vector filtered_jvel_;
+
+
 private:
   Mercury_StateProvider();
 };
