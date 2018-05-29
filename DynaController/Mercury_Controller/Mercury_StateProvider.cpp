@@ -47,6 +47,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   body_vel_.setZero();
 
   filtered_jvel_.setZero();
+  filtered_ang_vel_.setZero();  
 
   ekf_body_pos_.setZero();
   ekf_body_vel_.setZero();  
@@ -136,6 +137,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
 
   //Filtered joint velocity
   data_manager->RegisterData(&filtered_jvel_, DYN_VEC, "filtered_jvel", mercury::num_act_joint);
+  data_manager->RegisterData(&filtered_ang_vel_, VECT3, "filtered_ang_vel", 3);
 
 }
 
