@@ -59,6 +59,7 @@ public:
 
   dynacore::Vector jpos_des_;
   dynacore::Vector jvel_des_;
+  dynacore::Vector jacc_des_;
 
   dynacore::Vector rotor_inertia_;
 
@@ -84,6 +85,7 @@ public:
   dynacore::Vector led_kin_data_;
 
   dynacore::Vector filtered_jvel_;
+  dynacore::Vect3 filtered_ang_vel_;
 
 
 private:

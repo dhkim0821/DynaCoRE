@@ -117,6 +117,7 @@ EKF_LIPRotellaEstimator::EKF_LIPRotellaEstimator():Q_config(mercury::num_q),
 
 	body_vel_kinematics = dynacore::Vector::Zero(O_v.size());
 	body_com_vel_kinematics = dynacore::Vector::Zero(O_v.size());	
+	body_imu_vel = dynacore::Vector::Zero(O_v.size());
 
 	y_vec = dynacore::Vector::Zero(dim_obs);
 
@@ -197,6 +198,8 @@ EKF_LIPRotellaEstimator::EKF_LIPRotellaEstimator():Q_config(mercury::num_q),
 
 	DataManager::GetDataManager()->RegisterData(&body_vel_kinematics, DYN_VEC, "ekf_body_vel_kin", 3);
 	DataManager::GetDataManager()->RegisterData(&body_com_vel_kinematics, DYN_VEC, "ekf_com_vel_kin", 3);
+
+	DataManager::GetDataManager()->RegisterData(&body_imu_vel, DYN_VEC, "ekf_imu_vel", 3);
 
 }
 
@@ -426,9 +429,9 @@ void EKF_LIPRotellaEstimator::resetFilter(){
 	setStateVariablesToPrior();
 	// x_prior = dynacore::Vector::Zero(dim_states);
 	// x_prior[9] = 1.0;
-	body_vel_kinematics = dynacore::Vector::Zero(O_v.size());
-	body_com_vel_kinematics = dynacore::Vector::Zero(O_v.size());	
-
+	body_vel_kinematics = dynacore::Vector::Zero(3);
+	body_com_vel_kinematics = dynacore::Vector::Zero(3);	
+	body_imu_vel = dynacore::Vector::Zero(3);
 
 	computeNewFootLocations(mercury_link::leftFoot); // Update Left foot location
 	computeNewFootLocations(mercury_link::rightFoot); // Update Right foot location
@@ -780,8 +783,9 @@ void EKF_LIPRotellaEstimator::getCurrentBodyFrameFootPosition(const int foot_lin
 }
 
 void EKF_LIPRotellaEstimator::getBodyVelFromKinematics(dynacore::Vector & O_body_vel){
-	dynacore::Vect3 vel;
-    dynacore::Vect3 zero;
+	dynacore::Vect3 vel; vel.setZero();
+    dynacore::Vect3 zero; zero.setZero();
+    O_body_vel = dynacore::Vector::Zero(3);
 
     unsigned int bodyid;
     if (lf_contact && rf_contact){
@@ -811,6 +815,7 @@ void EKF_LIPRotellaEstimator::getBodyVelFromKinematics(dynacore::Vector & O_body
 
 	dynacore::Vector config_dot_copy = Q_config_dot;
     for(int i(0); i<3; ++i){
+        config_dot_copy[i] = 0.0; // set 0 velocities for the linear components
         config_dot_copy[i+3] = omega_imu_input[i];
     }
 
@@ -848,6 +853,8 @@ void EKF_LIPRotellaEstimator::getCoMVelFromKinematics(dynacore::Vector & O_com_v
         config_dot_copy[i+3] = omega_imu_input[i];
     }
 
+
+
     link_vel = CalcPointVelocity ( *robot_model, config_copy, config_dot_copy, start_idx, robot_model->mBodies[start_idx].mCenterOfMass, true);
     // Find velocities of all the links and weight it by their mass.
     for (int i(start_idx); i< robot_model->mBodies.size() ; ++i){
@@ -871,6 +878,9 @@ void EKF_LIPRotellaEstimator::updateStep(){
 	// Get CoM velocity estimate from kinematics
 	getCoMVelFromKinematics(body_com_vel_kinematics);
 	R_c.block(9,9,3,3) = n_com*dynacore::Matrix::Identity(3,3);
+
+	// Get velocity estimate from the IMU
+	body_imu_vel += (C_rot.transpose()*f_imu + gravity_vec)*dt;
 
 	R_k = R_c/dt;
 
@@ -923,7 +933,11 @@ void EKF_LIPRotellaEstimator::updateStep(){
 void EKF_LIPRotellaEstimator::updateStatePosterior(){
 	for(size_t i = 0; i < delta_x_posterior.size(); i++){
 		if (std::isnan(delta_x_posterior[i])){
-			printf("Delta x change Contains isnan value \n");
+			printf("Delta x change Contains isnan value. Will replace this with 0.0 \n");
+			delta_x_posterior[i] = 0.0;
+			printf("Here are the debug statements \n");
+			showDebugStatements();
+			printf("Quitting program... \n");
 			exit(0);
 		}
 	}
@@ -970,6 +984,8 @@ void EKF_LIPRotellaEstimator::showPrintOutStatements(){
 	//printf("\n");
 	// printf("[EKF Rotella Estimator]\n");
 	// dynacore::pretty_print(f_imu, std::cout, "body frame f_imu");
+	// dynacore::pretty_print(body_imu_vel, std::cout, "body_imu_vel");
+
 	// dynacore::pretty_print(omega_imu, std::cout, "body frame omega_imu");
 	// dynacore::Vector a_o = (C_rot.transpose()*f_imu_input + gravity_vec);
 	// dynacore::pretty_print(O_q_B, std::cout, "O_q_B");	
@@ -1008,4 +1024,19 @@ void EKF_LIPRotellaEstimator::showPrintOutStatements(){
 	// printf("Left Foot contact = %d \n", lf_contact);
 	// printf("Right Foot contact = %d \n", rf_contact);	
 	// dynacore::pretty_print(Q_config, std::cout, "Q_config");			
+}
+
+void EKF_LIPRotellaEstimator::showDebugStatements(){
+	dynacore::pretty_print(f_imu, std::cout, "f_imu");				
+	dynacore::pretty_print(omega_imu, std::cout, "omega_imu");			
+
+	dynacore::pretty_print(Q_config, std::cout, "Q_config");	
+	dynacore::pretty_print(Q_config_dot, std::cout, "Q_config_dot");		
+
+	dynacore::pretty_print(x_prior, std::cout, "x_prior");	
+	dynacore::pretty_print(x_predicted, std::cout, "x_predicted");	
+	dynacore::pretty_print(x_posterior, std::cout, "x_posterior");	
+
+	dynacore::pretty_print(S_k, std::cout, "S_k");		
+	dynacore::pretty_print(K_k, std::cout, "K_k");	
 }

@@ -13,6 +13,8 @@ num_figures = 8
 
 sim_data_available = False
 kin_com_data_available = False
+filtered_ang_vel_data_available = False
+rot_imu_vel_data_available = False
 
 plot_contact_switches = False
 
@@ -96,12 +98,33 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
 
     data_omega_imu = \
-    np.genfromtxt(file_path+'ekf_omega_imu.txt', delimiter=None, dtype=(float))    
+    np.genfromtxt(file_path+'imu_ang_vel.txt', delimiter=None, dtype=(float))    
     data_bias_omega_imu = \
     np.genfromtxt(file_path+'ekf_B_bw.txt', delimiter=None, dtype=(float))    
 
+
+    data_filtered_ang_vel = None
+    try:
+        data_filtered_ang_vel = \
+        np.genfromtxt(file_path+'filtered_ang_vel.txt', delimiter=None, dtype=(float))    
+        filtered_ang_vel_data_available = True
+        print "Filtered angular velocity data available"
+    except:
+        filtered_ang_vel_data_available = False
+        print "Note: Filtered angular velocity data is not available"
+
     data_meas_diff = \
     np.genfromtxt(file_path+'ekf_measured_diff.txt', delimiter=None, dtype=(float))    
+
+
+
+    try:
+        data_rot_imu_vel = \
+        np.genfromtxt(file_path+'ekf_imu_vel.txt', delimiter=None, dtype=(float))
+        rot_imu_vel_data_available = True
+    except:
+        print "\n Note: EKF com vel data from kinematicsd not available\n"
+        rot_imu_vel_data_available = False
 
 
               
@@ -227,6 +250,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         if kin_com_data_available:
             plt.plot(data_x, data_com_kin_vel[st_idx:end_idx, i-1], color="black")
 
+        # if rot_imu_vel_data_available:
+        #     plt.plot(data_x, data_rot_imu_vel[st_idx:end_idx,i-1], color="olive")
+
         if plot_contact_switches:
             # Plot Left Foot Contact 
             for j in range(1, len(lf_contact_index_change)):
@@ -319,6 +345,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_omega_imu[st_idx:end_idx,i-1], "b-" , \
                 data_x, data_bias_omega_imu[st_idx:end_idx,i-1], "c-")
+
+        if filtered_ang_vel_data_available:
+            plt.plot(data_x, data_filtered_ang_vel[st_idx:end_idx,i-1], color="orange")
+
+
         plt.grid(True)
     plt.xlabel('time (sec)')
     ## increment figure number and index

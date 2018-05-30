@@ -168,44 +168,48 @@ void JPosTrajPlanningCtrl::_task_setup(){
             swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
             config_sol, qdot_cmd, qddot_cmd);
 
-    double ramp_time(0.03);
+    double ramp_time(0.02);
     if(state_machine_time_ > half_swing_time_){
         double traj_time = state_machine_time_-half_swing_time_;
          for(int i(0); i<3; ++i){
-            //config_sol[swing_leg_jidx_ + i] = dynacore::smooth_changing(
-                    //mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
-            //qdot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_vel(
-                    //mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
-            //qddot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_acc(
-                    //mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
-            //if(traj_time<ramp_time){ qddot_cmd[swing_leg_jidx_ + i] *= traj_time/ramp_time; }
+            config_sol[swing_leg_jidx_ + i] = dynacore::smooth_changing(
+                    mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
+            qdot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_vel(
+                    mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
+            qddot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_acc(
+                    mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
+            // if(traj_time<ramp_time){ qddot_cmd[swing_leg_jidx_ + i] *= traj_time/ramp_time; }
             
-             end_jpos_traj_.getCurvePoint(traj_time, pos);
-             end_jpos_traj_.getCurveDerPoint(traj_time, 1, vel);
-             end_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
+             // end_jpos_traj_.getCurvePoint(traj_time, pos);
+             // end_jpos_traj_.getCurveDerPoint(traj_time, 1, vel);
+             // end_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
         }
     }else{
          for(int i(0); i<3; ++i){
-            //config_sol[swing_leg_jidx_ + i] = dynacore::smooth_changing(
-                    //ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
-                    //half_swing_time_, state_machine_time_);
-            //qdot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_vel(
-                    //ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
-                    //half_swing_time_, state_machine_time_);
-            //qddot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_acc(
-                    //ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
-                    //half_swing_time_, state_machine_time_);
-            //if(traj_time<ramp_time){ qddot_cmd[swing_leg_jidx_ + i] *= state_machine_time_/ramp_time; }
-             mid_jpos_traj_.getCurvePoint(traj_time, pos);
-             mid_jpos_traj_.getCurveDerPoint(traj_time, 1, vel);
-             mid_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
+            config_sol[swing_leg_jidx_ + i] = dynacore::smooth_changing(
+                    ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
+                    half_swing_time_, state_machine_time_);
+            qdot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_vel(
+                    ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
+                    half_swing_time_, state_machine_time_);
+            qddot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_acc(
+                    ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
+                    half_swing_time_, state_machine_time_);
+            if(traj_time<ramp_time){ qddot_cmd[swing_leg_jidx_ + i] *= state_machine_time_/ramp_time; }
+             // mid_jpos_traj_.getCurvePoint(traj_time, pos);
+             // mid_jpos_traj_.getCurveDerPoint(traj_time, 1, vel);
+             // mid_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
          }
     }
-    for(int i(0); i<3; ++i){
-       config_sol[swing_leg_jidx_ + i] = pos[i];
-       qdot_cmd[swing_leg_jidx_ + i] = vel[i];
-       qddot_cmd[swing_leg_jidx_ + i] = acc[i];
-   }
+    // for(int i(0); i<3; ++i){
+    //    config_sol[swing_leg_jidx_ + i] = pos[i];
+    //    qdot_cmd[swing_leg_jidx_ + i] = vel[i];
+    //    qddot_cmd[swing_leg_jidx_ + i] = acc[i];
+    // }
+
+    for(int i(0); i<mercury::num_act_joint; ++i){
+       sp_->jacc_des_[i] = qddot_cmd[i + mercury::num_virtual];
+    }
 
     for (int i(0); i<mercury::num_act_joint; ++i){
         pos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
@@ -230,6 +234,13 @@ void JPosTrajPlanningCtrl::_CheckPlanning(){
         dynacore::Vector guess_q = sp_->Q_;
         dynacore::Vector config_sol = sp_->Q_;
         // Update Target config
+        // TEST
+        target_loc[0] += foot_landing_offset_[0];
+        target_loc[1] += foot_landing_offset_[1];
+
+        // TEST
+        // target_loc[0] = sp_->Q_[0] + body_pt_offset_[0];
+
         inv_kin_.getLegConfigAtVerticalPosture(swing_foot_, target_loc, guess_q, config_sol);
         target_swing_leg_config_ = config_sol.segment(swing_leg_jidx_, 3);
 
@@ -290,19 +301,12 @@ void JPosTrajPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     // Time Modification
     replan_moment_ = state_machine_time_;
     end_time_ += pl_output.time_modification;
-
-    // dynacore::pretty_print(target_loc, std::cout, "planed foot loc");
-    // dynacore::pretty_print(sp_->global_pos_local_, std::cout, "global loc");
-
     target_loc -= sp_->global_pos_local_;
-    // target_loc[0] += (sp_->Q_[0] + body_pt_offset_[0] - pl_output.switching_state[0]);
-    // target_loc[1] += (sp_->Q_[1] + body_pt_offset_[1] - pl_output.switching_state[1]);
 
-    // TEST
-    //if(sp_->num_step_copy_ < 2){
-        //target_loc[0] = sp_->Q_[0] + default_target_loc_[0];
-        //target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
-    //}
+    if(sp_->num_step_copy_ < 2){
+        // target_loc[0] = sp_->Q_[0] + default_target_loc_[0];
+        target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
+    }
 
     //target_loc[2] -= push_down_height_;
     target_loc[2] = default_target_loc_[2];
@@ -342,6 +346,10 @@ void JPosTrajPlanningCtrl::FirstVisit(){
 
     middle_pos = (ini_foot_pos_ + target_loc)/2.;
     middle_pos[2] = swing_height_ + target_loc[2];
+
+    // TEST
+    middle_pos[0] = sp_->Q_[0] + body_pt_offset_[0]; 
+
     inv_kin_.getLegConfigAtVerticalPosture(swing_foot_, middle_pos, sp_->Q_, config_sol);
     mid_swing_leg_config_ = config_sol.segment(swing_leg_jidx_, 3);
     _SetJPosBspline(ini_swing_leg_config_, mid_swing_leg_config_,
@@ -421,10 +429,10 @@ void JPosTrajPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
 }
 
 void JPosTrajPlanningCtrl::_SetJPosBspline(const dynacore::Vector & st_pos, 
-        const dynacore::Vector & target_pos, BS_Basic<3,3,0,2,2> & spline){
+        const dynacore::Vector & target_pos, BS_Basic<4,4,0,3,3> & spline){
     // Trajectory Setup
-    double init[9];
-    double fin[9];
+    double init[12];
+    double fin[12];
     double** middle_pt;
 
     for(int i(0); i<3; ++i){
@@ -432,10 +440,12 @@ void JPosTrajPlanningCtrl::_SetJPosBspline(const dynacore::Vector & st_pos,
         init[i] = st_pos[i];
         init[i+3] = 0.;
         init[i+6] = 0.;
+                init[i+9] = 0.;
         // Final
         fin[i] = target_pos[i];
         fin[i+3] = 0.;
         fin[i+6] = 0.;
+        fin[i+9] = 0.;
     }
     spline.SetParam(init, fin, middle_pt, half_swing_time_);
 }
@@ -509,6 +519,10 @@ void JPosTrajPlanningCtrl::CtrlInitialization(const std::string & setting_file_n
     }
 
     handler.getValue("swing_time_reduction", swing_time_reduction_);
+
+    // Foot landing offset
+    handler.getVector("foot_landing_offset", foot_landing_offset_);
+
 
     static bool b_bodypute_eigenvalue(true);
     if(b_bodypute_eigenvalue){

@@ -44,6 +44,11 @@ Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
             new deriv_lp_filter(2.0*M_PI*10.0, mercury::servo_rate));
     }
 
+    for(int i(0); i<3; i++){
+        filter_ang_vel_.push_back(
+            new digital_lp_filter(2.0*M_PI*10.0, mercury::servo_rate));
+    }
+
     // ori_est_ = new OriEstAccObs();
     // ori_est_ = new NoBias();
     //ori_est_ = new NoAccState();
@@ -171,38 +176,49 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     std::vector<double> imu_ang_vel(3);
     std::vector<double> imu_inc(3);
 
-    for(int i(0); i<3; ++i){
-        imu_inc[i] = data->imu_inc[i];
-        imu_acc[i]  = data->imu_acc[i];
-        imu_ang_vel[i] = data->imu_ang_vel[i];
-    }
-    ori_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel);
-    ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
-    ((BasicAccumulation*)ori_est_)->getEstimatedCoMState(sp_->com_state_imu_);
-
-    // EKF set sensor data
-    ekf_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel, 
-                            data->lfoot_contact, 
-                            data->rfoot_contact,
-                            curr_config_.segment(mercury::num_virtual, mercury::num_act_joint),
-                            curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
-
-    static bool visit_once(false);
-    //if ((sp_->phase_copy_ == 2) && (!visit_once)){
-        //ekf_est_->resetFilter();
-        //visit_once = true;
-    //}
-
-
-    dynacore::Quaternion ekf_quaternion_est;
-    ekf_est_->getEstimatedState(sp_->ekf_body_pos_, sp_->ekf_body_vel_, ekf_quaternion_est); // EKF    
-
     // Try derivative filter on joint position:
     for (int i(0); i<mercury::num_act_joint; ++i){
         filter_jpos_vel_[i]->input(data->joint_jpos[i]);       
         sp_->filtered_jvel_[i] = filter_jpos_vel_[i]->output(); 
     }        
 
+    // Try low pass filter on ang velocity data
+    for (int i(0); i < 3; ++i){
+        filter_ang_vel_[i]->input(data->imu_ang_vel[i]);       
+        sp_->filtered_ang_vel_[i] = filter_ang_vel_[i]->output(); 
+    }        
+
+
+    for(int i(0); i<3; ++i){
+        imu_inc[i] = data->imu_inc[i];
+        imu_acc[i]  = data->imu_acc[i];
+        imu_ang_vel[i] = data->imu_ang_vel[i];
+        //imu_ang_vel[i] = filter_ang_vel_[i]->output();
+    }
+    ori_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel);
+    ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
+    ((BasicAccumulation*)ori_est_)->getEstimatedCoMState(sp_->com_state_imu_);
+
+    // Use filtered imu angular velocity data for the EKF
+    std::vector<double> filtered_imu_ang_vel(3);
+    for(int i(0); i<3; ++i){
+        filtered_imu_ang_vel[i] = filter_ang_vel_[i]->output();
+    }
+    // EKF set sensor data
+    // ekf_est_->setSensorData(imu_acc, imu_inc, filtered_imu_ang_vel, 
+    //                         data->lfoot_contact, 
+    //                         data->rfoot_contact,
+    //                         curr_config_.segment(mercury::num_virtual, mercury::num_act_joint),
+    //                         curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
+
+    // static bool visit_once(false);
+    // if ((sp_->phase_copy_ == 2) && (!visit_once)){
+    //     ekf_est_->resetFilter();
+    //     visit_once = true;
+    // }
+
+    dynacore::Quaternion ekf_quaternion_est;
+    ekf_est_->getEstimatedState(sp_->ekf_body_pos_, sp_->ekf_body_vel_, ekf_quaternion_est); // EKF    
 
     if(base_cond_ == base_condition::floating){
         curr_config_[3] = sp_->body_ori_.x();
