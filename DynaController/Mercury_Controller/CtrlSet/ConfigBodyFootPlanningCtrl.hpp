@@ -104,7 +104,9 @@ class ConfigBodyFootPlanningCtrl:public Controller{
         
         dynacore::Vector ini_config_;
         BS_Basic<3, 3, 1, 2, 2> foot_traj_;
-        //BS_Basic<4, 4, 1, 3, 3> foot_traj_;
+        // BS_Basic<4, 4, 1, 3, 3> foot_traj_;
+
+        std::vector<double> foot_landing_offset_;
 
         double end_time_;
         double transition_time_;
