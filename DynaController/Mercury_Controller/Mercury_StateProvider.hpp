@@ -85,6 +85,7 @@ public:
   dynacore::Vector led_kin_data_;
 
   dynacore::Vector filtered_jvel_;
+  dynacore::Vect3 filtered_ang_vel_;
 
 
 private:
