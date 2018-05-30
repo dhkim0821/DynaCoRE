@@ -57,6 +57,7 @@ class ConfigBodyFootPlanningCtrl:public Controller{
                 const dynacore::Vect3 & target_pos);
 
         double replan_moment_;
+        double swing_time_reduction_;
 
         bool b_contact_switch_check_;
         bool b_set_height_target_;
@@ -103,6 +104,7 @@ class ConfigBodyFootPlanningCtrl:public Controller{
         
         dynacore::Vector ini_config_;
         BS_Basic<3, 3, 1, 2, 2> foot_traj_;
+        //BS_Basic<4, 4, 1, 3, 3> foot_traj_;
 
         double end_time_;
         double transition_time_;

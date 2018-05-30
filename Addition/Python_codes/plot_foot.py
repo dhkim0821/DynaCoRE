@@ -37,6 +37,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     #np.genfromtxt(file_path+'rfoot_vel_des.txt', delimiter=None, dtype=(float))
     data_rfoot_vel = \
     np.genfromtxt(file_path+'rfoot_vel.txt', delimiter=None, dtype=(float))
+    data_rfoot_acc_des = \
+    np.genfromtxt(file_path+'rfoot_acc_des.txt', delimiter=None, dtype=(float))
+    data_lfoot_acc_des = \
+    np.genfromtxt(file_path+'lfoot_acc_des.txt', delimiter=None, dtype=(float))
+
 
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
     st_idx = 1
@@ -236,6 +241,53 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         col_index += 1
     elif plot_configuration == PLOT_VERTICALLY:
         row_index +=1    
+
+    ## plot foot acc
+    fig = plt.figure(figure_number)
+    plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
+    fig.canvas.set_window_title('rfoot acc')
+    for i in range(1,4,1):
+        ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_rfoot_acc_des[st_idx:end_idx,i-1], "r-")
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+            # phase number
+            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
+        plt.grid(True)
+    plt.xlabel('time (sec)')
+    ## increment figure number and index
+    figure_number += 1
+    if plot_configuration == PLOT_HORIZONTALLY:
+        col_index += 1
+    elif plot_configuration == PLOT_VERTICALLY:
+        row_index +=1    
+
+    ## plot foot acc
+    fig = plt.figure(figure_number)
+    plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
+    fig.canvas.set_window_title('lfoot acc')
+    for i in range(1,4,1):
+        ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_lfoot_acc_des[st_idx:end_idx,i-1], "r-")
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+            # phase number
+            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
+        plt.grid(True)
+    plt.xlabel('time (sec)')
+    ## increment figure number and index
+    figure_number += 1
+    if plot_configuration == PLOT_HORIZONTALLY:
+        col_index += 1
+    elif plot_configuration == PLOT_VERTICALLY:
+        row_index +=1    
+
+
+
 
 
 if __name__ == "__main__":

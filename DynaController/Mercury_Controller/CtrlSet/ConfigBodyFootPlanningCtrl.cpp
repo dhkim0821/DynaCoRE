@@ -159,12 +159,7 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
         curr_foot_acc_des_[i] = acc[i];
     }
     dynacore::Vector config_sol, qdot_cmd, qddot_cmd;
-     // inv_kin_.getSingleSupportFullConfig(
-     //        sp_->Q_, des_quat, target_height, 
-     //        swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
-     //        config_sol, qdot_cmd, qddot_cmd);
-
-   inv_kin_.getSingleSupportFullConfigSeperation(
+    inv_kin_.getSingleSupportFullConfigSeperation(
             sp_->Q_, des_quat, target_height, 
             swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
             config_sol, qdot_cmd, qddot_cmd);
@@ -205,17 +200,9 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
 void ConfigBodyFootPlanningCtrl::_CheckPlanning(){
     if( state_machine_time_ > 
             (end_time_/(planning_frequency_ + 1.) * (num_planning_ + 1.) + 0.002) ){
-
-        //if(state_machine_time_ > 0.5 * end_time_ + 0.002 && (num_planning_ < 1)){
-        //+ 0.002 is to account one or two more ticks before the end of phase
         _Replanning();
         ++num_planning_;
     }
-
-    // Earlier planning
-    //_Replanning();
-    //++num_planning_;
-    //}
 
     //printf("time (state/end): %f, %f\n", state_machine_time_, end_time_);
     // printf("planning freq: %f\n", planning_frequency_);
@@ -229,22 +216,16 @@ void ConfigBodyFootPlanningCtrl::_Replanning(){
     robot_sys_->getCoMPosition(com_pos);
     robot_sys_->getCoMVelocity(com_vel);
 
-    // Estimated value used
-    // for(int i(0); i<2; ++i){
-    //     com_pos[i] = sp_->estimated_com_state_[i];
-    //     com_vel[i] = sp_->estimated_com_state_[i + 2];
-    // }
-    // TEST
-    // for(int i(0); i<2; ++i){
-    //     del_com_pos[i] = com_pos[i] - ini_com_pos_[i];
-    //     com_vel[i] = del_com_pos[i]/state_machine_time_;
-    // }
+    // Average velocity computation
+    for(int i(0); i<2; ++i){ 
+       sp_->average_vel_[i] = (sp_->Q_[i] - ini_config_[i])/state_machine_time_;
+    }
 
-    // TEST 2
+    // TEST 
     for(int i(0); i<2; ++i){
-        com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
-        del_com_pos[i] = sp_->Q_[i] - ini_config_[i];
-        com_vel[i] = del_com_pos[i]/state_machine_time_;
+        //com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
+        com_pos[i] += body_pt_offset_[i];
+        com_vel[i] = sp_->average_vel_[i]; 
     }
     printf("planning com state: %f, %f, %f, %f\n",
         com_pos[0], com_pos[1],
@@ -257,7 +238,7 @@ void ConfigBodyFootPlanningCtrl::_Replanning(){
     ParamReversalPL pl_param;
     pl_param.swing_time = end_time_ - state_machine_time_
         + transition_time_ * transition_phase_ratio_
-        + stance_time_ * double_stance_ratio_;
+        + stance_time_ * double_stance_ratio_ - swing_time_reduction_;
 
     pl_param.des_loc = sp_->des_location_;
     pl_param.stance_foot_loc = sp_->global_pos_local_;
@@ -274,17 +255,16 @@ void ConfigBodyFootPlanningCtrl::_Replanning(){
     // Time Modification
     replan_moment_ = state_machine_time_;
     end_time_ += pl_output.time_modification;
-
-    // dynacore::pretty_print(target_loc, std::cout, "planed foot loc");
-    // dynacore::pretty_print(sp_->global_pos_local_, std::cout, "global loc");
-
     target_loc -= sp_->global_pos_local_;
-    //target_loc[2] -= push_down_height_;
+    
+    if(sp_->num_step_copy_ < 2){
+        // target_loc[0] = sp_->Q_[0] + default_target_loc_[0];
+        target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
+    }
+
+
     target_loc[2] = default_target_loc_[2];
     dynacore::pretty_print(target_loc, std::cout, "next foot loc");
-    //curr_foot_acc_des_.setZero();
-    //curr_foot_vel_des_.setZero();
-
     _SetBspline(curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
 }
 
@@ -345,22 +325,42 @@ void ConfigBodyFootPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
         const dynacore::Vect3 & st_vel,
         const dynacore::Vect3 & st_acc,
         const dynacore::Vect3 & target_pos){
-    // Trajectory Setup
+    //double init[12];
+    //double fin[12];
+    //double** middle_pt = new double*[1];
+    //middle_pt[0] = new double[3];
+
+    //double portion = (1./end_time_) * (end_time_/2. - state_machine_time_);
+    //for(int i(0); i<3; ++i){
+        //init[i] = st_pos[i];
+        //init[i+3] = st_vel[i];
+        //init[i+6] = st_acc[i];
+        //init[i+9] = 0.;
+        //fin[i] = target_pos[i];
+        //fin[i+3] = 0.;
+        //fin[i+6] = 0.;
+        //fin[i+9] = 0.;
+
+        //if(portion > 0.)
+            //middle_pt[0][i] = (st_pos[i] + target_pos[i])*portion;
+        //else
+            //middle_pt[0][i] = (st_pos[i] + target_pos[i])/2.;
+    //}
+    //if(portion > 0.)  middle_pt[0][2] = swing_height_ + st_pos[2];
+
+    //foot_traj_.SetParam(init, fin, middle_pt, end_time_ - replan_moment_);
+
+/////////////////////////////////////////////////////////////////////////
     double init[9];
     double fin[9];
     double** middle_pt = new double*[1];
     middle_pt[0] = new double[3];
 
-    // printf("time (state/end): %f, %f\n", state_machine_time_, end_time_);
     double portion = (1./end_time_) * (end_time_/2. - state_machine_time_);
-    // printf("portion: %f\n\n", portion);
-    // Initial and final position & velocity & acceleration
     for(int i(0); i<3; ++i){
-        // Initial
         init[i] = st_pos[i];
         init[i+3] = st_vel[i];
         init[i+6] = st_acc[i];
-        // Final
         fin[i] = target_pos[i];
         fin[i+3] = 0.;
         fin[i+6] = 0.;
@@ -373,7 +373,7 @@ void ConfigBodyFootPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
     if(portion > 0.)  middle_pt[0][2] = swing_height_ + st_pos[2];
 
     foot_traj_.SetParam(init, fin, middle_pt, end_time_ - replan_moment_);
-
+/////////////////////////////////////////////////////////////////////////
     delete [] *middle_pt;
     delete [] middle_pt;
 }
@@ -449,12 +449,13 @@ void ConfigBodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_
         body_pt_offset_[i] = tmp_vec[i];
     }
 
+    handler.getValue("swing_time_reduction", swing_time_reduction_);
     static bool b_bodypute_eigenvalue(true);
     if(b_bodypute_eigenvalue){
         ((Reversal_LIPM_Planner*)planner_)->
             CheckEigenValues(double_stance_ratio_*stance_time_ + 
                     transition_phase_ratio_*transition_time_ + 
-                    end_time_);
+                    end_time_- swing_time_reduction_);
         b_bodypute_eigenvalue = false;
     }
     //printf("[Body Foot JPos Planning Ctrl] Parameter Setup Completed\n");
