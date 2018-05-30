@@ -165,9 +165,9 @@ protected:
   double n_com_unknown;   // unknown noise intensity from com velocity measurement
   double n_com;           // CoM velocity from kinematics measurement noise intensity
 
-  dynacore::Vector body_vel_kinematics;
-  dynacore::Vector body_com_vel_kinematics;
-
+  dynacore::Vector body_vel_kinematics; // kinematics and angular velocity based body velocity measurement
+  dynacore::Vector body_com_vel_kinematics; // kinematics and angular velocity based com velocity measurement
+  dynacore::Vector body_imu_vel; // kinematics and angular velocity based com velocity measurement
 
   dynacore::Matrix S_k; // Innovation (residual) covariance
   dynacore::Matrix K_k; // Kalman gain  

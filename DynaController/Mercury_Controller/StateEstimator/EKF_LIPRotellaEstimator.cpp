@@ -117,6 +117,7 @@ EKF_LIPRotellaEstimator::EKF_LIPRotellaEstimator():Q_config(mercury::num_q),
 
 	body_vel_kinematics = dynacore::Vector::Zero(O_v.size());
 	body_com_vel_kinematics = dynacore::Vector::Zero(O_v.size());	
+	body_imu_vel = dynacore::Vector::Zero(O_v.size());
 
 	y_vec = dynacore::Vector::Zero(dim_obs);
 
@@ -197,6 +198,8 @@ EKF_LIPRotellaEstimator::EKF_LIPRotellaEstimator():Q_config(mercury::num_q),
 
 	DataManager::GetDataManager()->RegisterData(&body_vel_kinematics, DYN_VEC, "ekf_body_vel_kin", 3);
 	DataManager::GetDataManager()->RegisterData(&body_com_vel_kinematics, DYN_VEC, "ekf_com_vel_kin", 3);
+
+	DataManager::GetDataManager()->RegisterData(&body_imu_vel, DYN_VEC, "ekf_imu_vel", 3);
 
 }
 
@@ -426,9 +429,9 @@ void EKF_LIPRotellaEstimator::resetFilter(){
 	setStateVariablesToPrior();
 	// x_prior = dynacore::Vector::Zero(dim_states);
 	// x_prior[9] = 1.0;
-	body_vel_kinematics = dynacore::Vector::Zero(O_v.size());
-	body_com_vel_kinematics = dynacore::Vector::Zero(O_v.size());	
-
+	body_vel_kinematics = dynacore::Vector::Zero(3);
+	body_com_vel_kinematics = dynacore::Vector::Zero(3);	
+	body_imu_vel = dynacore::Vector::Zero(3);
 
 	computeNewFootLocations(mercury_link::leftFoot); // Update Left foot location
 	computeNewFootLocations(mercury_link::rightFoot); // Update Right foot location
@@ -876,6 +879,9 @@ void EKF_LIPRotellaEstimator::updateStep(){
 	getCoMVelFromKinematics(body_com_vel_kinematics);
 	R_c.block(9,9,3,3) = n_com*dynacore::Matrix::Identity(3,3);
 
+	// Get velocity estimate from the IMU
+	body_imu_vel += (C_rot.transpose()*f_imu + gravity_vec)*dt;
+
 	R_k = R_c/dt;
 
 	// Construct Discretized Observation Matrix
@@ -978,6 +984,8 @@ void EKF_LIPRotellaEstimator::showPrintOutStatements(){
 	//printf("\n");
 	// printf("[EKF Rotella Estimator]\n");
 	// dynacore::pretty_print(f_imu, std::cout, "body frame f_imu");
+	// dynacore::pretty_print(body_imu_vel, std::cout, "body_imu_vel");
+
 	// dynacore::pretty_print(omega_imu, std::cout, "body frame omega_imu");
 	// dynacore::Vector a_o = (C_rot.transpose()*f_imu_input + gravity_vec);
 	// dynacore::pretty_print(O_q_B, std::cout, "O_q_B");	
