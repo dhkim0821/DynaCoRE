@@ -30,6 +30,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             np.genfromtxt(file_path+'config.txt', delimiter=None, dtype=(float))
     data_jvel_des = \
             np.genfromtxt(file_path+'jvel_des.txt', delimiter=None, dtype=(float))
+    data_jacc_des = \
+            np.genfromtxt(file_path+'jacc_des.txt', delimiter=None, dtype=(float))
     data_qdot = \
             np.genfromtxt(file_path+'qdot.txt', delimiter=None, dtype=(float))
     data_jjvel = \
@@ -165,7 +167,53 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             plt.axvline(x=data_x[j],color='indigo',linestyle='-')
         plt.grid(True)
     plt.xlabel('time (sec)')
+    ## increment figure number and index
+    figure_number += 1
+    if plot_configuration == PLOT_HORIZONTALLY:
+        col_index += 1
+    elif plot_configuration == PLOT_VERTICALLY:
+        row_index +=1
+    #----------------------------------------------------------------------------------
 
+
+    # Plot Figure --------------------------------------------------------------------
+    ## plot jacc
+    fig = plt.figure(figure_number)
+    plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))    
+    #plt.get_current_fig_manager().window.wm_geometry("480x600+960+0")
+    fig.canvas.set_window_title('jacc (right_leg)')
+    for i in range(1,4,1):
+        ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_jacc_des[st_idx:end_idx,i-1], "r-")
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+        plt.grid(True)
+    plt.xlabel('time (sec)')
+    ## increment figure number and index
+    figure_number += 1
+    if plot_configuration == PLOT_HORIZONTALLY:
+        col_index += 1
+    elif plot_configuration == PLOT_VERTICALLY:
+        row_index +=1
+    #----------------------------------------------------------------------------------
+
+    # Plot Figure --------------------------------------------------------------------
+    ## plot jacc
+    fig = plt.figure(figure_number)
+    plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))    
+    #plt.get_current_fig_manager().window.wm_geometry("480x600+960+0")
+    fig.canvas.set_window_title('jacc (right_leg)')
+    for i in range(1,4,1):
+        ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_jacc_des[st_idx:end_idx,i-1 + 3], "r-")
+        # phase marker #
+        for j in phseChange:
+            # phase line
+            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
+        plt.grid(True)
+    plt.xlabel('time (sec)')
 
 if __name__ == "__main__":
     create_figures()

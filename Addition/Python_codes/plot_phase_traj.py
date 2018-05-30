@@ -87,7 +87,7 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
     data_estimated_com_global[:,0:2] += data_global_pos_offset[:, 0:2]
     x_pos_offset = 0.0
     st_step = 0
-    num_steps = 4
+    num_steps = 3
 
     lin_width = 3
     fig_width = 480
@@ -154,10 +154,10 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
                 # data_ekf_body_vel[trans2_st_idx:trans2_end_idx, plot_axis], linewidth=lin_width, color='deeppink')
 
         ## Estimated (Steven)
-        plt.plot(data_com_pos_global[swing_st_idx:swing_end_idx, plot_axis], \
-                data_ekf_body_vel[swing_st_idx:swing_end_idx, plot_axis], linewidth=lin_width, color='orange')
-        plt.plot(data_com_pos_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
-                data_ekf_body_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], linewidth=lin_width, color='olive')
+        # plt.plot(data_com_pos_global[swing_st_idx:swing_end_idx, plot_axis], \
+                # data_ekf_body_vel[swing_st_idx:swing_end_idx, plot_axis], linewidth=lin_width, color='orange')
+        # plt.plot(data_com_pos_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
+                # data_ekf_body_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], linewidth=lin_width, color='olive')
  
        
 
@@ -170,7 +170,7 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
         # Foot location
         plt.scatter(data_planner[st_step + i, 8], 0, s=80, facecolors='none', edgecolor='r')
         plt.plot(np_stancefoot[st_step + i, 0], 0, '*', color='orange', markersize=12) # current stance foot
-        plt.plot(np_stancefoot[st_step + i+1, 0], 0, 'b+', markersize = 12) # next stance foot (landing location)
+        plt.plot(np_stancefoot[st_step + i+1, 0], 0, 'b+', markersize = 15, linewidth=3) # next stance foot (landing location)
         ### END of planner choice #########################################################
         figure_number += 1;
 
@@ -202,10 +202,10 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
                 # data_estimated_com_global[trans2_st_idx:trans2_end_idx, 2 + plot_axis], linewidth=lin_width, color='olive')
  
         ## Estimated (Steven)
-        plt.plot(data_body_global[swing_st_idx:swing_end_idx, plot_axis], \
-                data_ekf_body_vel[swing_st_idx:swing_end_idx, plot_axis], linewidth=lin_width, color='orange')
-        plt.plot(data_body_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
-                data_ekf_body_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], linewidth=lin_width, color='olive')
+        # plt.plot(data_body_global[swing_st_idx:swing_end_idx, plot_axis], \
+                # data_ekf_body_vel[swing_st_idx:swing_end_idx, plot_axis], linewidth=lin_width, color='orange')
+        # plt.plot(data_body_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
+                # data_ekf_body_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], linewidth=lin_width, color='olive')
         # plt.plot(data_ekf_body_pos[swing_st_idx:swing_end_idx, plot_axis], \
                 # data_ekf_body_vel[swing_st_idx:swing_end_idx, plot_axis], linewidth=lin_width, color='orange')
         # plt.plot(data_ekf_body_pos[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \

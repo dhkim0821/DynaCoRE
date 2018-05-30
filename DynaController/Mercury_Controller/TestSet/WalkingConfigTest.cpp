@@ -111,6 +111,12 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     DataManager::GetDataManager()->RegisterData(
             &(((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->curr_foot_vel_des_), 
             VECT3, "lfoot_vel_des", 3);
+    DataManager::GetDataManager()->RegisterData(
+            &(((ConfigBodyFootPlanningCtrl*)config_right_swing_ctrl_)->curr_foot_acc_des_), 
+            VECT3, "rfoot_acc_des", 3);
+    DataManager::GetDataManager()->RegisterData(
+            &(((ConfigBodyFootPlanningCtrl*)config_left_swing_ctrl_)->curr_foot_acc_des_), 
+            VECT3, "lfoot_acc_des", 3);
 #elif (SWING_CTRL_TYPE == 2)
     DataManager::GetDataManager()->RegisterData(
             &(((BodyJPosSwingPlanningCtrl*)config_right_swing_ctrl_)->curr_foot_pos_des_), 
