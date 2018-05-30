@@ -937,8 +937,8 @@ void EKF_LIPRotellaEstimator::updateStatePosterior(){
 			delta_x_posterior[i] = 0.0;
 			printf("Here are the debug statements \n");
 			showDebugStatements();
-			//printf("Quitting program... \n");
-			//exit(0);
+			printf("Quitting program... \n");
+			exit(0);
 		}
 	}
 
