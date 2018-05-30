@@ -57,12 +57,9 @@ class JPosTrajPlanningCtrl:public Controller{
                 const dynacore::Vect3 & st_vel,
                 const dynacore::Vect3 & st_acc,
                 const dynacore::Vect3 & target_pos);
+        void _SetJPosBspline(const dynacore::Vector & st_pos, 
+                const dynacore::Vector & target_pos, BS_Basic<4,4,0,3,3> & spline);
 
-        void _SetJPosBspline(
-                const dynacore::Vector & st_pos,
-                const dynacore::Vector & target_pos, 
-                BS_Basic<3,3,0,2,2> & spline);
- 
         dynacore::Vector ini_swing_leg_config_;
         dynacore::Vector mid_swing_leg_config_;
         dynacore::Vector target_swing_leg_config_;
@@ -89,6 +86,8 @@ class JPosTrajPlanningCtrl:public Controller{
         int num_planning_;
         double t_prime_x_;
         double t_prime_y_;
+
+        std::vector<double> foot_landing_offset_;
 
         dynacore::Vector task_kp_;
         dynacore::Vector task_kd_;
@@ -121,8 +120,8 @@ class JPosTrajPlanningCtrl:public Controller{
         
         dynacore::Vector ini_config_;
         BS_Basic<3, 3, 1, 2, 2> foot_traj_;
-        BS_Basic<3, 3, 0, 2, 2> mid_jpos_traj_;
-        BS_Basic<3, 3, 0, 2, 2> end_jpos_traj_;
+        BS_Basic<4, 4, 0, 3, 3> mid_jpos_traj_;
+        BS_Basic<4, 4, 0, 3, 3> end_jpos_traj_;
 
         double end_time_;
         double transition_time_;

@@ -59,6 +59,7 @@ public:
 
   dynacore::Vector jpos_des_;
   dynacore::Vector jvel_des_;
+  dynacore::Vector jacc_des_;
 
   dynacore::Vector rotor_inertia_;
 

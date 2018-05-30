@@ -181,13 +181,13 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     ((BasicAccumulation*)ori_est_)->getEstimatedCoMState(sp_->com_state_imu_);
 
     // EKF set sensor data
-    ekf_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel, 
-                            data->lfoot_contact, 
-                            data->rfoot_contact,
-                            curr_config_.segment(mercury::num_virtual, mercury::num_act_joint),
-                            curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
+    // ekf_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel, 
+    //                         data->lfoot_contact, 
+    //                         data->rfoot_contact,
+    //                         curr_config_.segment(mercury::num_virtual, mercury::num_act_joint),
+    //                         curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
 
-    static bool visit_once(false);
+    // static bool visit_once(false);
     //if ((sp_->phase_copy_ == 2) && (!visit_once)){
         //ekf_est_->resetFilter();
         //visit_once = true;

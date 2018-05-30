@@ -18,6 +18,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 reflected_reaction_force_(mercury::num_qdot),
                                 jpos_des_(mercury::num_act_joint),
                                 jvel_des_(mercury::num_act_joint),
+                                jacc_des_(mercury::num_act_joint),
                                 rotor_inertia_(mercury::num_act_joint),
                                 b_rfoot_contact_(0),
                                 b_lfoot_contact_(0),
@@ -69,6 +70,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   Lfoot_vel_.setZero();
 
   com_state_imu_.setZero();
+  jacc_des_.setZero();
 
   phase_copy_= 0;
 
@@ -118,6 +120,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
 
   //data_manager->RegisterData(&jpos_des_, DYN_VEC, "jpos_des", mercury::num_act_joint);
   //data_manager->RegisterData(&jvel_des_, DYN_VEC, "jvel_des", mercury::num_act_joint);
+  data_manager->RegisterData(&jacc_des_, DYN_VEC, "jacc_des", mercury::num_act_joint);
   data_manager->RegisterData(&rotor_inertia_, DYN_VEC, "rotor_inertia", mercury::num_act_joint);
 
   // Foot Contact 
