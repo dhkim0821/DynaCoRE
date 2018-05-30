@@ -264,6 +264,12 @@ void ConfigBodyFootPlanningCtrl::_Replanning(){
 
 
     target_loc[2] = default_target_loc_[2];
+
+    // TEST
+    for(int i(0); i<2; ++i){
+        target_loc[i] += foot_landing_offset_[i];
+    }
+
     dynacore::pretty_print(target_loc, std::cout, "next foot loc");
     _SetBspline(curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
 }
@@ -325,30 +331,30 @@ void ConfigBodyFootPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
         const dynacore::Vect3 & st_vel,
         const dynacore::Vect3 & st_acc,
         const dynacore::Vect3 & target_pos){
-    //double init[12];
-    //double fin[12];
-    //double** middle_pt = new double*[1];
-    //middle_pt[0] = new double[3];
+    // double init[12];
+    // double fin[12];
+    // double** middle_pt = new double*[1];
+    // middle_pt[0] = new double[3];
 
-    //double portion = (1./end_time_) * (end_time_/2. - state_machine_time_);
-    //for(int i(0); i<3; ++i){
-        //init[i] = st_pos[i];
-        //init[i+3] = st_vel[i];
-        //init[i+6] = st_acc[i];
-        //init[i+9] = 0.;
-        //fin[i] = target_pos[i];
-        //fin[i+3] = 0.;
-        //fin[i+6] = 0.;
-        //fin[i+9] = 0.;
+    // double portion = (1./end_time_) * (end_time_/2. - state_machine_time_);
+    // for(int i(0); i<3; ++i){
+    //     init[i] = st_pos[i];
+    //     init[i+3] = st_vel[i];
+    //     init[i+6] = st_acc[i];
+    //     init[i+9] = 0.;
+    //     fin[i] = target_pos[i];
+    //     fin[i+3] = 0.;
+    //     fin[i+6] = 0.;
+    //     fin[i+9] = 0.;
 
-        //if(portion > 0.)
-            //middle_pt[0][i] = (st_pos[i] + target_pos[i])*portion;
-        //else
-            //middle_pt[0][i] = (st_pos[i] + target_pos[i])/2.;
-    //}
-    //if(portion > 0.)  middle_pt[0][2] = swing_height_ + st_pos[2];
+    //     if(portion > 0.)
+    //         middle_pt[0][i] = (st_pos[i] + target_pos[i])*portion;
+    //     else
+    //         middle_pt[0][i] = (st_pos[i] + target_pos[i])/2.;
+    // }
+    // if(portion > 0.)  middle_pt[0][2] = swing_height_ + st_pos[2];
 
-    //foot_traj_.SetParam(init, fin, middle_pt, end_time_ - replan_moment_);
+    // foot_traj_.SetParam(init, fin, middle_pt, end_time_ - replan_moment_);
 
 /////////////////////////////////////////////////////////////////////////
     double init[9];
@@ -448,6 +454,8 @@ void ConfigBodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_
     for(int i(0); i<2; ++i){
         body_pt_offset_[i] = tmp_vec[i];
     }
+
+    handler.getVector("foot_landing_offset", foot_landing_offset_);
 
     handler.getValue("swing_time_reduction", swing_time_reduction_);
     static bool b_bodypute_eigenvalue(true);

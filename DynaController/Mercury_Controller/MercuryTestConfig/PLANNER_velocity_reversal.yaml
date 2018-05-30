@@ -1,4 +1,4 @@
-x_step_length_limit: [-0.22, 0.22]
+x_step_length_limit: [-0.25, 0.22]
 y_step_length_limit: [0.08, 0.42]
 
 com_velocity_limit: [0.0, 1.3]
