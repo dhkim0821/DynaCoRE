@@ -3,7 +3,7 @@
 #include <Mercury/Mercury_Definition.h>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 
-SingleContact::SingleContact(RobotSystem* robot, int pt):WBDC_ContactSpec(3),
+SingleContact::SingleContact(const RobotSystem* robot, int pt):WBDC_ContactSpec(3),
                                      contact_pt_(pt)
 {
   robot_sys_ = robot;

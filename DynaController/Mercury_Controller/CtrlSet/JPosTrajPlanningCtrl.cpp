@@ -11,34 +11,21 @@
 #include <Utils/utilities.hpp>
 #include <Utils/DataManager.hpp>
 
-#define MEASURE_TIME_WBDC 0
 
 #if MEASURE_TIME_WBDC
 #include <chrono>
 #endif 
 
 JPosTrajPlanningCtrl::JPosTrajPlanningCtrl(
-        RobotSystem* robot, int swing_foot, Planner* planner):
-    Controller(robot),
-    swing_foot_(swing_foot),
-    num_planning_(0),
-    planning_frequency_(0.),
-    replan_moment_(0.),
-    push_down_height_(0.),
-    ctrl_start_time_(0.),
-    b_contact_switch_check_(false),
+        const RobotSystem* robot, int swing_foot, Planner* planner):
+    SwingPlanningCtrl(robot, swing_foot, planner),
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
+    push_down_height_(0.0),
     half_swing_time_(0.15)
 {
-    planner_ = planner;
-    curr_foot_pos_des_.setZero();
-    curr_foot_vel_des_.setZero();
-    curr_foot_acc_des_.setZero();
-
     prev_ekf_vel.setZero();
     acc_err_ekf.setZero();
-
 
     config_body_foot_task_ = new ConfigTask();
     if(swing_foot == mercury_link::leftFoot) {
@@ -54,26 +41,27 @@ JPosTrajPlanningCtrl::JPosTrajPlanningCtrl(
     task_kp_ = dynacore::Vector::Zero(config_body_foot_task_->getDim());
     task_kd_ = dynacore::Vector::Zero(config_body_foot_task_->getDim());
 
-    std::vector<bool> act_list;
-    act_list.resize(mercury::num_qdot, true);
-    for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
+                std::vector<bool> act_list;
+                act_list.resize(mercury::num_qdot, true);
+                for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
 
 
-    wbdc_rotor_ = new WBDC_Rotor(act_list);
-    wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
-    wbdc_rotor_data_->A_rotor = 
-        dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
+                wbdc_rotor_ = new WBDC_Rotor(act_list);
+                wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
+                wbdc_rotor_data_->A_rotor = 
+                    dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
 
-    wbdc_rotor_data_->cost_weight = 
-        dynacore::Vector::Constant(
-                config_body_foot_task_->getDim() + 
-                single_contact_->getDim(), 100.0);
+                wbdc_rotor_data_->cost_weight = 
+                    dynacore::Vector::Constant(
+                            config_body_foot_task_->getDim() + 
+                            single_contact_->getDim(), 100.0);
 
-    wbdc_rotor_data_->cost_weight.tail(single_contact_->getDim()) = 
-        dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
-    wbdc_rotor_data_->cost_weight[config_body_foot_task_->getDim() + 2]  = 0.001; // Fr_z
+                wbdc_rotor_data_->cost_weight.tail(single_contact_->getDim()) = 
+                    dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
+                wbdc_rotor_data_->cost_weight[config_body_foot_task_->getDim() + 2]  = 0.001; // Fr_z
 
-    com_estimator_ = new LIPM_KalmanFilter();
+
+
     sp_ = Mercury_StateProvider::getStateProvider();
     printf("[BodyFootJPosPlanning Controller] Constructed\n");
 }
@@ -81,8 +69,6 @@ JPosTrajPlanningCtrl::JPosTrajPlanningCtrl(
 JPosTrajPlanningCtrl::~JPosTrajPlanningCtrl(){
     delete config_body_foot_task_;
     delete single_contact_;
-    delete wbdc_rotor_;
-    delete wbdc_rotor_data_;
 }
 
 void JPosTrajPlanningCtrl::OneStep(void* _cmd){

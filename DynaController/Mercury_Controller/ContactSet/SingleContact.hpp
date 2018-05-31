@@ -7,7 +7,7 @@ class Mercury_StateProvider;
 
 class SingleContact: public WBDC_ContactSpec{
 public:
-  SingleContact(RobotSystem* robot, int contact_pt);
+  SingleContact(const RobotSystem* robot, int contact_pt);
   virtual ~SingleContact();
 
 protected:

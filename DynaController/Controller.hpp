@@ -9,7 +9,7 @@
 
 class Controller{
 public:
-  Controller(RobotSystem* robot):robot_sys_(robot),state_machine_time_(0.){}
+  Controller(const RobotSystem* robot):robot_sys_(robot),state_machine_time_(0.){}
   virtual ~Controller(){}
 
   virtual void OneStep(void* command) = 0;

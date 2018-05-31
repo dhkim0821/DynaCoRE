@@ -1,11 +1,10 @@
 #include "BodyPriorFootPlanningCtrl.hpp"
 #include <Configuration.h>
-#include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <Mercury_Controller/TaskSet/StanceTask.hpp>
 #include <Mercury_Controller/TaskSet/JPosSwingTask.hpp>
 #include <Mercury_Controller/ContactSet/SingleContact.hpp>
-#include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <Mercury/Mercury_Model.hpp>
+#include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <Mercury/Mercury_Definition.h>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Planner/PIPM_FootPlacementPlanner/Reversal_LIPM_Planner.hpp>
@@ -18,22 +17,12 @@
 #endif 
 
 BodyPriorFootPlanningCtrl::BodyPriorFootPlanningCtrl(
-        RobotSystem* robot, int swing_foot, Planner* planner):
-    Controller(robot),
-    swing_foot_(swing_foot),
-    num_planning_(0),
-    planning_frequency_(0.),
-    replan_moment_(0.),
+        const RobotSystem* robot, int swing_foot, Planner* planner):
+    SwingPlanningCtrl(robot, swing_foot, planner),
     push_down_height_(0.),
-    ctrl_start_time_(0.),
-    b_contact_switch_check_(false),
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint)
 {
-    planner_ = planner;
-    curr_foot_pos_des_.setZero();
-    curr_foot_vel_des_.setZero();
-    curr_foot_acc_des_.setZero();
 
     if(swing_foot == mercury_link::leftFoot) {
         single_contact_ = new SingleContact(robot, mercury_link::rightFoot);
@@ -76,8 +65,6 @@ BodyPriorFootPlanningCtrl::BodyPriorFootPlanningCtrl(
         dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
     wbdc_rotor_data_->cost_weight[stance_task_->getDim() + 2]  = 0.001; // Fr_z
 
-    com_estimator_ = new LIPM_KalmanFilter();
-    sp_ = Mercury_StateProvider::getStateProvider();
     printf("[BodyFootJPosPlanning Controller] Constructed\n");
 }
 

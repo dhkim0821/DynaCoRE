@@ -17,23 +17,12 @@
 #endif 
 
 BodyJPosSwingPlanningCtrl::BodyJPosSwingPlanningCtrl(
-        RobotSystem* robot, int swing_foot, Planner* planner):
-    Controller(robot),
-    swing_foot_(swing_foot),
-    num_planning_(0),
-    planning_frequency_(0.),
-    replan_moment_(0.),
+       const RobotSystem* robot, int swing_foot, Planner* planner):
+    SwingPlanningCtrl(robot, swing_foot, planner),
     push_down_height_(0.),
-    ctrl_start_time_(0.),
-    b_contact_switch_check_(false),
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint)
 {
-    planner_ = planner;
-    curr_foot_pos_des_.setZero();
-    curr_foot_vel_des_.setZero();
-    curr_foot_acc_des_.setZero();
-
     curr_jpos_des_.setZero();
     curr_jvel_des_.setZero();
     curr_jacc_des_.setZero();
@@ -500,17 +489,6 @@ void BodyJPosSwingPlanningCtrl::FirstVisit(){
 
     //dynacore::pretty_print(ini_foot_pos_, std::cout, "ini foot pos");
     //dynacore::pretty_print(target_loc, std::cout, "target loc");
-}
-
-void BodyJPosSwingPlanningCtrl::_CoMEstiamtorUpdate(){
-    dynacore::Vect3 com_pos, com_vel;
-    robot_sys_->getCoMPosition(com_pos);
-    robot_sys_->getCoMVelocity(com_vel);
-    dynacore::Vector input_state(4);
-    input_state[0] = com_pos[0];   input_state[1] = com_pos[1];
-    input_state[2] = com_vel[0];   input_state[3] = com_vel[1];
-    com_estimator_->InputData(input_state);
-    com_estimator_->Output(sp_->estimated_com_state_);
 }
 
 void BodyJPosSwingPlanningCtrl::_SetBspline(
