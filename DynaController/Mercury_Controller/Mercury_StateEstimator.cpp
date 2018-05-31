@@ -15,6 +15,9 @@
 #include <Mercury_Controller/StateEstimator/NoBias.hpp>
 #include <Mercury_Controller/StateEstimator/NoAccState.hpp>
 
+// Velocity Estimators
+#include <Mercury_Controller/StateEstimator/BiasCompensatedBodyVelocityEstimator.hpp>
+
 // EKF based estimators
 #include <Mercury_Controller/StateEstimator/EKF_RotellaEstimator.hpp> // EKF
 #include <Mercury_Controller/StateEstimator/EKF_LIPRotellaEstimator.hpp> // EKF
@@ -33,6 +36,7 @@ Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
     ori_est_ = new BasicAccumulation();
 //    ekf_est_ = new EKF_RotellaEstimator(); // EKF
     ekf_est_ = new EKF_LIPRotellaEstimator(); // EKF with Pendulum Dynamics
+    bias_vel_est_ = new BiasCompensatedBodyVelocityEstimator();
 
     for(int i(0); i<2; ++i){
         filter_com_vel_.push_back(
@@ -86,6 +90,8 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
     ekf_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel); // EKF
 
+    bias_vel_est_->EstimatorInitialization(imu_acc, sp_->body_ori_);
+
 
     // Local Frame Setting
     if(base_cond_ == base_condition::floating){
@@ -129,6 +135,8 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     robot_sys_->getCoMPosition(sp_->CoM_pos_);
     robot_sys_->getCoMVelocity(sp_->CoM_vel_);
     ((BasicAccumulation*)ori_est_)->CoMStateInitialization(sp_->CoM_pos_, sp_->CoM_vel_);
+    bias_vel_est_->CoMStateInitialization(sp_->CoM_pos_, sp_->CoM_vel_);
+
     // for(int i(0); i<2; ++i){
     //     filter_com_vel_[i]->input(sp_->CoM_vel_[i]); 
     //     sp_->average_vel_[i] = filter_com_vel_[i]->output();
@@ -197,30 +205,34 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     }
     ori_est_->setSensorData(imu_acc, imu_inc, imu_ang_vel);
     ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
-    ((BasicAccumulation*)ori_est_)->getEstimatedCoMState(sp_->com_state_imu_);
+    // ((BasicAccumulation*)ori_est_)->getEstimatedCoMState(sp_->com_state_imu_);
+
+    bias_vel_est_->setSensorData(imu_acc, sp_->body_ori_);
+    bias_vel_est_->getEstimatedCoMState(sp_->com_state_imu_);
+
 
     // Use filtered imu angular velocity data for the EKF
     std::vector<double> filtered_imu_ang_vel(3);
     for(int i(0); i<3; ++i){
         filtered_imu_ang_vel[i] = filter_ang_vel_[i]->output();
     }
-    
+/*    
     // EKF set sensor data
-    //ekf_est_->setSensorData(imu_acc, imu_inc, filtered_imu_ang_vel, 
-                            //data->lfoot_contact, 
-                            //data->rfoot_contact,
-                            //curr_config_.segment(mercury::num_virtual, mercury::num_act_joint),
-                            //curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
+    ekf_est_->setSensorData(imu_acc, imu_inc, filtered_imu_ang_vel, 
+                            data->lfoot_contact, 
+                            data->rfoot_contact,
+                            curr_config_.segment(mercury::num_virtual, mercury::num_act_joint),
+                            curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
 
-    //static bool visit_once(false);
-    //if ((sp_->phase_copy_ == 2) && (!visit_once)){
-        //ekf_est_->resetFilter();
-        //visit_once = true;
-    //}
+    static bool visit_once(false);
+    if ((sp_->phase_copy_ == 2) && (!visit_once)){
+        ekf_est_->resetFilter();
+        visit_once = true;
+    }
 
-    //dynacore::Quaternion ekf_quaternion_est;
-    //ekf_est_->getEstimatedState(sp_->ekf_body_pos_, sp_->ekf_body_vel_, ekf_quaternion_est); // EKF    
-
+    dynacore::Quaternion ekf_quaternion_est;
+    ekf_est_->getEstimatedState(sp_->ekf_body_pos_, sp_->ekf_body_vel_, ekf_quaternion_est); // EKF    
+*/
     if(base_cond_ == base_condition::floating){
         curr_config_[3] = sp_->body_ori_.x();
         curr_config_[4] = sp_->body_ori_.y();

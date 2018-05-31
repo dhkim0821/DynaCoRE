@@ -3,6 +3,8 @@
 
 #include <Configuration.h>
 #include <Utils/wrap_eigen.hpp>
+#include <Mercury_Controller/StateEstimator/BiasCompensatedBodyVelocityEstimator.hpp>
+
 
 class Mercury_StateProvider;
 class RobotSystem;
@@ -37,6 +39,7 @@ protected:
   std::vector<filter*> filter_ang_vel_;
 
 
+  BiasCompensatedBodyVelocityEstimator* bias_vel_est_; 
   OriEstimator* ori_est_;
   BodyFootPosEstimator* body_foot_est_;
   EKF_PoseEstimator* ekf_est_;  // EKF estimator
