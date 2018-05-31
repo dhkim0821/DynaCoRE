@@ -24,6 +24,7 @@ class SwingPlanningCtrl:public Controller{
             planning_frequency_(0.),
             replan_moment_(0.),
             ctrl_start_time_(0.),
+            half_swing_time_(0.15),
             b_contact_switch_check_(false){   
                 curr_foot_pos_des_.setZero();
                 curr_foot_vel_des_.setZero();
@@ -36,7 +37,10 @@ class SwingPlanningCtrl:public Controller{
         }
 
         void setPlanningFrequency(double freq){  planning_frequency_ = freq; }
-        void setSwingTime(double swing_time){ end_time_ = swing_time; }
+        void setSwingTime(double swing_time){ 
+            end_time_ = swing_time; 
+            half_swing_time_ = end_time_/2.;
+        }
         void setDoubleStanceRatio(double ratio){  double_stance_ratio_ = ratio;}
         void setTransitionPhaseRatio(double ratio){  transition_phase_ratio_ = ratio;}
 
@@ -92,7 +96,10 @@ class SwingPlanningCtrl:public Controller{
 
         CoMStateEstimator* com_estimator_;
         Mercury_StateProvider* sp_;
+    
+        // Timing parameters
         double end_time_;
+        double half_swing_time_;
         double transition_time_;
         double stance_time_;
         double ctrl_start_time_;

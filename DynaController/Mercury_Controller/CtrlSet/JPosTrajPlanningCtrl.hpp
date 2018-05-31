@@ -20,9 +20,6 @@ class JPosTrajPlanningCtrl:public SwingPlanningCtrl{
         virtual void CtrlInitialization(const std::string & setting_file_name);
 
     protected:
-        double half_swing_time_;
-        void _CoMEstiamtorUpdate();
-
         void _SetBspline(
                 const dynacore::Vect3 & st_pos,
                 const dynacore::Vect3 & st_vel,
