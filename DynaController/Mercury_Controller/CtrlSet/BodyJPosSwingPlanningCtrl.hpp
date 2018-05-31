@@ -5,6 +5,7 @@
 #include <Utils/BSplineBasic.h>
 #include <Mercury_Controller/StateEstimator/LIPM_KalmanFilter.hpp>
 #include <Mercury_Controller/Mercury_InvKinematics.hpp>
+#include <Utils/minjerk_one_dim.hpp>
 
 class BodyJPosSwingPlanningCtrl:public SwingPlanningCtrl{
     public:
@@ -21,7 +22,6 @@ class BodyJPosSwingPlanningCtrl:public SwingPlanningCtrl{
         dynacore::Vect3 curr_jvel_des_;
         dynacore::Vect3 curr_jacc_des_;
 
-
     protected:
         void _SetBspline(
                 const dynacore::Vect3 & st_pos,
@@ -35,6 +35,7 @@ class BodyJPosSwingPlanningCtrl:public SwingPlanningCtrl{
                 const dynacore::Vect3 & st_jvel,
                 const dynacore::Vect3 & st_jacc,
                 const dynacore::Vect3 & target_pos);
+
         dynacore::Vector ini_swing_leg_config_;
         dynacore::Vector mid_swing_leg_config_;
         dynacore::Vector target_swing_leg_config_;
@@ -76,6 +77,13 @@ class BodyJPosSwingPlanningCtrl:public SwingPlanningCtrl{
         dynacore::Vector ini_config_;
         BS_Basic<3, 3, 1, 2, 2> foot_traj_;
         BS_Basic<3, 3, 1, 2, 2> swing_leg_traj_;
+        std::vector<MinJerk_OneDimension*> min_jerk_cartesian;
+        void _SetCartesianMinJerk(
+                const dynacore::Vect3 & st_pos,
+                const dynacore::Vect3 & st_vel,
+                const dynacore::Vect3 & st_acc,
+                const dynacore::Vect3 & target_pos);
+
 
         double swing_time_reduction_;
 

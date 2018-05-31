@@ -57,7 +57,7 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
 
     // Create Minimum jerk objects
     for(size_t i = 0; i < 3; i++){
-        min_jerk_cartesian.push_back(new MinJerk_OneDimension());          
+        min_jerk_cartesian.push_back(new MinJerk_OneDimension());
     }
 
     printf("[Configuration BodyFootPlanning Controller] Constructed\n");
@@ -147,13 +147,11 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
         sp_->test_minjerk_vel[i] = vel[i];
         sp_->test_minjerk_acc[i] = acc[i];
     }
-
-    
-    // printf("time: %f\n", state_machine_time_);
-
-    foot_traj_.getCurvePoint(traj_time, pos);
-    foot_traj_.getCurveDerPoint(traj_time, 1, vel);
-    foot_traj_.getCurveDerPoint(traj_time, 2, acc);
+    if(num_planning_ < 1){
+        foot_traj_.getCurvePoint(traj_time, pos);
+        foot_traj_.getCurveDerPoint(traj_time, 1, vel);
+        foot_traj_.getCurveDerPoint(traj_time, 2, acc);
+    }
 
     // printf("pos:%f, %f, %f\n", pos[0], pos[1], pos[2]);
     // printf("vel:%f, %f, %f\n", vel[0], vel[1], vel[2]);
@@ -281,10 +279,22 @@ void ConfigBodyFootPlanningCtrl::FirstVisit(){
     // dynacore::pretty_print(target_loc, std::cout, "target loc");
     _SetBspline(ini_foot_pos_, zero, zero, target_loc);
 
-    target_loc[2] = 0.093;    
-    _SetCartesianMinJerk(ini_foot_pos_, zero, zero, target_loc);
-    target_loc[2] = ini_foot_pos_[2] - push_down_height_;
+    // target_loc[2] = 0.093;    
+    // _SetCartesianMinJerk(ini_foot_pos_, zero, zero, target_loc);
+    // target_loc[2] = ini_foot_pos_[2] - push_down_height_;
 
+    // Min Jerk Trajectory Generation
+    //dynacore::Vect3 mid_pt_pos = ini_foot_pos_;
+    //dynacore::Vect3 mid_pt_vel; mid_pt_vel.setZero();
+    //dynacore::Vect3 mid_pt_acc; mid_pt_acc.setZero();
+    //mid_pt_pos[2] += (swing_height_ - 0.04);
+    //mid_pt_acc[2] = -30.;
+    //_SetCartesianMinJerk(half_swing_time_, 
+            //ini_foot_pos_, zero, zero, 
+            //mid_pt_pos, mid_pt_vel, mid_pt_acc);
+    // End of Min Jerk Trajectory Generation
+    
+    
     default_target_loc_[2] = target_loc[2];
 
     // _Replanning();
@@ -363,6 +373,50 @@ void ConfigBodyFootPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
 }
 
 void ConfigBodyFootPlanningCtrl::_SetCartesianMinJerk(
+        double moving_duration,
+                const dynacore::Vect3 & st_pos,
+                const dynacore::Vect3 & st_vel,
+                const dynacore::Vect3 & st_acc,
+                const dynacore::Vect3 & target_pos,
+                const dynacore::Vect3 & target_vel,
+                const dynacore::Vect3 & target_acc){
+
+    // Initialize Minimum Jerk Parameter Containers
+    std::vector< dynacore::Vect3 > min_jerk_cartesian_initial_params;
+    std::vector< dynacore::Vect3 > min_jerk_cartesian_final_params;   
+    dynacore::Vect3 init_params; 
+    dynacore::Vect3 final_params;
+
+    // Initialize Time parameters
+    double t_start_min_jerk = 0.0;
+    double t_final_min_jerk = moving_duration;
+
+    // Set Minimum Jerk Boundary Conditions
+    for(size_t i = 0; i < 3; i++){
+        init_params.setZero(); final_params.setZero();
+        // Set Dimension i's initial pos, vel and acceleration
+        init_params[0] = st_pos[i]; init_params[1] = st_vel[i];  init_params[2] = st_acc[i];
+        // Set Dimension i's final pos, vel, acceleration
+        final_params[0] = target_pos[i]; final_params[1] = target_vel[i];  final_params[2] = target_acc[i];
+        // Add to the parameter vector 
+        min_jerk_cartesian_initial_params.push_back(init_params);
+        min_jerk_cartesian_final_params.push_back(final_params);
+    }
+
+    // Set Minimum Jerk Parameters for each dimension
+    for(size_t i = 0; i < 3; i++){
+        min_jerk_cartesian[i]->setParams(
+                min_jerk_cartesian_initial_params[i], 
+                min_jerk_cartesian_final_params[i],
+                t_start_min_jerk, t_final_min_jerk);  
+        // min_jerk_cartesian[i]->printParameters();  
+    }
+
+
+}
+
+
+void ConfigBodyFootPlanningCtrl::_SetCartesianMinJerk(
                 const dynacore::Vect3 & st_pos,
                 const dynacore::Vect3 & st_vel,
                 const dynacore::Vect3 & st_acc,
@@ -392,8 +446,10 @@ void ConfigBodyFootPlanningCtrl::_SetCartesianMinJerk(
 
     // Set Minimum Jerk Parameters for each dimension
     for(size_t i = 0; i < 3; i++){
-        min_jerk_cartesian[i]->setParams(min_jerk_cartesian_initial_params[i], min_jerk_cartesian_final_params[i],
-                                         t_start_min_jerk, t_final_min_jerk);  
+        min_jerk_cartesian[i]->setParams(
+                min_jerk_cartesian_initial_params[i], 
+                min_jerk_cartesian_final_params[i],
+                t_start_min_jerk, t_final_min_jerk);  
         // min_jerk_cartesian[i]->printParameters();  
     }
 

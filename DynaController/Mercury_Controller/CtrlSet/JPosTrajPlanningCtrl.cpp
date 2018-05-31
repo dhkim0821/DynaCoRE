@@ -21,8 +21,7 @@ JPosTrajPlanningCtrl::JPosTrajPlanningCtrl(
     SwingPlanningCtrl(robot, swing_foot, planner),
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
-    push_down_height_(0.0),
-    half_swing_time_(0.15)
+    push_down_height_(0.0)
 {
     prev_ekf_vel.setZero();
     acc_err_ekf.setZero();
@@ -41,24 +40,24 @@ JPosTrajPlanningCtrl::JPosTrajPlanningCtrl(
     task_kp_ = dynacore::Vector::Zero(config_body_foot_task_->getDim());
     task_kd_ = dynacore::Vector::Zero(config_body_foot_task_->getDim());
 
-                std::vector<bool> act_list;
-                act_list.resize(mercury::num_qdot, true);
-                for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
+    std::vector<bool> act_list;
+    act_list.resize(mercury::num_qdot, true);
+    for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
 
 
-                wbdc_rotor_ = new WBDC_Rotor(act_list);
-                wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
-                wbdc_rotor_data_->A_rotor = 
-                    dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
+    wbdc_rotor_ = new WBDC_Rotor(act_list);
+    wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
+    wbdc_rotor_data_->A_rotor = 
+        dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
 
-                wbdc_rotor_data_->cost_weight = 
-                    dynacore::Vector::Constant(
-                            config_body_foot_task_->getDim() + 
-                            single_contact_->getDim(), 100.0);
+    wbdc_rotor_data_->cost_weight = 
+        dynacore::Vector::Constant(
+                config_body_foot_task_->getDim() + 
+                single_contact_->getDim(), 100.0);
 
-                wbdc_rotor_data_->cost_weight.tail(single_contact_->getDim()) = 
-                    dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
-                wbdc_rotor_data_->cost_weight[config_body_foot_task_->getDim() + 2]  = 0.001; // Fr_z
+    wbdc_rotor_data_->cost_weight.tail(single_contact_->getDim()) = 
+        dynacore::Vector::Constant(single_contact_->getDim(), 1.0);
+    wbdc_rotor_data_->cost_weight[config_body_foot_task_->getDim() + 2]  = 0.001; // Fr_z
 
 
 
@@ -157,7 +156,7 @@ void JPosTrajPlanningCtrl::_task_setup(){
     double ramp_time(0.02);
     if(state_machine_time_ > half_swing_time_){
         double traj_time = state_machine_time_-half_swing_time_;
-         for(int i(0); i<3; ++i){
+        for(int i(0); i<3; ++i){
             config_sol[swing_leg_jidx_ + i] = dynacore::smooth_changing(
                     mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
             qdot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_vel(
@@ -165,13 +164,13 @@ void JPosTrajPlanningCtrl::_task_setup(){
             qddot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_acc(
                     mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
             // if(traj_time<ramp_time){ qddot_cmd[swing_leg_jidx_ + i] *= traj_time/ramp_time; }
-            
-             // end_jpos_traj_.getCurvePoint(traj_time, pos);
-             // end_jpos_traj_.getCurveDerPoint(traj_time, 1, vel);
-             // end_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
+
+            // end_jpos_traj_.getCurvePoint(traj_time, pos);
+            // end_jpos_traj_.getCurveDerPoint(traj_time, 1, vel);
+            // end_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
         }
     }else{
-         for(int i(0); i<3; ++i){
+        for(int i(0); i<3; ++i){
             config_sol[swing_leg_jidx_ + i] = dynacore::smooth_changing(
                     ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
                     half_swing_time_, state_machine_time_);
@@ -182,10 +181,10 @@ void JPosTrajPlanningCtrl::_task_setup(){
                     ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
                     half_swing_time_, state_machine_time_);
             if(traj_time<ramp_time){ qddot_cmd[swing_leg_jidx_ + i] *= state_machine_time_/ramp_time; }
-             // mid_jpos_traj_.getCurvePoint(traj_time, pos);
-             // mid_jpos_traj_.getCurveDerPoint(traj_time, 1, vel);
-             // mid_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
-         }
+            // mid_jpos_traj_.getCurvePoint(traj_time, pos);
+            // mid_jpos_traj_.getCurveDerPoint(traj_time, 1, vel);
+            // mid_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
+        }
     }
     // for(int i(0); i<3; ++i){
     //    config_sol[swing_leg_jidx_ + i] = pos[i];
@@ -194,7 +193,7 @@ void JPosTrajPlanningCtrl::_task_setup(){
     // }
 
     for(int i(0); i<mercury::num_act_joint; ++i){
-       sp_->jacc_des_[i] = qddot_cmd[i + mercury::num_virtual];
+        sp_->jacc_des_[i] = qddot_cmd[i + mercury::num_virtual];
     }
 
     for (int i(0); i<mercury::num_act_joint; ++i){
@@ -216,7 +215,7 @@ void JPosTrajPlanningCtrl::_CheckPlanning(){
             (end_time_/(planning_frequency_ + 1.) * (num_planning_ + 1.) + 0.002) ){
         dynacore::Vect3 target_loc;
         _Replanning(target_loc);
-       
+
         dynacore::Vector guess_q = sp_->Q_;
         dynacore::Vector config_sol = sp_->Q_;
         // Update Target config
@@ -231,12 +230,12 @@ void JPosTrajPlanningCtrl::_CheckPlanning(){
         target_swing_leg_config_ = config_sol.segment(swing_leg_jidx_, 3);
 
         _SetJPosBspline(mid_swing_leg_config_, target_swing_leg_config_,
-            end_jpos_traj_);
+                end_jpos_traj_);
 
 
         // For plotting
         _SetBspline(
-            curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
+                curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
         ++num_planning_;
     }
 }
@@ -250,7 +249,7 @@ void JPosTrajPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 
     // Average velocity computation
     for(int i(0); i<2; ++i){ 
-       sp_->average_vel_[i] = (sp_->Q_[i] - ini_config_[i])/state_machine_time_;
+        sp_->average_vel_[i] = (sp_->Q_[i] - ini_config_[i])/state_machine_time_;
     }
 
     // TEST
@@ -262,8 +261,8 @@ void JPosTrajPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     }
 
     printf("planning com state: %f, %f, %f, %f\n",
-        com_pos[0], com_pos[1],
-        com_vel[0], com_vel[1]);
+            com_pos[0], com_pos[1],
+            com_vel[0], com_vel[1]);
 
     OutputReversalPL pl_output;
     ParamReversalPL pl_param;
@@ -361,20 +360,6 @@ void JPosTrajPlanningCtrl::FirstVisit(){
 
     com_estimator_->EstimatorInitialization(input_state);
     _CoMEstiamtorUpdate();
-
-    //dynacore::pretty_print(ini_foot_pos_, std::cout, "ini foot pos");
-    //dynacore::pretty_print(target_loc, std::cout, "target loc");
-}
-
-void JPosTrajPlanningCtrl::_CoMEstiamtorUpdate(){
-    dynacore::Vect3 com_pos, com_vel;
-    robot_sys_->getCoMPosition(com_pos);
-    robot_sys_->getCoMVelocity(com_vel);
-    dynacore::Vector input_state(4);
-    input_state[0] = com_pos[0];   input_state[1] = com_pos[1];
-    input_state[2] = com_vel[0];   input_state[3] = com_vel[1];
-    com_estimator_->InputData(input_state);
-    com_estimator_->Output(sp_->estimated_com_state_);
 }
 
 void JPosTrajPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
@@ -426,7 +411,7 @@ void JPosTrajPlanningCtrl::_SetJPosBspline(const dynacore::Vector & st_pos,
         init[i] = st_pos[i];
         init[i+3] = 0.;
         init[i+6] = 0.;
-                init[i+9] = 0.;
+        init[i+9] = 0.;
         // Final
         fin[i] = target_pos[i];
         fin[i+3] = 0.;
