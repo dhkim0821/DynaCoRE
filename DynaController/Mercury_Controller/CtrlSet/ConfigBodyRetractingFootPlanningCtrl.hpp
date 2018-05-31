@@ -79,6 +79,7 @@ class ConfigBodyRetractingFootPlanningCtrl:public SwingPlanningCtrl{
         std::vector<MinJerk_OneDimension*> min_jerk_cartesian;
         std::vector<MinJerk_OneDimension*> min_jerk_leg_hip_knee;  
         dynacore::Vect2 hip_knee_desired_retraction;       
+        bool gen_min_jerk_stepping_plan;
 
 };
 

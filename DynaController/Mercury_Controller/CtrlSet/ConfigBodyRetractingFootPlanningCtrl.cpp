@@ -64,7 +64,7 @@ ConfigBodyRetractingFootPlanningCtrl::ConfigBodyRetractingFootPlanningCtrl(
         min_jerk_leg_hip_knee.push_back(new MinJerk_OneDimension());
     }
     hip_knee_desired_retraction.setZero();
-
+    gen_min_jerk_stepping_plan = true;
 
     printf("[ConfigBodyRetractingFootPlanningCtrl Controller] Constructed\n");
 }
@@ -138,10 +138,23 @@ void ConfigBodyRetractingFootPlanningCtrl::_task_setup(){
     double traj_time = state_machine_time_ - replan_moment_;
 
     bool foot_trajectory_phase = false;
-    if (num_planning_ > 0){
-        foot_trajectory_phase = true;
+
+
+    if (state_machine_time_ >= end_time_/2.0){
+        foot_trajectory_phase = true;       
+        // If we have not planned at all, create a minimum jerk trajectory which lands on a nominal target location
+        if ((num_planning_ == 0) && gen_min_jerk_stepping_plan){
+            gen_min_jerk_stepping_plan = false; // Only do it for this step.
+
+            // Land at the default location
+            dynacore::Vect3 target_loc = default_target_loc_;
+            target_loc[0] += sp_->Q_[0];
+            target_loc[1] += sp_->Q_[1];
+            target_loc[2] = ini_foot_pos_[2] - push_down_height_;
+           _SetCartesianMinJerk(curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_, target_loc);
+        }
     }else{
-        foot_trajectory_phase = false;
+        foot_trajectory_phase = false;        
     }
 
     // The foot trajectory Phase
@@ -365,10 +378,8 @@ void ConfigBodyRetractingFootPlanningCtrl::FirstVisit(){
     // dynacore::pretty_print(target_loc, std::cout, "target loc");
     _SetBspline(ini_foot_pos_, zero, zero, target_loc);
 
-    // target_loc[2] = 0.093;    
-    _SetCartesianMinJerk(ini_foot_pos_, zero, zero, target_loc);
-    // target_loc[2] = ini_foot_pos_[2] - push_down_height_;
-
+    // Create an initial stepping plan for the minimum jerk
+    gen_min_jerk_stepping_plan = true;
     // Set Minimum Jerk Profile for the hip and Knee joint of the swing leg------------------------------
     dynacore::Vect2 hip_knee_init_config; hip_knee_init_config.setZero();
     dynacore::Vect2 hip_knee_zero; hip_knee_zero.setZero(); 
