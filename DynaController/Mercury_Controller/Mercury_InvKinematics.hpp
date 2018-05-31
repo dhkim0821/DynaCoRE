@@ -45,6 +45,16 @@ class Mercury_InvKinematics{
                                        dynacore::Vector & qdot_cmd, 
                                        dynacore::Vector & qddot_cmd);
 
+        void getSingleSupportStanceLegConfiguration(const dynacore::Vector & current_Q,
+                                       const dynacore::Quaternion & des_quat,
+                                       const double & des_height, 
+                                       int swing_foot_,
+                                       dynacore::Vector & config_sol,
+                                       dynacore::Vector & qdot_cmd, 
+                                       dynacore::Vector & qddot_cmd);
+
+        void getFootPos(int link_id, const dynacore::Vector & guess_Q, dynacore::Vect3 & foot_pos);
+
     protected:
         int max_iter_;
 

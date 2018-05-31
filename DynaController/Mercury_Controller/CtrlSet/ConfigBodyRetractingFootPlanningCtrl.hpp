@@ -1,15 +1,15 @@
-#ifndef CONFIGURATION_BODY_FOOT_WALKING_CONTROL
-#define CONFIGURATION_BODY_FOOT_WALKING_CONTROL
+#ifndef CONFIGURATION_RETRACTING_FOOT_WALKING_CONTROL
+#define CONFIGURATION_RETRACTING_FOOT_WALKING_CONTROL
 
 #include "SwingPlanningCtrl.hpp"
 #include <Utils/BSplineBasic.h>
 #include <Mercury_Controller/Mercury_InvKinematics.hpp>
 #include <Utils/minjerk_one_dim.hpp>
 
-class ConfigBodyFootPlanningCtrl:public SwingPlanningCtrl{
+class ConfigBodyRetractingFootPlanningCtrl:public SwingPlanningCtrl{
    public:
-        ConfigBodyFootPlanningCtrl(const RobotSystem* robot, int swing_foot, Planner* planner);
-        ~ConfigBodyFootPlanningCtrl();
+        ConfigBodyRetractingFootPlanningCtrl(const RobotSystem* robot, int swing_foot, Planner* planner);
+        ~ConfigBodyRetractingFootPlanningCtrl();
         virtual void OneStep(void* _cmd);
         virtual void FirstVisit();
         virtual void LastVisit();
@@ -28,6 +28,13 @@ class ConfigBodyFootPlanningCtrl:public SwingPlanningCtrl{
                 const dynacore::Vect3 & st_vel,
                 const dynacore::Vect3 & st_acc,
                 const dynacore::Vect3 & target_pos);
+
+        void _SetRetractionMinJerk(
+                const dynacore::Vect2 & st_pos,
+                const dynacore::Vect2 & st_vel,
+                const dynacore::Vect2 & st_acc,
+                const dynacore::Vect2 & target_pos);
+
 
 
         double swing_time_reduction_;
@@ -64,11 +71,15 @@ class ConfigBodyFootPlanningCtrl:public SwingPlanningCtrl{
 
         void _task_setup();
         void _single_contact_setup();
+
+        void _retract_foot_ctrl(dynacore::Vector & gamma);       
         void _body_foot_ctrl(dynacore::Vector & gamma);
 
         Mercury_InvKinematics inv_kin_;
         std::vector<MinJerk_OneDimension*> min_jerk_cartesian;
         std::vector<MinJerk_OneDimension*> min_jerk_leg_hip_knee;  
+        dynacore::Vect2 hip_knee_desired_retraction;       
+
 };
 
 #endif

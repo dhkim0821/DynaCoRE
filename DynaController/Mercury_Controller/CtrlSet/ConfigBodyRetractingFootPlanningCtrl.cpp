@@ -1,4 +1,4 @@
-#include "ConfigBodyFootPlanningCtrl.hpp"
+#include "ConfigBodyRetractingFootPlanningCtrl.hpp"
 #include <Configuration.h>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <Mercury_Controller/TaskSet/ConfigTask.hpp>
@@ -14,7 +14,7 @@
 #include <chrono>
 #endif 
 
-ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
+ConfigBodyRetractingFootPlanningCtrl::ConfigBodyRetractingFootPlanningCtrl(
         const RobotSystem* robot, int swing_foot, Planner* planner):
     SwingPlanningCtrl(robot, swing_foot, planner),
     push_down_height_(0.),
@@ -60,17 +60,23 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
         min_jerk_cartesian.push_back(new MinJerk_OneDimension());          
     }
 
-    printf("[Configuration BodyFootPlanning Controller] Constructed\n");
+    for(size_t i = 0; i < 2; i++){
+        min_jerk_leg_hip_knee.push_back(new MinJerk_OneDimension());
+    }
+    hip_knee_desired_retraction.setZero();
+
+
+    printf("[ConfigBodyRetractingFootPlanningCtrl Controller] Constructed\n");
 }
 
-ConfigBodyFootPlanningCtrl::~ConfigBodyFootPlanningCtrl(){
+ConfigBodyRetractingFootPlanningCtrl::~ConfigBodyRetractingFootPlanningCtrl(){
     delete config_body_foot_task_;
     delete single_contact_;
     delete wbdc_rotor_;
     delete wbdc_rotor_data_;
 }
 
-void ConfigBodyFootPlanningCtrl::OneStep(void* _cmd){   
+void ConfigBodyRetractingFootPlanningCtrl::OneStep(void* _cmd){   
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
@@ -87,7 +93,7 @@ void ConfigBodyFootPlanningCtrl::OneStep(void* _cmd){
 
     _PostProcessing_Command();
 }
-void ConfigBodyFootPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
+void ConfigBodyRetractingFootPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
     dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
     for (int i(0); i<mercury::num_act_joint; ++i){
         wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
@@ -109,7 +115,7 @@ void ConfigBodyFootPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
 }
 
 
-void ConfigBodyFootPlanningCtrl::_task_setup(){
+void ConfigBodyRetractingFootPlanningCtrl::_task_setup(){
     dynacore::Vector pos_des(config_body_foot_task_->getDim());
     dynacore::Vector vel_des(config_body_foot_task_->getDim());
     dynacore::Vector acc_des(config_body_foot_task_->getDim());
@@ -130,60 +136,138 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
     _CheckPlanning();
 
     double traj_time = state_machine_time_ - replan_moment_;
-    // Swing Foot Config Task
-    double pos[3];
-    double vel[3];
-    double acc[3];
 
-
-    
-    // Get Minimum Jerk Trajectory
-    for(size_t i = 0; i < 3; i++){
-        min_jerk_cartesian[i]->getPos(traj_time, pos[i]);
-        min_jerk_cartesian[i]->getVel(traj_time, vel[i]);
-        min_jerk_cartesian[i]->getAcc(traj_time, acc[i]);        
-
-        sp_->test_minjerk_pos[i] = pos[i];
-        sp_->test_minjerk_vel[i] = vel[i];
-        sp_->test_minjerk_acc[i] = acc[i];
+    bool foot_trajectory_phase = false;
+    if (num_planning_ > 0){
+        foot_trajectory_phase = true;
+    }else{
+        foot_trajectory_phase = false;
     }
 
-    
-    // printf("time: %f\n", state_machine_time_);
+    // The foot trajectory Phase
+    if (foot_trajectory_phase){
+        // Swing Foot Config Task
+        double pos[3];
+        double vel[3];
+        double acc[3];
+       
+        // Get Minimum Jerk Trajectory
+        for(size_t i = 0; i < 3; i++){
+            min_jerk_cartesian[i]->getPos(traj_time, pos[i]);
+            min_jerk_cartesian[i]->getVel(traj_time, vel[i]);
+            min_jerk_cartesian[i]->getAcc(traj_time, acc[i]);        
 
-    foot_traj_.getCurvePoint(traj_time, pos);
-    foot_traj_.getCurveDerPoint(traj_time, 1, vel);
-    foot_traj_.getCurveDerPoint(traj_time, 2, acc);
+            sp_->test_minjerk_pos[i] = pos[i];
+            sp_->test_minjerk_vel[i] = vel[i];
+            sp_->test_minjerk_acc[i] = acc[i];
+        }
+       
+        // printf("time: %f\n", state_machine_time_);
 
-    // printf("pos:%f, %f, %f\n", pos[0], pos[1], pos[2]);
-    // printf("vel:%f, %f, %f\n", vel[0], vel[1], vel[2]);
-    // printf("acc:%f, %f, %f\n", acc[0], acc[1], acc[2]);
+        // foot_traj_.getCurvePoint(traj_time, pos);
+        // foot_traj_.getCurveDerPoint(traj_time, 1, vel);
+        // foot_traj_.getCurveDerPoint(traj_time, 2, acc);
 
-    for(int i(0); i<3; ++i){
-        curr_foot_pos_des_[i] = pos[i];
-        curr_foot_vel_des_[i] = vel[i];
-        curr_foot_acc_des_[i] = acc[i];
+        // printf("pos:%f, %f, %f\n", pos[0], pos[1], pos[2]);
+        // printf("vel:%f, %f, %f\n", vel[0], vel[1], vel[2]);
+        // printf("acc:%f, %f, %f\n", acc[0], acc[1], acc[2]);
+
+        for(int i(0); i<3; ++i){
+            curr_foot_pos_des_[i] = pos[i];
+            curr_foot_vel_des_[i] = vel[i];
+            curr_foot_acc_des_[i] = acc[i];
+        }
+        dynacore::Vector config_sol, qdot_cmd, qddot_cmd;
+        inv_kin_.getSingleSupportFullConfigSeperation(
+                sp_->Q_, des_quat, target_height, 
+                swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
+                config_sol, qdot_cmd, qddot_cmd);
+
+        for (int i(0); i<mercury::num_act_joint; ++i){
+            pos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
+            vel_des[mercury::num_virtual + i] = qdot_cmd[mercury::num_virtual + i];
+            acc_des[mercury::num_virtual + i] = qddot_cmd[mercury::num_virtual + i];
+
+            des_jpos_[i] = pos_des[mercury::num_virtual + i];
+            des_jvel_[i] = vel_des[mercury::num_virtual + i];
+        }
+        // Push back to task list
+        config_body_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+        task_list_.push_back(config_body_foot_task_);
+
+    }else{
+        // The retracting phase
+
+        // Stance Leg---------------------------------------------------
+        // Compute the joint pos, vel, acc for the stance leg 
+        dynacore::Vector config_sol, qdot_cmd, qddot_cmd;
+        inv_kin_.getSingleSupportStanceLegConfiguration(
+                sp_->Q_, des_quat, target_height, 
+                swing_foot_, config_sol, qdot_cmd, qddot_cmd);     
+
+        // Set the desired pos,vel and acc for the stance leg 
+        for (int i(0); i<mercury::num_act_joint; ++i){
+            pos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
+            vel_des[mercury::num_virtual + i] = qdot_cmd[mercury::num_virtual + i];
+            acc_des[mercury::num_virtual + i] = qddot_cmd[mercury::num_virtual + i];
+        }
+
+        // Swing Leg -------------------------------------------------
+        // Set Abductor Joint to constant.
+        double hip_knee_pos[2];
+        double hip_knee_vel[2];
+        double hip_knee_acc[2];
+        // Get Minimum Jerk Trajectory
+        for(size_t i = 0; i < 2; i++){
+            min_jerk_leg_hip_knee[i]->getPos(traj_time, hip_knee_pos[i]);
+            min_jerk_leg_hip_knee[i]->getVel(traj_time, hip_knee_vel[i]);
+            min_jerk_leg_hip_knee[i]->getAcc(traj_time, hip_knee_acc[i]);        
+        }
+
+        // Get minjerk joint profile for hip and knee joints
+        int hip_joint_id;
+        int knee_joint_id; 
+        if(swing_foot_ == mercury_link::leftFoot){
+            hip_joint_id = mercury_joint::leftHip;
+            knee_joint_id = mercury_joint::leftKnee;
+        }
+        else if (swing_foot_ == mercury_link::rightFoot){
+            hip_joint_id = mercury_joint::rightHip;
+            knee_joint_id = mercury_joint::rightKnee;
+        }
+        pos_des[hip_joint_id] = hip_knee_pos[0];  
+        vel_des[hip_joint_id] = hip_knee_vel[0];
+        acc_des[hip_joint_id] = hip_knee_acc[0];
+
+        pos_des[knee_joint_id] = hip_knee_pos[1];  
+        vel_des[knee_joint_id] = hip_knee_vel[1];
+        acc_des[knee_joint_id] = hip_knee_acc[1];
+
+
+        // Find the current position with this configuration
+        inv_kin_.getFootPos(swing_foot_, sp_->Q_, curr_foot_pos_des_); 
+        for(int i(0); i<3; ++i){
+            curr_foot_vel_des_[i] = 0.0;
+            curr_foot_acc_des_[i] = 0.0;
+        }
+
+
+        //Set the desired positions and velocities
+        for (int i(0); i<mercury::num_act_joint; ++i){
+            des_jpos_[i] = pos_des[mercury::num_virtual + i];
+            des_jvel_[i] = vel_des[mercury::num_virtual + i];
+        }
+
+        // Push back to task list
+        config_body_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+        task_list_.push_back(config_body_foot_task_);     
+
     }
-    dynacore::Vector config_sol, qdot_cmd, qddot_cmd;
-    inv_kin_.getSingleSupportFullConfigSeperation(
-            sp_->Q_, des_quat, target_height, 
-            swing_foot_, curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
-            config_sol, qdot_cmd, qddot_cmd);
 
-    for (int i(0); i<mercury::num_act_joint; ++i){
-        pos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
-        vel_des[mercury::num_virtual + i] = qdot_cmd[mercury::num_virtual + i];
-        acc_des[mercury::num_virtual + i] = qddot_cmd[mercury::num_virtual + i];
 
-        des_jpos_[i] = pos_des[mercury::num_virtual + i];
-        des_jvel_[i] = vel_des[mercury::num_virtual + i];
-    }
-    // Push back to task list
-    config_body_foot_task_->UpdateTask(&(pos_des), vel_des, acc_des);
-    task_list_.push_back(config_body_foot_task_);
 }
 
-void ConfigBodyFootPlanningCtrl::_CheckPlanning(){
+void ConfigBodyRetractingFootPlanningCtrl::_CheckPlanning(){
     if( state_machine_time_ > 
             (end_time_/(planning_frequency_ + 1.) * (num_planning_ + 1.) + 0.002) ){
         _Replanning();
@@ -191,7 +275,7 @@ void ConfigBodyFootPlanningCtrl::_CheckPlanning(){
     }
 }
 
-void ConfigBodyFootPlanningCtrl::_Replanning(){
+void ConfigBodyRetractingFootPlanningCtrl::_Replanning(){
     dynacore::Vect3 com_pos, com_vel, target_loc;
     dynacore::Vect3 del_com_pos;
     // Direct value used
@@ -258,12 +342,12 @@ void ConfigBodyFootPlanningCtrl::_Replanning(){
 
 }
 
-void ConfigBodyFootPlanningCtrl::_single_contact_setup(){
+void ConfigBodyRetractingFootPlanningCtrl::_single_contact_setup(){
     single_contact_->UpdateContactSpec();
     contact_list_.push_back(single_contact_);
 }
 
-void ConfigBodyFootPlanningCtrl::FirstVisit(){
+void ConfigBodyRetractingFootPlanningCtrl::FirstVisit(){
     ini_config_ = sp_->Q_;
     robot_sys_->getPos(swing_foot_, ini_foot_pos_);
     ctrl_start_time_ = sp_->curr_time_;
@@ -281,9 +365,29 @@ void ConfigBodyFootPlanningCtrl::FirstVisit(){
     // dynacore::pretty_print(target_loc, std::cout, "target loc");
     _SetBspline(ini_foot_pos_, zero, zero, target_loc);
 
-    target_loc[2] = 0.093;    
+    // target_loc[2] = 0.093;    
     _SetCartesianMinJerk(ini_foot_pos_, zero, zero, target_loc);
-    target_loc[2] = ini_foot_pos_[2] - push_down_height_;
+    // target_loc[2] = ini_foot_pos_[2] - push_down_height_;
+
+    // Set Minimum Jerk Profile for the hip and Knee joint of the swing leg------------------------------
+    dynacore::Vect2 hip_knee_init_config; hip_knee_init_config.setZero();
+    dynacore::Vect2 hip_knee_zero; hip_knee_zero.setZero(); 
+
+    if(swing_foot_ == mercury_link::leftFoot){
+        printf("Left Foot \n");
+        hip_knee_init_config[0] = sp_->Q_[mercury_joint::leftHip];
+        hip_knee_init_config[1] = sp_->Q_[mercury_joint::leftKnee];        
+    }
+    else if (swing_foot_ == mercury_link::rightFoot){
+        printf("Right Foot \n");        
+        hip_knee_init_config[0] = sp_->Q_[mercury_joint::rightHip];
+        hip_knee_init_config[1] = sp_->Q_[mercury_joint::rightKnee];
+    }else{
+        printf("[ConfigBodyRetractingFootPlanningCtrl] error swing foot is not foot: %i\n", swing_foot_);
+    }
+
+    _SetRetractionMinJerk(hip_knee_init_config, hip_knee_zero, hip_knee_zero, hip_knee_desired_retraction);
+    // ----------------------------------------------------------------------------------------------------
 
     default_target_loc_[2] = target_loc[2];
 
@@ -305,7 +409,7 @@ void ConfigBodyFootPlanningCtrl::FirstVisit(){
     //dynacore::pretty_print(target_loc, std::cout, "target loc");
 }
 
-void ConfigBodyFootPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
+void ConfigBodyRetractingFootPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
         const dynacore::Vect3 & st_vel,
         const dynacore::Vect3 & st_acc,
         const dynacore::Vect3 & target_pos){
@@ -362,7 +466,7 @@ void ConfigBodyFootPlanningCtrl::_SetBspline(const dynacore::Vect3 & st_pos,
     delete [] middle_pt;
 }
 
-void ConfigBodyFootPlanningCtrl::_SetCartesianMinJerk(
+void ConfigBodyRetractingFootPlanningCtrl::_SetCartesianMinJerk(
                 const dynacore::Vect3 & st_pos,
                 const dynacore::Vect3 & st_vel,
                 const dynacore::Vect3 & st_acc,
@@ -397,14 +501,52 @@ void ConfigBodyFootPlanningCtrl::_SetCartesianMinJerk(
         // min_jerk_cartesian[i]->printParameters();  
     }
 
+}
+
+
+
+void ConfigBodyRetractingFootPlanningCtrl::_SetRetractionMinJerk(
+        const dynacore::Vect2 & st_pos,
+        const dynacore::Vect2 & st_vel,
+        const dynacore::Vect2 & st_acc,
+        const dynacore::Vect2 & target_pos){
+
+    // Initialize Minimum Jerk Parameter Containers
+    std::vector< dynacore::Vect3 > min_jerk_leg_hip_knee_initial_params;
+    std::vector< dynacore::Vect3 > min_jerk_leg_hip_knee_final_params;   
+    dynacore::Vect3 init_params; 
+    dynacore::Vect3 final_params;
+
+    // Initialize Time parameters
+    double t_start_min_jerk = 0.0;
+    double t_final_min_jerk = end_time_/2.0;
+
+    // Set Minimum Jerk for hip and knee Boundary Conditions
+    for(size_t i = 0; i < 2; i++){
+        init_params.setZero(); final_params.setZero();
+        // Set Dimension i's initial pos, vel and acceleration
+        init_params[0] = st_pos[i]; init_params[1] = st_vel[i];  init_params[2] = st_acc[i];
+        // Set Dimension i's final pos, vel, acceleration
+        final_params[0] = target_pos[i]; final_params[1] = 0.0;  final_params[2] = 0.0;
+        // Add to the parameter vector 
+        min_jerk_leg_hip_knee_initial_params.push_back(init_params);
+        min_jerk_leg_hip_knee_final_params.push_back(final_params);
+    }
+
+    // Set Minimum Jerk Parameters for each dimension
+    for(size_t i = 0; i < 2; i++){
+        min_jerk_leg_hip_knee[i]->setParams(min_jerk_leg_hip_knee_initial_params[i], min_jerk_leg_hip_knee_final_params[i],
+                                         t_start_min_jerk, t_final_min_jerk);  
+    }
+
 
 }
 
 
-void ConfigBodyFootPlanningCtrl::LastVisit(){
+void ConfigBodyRetractingFootPlanningCtrl::LastVisit(){
 }
 
-bool ConfigBodyFootPlanningCtrl::EndOfPhase(){
+bool ConfigBodyRetractingFootPlanningCtrl::EndOfPhase(){
     if(state_machine_time_ > end_time_){
         //printf("[Body Foot Ctrl] End, state_machine time/ end time: (%f, %f)\n", 
         //state_machine_time_, end_time_);
@@ -420,7 +562,7 @@ bool ConfigBodyFootPlanningCtrl::EndOfPhase(){
             contact_happen = true;
         }
         if(state_machine_time_ > end_time_ * 0.5 && contact_happen){
-            printf("[Config Body Foot Ctrl] contact happen, state_machine_time/ end time: (%f, %f)\n",
+            printf("[ConfigBodyRetractingFootPlanningCtrl] contact happen, state_machine_time/ end time: (%f, %f)\n",
                     state_machine_time_, end_time_);
             return true;
         }
@@ -428,13 +570,13 @@ bool ConfigBodyFootPlanningCtrl::EndOfPhase(){
     return false;
 }
 
-void ConfigBodyFootPlanningCtrl::_setTaskGain(
+void ConfigBodyRetractingFootPlanningCtrl::_setTaskGain(
         const dynacore::Vector & Kp, const dynacore::Vector & Kd){
     ((ConfigTask*)config_body_foot_task_)->Kp_vec_ = Kp;
     ((ConfigTask*)config_body_foot_task_)->Kd_vec_ = Kd;
 }
 
-void ConfigBodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_file_name){
+void ConfigBodyRetractingFootPlanningCtrl::CtrlInitialization(const std::string & setting_file_name){
     ini_body_pos_ = sp_->Q_.head(3);
     std::vector<double> tmp_vec;
 
@@ -456,6 +598,11 @@ void ConfigBodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_
     handler.getVector("Kd", tmp_vec);
     for(int i(0); i<tmp_vec.size(); ++i){
         task_kd_[i] = tmp_vec[i];
+    }
+
+    handler.getVector("hip_knee_retraction_angle", tmp_vec);   
+    for(int i(0); i<tmp_vec.size(); ++i){
+        hip_knee_desired_retraction[i] = tmp_vec[i];
     }
 
     ((ConfigTask*)config_body_foot_task_)->Kp_vec_ = task_kp_;

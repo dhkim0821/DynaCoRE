@@ -16,6 +16,7 @@
 #include <Mercury_Controller/CtrlSet/ConfigBodyFootPlanningCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/BodyJPosSwingPlanningCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/JPosTrajPlanningCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/ConfigBodyRetractingFootPlanningCtrl.hpp>
 
 WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     num_step_(0)
@@ -174,7 +175,14 @@ int WalkingConfigTest::_NextPhase(const int & phase){
             config_left_swing_ctrl_ = 
                 new ConfigBodyFootPlanningCtrl(robot_sys_, mercury_link::leftFoot, reversal_planner_);
             ////////////////////////////////////////////////////////////////////////////////////////////
-        }else if(tmp_str == "BodyJPosSwingPlanningCtrl"){
+        }else if(tmp_str == "ConfigBodyRetractingFootPlanningCtrl"){
+            config_right_swing_ctrl_ = 
+                new ConfigBodyRetractingFootPlanningCtrl(robot_sys_, mercury_link::rightFoot, reversal_planner_);
+            config_left_swing_ctrl_ = 
+                new ConfigBodyRetractingFootPlanningCtrl(robot_sys_, mercury_link::leftFoot, reversal_planner_);
+            ////////////////////////////////////////////////////////////////////////////////////////////
+        }
+        else if(tmp_str == "BodyJPosSwingPlanningCtrl"){
             config_right_swing_ctrl_ = 
                 new BodyJPosSwingPlanningCtrl(robot_sys_, mercury_link::rightFoot, reversal_planner_);
             config_left_swing_ctrl_ = 

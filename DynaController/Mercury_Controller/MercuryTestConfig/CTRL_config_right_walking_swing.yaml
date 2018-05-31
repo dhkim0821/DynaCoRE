@@ -30,3 +30,5 @@ initial_planning: false
 #initial_planning: true
 kp_x: 1.0
 kp_y: 0.5
+
+hip_knee_retraction_angle: [-0.639, 1.17]

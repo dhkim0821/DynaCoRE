@@ -8,7 +8,7 @@ test_name: walking_config_test
 # test_name: body_ctrl_test
 
 ## Stance and Swing Test ********************************* 
-# test_name: config_stance_swing_test
+#test_name: config_stance_swing_test
 
 
 base_condition: floating
