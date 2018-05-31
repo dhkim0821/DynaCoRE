@@ -6,7 +6,9 @@ if (WIN32)
     BSplineBasic.h
     LQR.hpp LQR.cpp
     pseudo_inverse.hpp pseudo_inverse.cpp
-    utilities.hpp utilities.cpp)
+    utilities.hpp utilities.cpp
+    minjerk_one_dim.hpp
+    minjerk_one_dim.cpp)
 endif(WIN32)
 
 if (UNIX)

@@ -142,6 +142,16 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&filtered_jvel_, DYN_VEC, "filtered_jvel", mercury::num_act_joint);
   data_manager->RegisterData(&filtered_ang_vel_, VECT3, "filtered_ang_vel", 3);
 
+  // Test Minimum Jerk
+  test_minjerk_pos.setZero();
+  test_minjerk_vel.setZero();
+  test_minjerk_acc.setZero();  
+
+  data_manager->RegisterData(&test_minjerk_pos, VECT3, "minj_pos", 3);
+  data_manager->RegisterData(&test_minjerk_vel, VECT3, "minj_vel", 3);
+  data_manager->RegisterData(&test_minjerk_acc, VECT3, "minj_acc", 3);    
+
+
 }
 
 

@@ -4,9 +4,10 @@
 #include "SwingPlanningCtrl.hpp"
 #include <Utils/BSplineBasic.h>
 #include <Mercury_Controller/Mercury_InvKinematics.hpp>
+#include <Utils/minjerk_one_dim.hpp>
 
 class ConfigBodyFootPlanningCtrl:public SwingPlanningCtrl{
-    public:
+   public:
         ConfigBodyFootPlanningCtrl(const RobotSystem* robot, int swing_foot, Planner* planner);
         ~ConfigBodyFootPlanningCtrl();
         virtual void OneStep(void* _cmd);
@@ -59,7 +60,8 @@ class ConfigBodyFootPlanningCtrl:public SwingPlanningCtrl{
         void _body_foot_ctrl(dynacore::Vector & gamma);
 
         Mercury_InvKinematics inv_kin_;
-        double ctrl_start_time_;
+        std::vector<MinJerk_OneDimension*> min_jerk_cartesian;
+        std::vector<MinJerk_OneDimension*> min_jerk_rleg_hip_knee;  
 };
 
 #endif
