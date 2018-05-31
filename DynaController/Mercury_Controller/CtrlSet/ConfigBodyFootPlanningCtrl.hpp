@@ -23,6 +23,13 @@ class ConfigBodyFootPlanningCtrl:public SwingPlanningCtrl{
                 const dynacore::Vect3 & st_acc,
                 const dynacore::Vect3 & target_pos);
 
+        void _SetCartesianMinJerk(
+                const dynacore::Vect3 & st_pos,
+                const dynacore::Vect3 & st_vel,
+                const dynacore::Vect3 & st_acc,
+                const dynacore::Vect3 & target_pos);
+
+
         double swing_time_reduction_;
 
         int swing_leg_jidx_;

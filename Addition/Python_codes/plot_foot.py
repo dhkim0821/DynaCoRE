@@ -19,6 +19,14 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
     file_path = os.getcwd() + "/../../experiment_data_check/"
 
+
+    data_minj_pos_des = \
+    np.genfromtxt(file_path+'minj_pos.txt', delimiter=None, dtype=(float))
+    data_minj_vel_des = \
+    np.genfromtxt(file_path+'minj_vel.txt', delimiter=None, dtype=(float))
+    data_minj_acc_des = \
+    np.genfromtxt(file_path+'minj_acc.txt', delimiter=None, dtype=(float))
+
     ## read files
     data_rfoot_pos_des = \
     np.genfromtxt(file_path+'rfoot_pos_des.txt', delimiter=None, dtype=(float))
@@ -106,6 +114,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_rfoot_pos_des[st_idx:end_idx,i-1], "r-")
+        plt.plot(data_x, data_minj_pos_des[st_idx:end_idx, i-1], color="black", linewidth=1.5)
+
         plt.plot(data_x, data_rfoot_pos[st_idx:end_idx,i-1], "b-")
         plt.plot(data_x, data_LED_rfoot[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
                 linewidth=2.0, color='orange')
@@ -163,7 +173,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('left foot pos')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_lfoot_pos_des[st_idx:end_idx,i-1], "r-")
+        plt.plot(data_x, data_lfoot_pos_des[st_idx:end_idx,i-1], "r-")       
         plt.plot(data_x, data_lfoot_pos[st_idx:end_idx,i-1], "b-")
         plt.plot(data_x, data_LED_lfoot[st_idx:end_idx, i-1] - data_LED_rfoot[st_idx:end_idx, i-1], \
                 linewidth=2.0, color='orange')
@@ -225,6 +235,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         #plt.plot(data_x, data_foot_vel_des[st_idx:end_idx,i-1], "r-", \
         #         data_x, data_rfoot_vel[st_idx:end_idx,i-1], "b-")
         plt.plot(data_x, data_rfoot_vel[st_idx:end_idx,i-1], "b-")
+        plt.plot(data_x, data_minj_vel_des[st_idx:end_idx, i-1], color="black", linewidth=1.5)
         
         # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
@@ -249,6 +260,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_rfoot_acc_des[st_idx:end_idx,i-1], "r-")
+        plt.plot(data_x, data_minj_acc_des[st_idx:end_idx, i-1], color="black", linewidth=1.5)
+
         # phase marker #
         for j in phseChange:
             # phase line
