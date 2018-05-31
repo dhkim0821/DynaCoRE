@@ -237,6 +237,7 @@ void ConfigBodyFootPlanningCtrl::_Replanning(){
     end_time_ += pl_output.time_modification;
     target_loc -= sp_->global_pos_local_;
     
+    // TEST
     if(sp_->num_step_copy_ < 2){
         // target_loc[0] = sp_->Q_[0] + default_target_loc_[0];
         target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
@@ -278,22 +279,6 @@ void ConfigBodyFootPlanningCtrl::FirstVisit(){
     // dynacore::pretty_print(ini_foot_pos_, std::cout, "ini loc");
     // dynacore::pretty_print(target_loc, std::cout, "target loc");
     _SetBspline(ini_foot_pos_, zero, zero, target_loc);
-
-    // target_loc[2] = 0.093;    
-    // _SetCartesianMinJerk(ini_foot_pos_, zero, zero, target_loc);
-    // target_loc[2] = ini_foot_pos_[2] - push_down_height_;
-
-    // Min Jerk Trajectory Generation
-    //dynacore::Vect3 mid_pt_pos = ini_foot_pos_;
-    //dynacore::Vect3 mid_pt_vel; mid_pt_vel.setZero();
-    //dynacore::Vect3 mid_pt_acc; mid_pt_acc.setZero();
-    //mid_pt_pos[2] += (swing_height_ - 0.04);
-    //mid_pt_acc[2] = -30.;
-    //_SetCartesianMinJerk(half_swing_time_, 
-            //ini_foot_pos_, zero, zero, 
-            //mid_pt_pos, mid_pt_vel, mid_pt_acc);
-    // End of Min Jerk Trajectory Generation
-    
     
     default_target_loc_[2] = target_loc[2];
 
