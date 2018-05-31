@@ -6,6 +6,8 @@
 #include <Mercury_Controller/StateEstimator/LIPM_KalmanFilter.hpp>
 #include <Mercury_Controller/Mercury_InvKinematics.hpp>
 
+#include <Utils/minjerk_one_dim.hpp>
+
 class Mercury_StateProvider;
 class RobotSystem;
 class Planner;
@@ -120,6 +122,12 @@ class ConfigBodyFootPlanningCtrl:public Controller{
         Mercury_StateProvider* sp_;
         Mercury_InvKinematics inv_kin_;
         double ctrl_start_time_;
+
+
+        std::vector<MinJerk_OneDimension*> min_jerk_cartesian;
+        std::vector<MinJerk_OneDimension*> min_jerk_rleg_hip_knee;  
+
+
 };
 
 #endif

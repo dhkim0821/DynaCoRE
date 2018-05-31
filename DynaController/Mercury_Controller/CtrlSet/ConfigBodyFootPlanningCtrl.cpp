@@ -10,6 +10,8 @@
 #include <Planner/PIPM_FootPlacementPlanner/Reversal_LIPM_Planner.hpp>
 #include <Utils/DataManager.hpp>
 
+
+
 #define MEASURE_TIME_WBDC 0
 
 #if MEASURE_TIME_WBDC
@@ -73,6 +75,52 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
     com_estimator_ = new LIPM_KalmanFilter();
     sp_ = Mercury_StateProvider::getStateProvider();
     printf("[BodyFootJPosPlanning Controller] Constructed\n");
+
+
+    // Create Minimum jerk objects
+    for(size_t i = 0; i < 3; i++){
+        min_jerk_cartesian.push_back(new MinJerk_OneDimension());          
+    }
+
+    // Test Minimum Jerk ---------------------------------------------------------------
+
+    // Initial Params for each dimension
+    double t_start_min_jerk = 0.0;
+    double t_final_min_jerk = 0.3;
+    std::vector< dynacore::Vect3 > min_jerk_cartesian_initial_params;
+    std::vector< dynacore::Vect3 > min_jerk_cartesian_final_params;
+
+    // Set x dimension parameters
+    dynacore::Vect3 xinit_params; xinit_params.setZero();
+    dynacore::Vect3 xfinal_params; xfinal_params.setZero();
+    xinit_params[0] = 0.0; xinit_params[1] = 0.0;  xinit_params[2] = 0.0; // initial pos, vel, acc
+    xfinal_params[0] = 0.1; xfinal_params[1] = 0.0;  xfinal_params[2] = 0.0; // initial pos, vel, acc
+    min_jerk_cartesian_initial_params.push_back(xinit_params);
+    min_jerk_cartesian_final_params.push_back(xfinal_params);
+
+    // Set y dimension parameters
+    dynacore::Vect3 yinit_params; yinit_params.setZero();
+    dynacore::Vect3 yfinal_params; yfinal_params.setZero();
+    yinit_params[0] = 0.0; yinit_params[1] = 0.0;  yinit_params[2] = 0.0; // initial pos, vel, acc
+    yfinal_params[0] = 0.2; yfinal_params[1] = 0.0;  yfinal_params[2] = 0.0; // initial pos, vel, acc
+    min_jerk_cartesian_initial_params.push_back(yinit_params);
+    min_jerk_cartesian_final_params.push_back(yfinal_params);
+
+    // Set z dimension parameters
+    dynacore::Vect3 zinit_params; zinit_params.setZero();
+    dynacore::Vect3 zfinal_params; zfinal_params.setZero();
+    zinit_params[0] = 0.0; zinit_params[1] = 0.0;  zinit_params[2] = 0.0; // initial pos, vel, acc
+    zfinal_params[0] = 0.3; zfinal_params[1] = 0.0;  zfinal_params[2] = 0.0; // initial pos, vel, acc
+    min_jerk_cartesian_initial_params.push_back(zinit_params);
+    min_jerk_cartesian_final_params.push_back(zfinal_params);    
+
+
+    // Set Minimum Jerk Parameters
+    for(size_t i = 0; i < 3; i++){
+        min_jerk_cartesian[i]->setParams(min_jerk_cartesian_initial_params[i], min_jerk_cartesian_final_params[i],
+                                         t_start_min_jerk, t_final_min_jerk);    
+    }
+
 }
 
 ConfigBodyFootPlanningCtrl::~ConfigBodyFootPlanningCtrl(){
@@ -82,9 +130,17 @@ ConfigBodyFootPlanningCtrl::~ConfigBodyFootPlanningCtrl(){
     delete wbdc_rotor_data_;
 }
 
-void ConfigBodyFootPlanningCtrl::OneStep(void* _cmd){
+void ConfigBodyFootPlanningCtrl::OneStep(void* _cmd){   
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
+
+    // Test minimum jerk
+    for(size_t i = 0; i < 3; i++){
+        min_jerk_cartesian[i]->getPos(state_machine_time_, sp_->test_minjerk_pos[i]);
+        min_jerk_cartesian[i]->getVel(state_machine_time_, sp_->test_minjerk_vel[i]);
+        min_jerk_cartesian[i]->getAcc(state_machine_time_, sp_->test_minjerk_acc[i]);        
+
+    }
 
     dynacore::Vector gamma;
     _single_contact_setup();

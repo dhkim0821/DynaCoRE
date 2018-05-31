@@ -87,6 +87,10 @@ public:
   dynacore::Vector filtered_jvel_;
   dynacore::Vect3 filtered_ang_vel_;
 
+  // Test minimum jerk
+  dynacore::Vect3 test_minjerk_pos;
+  dynacore::Vect3 test_minjerk_vel;
+  dynacore::Vect3 test_minjerk_acc;        
 
 private:
   Mercury_StateProvider();
