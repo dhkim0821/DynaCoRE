@@ -216,7 +216,7 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     for(int i(0); i<3; ++i){
         filtered_imu_ang_vel[i] = filter_ang_vel_[i]->output();
     }
-/*    
+    
     // EKF set sensor data
     ekf_est_->setSensorData(imu_acc, imu_inc, filtered_imu_ang_vel, 
                             data->lfoot_contact, 
@@ -232,7 +232,7 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
 
     dynacore::Quaternion ekf_quaternion_est;
     ekf_est_->getEstimatedState(sp_->ekf_body_pos_, sp_->ekf_body_vel_, ekf_quaternion_est); // EKF    
-*/
+
     if(base_cond_ == base_condition::floating){
         curr_config_[3] = sp_->body_ori_.x();
         curr_config_[4] = sp_->body_ori_.y();

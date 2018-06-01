@@ -50,7 +50,7 @@ void BiasCompensatedBodyVelocityEstimator::EstimatorInitialization(const std::ve
     acc_vec[i] = -acc[i];
   }
   // Rotate to world frame.
-  // O_R_B = Oq_B.toRotationMatrix();
+  O_R_B = Oq_B.toRotationMatrix();
   acc_vec = O_R_B*acc_vec;
 
   // Update bias estimate
@@ -78,7 +78,7 @@ void BiasCompensatedBodyVelocityEstimator::setSensorData(const std::vector<doubl
     acc_vec[i] = -acc[i];
   }
   // Rotate to world frame.
-  // O_R_B = Oq_B.toRotationMatrix();
+  O_R_B = Oq_B.toRotationMatrix();
   acc_vec = O_R_B*acc_vec;
 
   // Update bias estimate
