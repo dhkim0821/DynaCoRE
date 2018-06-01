@@ -18,6 +18,14 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
     file_path = os.getcwd() + "/../../experiment_data_check/"
 
+    data_avg_vel = \
+    np.genfromtxt(file_path+'average_vel.txt', delimiter=None, dtype=(float))
+
+    data_ekf_vel = \
+    np.genfromtxt(file_path+'ekf_o_v.txt', delimiter=None, dtype=(float))
+
+
+
     ## read files
     data_global_pos_offset = \
     np.genfromtxt(file_path+'global_pos_local.txt', delimiter=None, dtype=(float))
@@ -100,14 +108,17 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('body vel')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_body_vel_des[st_idx:end_idx,i-1], "r-" , \
-                data_x, data_com_vel[st_idx:end_idx,i-1], "c-", \
-                data_x, data_body_vel[st_idx:end_idx,i-1], "b-")
+        #plt.plot(data_x, data_body_vel_des[st_idx:end_idx,i-1], "r-" , \
+        #        data_x, data_com_vel[st_idx:end_idx,i-1], "c-", \
+        #        data_x, data_body_vel[st_idx:end_idx,i-1], "b-")
 
-        if i != 3:
-            plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "k-")
+        #if i != 3:
+        #    plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "k-")
         plt.plot(data_x, data_imu[st_idx:end_idx,i-1+2], "g-", linewidth=2.7)
-
+        plt.plot(data_x, data_ekf_vel[st_idx:end_idx,i-1], "b-", linewidth=2.7)
+        
+        if i != 3:
+            plt.plot(data_x, data_avg_vel[st_idx:end_idx,i-1], "r-", linewidth=1.5 )
 
         plt.grid(True)
         for j in phseChange:

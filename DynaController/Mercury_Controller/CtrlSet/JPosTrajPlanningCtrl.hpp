@@ -5,6 +5,7 @@
 #include <Utils/BSplineBasic.h>
 #include <Mercury_Controller/StateEstimator/LIPM_KalmanFilter.hpp>
 #include <Mercury_Controller/Mercury_InvKinematics.hpp>
+#include <Utils/minjerk_one_dim.hpp>
 
 class Mercury_StateProvider;
 class WBDC_ContactSpec;
@@ -28,10 +29,21 @@ class JPosTrajPlanningCtrl:public SwingPlanningCtrl{
         void _SetJPosBspline(const dynacore::Vector & st_pos, 
                 const dynacore::Vector & target_pos, BS_Basic<4,4,0,3,3> & spline);
 
+        void _SetMinJerkTraj(
+                double moving_duration,
+                const dynacore::Vect3 & st_pos,
+                const dynacore::Vect3 & st_vel,
+                const dynacore::Vect3 & st_acc,
+                const dynacore::Vect3 & target_pos,
+                const dynacore::Vect3 & target_vel,
+                const dynacore::Vect3 & target_acc);
+
+
         dynacore::Vector ini_swing_leg_config_;
         dynacore::Vector mid_swing_leg_config_;
         dynacore::Vector target_swing_leg_config_;
 
+        double initial_traj_mix_ratio_;
         double kp_x_;
         double kp_y_;
 
@@ -69,6 +81,7 @@ class JPosTrajPlanningCtrl:public SwingPlanningCtrl{
         BS_Basic<3, 3, 1, 2, 2> foot_traj_;
         BS_Basic<4, 4, 0, 3, 3> mid_jpos_traj_;
         BS_Basic<4, 4, 0, 3, 3> end_jpos_traj_;
+        std::vector<MinJerk_OneDimension*> min_jerk_jpos_initial_;
 
         double swing_time_reduction_;
 

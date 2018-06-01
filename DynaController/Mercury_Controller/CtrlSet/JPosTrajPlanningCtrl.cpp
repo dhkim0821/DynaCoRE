@@ -21,7 +21,8 @@ JPosTrajPlanningCtrl::JPosTrajPlanningCtrl(
     SwingPlanningCtrl(robot, swing_foot, planner),
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
-    push_down_height_(0.0)
+    push_down_height_(0.0),
+    initial_traj_mix_ratio_(0.6)
 {
     prev_ekf_vel.setZero();
     acc_err_ekf.setZero();
@@ -60,10 +61,51 @@ JPosTrajPlanningCtrl::JPosTrajPlanningCtrl(
     wbdc_rotor_data_->cost_weight[config_body_foot_task_->getDim() + 2]  = 0.001; // Fr_z
 
 
-
-    sp_ = Mercury_StateProvider::getStateProvider();
+    for(size_t i = 0; i < 3; i++){
+        min_jerk_jpos_initial_.push_back(new MinJerk_OneDimension());
+    }
     printf("[BodyFootJPosPlanning Controller] Constructed\n");
 }
+void JPosTrajPlanningCtrl::_SetMinJerkTraj(
+        double moving_duration,
+        const dynacore::Vect3 & st_pos,
+        const dynacore::Vect3 & st_vel,
+        const dynacore::Vect3 & st_acc,
+        const dynacore::Vect3 & target_pos,
+        const dynacore::Vect3 & target_vel,
+        const dynacore::Vect3 & target_acc){
+
+    std::vector< dynacore::Vect3 > min_jerk_initial_params;
+    std::vector< dynacore::Vect3 > min_jerk_final_params;   
+    dynacore::Vect3 init_params; 
+    dynacore::Vect3 final_params;
+
+    // Set Minimum Jerk Boundary Conditions
+    for(size_t i = 0; i < 3; i++){
+        init_params.setZero(); final_params.setZero();
+        // Set Dimension i's initial pos, vel and acceleration
+        init_params[0] = st_pos[i]; init_params[1] = st_vel[i];  init_params[2] = st_acc[i];
+        // Set Dimension i's final pos, vel, acceleration
+        final_params[0] = target_pos[i]; final_params[1] = target_vel[i];  final_params[2] = target_acc[i];
+        // Add to the parameter vector 
+        min_jerk_initial_params.push_back(init_params);
+        min_jerk_final_params.push_back(final_params);
+    }
+
+
+    // Set Minimum Jerk Parameters for each dimension
+    for(size_t i = 0; i < 3; i++){
+        min_jerk_jpos_initial_[i]->setParams(
+                min_jerk_initial_params[i], 
+                min_jerk_final_params[i],
+                0., moving_duration);  
+        // min_jerk_cartesian[i]->printParameters();  
+    }
+
+
+
+}
+
 
 JPosTrajPlanningCtrl::~JPosTrajPlanningCtrl(){
     delete config_body_foot_task_;
@@ -163,14 +205,24 @@ void JPosTrajPlanningCtrl::_task_setup(){
                     mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
             qddot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_acc(
                     mid_swing_leg_config_[i], target_swing_leg_config_[i], half_swing_time_, traj_time);
-            // if(traj_time<ramp_time){ qddot_cmd[swing_leg_jidx_ + i] *= traj_time/ramp_time; }
 
             // end_jpos_traj_.getCurvePoint(traj_time, pos);
             // end_jpos_traj_.getCurveDerPoint(traj_time, 1, vel);
             // end_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
         }
     }else{
-        for(int i(0); i<3; ++i){
+        if(state_machine_time_ < half_swing_time_ * initial_traj_mix_ratio_){
+            for(int i(0); i<3; ++i){
+                min_jerk_jpos_initial_[i]->getPos(state_machine_time_, pos[i]);
+                min_jerk_jpos_initial_[i]->getVel(state_machine_time_, vel[i]);
+                min_jerk_jpos_initial_[i]->getAcc(state_machine_time_, acc[i]);        
+
+                config_sol[swing_leg_jidx_ + i] = pos[i];
+                qdot_cmd[swing_leg_jidx_ + i] = vel[i];
+                qddot_cmd[swing_leg_jidx_ + i] = acc[i]; 
+            }
+        } else {
+         for(int i(0); i<3; ++i){
             config_sol[swing_leg_jidx_ + i] = dynacore::smooth_changing(
                     ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
                     half_swing_time_, state_machine_time_);
@@ -180,7 +232,8 @@ void JPosTrajPlanningCtrl::_task_setup(){
             qddot_cmd[swing_leg_jidx_ + i] = dynacore::smooth_changing_acc(
                     ini_swing_leg_config_[i], mid_swing_leg_config_[i], 
                     half_swing_time_, state_machine_time_);
-            if(traj_time<ramp_time){ qddot_cmd[swing_leg_jidx_ + i] *= state_machine_time_/ramp_time; }
+           //if(traj_time<ramp_time){ qddot_cmd[swing_leg_jidx_ + i] *= state_machine_time_/ramp_time; }
+        }
             // mid_jpos_traj_.getCurvePoint(traj_time, pos);
             // mid_jpos_traj_.getCurveDerPoint(traj_time, 1, vel);
             // mid_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
@@ -346,6 +399,20 @@ void JPosTrajPlanningCtrl::FirstVisit(){
     _SetJPosBspline(mid_swing_leg_config_, target_swing_leg_config_,
             end_jpos_traj_);
 
+    // Min jerk smoothing at initial
+    dynacore::Vect3 mid_mix_pt_pos, mid_mix_pt_vel, mid_mix_pt_acc;
+    double mid_mix_time = half_swing_time_ * initial_traj_mix_ratio_;
+    for(int i(0); i<3; ++i){
+        mid_mix_pt_pos[i] = dynacore::smooth_changing(
+                ini_swing_leg_config_[i], mid_swing_leg_config_[i], half_swing_time_, mid_mix_time);
+        mid_mix_pt_vel[i] = dynacore::smooth_changing_vel(
+                ini_swing_leg_config_[i], mid_swing_leg_config_[i], half_swing_time_, mid_mix_time);
+        mid_mix_pt_acc[i] = dynacore::smooth_changing_acc(
+                ini_swing_leg_config_[i], mid_swing_leg_config_[i], half_swing_time_, mid_mix_time);
+    }
+    _SetMinJerkTraj(mid_mix_time,
+            ini_swing_leg_config_, zero, zero, 
+            mid_mix_pt_pos, mid_mix_pt_vel, mid_mix_pt_acc );
 
     // _Replanning();
     num_planning_ = 0;
