@@ -1,11 +1,11 @@
 start_phase: 0
 
 # swing ctrl type:
-# swing_ctrl_type: ConfigBodyFootPlanningCtrl
+swing_ctrl_type: ConfigBodyFootPlanningCtrl
 # swing_ctrl_type: ConfigBodyRetractingFootPlanningCtrl
 #swing_ctrl_type: BodyPriorFootPlanningCtrl
 #swing_ctrl_type: BodyJPosSwingPlanningCtrl
-swing_ctrl_type: JPosTrajPlanningCtrl
+# swing_ctrl_type: JPosTrajPlanningCtrl
 
 
 # Initialization
@@ -30,7 +30,7 @@ stance_time: 0.01
 #stance_time: 0.02
 
 # 0: default stepping test (no planning)
-planning_frequency: 1
+planning_frequency: 0
 transition_phase_mix_ratio: 0.7
 double_stance_mix_ratio: 0.0
 # contact_switch_check: false
