@@ -86,11 +86,13 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
   dynacore::Vect3 body_omega; body_omega.setZero();
   for(size_t i = 0; i < 3; i++){
     body_omega[i] = ang_vel[i];
-    global_ang_vel_[i] = ang_vel[i];
+    //global_ang_vel_[i] = ang_vel[i];
   }
   dynacore::Quaternion delta_quat_body;
   dynacore::convert(body_omega*mercury::servo_rate, delta_quat_body);
 
+  dynacore::Matrix R_global_to_imu = global_ori_.normalized().toRotationMatrix();
+  global_ang_vel_ = R_global_to_imu * body_omega;
   // Perform orientation update via integration
   Oq_B = dynacore::QuatMultiply(Oq_B, delta_quat_body); 
 
@@ -162,7 +164,8 @@ void BasicAccumulation::InitIMUOrientationEstimateFromGravity(){
   dynacore::Matrix Rx = q_world_Rx.normalized().toRotationMatrix();
   g_B_local_vec = Rx*g_B_local_vec;
   // Note that quat multiply sometimes wraps around...
-  g_B_local = dynacore::QuatMultiply( dynacore::QuatMultiply(q_world_Rx, g_B_local), q_world_Rx.inverse());
+  g_B_local = dynacore::QuatMultiply( dynacore::QuatMultiply(
+              q_world_Rx, g_B_local,false), q_world_Rx.inverse(), false);
 
 
   // Use Ry to rotate pitch and align gravity vector  ---------------------------
@@ -186,7 +189,8 @@ void BasicAccumulation::InitIMUOrientationEstimateFromGravity(){
   dynacore::Matrix Ry = q_world_Ry.normalized().toRotationMatrix();
   g_B_local_vec = Ry*g_B_local_vec;  
   // Note that quat multiply sometimes wraps around...   
-  g_B_local = dynacore::QuatMultiply( dynacore::QuatMultiply(q_world_Ry, g_B_local), q_world_Ry.inverse());
+  g_B_local = dynacore::QuatMultiply( dynacore::QuatMultiply(
+              q_world_Ry, g_B_local, false), q_world_Ry.inverse(), false);
 
   // Obtain initial body orientation w.r.t fixed frame.
   //Oq_B = q_y * q_x * q_b

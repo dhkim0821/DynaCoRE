@@ -17,6 +17,7 @@
 
 // Velocity Estimators
 #include <Mercury_Controller/StateEstimator/BiasCompensatedBodyVelocityEstimator.hpp>
+#include <Mercury_Controller/StateEstimator/SimpleAverageEstimator.hpp>
 
 // EKF based estimators
 #include <Mercury_Controller/StateEstimator/EKF_RotellaEstimator.hpp> // EKF
@@ -35,8 +36,9 @@ Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
     body_foot_est_ = new BodyFootPosEstimator(robot);
     ori_est_ = new BasicAccumulation();
 //    ekf_est_ = new EKF_RotellaEstimator(); // EKF
-    ekf_est_ = new EKF_LIPRotellaEstimator(); // EKF with Pendulum Dynamics
+    //ekf_est_ = new EKF_LIPRotellaEstimator(); // EKF with Pendulum Dynamics
     bias_vel_est_ = new BiasCompensatedBodyVelocityEstimator();
+    vel_est_ = new SimpleAverageEstimator();
 
     for(int i(0); i<2; ++i){
         filter_com_vel_.push_back(
@@ -88,7 +90,7 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
 
     ori_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel);   
     ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
-    ekf_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel); // EKF
+    //ekf_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel); // EKF
 
     bias_vel_est_->EstimatorInitialization(imu_acc, sp_->body_ori_);
 
@@ -136,6 +138,7 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     robot_sys_->getCoMVelocity(sp_->CoM_vel_);
     ((BasicAccumulation*)ori_est_)->CoMStateInitialization(sp_->CoM_pos_, sp_->CoM_vel_);
     bias_vel_est_->CoMStateInitialization(sp_->CoM_pos_, sp_->CoM_vel_);
+    vel_est_->Initialization(sp_->CoM_vel_[0], sp_->CoM_vel_[1]);
 
     // for(int i(0); i<2; ++i){
     //     filter_com_vel_[i]->input(sp_->CoM_vel_[i]); 
@@ -218,20 +221,23 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     }
     
     // EKF set sensor data
-    ekf_est_->setSensorData(imu_acc, imu_inc, filtered_imu_ang_vel, 
-                            data->lfoot_contact, 
-                            data->rfoot_contact,
-                            curr_config_.segment(mercury::num_virtual, mercury::num_act_joint),
-                            curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
+    //ekf_est_->setSensorData(imu_acc, imu_inc, filtered_imu_ang_vel, 
+                            //data->lfoot_contact, 
+                            //data->rfoot_contact,
+                            //curr_config_.segment(mercury::num_virtual, mercury::num_act_joint),
+                            //curr_qdot_.segment(mercury::num_virtual, mercury::num_act_joint));
 
     static bool visit_once(false);
     if ((sp_->phase_copy_ == 2) && (!visit_once)){
-        ekf_est_->resetFilter();
+        //ekf_est_->resetFilter();
+        vel_est_->Initialization(sp_->CoM_vel_[0], sp_->CoM_vel_[1]);
         visit_once = true;
     }
 
+
+
     dynacore::Quaternion ekf_quaternion_est;
-    ekf_est_->getEstimatedState(sp_->ekf_body_pos_, sp_->ekf_body_vel_, ekf_quaternion_est); // EKF    
+    //ekf_est_->getEstimatedState(sp_->ekf_body_pos_, sp_->ekf_body_vel_, ekf_quaternion_est); // EKF    
 
     if(base_cond_ == base_condition::floating){
         curr_config_[3] = sp_->body_ori_.x();
@@ -241,6 +247,10 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
 
         for(int i(0); i<3; ++i)
             curr_qdot_[i+3] = sp_->body_ang_vel_[i];
+
+        //TEST
+        curr_qdot_[5] = 0.; // Yaw velocity is zero
+
 
         robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
 
@@ -301,6 +311,9 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
 
     robot_sys_->getCoMPosition(sp_->CoM_pos_);
     robot_sys_->getCoMVelocity(sp_->CoM_vel_);
+        
+    vel_est_->Update(sp_->CoM_vel_[0], sp_->CoM_vel_[1]);
+    vel_est_->Output(sp_->est_CoM_vel_[0], sp_->est_CoM_vel_[1]);
     // Right Contact 
     if(data->rfoot_contact) sp_->b_rfoot_contact_ = 1;
     else sp_->b_rfoot_contact_ = 0;

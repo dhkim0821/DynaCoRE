@@ -29,6 +29,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 led_kin_data_(3*NUM_MARKERS),
                                 filtered_jvel_(mercury::num_act_joint)
 {
+    est_CoM_vel_.setZero();
   Q_.setZero();
   Qdot_.setZero();
   reaction_forces_.setZero();
@@ -99,6 +100,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
 
   data_manager->RegisterData(&CoM_pos_, VECT3, "com_pos", 3);
   data_manager->RegisterData(&CoM_vel_, VECT3, "com_vel", 3);
+  data_manager->RegisterData(&est_CoM_vel_, VECT2, "est_com_vel", 2);
   // data_manager->RegisterData(&com_pos_des_, VECT3, "com_pos_des", 3);
   // data_manager->RegisterData(&com_vel_des_, VECT3, "com_vel_des", 3);
   data_manager->RegisterData(&body_pos_, VECT3, "body_pos", 3);
