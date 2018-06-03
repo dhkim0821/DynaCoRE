@@ -309,7 +309,7 @@ void JPosTrajPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     for(int i(0); i<2; ++i){
         // com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
         com_pos[i] += body_pt_offset_[i];
-        com_vel[i] = sp_->average_vel_[i]; 
+        // com_vel[i] = sp_->average_vel_[i]; 
         //com_vel[i] = sp_->ekf_body_vel_[i]; 
     }
 
