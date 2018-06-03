@@ -13,6 +13,7 @@ class OriEstimator;
 class EKF_PoseEstimator; // EKF estimator
 class BodyFootPosEstimator;
 class Mercury_SensorData;
+class SimpleAverageEstimator;
 
 class Mercury_StateEstimator{
 public:
@@ -43,6 +44,8 @@ protected:
   OriEstimator* ori_est_;
   BodyFootPosEstimator* body_foot_est_;
   EKF_PoseEstimator* ekf_est_;  // EKF estimator
+  SimpleAverageEstimator* vel_est_;
+
   std::vector<filter*> jvel_filter_;
 };
 

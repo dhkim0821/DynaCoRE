@@ -52,7 +52,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     np.genfromtxt(file_path+'ekf_o_v.txt', delimiter=None, dtype=(float))
     data_com_kin_vel = \
         np.genfromtxt(file_path+'ekf_com_vel_kin.txt', delimiter=None, dtype=(float))
-
+    data_est_com_vel = \
+            np.genfromtxt(file_path+'est_com_vel.txt', delimiter=None, dtype=(float))
     data_ave_vel = \
             np.genfromtxt(file_path+'average_vel.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
@@ -76,9 +77,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             else:
                 pass
     axes = plt.gca()
+    print phseChange 
     # stand_up_idx = phseChange[2]
     stand_up_idx = phseChange[1]
-    print phseChange 
     data_LED_body = data_LED[:, 0:3] - data_LED[stand_up_idx, 0:3] \
                     + data_body_global[stand_up_idx, :];
 
@@ -169,12 +170,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_body_vel_des[st_idx:end_idx,i-1], "r-" , \
                 data_x, data_com_vel[st_idx:end_idx,i-1], "c-", \
                 data_x, data_qdot[st_idx:end_idx,i-1], "b-")
-        plt.plot(data_x, data_ekf_body_vel[st_idx:end_idx, i-1], "g-")
-        plt.plot(data_x, data_com_kin_vel[st_idx:end_idx, i-1], linewidth=1.5, color = "crimson")
+        # plt.plot(data_x, data_ekf_body_vel[st_idx:end_idx, i-1], "g-")
+        # plt.plot(data_x, data_com_kin_vel[st_idx:end_idx, i-1], linewidth=1.5, color = "crimson")
         plt.plot(data_x, data_led_body_vel[st_idx:end_idx, i-1], color="orange", linewidth=1.5)
  
         if i != 3:
             plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "k-")
+            plt.plot(data_x, data_est_com_vel[st_idx:end_idx, i-1], "g-")
             plt.plot(data_x, data_ave_vel[st_idx:end_idx,i-1], linewidth=1.5, color="olive")
 
         plt.grid(True)
