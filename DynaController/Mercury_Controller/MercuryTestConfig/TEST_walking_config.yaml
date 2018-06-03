@@ -1,7 +1,7 @@
 start_phase: 0
 
 # swing ctrl type:
-# swing_ctrl_type: ConfigBodyFootPlanningCtrl
+#swing_ctrl_type: ConfigBodyFootPlanningCtrl
 # swing_ctrl_type: ConfigBodyRetractingFootPlanningCtrl
 #swing_ctrl_type: BodyPriorFootPlanningCtrl
 #swing_ctrl_type: BodyJPosSwingPlanningCtrl

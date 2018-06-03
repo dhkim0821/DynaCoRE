@@ -234,8 +234,6 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
         visit_once = true;
     }
 
-
-
     dynacore::Quaternion ekf_quaternion_est;
     //ekf_est_->getEstimatedState(sp_->ekf_body_pos_, sp_->ekf_body_vel_, ekf_quaternion_est); // EKF    
 
