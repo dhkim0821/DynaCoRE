@@ -36,6 +36,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     np.genfromtxt(file_path+'lfoot_pos_des.txt', delimiter=None, dtype=(float))
     data_lfoot_pos = \
     np.genfromtxt(file_path+'lfoot_pos.txt', delimiter=None, dtype=(float))
+    data_jjpos_rfoot_pos = \
+    np.genfromtxt(file_path+'jjpos_rfoot_pos.txt', delimiter=None, dtype=(float))
+    data_jjpos_lfoot_pos = \
+    np.genfromtxt(file_path+'jjpos_lfoot_pos.txt', delimiter=None, dtype=(float))
  
     data_LED = \
             np.genfromtxt(file_path+'LED_Pos.txt', delimiter=None, dtype=(float))
@@ -114,9 +118,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_rfoot_pos_des[st_idx:end_idx,i-1], "r-")
-        plt.plot(data_x, data_minj_pos_des[st_idx:end_idx, i-1], color="black", linewidth=1.5)
-
+        # plt.plot(data_x, data_minj_pos_des[st_idx:end_idx, i-1], color="black", linewidth=1.5)
+        plt.plot(data_x, data_jjpos_rfoot_pos[st_idx:end_idx, i-1], color="black", linewidth=1.5)
         plt.plot(data_x, data_rfoot_pos[st_idx:end_idx,i-1], "b-")
+
         plt.plot(data_x, data_LED_rfoot[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
                 linewidth=2.0, color='orange')
         plt.plot(data_x, data_LED_rfoot_out[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
@@ -174,7 +179,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_lfoot_pos_des[st_idx:end_idx,i-1], "r-")       
+        plt.plot(data_x, data_jjpos_lfoot_pos[st_idx:end_idx, i-1], color="black", linewidth=1.5)
         plt.plot(data_x, data_lfoot_pos[st_idx:end_idx,i-1], "b-")
+
         plt.plot(data_x, data_LED_lfoot[st_idx:end_idx, i-1] - data_LED_rfoot[st_idx:end_idx, i-1], \
                 linewidth=2.0, color='orange')
         plt.plot(data_x, data_LED_lfoot_out[st_idx:end_idx, i-1] - data_LED_rfoot[st_idx:end_idx, i-1], \

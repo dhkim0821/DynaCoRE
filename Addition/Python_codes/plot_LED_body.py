@@ -46,14 +46,20 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             np.genfromtxt(file_path+'LED_Pos.txt', delimiter=None, dtype=(float))
     data_led_body_vel = \
     np.genfromtxt(file_path+'Body_LED_vel.txt', delimiter=None, dtype=(float))
-    data_ekf_body_pos = \
-    np.genfromtxt(file_path+'ekf_o_r.txt', delimiter=None, dtype=(float))
-    data_ekf_body_vel = \
-    np.genfromtxt(file_path+'ekf_o_v.txt', delimiter=None, dtype=(float))
-    data_com_kin_vel = \
-        np.genfromtxt(file_path+'ekf_com_vel_kin.txt', delimiter=None, dtype=(float))
+    data_jjpos_body_pos = \
+        np.genfromtxt(file_path+'jjpos_body_pos.txt', delimiter=None, dtype=(float))
+    data_jjvel_body_vel = \
+        np.genfromtxt(file_path+'jjvel_body_vel.txt', delimiter=None, dtype=(float))
+   # data_ekf_body_pos = \
+    # np.genfromtxt(file_path+'ekf_o_r.txt', delimiter=None, dtype=(float))
+    # data_ekf_body_vel = \
+    # np.genfromtxt(file_path+'ekf_o_v.txt', delimiter=None, dtype=(float))
+    # data_com_kin_vel = \
+        # np.genfromtxt(file_path+'ekf_com_vel_kin.txt', delimiter=None, dtype=(float))
     data_est_com_vel = \
             np.genfromtxt(file_path+'est_com_vel.txt', delimiter=None, dtype=(float))
+    data_est_body_vel = \
+            np.genfromtxt(file_path+'est_mocap_body_vel.txt', delimiter=None, dtype=(float))
     data_ave_vel = \
             np.genfromtxt(file_path+'average_vel.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
@@ -63,36 +69,40 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_est_com_global = data_estimated_com[:,0:2] + \
                                     data_global_pos_offset[:, 0:2]
 
-    st_idx = 20
-    end_idx = len(data_x) - 1
+    st_idx = 10
+    end_idx = len(data_x) - 10
     data_x = data_x[st_idx:end_idx]
 
     # PHASE MARKER #
     data_phse = np.genfromtxt(file_path+'phase.txt', delimiter=None, dtype=(float))
     # get phase.txt data #
     phseChange = []
-    for i in range(0,len(data_x)-1):
+    for i in range(0,end_idx-1):
             if data_phse[i] != data_phse[i+1]:
                 phseChange.append(i - st_idx)
             else:
                 pass
     axes = plt.gca()
     print phseChange 
-    # stand_up_idx = phseChange[2]
-    stand_up_idx = phseChange[1]
+    stand_up_idx = phseChange[2]
+    # stand_up_idx = phseChange[1]
     data_LED_body = data_LED[:, 0:3] - data_LED[stand_up_idx, 0:3] \
                     + data_body_global[stand_up_idx, :];
 
     ### Local body position computation
     # foot position
-    body_pos_offset = [-0.077, 0, 0]
+    body_pos_offset = [-0.027, 0, 0]
     rfoot_LED_idx = [6, 7];
     lfoot_LED_idx = [11, 12];
+   
     data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]) \
             + (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]))/2.;
-
     data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]) \
             + (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3]))/2.;
+    # TEST
+    data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]))
+    data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]))
+
 
 
     data_LED_local_body_from_rfoot = data_LED[:, 0:3] \
@@ -136,8 +146,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_com[st_idx:end_idx,i-1], "c-", \
                 data_x, data_body_des[st_idx:end_idx,i-1], "r-", \
                 data_x, data_q[st_idx:end_idx,i-1], "b-")
-        if i != 3:
-            plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1], "k-")
+        plt.plot(data_x, data_jjpos_body_pos[st_idx:end_idx, i-1], color="black", linewidth=1.5)
+        # if i != 3:
+            # plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1], "k-")
 
         # plt.plot(data_x, data_LED_body[st_idx:end_idx, i-1], color="orange")
         plt.plot(data_x, data_LED_local_body_from_rfoot[st_idx:end_idx, i-1], \
@@ -167,17 +178,19 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('body vel')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_body_vel_des[st_idx:end_idx,i-1], "r-" , \
-                data_x, data_com_vel[st_idx:end_idx,i-1], "c-", \
-                data_x, data_qdot[st_idx:end_idx,i-1], "b-")
+        # plt.plot(data_x, data_body_vel_des[st_idx:end_idx,i-1], "r-" )
+        plt.plot(data_x, data_com_vel[st_idx:end_idx,i-1], "c-", linewidth=2)
+        plt.plot(data_x, data_qdot[st_idx:end_idx,i-1], "b-")
+        plt.plot(data_x, data_jjvel_body_vel[st_idx:end_idx, i-1], color="black", linewidth=1.5)
         # plt.plot(data_x, data_ekf_body_vel[st_idx:end_idx, i-1], "g-")
         # plt.plot(data_x, data_com_kin_vel[st_idx:end_idx, i-1], linewidth=1.5, color = "crimson")
-        plt.plot(data_x, data_led_body_vel[st_idx:end_idx, i-1], color="orange", linewidth=1.5)
+        plt.plot(data_x, data_led_body_vel[st_idx:end_idx, i-1], color="orange", linewidth=2)
  
         if i != 3:
-            plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "k-")
-            plt.plot(data_x, data_est_com_vel[st_idx:end_idx, i-1], "g-")
-            plt.plot(data_x, data_ave_vel[st_idx:end_idx,i-1], linewidth=1.5, color="olive")
+            # plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "k-")
+            plt.plot(data_x, data_est_com_vel[st_idx:end_idx, i-1], "g-", linewidth=2)
+            plt.plot(data_x, data_est_body_vel[st_idx:end_idx, i-1], color="crimson", linewidth=2)
+            plt.plot(data_x, data_ave_vel[st_idx:end_idx,i-1], linewidth=2, color="olive")
 
         plt.grid(True)
         for j in phseChange:
