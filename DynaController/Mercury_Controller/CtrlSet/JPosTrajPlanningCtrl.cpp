@@ -309,8 +309,9 @@ void JPosTrajPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     for(int i(0); i<2; ++i){
         // com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
         com_pos[i] += body_pt_offset_[i];
-        //com_vel[i] = sp_->average_vel_[i]; 
-        com_vel[i] = sp_->est_CoM_vel_[i]; 
+        // com_vel[i] = sp_->average_vel_[i]; 
+        // com_vel[i] = sp_->est_CoM_vel_[i]; 
+        com_vel[i] = sp_->est_mocap_body_vel_[i]; 
         //com_vel[i] = sp_->ekf_body_vel_[i]; 
     }
 
@@ -386,10 +387,8 @@ void JPosTrajPlanningCtrl::FirstVisit(){
     middle_pos = (ini_foot_pos_ + target_loc)/2.;
     middle_pos[2] = swing_height_ + target_loc[2];
 
-    // TEST
-    middle_pos[0] = sp_->Q_[0] + body_pt_offset_[0]; 
-
-    inv_kin_.getLegConfigAtVerticalPosture(swing_foot_, middle_pos, sp_->Q_, config_sol);
+    inv_kin_.getLegConfigAtVerticalPosture(swing_foot_, middle_pos, 
+        sp_->Q_, config_sol);
     mid_swing_leg_config_ = config_sol.segment(swing_leg_jidx_, 3);
     _SetJPosBspline(ini_swing_leg_config_, mid_swing_leg_config_,
             mid_jpos_traj_);

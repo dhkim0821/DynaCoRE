@@ -11,7 +11,9 @@ public:
   BodyFootPosEstimator(RobotSystem*);
   ~BodyFootPosEstimator();
 
+  void Initialization();
   void getMoCapBodyOri(dynacore::Quaternion & quat);
+  void getMoCapBodyVel(dynacore::Vect3 & body_vel);
 
 protected:
   MoCapManager* mocap_manager_;

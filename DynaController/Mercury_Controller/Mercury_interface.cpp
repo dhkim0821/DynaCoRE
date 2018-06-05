@@ -44,7 +44,7 @@ Mercury_interface::Mercury_interface():
     bus_current_(mercury::num_act_joint),
     bus_voltage_(mercury::num_act_joint),
     jjvel_(mercury::num_act_joint),
-    mjpos_(mercury::num_act_joint),
+    jjpos_(mercury::num_act_joint),
     b_last_config_update_(true),
     waiting_count_(1000),
     ramp_time_(0.5)
@@ -66,7 +66,7 @@ Mercury_interface::Mercury_interface():
     bus_current_.setZero();
     bus_voltage_.setZero();
     jjvel_.setZero();
-    mjpos_.setZero();
+    jjpos_.setZero();
 
     test_cmd_ = new Mercury_Command();
 
@@ -87,12 +87,13 @@ Mercury_interface::Mercury_interface():
     DataManager::GetDataManager()->RegisterData(
             &motor_current_, DYN_VEC, "motor_current", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
-            &mjpos_, DYN_VEC, "motor_jpos", mercury::num_act_joint);
+            &jjpos_, DYN_VEC, "jjpos", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &bus_current_, DYN_VEC, "bus_current", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &bus_voltage_, DYN_VEC, "bus_voltage", mercury::num_act_joint);
-
+    DataManager::GetDataManager()->RegisterData(
+            &jjvel_, DYN_VEC, "jjvel", mercury::num_act_joint);
     _ParameterSetting();
     printf("[Mercury_interface] Contruct\n");
 }
@@ -173,7 +174,7 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
         bus_current_[i] = data->bus_current[i];
         bus_voltage_[i] = data->bus_voltage[i];
         jjvel_[i] = data->joint_jvel[i];
-        mjpos_[i] = data->motor_jpos[i];
+        jjpos_[i] = data->joint_jpos[i];
 
         if(b_last_config_update_) last_config_ = jpos_command_;
     }

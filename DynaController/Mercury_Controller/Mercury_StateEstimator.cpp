@@ -28,8 +28,11 @@
 Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
     base_cond_(0),
     curr_config_(mercury::num_q),
-    curr_qdot_(mercury::num_qdot)
+    curr_qdot_(mercury::num_qdot),
+    jjpos_config_(mercury::num_q),
+    jjvel_qdot_(mercury::num_qdot)
 {
+
     sp_ = Mercury_StateProvider::getStateProvider();
     robot_sys_ = robot;
 
@@ -39,6 +42,7 @@ Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
     //ekf_est_ = new EKF_LIPRotellaEstimator(); // EKF with Pendulum Dynamics
     bias_vel_est_ = new BiasCompensatedBodyVelocityEstimator();
     vel_est_ = new SimpleAverageEstimator();
+    mocap_vel_est_ = new SimpleAverageEstimator();
 
     for(int i(0); i<2; ++i){
         filter_com_vel_.push_back(
@@ -70,13 +74,20 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     curr_qdot_.setZero();
     curr_config_[mercury::num_qdot] = 1.;
 
+    jjpos_config_.setZero();
+    jjvel_qdot_.setZero();
+    jjpos_config_[mercury::num_qdot] = 1.;
+
     // Joint Set
     for (int i(0); i<mercury::num_act_joint; ++i){
-        curr_config_[mercury::num_virtual + i] = data->joint_jpos[i];
-        //curr_config_[mercury::num_virtual + i] = data->motor_jpos[i];
+        // curr_config_[mercury::num_virtual + i] = data->joint_jpos[i];
+        curr_config_[mercury::num_virtual + i] = data->motor_jpos[i];
         curr_qdot_[mercury::num_virtual + i] = data->motor_jvel[i];
-
         sp_->rotor_inertia_[i] = data->reflected_rotor_inertia[i];
+        // Joint encoder update
+        jjpos_config_[mercury::num_virtual + i] = data->joint_jpos[i];
+        jjvel_qdot_[mercury::num_virtual + i] = data->joint_jvel[i];
+
     }
     // Update Orientation w/ Mocap data
     // body_foot_est_->getMoCapBodyOri(sp_->body_ori_);
@@ -91,7 +102,6 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     ori_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel);   
     ori_est_->getEstimatedState(sp_->body_ori_, sp_->body_ang_vel_);
     //ekf_est_->EstimatorInitialization(sp_->body_ori_, imu_acc, imu_ang_vel); // EKF
-
     bias_vel_est_->EstimatorInitialization(imu_acc, sp_->body_ori_);
 
 
@@ -121,6 +131,30 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
         //curr_config_[1] += sp_->global_pos_local_[1];
         //curr_config_[2] += sp_->global_foot_height_;
         robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
+
+        //////////////////////////////////////////////////
+        // Jpos based model update
+        jjpos_config_[3] = sp_->body_ori_.x();
+        jjpos_config_[4] = sp_->body_ori_.y();
+        jjpos_config_[5] = sp_->body_ori_.z();
+        jjpos_config_[mercury::num_qdot] = sp_->body_ori_.w();
+        for(int i(0); i<3; ++i)
+            jjvel_qdot_[i+3] = sp_->body_ang_vel_[i];
+
+        sp_->jjpos_robot_sys_->UpdateSystem(jjpos_config_, jjvel_qdot_);
+
+        sp_->jjpos_robot_sys_->getPos(sp_->stance_foot_, foot_pos);
+        sp_->jjpos_robot_sys_->getLinearVel(sp_->stance_foot_, foot_vel);
+        jjpos_config_[0] = -foot_pos[0];
+        jjpos_config_[1] = -foot_pos[1];
+        jjpos_config_[2] = -foot_pos[2];
+        jjvel_qdot_[0] = -foot_vel[0];
+        jjvel_qdot_[1] = -foot_vel[1];
+        jjvel_qdot_[2] = -foot_vel[2];
+
+        sp_->jjpos_robot_sys_->UpdateSystem(jjpos_config_, jjvel_qdot_);
+        // END of Jpos based model update
+        //////////////////////////////////////////////////
     } else if (base_cond_ == base_condition::fixed){
         robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
         
@@ -139,6 +173,7 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     ((BasicAccumulation*)ori_est_)->CoMStateInitialization(sp_->CoM_pos_, sp_->CoM_vel_);
     bias_vel_est_->CoMStateInitialization(sp_->CoM_pos_, sp_->CoM_vel_);
     vel_est_->Initialization(sp_->CoM_vel_[0], sp_->CoM_vel_[1]);
+    mocap_vel_est_->Initialization(sp_->CoM_vel_[0], sp_->CoM_vel_[1]);
 
     // for(int i(0); i<2; ++i){
     //     filter_com_vel_[i]->input(sp_->CoM_vel_[i]); 
@@ -146,7 +181,6 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     // }
 
     // Warning: state provider setup
-    sp_->SaveCurrentData();
     // LED data save  ////////////////////
     dynacore::Vect3 pos;
     int led_idx = mercury_link::LED_BODY_0;
@@ -168,20 +202,30 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     robot_sys_->getLinearVel(mercury_link::rightFoot, sp_->Rfoot_vel_);
     robot_sys_->getPos(mercury_link::leftFoot, sp_->Lfoot_pos_);
     robot_sys_->getLinearVel(mercury_link::leftFoot, sp_->Lfoot_vel_);
+    for (int i(0); i<3; ++i){
+        sp_->jjpos_body_pos_[i] = jjpos_config_[i];
+        sp_->jjvel_body_vel_[i] = jjvel_qdot_[i];        
+    }
+    sp_->SaveCurrentData();
 }
 
 void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     curr_config_.setZero();
     curr_qdot_.setZero();
     curr_config_[mercury::num_qdot] = 1.;
-
+    
+    jjpos_config_.setZero();
+    jjvel_qdot_.setZero();
+    jjpos_config_[mercury::num_qdot] = 1.;
 
     for (int i(0); i<mercury::num_act_joint; ++i){
-        curr_config_[mercury::num_virtual + i] = data->joint_jpos[i];
-        //curr_config_[mercury::num_virtual + i] = data->motor_jpos[i];
+        curr_config_[mercury::num_virtual + i] = data->motor_jpos[i];
         curr_qdot_[mercury::num_virtual + i] = data->motor_jvel[i];
-        
         sp_->rotor_inertia_[i] = data->reflected_rotor_inertia[i];
+
+        // Joint encoder update
+        jjpos_config_[mercury::num_virtual + i] = data->joint_jpos[i];
+        jjvel_qdot_[mercury::num_virtual + i] = data->joint_jvel[i];
     }
     std::vector<double> imu_acc(3);
     std::vector<double> imu_ang_vel(3);
@@ -231,6 +275,8 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     if ((sp_->phase_copy_ == 2) && (!visit_once)){
         //ekf_est_->resetFilter();
         vel_est_->Initialization(sp_->CoM_vel_[0], sp_->CoM_vel_[1]);
+        mocap_vel_est_->Initialization(sp_->CoM_vel_[0], sp_->CoM_vel_[1]);
+        body_foot_est_->Initialization();
         visit_once = true;
     }
 
@@ -264,13 +310,31 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
         curr_qdot_[1] = -foot_vel[1];
         curr_qdot_[2] = -foot_vel[2];
 
-        //curr_config_[0] += sp_->global_pos_local_[0];
-        //curr_config_[1] += sp_->global_pos_local_[1];
-        //curr_config_[2] += sp_->global_foot_height_;
-
-        //curr_config_[2] += sp_->global_pos_local_[2];
         robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
+        
+        //////////////////////////////////////////////////
+        // Jpos based model update
+        jjpos_config_[3] = sp_->body_ori_.x();
+        jjpos_config_[4] = sp_->body_ori_.y();
+        jjpos_config_[5] = sp_->body_ori_.z();
+        jjpos_config_[mercury::num_qdot] = sp_->body_ori_.w();
+        for(int i(0); i<3; ++i)
+            jjvel_qdot_[i+3] = sp_->body_ang_vel_[i];
 
+        sp_->jjpos_robot_sys_->UpdateSystem(jjpos_config_, jjvel_qdot_);
+
+        sp_->jjpos_robot_sys_->getPos(sp_->stance_foot_, foot_pos);
+        sp_->jjpos_robot_sys_->getLinearVel(sp_->stance_foot_, foot_vel);
+        jjpos_config_[0] = -foot_pos[0];
+        jjpos_config_[1] = -foot_pos[1];
+        jjpos_config_[2] = -foot_pos[2];
+        jjvel_qdot_[0] = -foot_vel[0];
+        jjvel_qdot_[1] = -foot_vel[1];
+        jjvel_qdot_[2] = -foot_vel[2];
+
+        sp_->jjpos_robot_sys_->UpdateSystem(jjpos_config_, jjvel_qdot_);
+        // END of Jpos based model update
+        //////////////////////////////////////////////////
     } else if (base_cond_ == base_condition::fixed){
         robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
         
@@ -287,17 +351,7 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     sp_->Q_ = curr_config_;
     sp_->Qdot_ = curr_qdot_;
 
-    // Test
-    // EKF Update position and velocity
-    // if (sp_->phase_copy_ >= 3){
-    //     sp_->Qdot_.head(3) = sp_->ekf_body_vel_.head(3);    
-    // }
-
-
-
-
     // Warning: Save Sensor Data in StateProvider
-    sp_->SaveCurrentData();
     // LED data save  ////////////////////
     dynacore::Vect3 pos;
     int led_idx = mercury_link::LED_BODY_0;
@@ -312,6 +366,15 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
         
     vel_est_->Update(sp_->CoM_vel_[0], sp_->CoM_vel_[1]);
     vel_est_->Output(sp_->est_CoM_vel_[0], sp_->est_CoM_vel_[1]);
+
+    // Mocap based body velocity estimator
+    dynacore::Vect3 mocap_body_vel;
+    body_foot_est_->getMoCapBodyVel(mocap_body_vel);
+    mocap_vel_est_->Update(mocap_body_vel[0], mocap_body_vel[1]);
+    mocap_vel_est_->Output(
+        sp_->est_mocap_body_vel_[0], 
+        sp_->est_mocap_body_vel_[1]);
+
     // Right Contact 
     if(data->rfoot_contact) sp_->b_rfoot_contact_ = 1;
     else sp_->b_rfoot_contact_ = 0;
@@ -329,4 +392,10 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     robot_sys_->getLinearVel(mercury_link::rightFoot, sp_->Rfoot_vel_);
     robot_sys_->getPos(mercury_link::leftFoot, sp_->Lfoot_pos_);
     robot_sys_->getLinearVel(mercury_link::leftFoot, sp_->Lfoot_vel_);
+
+    for (int i(0); i<3; ++i){
+        sp_->jjpos_body_pos_[i] = jjpos_config_[i];
+        sp_->jjvel_body_vel_[i] = jjvel_qdot_[i];        
+    }
+    sp_->SaveCurrentData();
 }

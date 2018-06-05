@@ -13,7 +13,8 @@ MoCapManager::MoCapManager(RobotSystem* robot):dynacore_pThread(),
                              // led_kin_data_(3*NUM_MARKERS),
                              led_pos_raw_data_(3*NUM_MARKERS),
                              body_quat_(1.0, 0., 0., 0. ),
-                             initialization_duration_(0.5)
+                             initialization_duration_(0.5),
+                             b_update_call_(false)
 {
 robot_sys_ = robot;
   marker_cond_.resize(NUM_MARKERS, 0.);
@@ -54,8 +55,9 @@ void MoCapManager::run(){
       }
       marker_cond_[i] = mercury_msg.visible[i];
     }
-    if(sp_->curr_time_ < initialization_duration_){
+    if( (sp_->curr_time_ < initialization_duration_) || b_update_call_ ){
          _CoordinateUpdate(mercury_msg);      
+         b_update_call_ = false;
     }else{
       _CoordinateChange(mercury_msg);      
     }

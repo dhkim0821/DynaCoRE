@@ -35,6 +35,9 @@ protected:
   dynacore::Vector curr_config_;
   dynacore::Vector curr_qdot_;
 
+  dynacore::Vector jjpos_config_;
+  dynacore::Vector jjvel_qdot_;
+
   std::vector<filter*> filter_com_vel_;
   std::vector<filter*> filter_jpos_vel_;
   std::vector<filter*> filter_ang_vel_;
@@ -45,6 +48,7 @@ protected:
   BodyFootPosEstimator* body_foot_est_;
   EKF_PoseEstimator* ekf_est_;  // EKF estimator
   SimpleAverageEstimator* vel_est_;
+  SimpleAverageEstimator* mocap_vel_est_;
 
   std::vector<filter*> jvel_filter_;
 };

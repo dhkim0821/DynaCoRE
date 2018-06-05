@@ -7,12 +7,20 @@
 
 using namespace dynacore;
 
+class RobotSystem;
+
 class Mercury_StateProvider{
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   static Mercury_StateProvider* getStateProvider();
   ~Mercury_StateProvider(){}
+
+  RobotSystem* jjpos_robot_sys_;
+  dynacore::Vect3 jjpos_body_pos_;
+  dynacore::Vect3 jjvel_body_vel_;
+  dynacore::Vect3 jjpos_rfoot_pos_;
+  dynacore::Vect3 jjpos_lfoot_pos_;
 
   dynacore::Quaternion body_ori_;
   dynacore::Vect3 body_ori_rpy_;
@@ -45,6 +53,7 @@ public:
   dynacore::Vect3 CoM_pos_;
   dynacore::Vect3 CoM_vel_;
   dynacore::Vect2 est_CoM_vel_;
+  dynacore::Vect2 est_mocap_body_vel_;
   dynacore::Vect3 com_pos_des_;
   dynacore::Vect3 com_vel_des_;
 
