@@ -49,7 +49,7 @@ private:
   bool b_last_config_update_;
 
   dynacore::Vector jjvel_;
-  dynacore::Vector mjpos_;
+  dynacore::Vector jjpos_;
   
   dynacore::Vector initial_jpos_;
   Mercury_StateEstimator* state_estimator_;

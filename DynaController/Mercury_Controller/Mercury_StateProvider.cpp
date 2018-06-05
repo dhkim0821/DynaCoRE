@@ -2,6 +2,7 @@
 #include <Utils/DataManager.hpp>
 #include <Mercury/Mercury_Definition.h>
 #include "MoCapManager.hpp"
+#include <Mercury/Mercury_Model.hpp>
 
 Mercury_StateProvider* Mercury_StateProvider::getStateProvider(){
     static Mercury_StateProvider state_provider_;
@@ -29,7 +30,15 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 led_kin_data_(3*NUM_MARKERS),
                                 filtered_jvel_(mercury::num_act_joint)
 {
+
+    jjpos_robot_sys_ = new Mercury_Model();
+    jjpos_body_pos_.setZero();
+    jjvel_body_vel_.setZero();
+    jjpos_rfoot_pos_.setZero();
+    jjpos_lfoot_pos_.setZero();
+
     est_CoM_vel_.setZero();
+    est_mocap_body_vel_.setZero();
   Q_.setZero();
   Qdot_.setZero();
   reaction_forces_.setZero();
@@ -91,6 +100,11 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&reflected_reaction_force_, 
           DYN_VEC, "refl_react_force", mercury::num_qdot);
 
+  data_manager->RegisterData(&jjpos_body_pos_, VECT3, "jjpos_body_pos", 3);
+  data_manager->RegisterData(&jjvel_body_vel_, VECT3, "jjvel_body_vel", 3);
+  data_manager->RegisterData(&jjpos_rfoot_pos_, VECT3, "jjpos_rfoot_pos", 3);
+  data_manager->RegisterData(&jjpos_lfoot_pos_, VECT3, "jjpos_lfoot_pos", 3);
+
   data_manager->RegisterData(&Rfoot_pos_, VECT3, "rfoot_pos", 3);
   data_manager->RegisterData(&Rfoot_vel_, VECT3, "rfoot_vel", 3);
   data_manager->RegisterData(&Lfoot_pos_, VECT3, "lfoot_pos", 3);
@@ -101,6 +115,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&CoM_pos_, VECT3, "com_pos", 3);
   data_manager->RegisterData(&CoM_vel_, VECT3, "com_vel", 3);
   data_manager->RegisterData(&est_CoM_vel_, VECT2, "est_com_vel", 2);
+  data_manager->RegisterData(&est_mocap_body_vel_, VECT2, "est_mocap_body_vel", 2);
   // data_manager->RegisterData(&com_pos_des_, VECT3, "com_pos_des", 3);
   // data_manager->RegisterData(&com_vel_des_, VECT3, "com_vel_des", 3);
   data_manager->RegisterData(&body_pos_, VECT3, "body_pos", 3);
@@ -164,4 +179,7 @@ void Mercury_StateProvider::SaveCurrentData(){
   body_ori_rpy_[0] = roll;
   body_ori_rpy_[1] = pitch;
   body_ori_rpy_[2] = yaw;
+
+  jjpos_robot_sys_->getPos(mercury_link::rightFoot, jjpos_rfoot_pos_);
+  jjpos_robot_sys_->getPos(mercury_link::leftFoot, jjpos_lfoot_pos_);
 }

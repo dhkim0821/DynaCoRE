@@ -34,12 +34,15 @@ public:
   virtual void run(void);
 
   dynacore::Quaternion body_quat_;
+  dynacore::Vect3 body_led_vel_;
+  void CoordinateUpdateCall(){ b_update_call_ = true; }
 
 protected:
   double initialization_duration_;
   dynacore::Vect3 offset_;
   Mercury_StateProvider * sp_;
   dynacore::Matrix R_coord_;
+  bool b_update_call_;
 
   void _print_message(const mercury_message & msg);
   void _UpdateLEDPosData(const mercury_message & msg);
@@ -60,8 +63,6 @@ protected:
   int rfoot_idx;
 
   std::vector<filter*> vel_filter_;
-  dynacore::Vect3 body_led_vel_;
-
   const RobotSystem* robot_sys_;
 };
 

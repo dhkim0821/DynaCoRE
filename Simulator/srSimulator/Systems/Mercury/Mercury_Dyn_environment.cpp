@@ -82,6 +82,7 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
   // Right
   for(int i(0); i< 3; ++i){
     p_data->joint_jpos[i] = robot->r_joint_[i]->m_State.m_rValue[0];
+    p_data->motor_jpos[i] = robot->r_joint_[i]->m_State.m_rValue[0];
     p_data->motor_jvel[i] = robot->r_joint_[i]->m_State.m_rValue[1];
     p_data->joint_jvel[i] = robot->r_joint_[i]->m_State.m_rValue[1];
     p_data->jtorque[i] = robot->r_joint_[i]->m_State.m_rValue[3];
@@ -89,6 +90,7 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
   // Left
   for(int i(0); i< 3; ++i){
     p_data->joint_jpos[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[0];
+    p_data->motor_jpos[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[0];    
     p_data->motor_jvel[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[1];
     p_data->joint_jvel[i+3] = robot->r_joint_[i]->m_State.m_rValue[1];
     p_data->jtorque[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[3];
