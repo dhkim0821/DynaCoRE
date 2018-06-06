@@ -2,9 +2,9 @@
 #include <Utils/comm_udp.hpp>
 #include "Mercury_StateProvider.hpp"
 #include <Utils/utilities.hpp>
-#include <Utils/DataManager.hpp>
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury/Mercury_Definition.h>
+#include <Utils/DataManager.hpp>
 
 MoCapManager::MoCapManager(RobotSystem* robot):dynacore_pThread(),
                              socket_(0),
@@ -24,18 +24,13 @@ robot_sys_ = robot;
 
   led_pos_data_.setZero();
   // led_kin_data_.setZero();
-  body_led_vel_.setZero();
   DataManager::GetDataManager()->RegisterData(&led_pos_data_, DYN_VEC, "LED_Pos", 3*NUM_MARKERS);
   // DataManager::GetDataManager()->RegisterData(&led_kin_data_, DYN_VEC, "LED_Kin_Pos", 3*NUM_MARKERS);
   DataManager::GetDataManager()->RegisterData(&led_pos_raw_data_, DYN_VEC, "LED_Pos_Raw", 3*NUM_MARKERS);
-  DataManager::GetDataManager()->RegisterData(&body_led_vel_, VECT3, "Body_LED_vel", 3);
 
   sp_ = Mercury_StateProvider::getStateProvider();
   
-  for(int i(0); i<3 ; ++i){
-    vel_filter_.push_back(new deriv_lp_filter(2.*100.*M_PI, mercury::servo_rate));
-  }
-  printf("[Mo Cap Manager] Constructed\n");
+ printf("[Mo Cap Manager] Constructed\n");
 }
 
 void MoCapManager::run(){
@@ -184,8 +179,4 @@ void MoCapManager::_UpdateLEDPosData(const mercury_message & msg){
     }
   }
 
-  for(int i(0); i<3; ++i){
-    vel_filter_[i]->input(led_pos_data_[i]);
-    body_led_vel_[i] = vel_filter_[i]->output();
-  }
 }

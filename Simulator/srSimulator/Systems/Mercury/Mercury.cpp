@@ -14,7 +14,7 @@ Mercury::Mercury(const  Vec3 & location, BASELINKTYPE base_link_type, srJoint::A
   handler.getValue("hanging_height", hanging_height_);
 
   BuildRobot(location, base_link_type, joint_type, 
-          THIS_COM"Simulator/SimulationModel/Mercury_Model/mercury_no_visual.urdf");
+          THIS_COM"Simulator/SimulationModel/Mercury_Model/mercury_srlib.urdf");
   printf("[Mercury] END of Mercury assemble\n");
 }
 Mercury::~Mercury(){

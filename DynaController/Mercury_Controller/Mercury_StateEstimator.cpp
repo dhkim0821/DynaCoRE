@@ -369,7 +369,9 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
 
     // Mocap based body velocity estimator
     dynacore::Vect3 mocap_body_vel;
+    body_foot_est_->Update();
     body_foot_est_->getMoCapBodyVel(mocap_body_vel);
+
     mocap_vel_est_->Update(mocap_body_vel[0], mocap_body_vel[1]);
     mocap_vel_est_->Output(
         sp_->est_mocap_body_vel_[0], 

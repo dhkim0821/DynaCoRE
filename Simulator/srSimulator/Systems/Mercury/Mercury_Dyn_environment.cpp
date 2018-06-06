@@ -4,7 +4,7 @@
 #include <Utils/utilities.hpp>
 #include <DynaController/Mercury_Controller/Mercury_StateProvider.hpp>
 #include <ParamHandler/ParamHandler.hpp>
-
+#include "LED_Position_Announcer.hpp"
 // #define SENSOR_NOISE
 #define SENSOR_DELAY 0 // Sensor_delay* mercury::servo_rate (sec) = time delay 
 
@@ -34,6 +34,8 @@ Mercury_Dyn_environment::Mercury_Dyn_environment():
   m_Space->SetGravity(0.0,0.0,-9.81);
   m_Space->SetNumberofSubstepForRendering(num_substep_rendering_);
 
+  led_pos_announcer_ = new LED_Position_Announcer(this);
+led_pos_announcer_->start();
   // Initialize differentiation values
   prev_imu_pos.clear();  cur_imu_pos.clear();
   prev_imu_vel.clear();  cur_imu_vel.clear();
@@ -92,7 +94,7 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
     p_data->joint_jpos[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[0];
     p_data->motor_jpos[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[0];    
     p_data->motor_jvel[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[1];
-    p_data->joint_jvel[i+3] = robot->r_joint_[i]->m_State.m_rValue[1];
+    p_data->joint_jvel[i+3] = robot->r_joint_[i + lj_start_idx]->m_State.m_rValue[1];
     p_data->jtorque[i+3] = robot->r_joint_[i+lj_start_idx]->m_State.m_rValue[3];
   }
 

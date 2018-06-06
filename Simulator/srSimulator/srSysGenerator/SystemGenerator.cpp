@@ -285,8 +285,10 @@ void SystemGenerator::_SetLinkParam(int idx){
     if(Linkidxiter->second->inertial){
         Inertiaoffset_=Vec3(Linkidxiter->second->inertial->origin.position.x,Linkidxiter->second->inertial->origin.position.y,Linkidxiter->second->inertial->origin.position.z);
     }
-
-    if(Linkidxiter->second->visual!=0){
+    
+    // TEST
+    //if(Linkidxiter->second->visual!=0){
+    if(false){
         link_visual_xyz[0]=Linkidxiter->second->visual->origin.position.x;
         link_visual_xyz[1]=Linkidxiter->second->visual->origin.position.y;
         link_visual_xyz[2]=Linkidxiter->second->visual->origin.position.z;

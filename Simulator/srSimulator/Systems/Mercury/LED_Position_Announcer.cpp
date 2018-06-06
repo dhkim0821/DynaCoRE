@@ -1,6 +1,7 @@
 #include "LED_Position_Announcer.hpp"
-#include <Utils/comm_udp.hpp>
 #include "Mercury_Dyn_environment.hpp"
+#include <Addition/Data_Manager/data_protocol.h>
+#include <Utils/comm_udp.hpp>
 
 
 LED_Position_Announcer::LED_Position_Announcer(Mercury_Dyn_environment* dyn_env):
@@ -9,34 +10,40 @@ LED_Position_Announcer::LED_Position_Announcer(Mercury_Dyn_environment* dyn_env)
 }
 
 void LED_Position_Announcer::run(){
-    // printf("[LED Position Announcer] Start \n");
-    // led_data_.index = 0;
-    // led_data_.validBits = 0x001FF; // 1 x 17 F: 4 of 1
-    // while(true){
-    //     for (int i(0); i<5; ++i){
-    //         led_data_.x[i] = -dyn_env_->m_Hume->LED_[i+3].GetMassCenter()[1]*1000.0;
-    //         led_data_.y[i] = dyn_env_->m_Hume->LED_[i+3].GetMassCenter()[2]* 1000.0;
-    //         led_data_.z[i] = -dyn_env_->m_Hume->LED_[i+3].GetMassCenter()[0]*1000.0;
-    //     }
-    //     led_data_.x[5] = -dyn_env_->m_Hume->LED_[9].GetMassCenter()[1]*1000.0;
-    //     led_data_.y[5] =  dyn_env_->m_Hume->LED_[9].GetMassCenter()[2]*1000.0;
-    //     led_data_.z[5] = -dyn_env_->m_Hume->LED_[9].GetMassCenter()[0]*1000.0;
+     printf("[LED Position Announcer] Start \n");
+     
+     mercury_message mercury_msg;
+     led_link_idx_list_.clear();
 
-    //     led_data_.x[6] = -dyn_env_->m_Hume->LED_[11].GetMassCenter()[1]*1000.0;
-    //     led_data_.y[6] =  dyn_env_->m_Hume->LED_[11].GetMassCenter()[2]*1000.0;
-    //     led_data_.z[6] = -dyn_env_->m_Hume->LED_[11].GetMassCenter()[0]*1000.0;
+     // Link idx list 
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("body_led0")->second) );
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("body_led1")->second) );
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("body_led2")->second) );
 
-    //     led_data_.x[7] = -dyn_env_->m_Hume->LED_[14].GetMassCenter()[1]*1000.0;
-    //     led_data_.y[7] =  dyn_env_->m_Hume->LED_[14].GetMassCenter()[2]*1000.0;
-    //     led_data_.z[7] = -dyn_env_->m_Hume->LED_[14].GetMassCenter()[0]*1000.0;
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("rleg_led0")->second) );
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("rleg_led1")->second) );
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("rleg_led2")->second) );
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("rleg_led3")->second) );
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("rleg_led4")->second) );
 
-    //     led_data_.x[8] = -dyn_env_->m_Hume->LED_[16].GetMassCenter()[1]*1000.0;
-    //     led_data_.y[8] =  dyn_env_->m_Hume->LED_[16].GetMassCenter()[2]*1000.0;
-    //     led_data_.z[8] = -dyn_env_->m_Hume->LED_[16].GetMassCenter()[0]*1000.0;
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("lleg_led0")->second) );
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("lleg_led1")->second) );
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("lleg_led2")->second) );
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("lleg_led3")->second) );
+     led_link_idx_list_.push_back( (dyn_env_->m_Mercury->link_idx_map_.find("lleg_led4")->second) );
 
-    //     COMM::send_data(socket_, POS_PORT, &led_data_, sizeof(message), IP_ADDR_MYSELF);
-    //     ++led_data_.index;
-    //     usleep(1000);
-    // }
+
+
+     while(true){
+         for(int j(0); j<NUM_MARKERS; ++j){
+             mercury_msg.visible[j] = 1.;
+             for (int i(0); i<3; ++i){
+                 mercury_msg.data[3*j + i] = 
+                     dyn_env_->m_Mercury->link_[ led_link_idx_list_[j] ]->GetMassCenter()[i]*1000.0;
+             }
+         }
+         COMM::send_data(socket_, MOCAP_DATA_PORT, &mercury_msg, sizeof(mercury_message), IP_ADDR_MYSELF);
+         usleep(1000);
+     }
 }
 

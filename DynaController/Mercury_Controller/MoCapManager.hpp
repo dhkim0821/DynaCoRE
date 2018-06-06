@@ -3,8 +3,7 @@
 
 #include <Utils/dynacore_pThread.hpp>
 #include <Utils/wrap_eigen.hpp>
-#include <Filter/filters.hpp>
-
+#include <Mercury_Controller/StateEstimator/BodyFootPosEstimator.hpp>
 class Mercury_StateProvider;
 class RobotSystem;
 
@@ -28,13 +27,14 @@ typedef struct{
 
 class MoCapManager: public dynacore_pThread{
 public:
+    friend class BodyFootPosEstimator;
+
   MoCapManager(RobotSystem* );
   virtual ~MoCapManager(){}
 
   virtual void run(void);
 
   dynacore::Quaternion body_quat_;
-  dynacore::Vect3 body_led_vel_;
   void CoordinateUpdateCall(){ b_update_call_ = true; }
 
 protected:
@@ -62,7 +62,6 @@ protected:
   int lfoot_idx;
   int rfoot_idx;
 
-  std::vector<filter*> vel_filter_;
   const RobotSystem* robot_sys_;
 };
 

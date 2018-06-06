@@ -11,6 +11,7 @@
 #include <DynaController/Mercury_Controller/Mercury_StateProvider.hpp>
 
 class interface;
+class LED_Position_Announcer;
 
 class Mercury_Dyn_environment
 {
@@ -36,6 +37,7 @@ public:
   Mercury*	m_Mercury;
   srSpace*	m_Space;
   Ground*	m_ground;
+    LED_Position_Announcer* led_pos_announcer_;
 
   void getIMU_Data(std::vector<double> & imu_acc,
                    std::vector<double> & imu_ang_vel);

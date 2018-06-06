@@ -24,7 +24,7 @@
 // Stance and Swing Test
 #include <Mercury_Controller/TestSet/ConfigStanceSwingTest.hpp>
 
-#define MEASURE_TIME 0
+#define MEASURE_TIME 1
 #if MEASURE_TIME
 #include <chrono>
 #endif
@@ -106,8 +106,12 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
     Mercury_Command* cmd = ((Mercury_Command*)_command);
     Mercury_SensorData* data = ((Mercury_SensorData*)_data);
 
+#if MEASURE_TIME
+    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+#endif
+ 
     if(!_Initialization(data)){
-        state_estimator_->Update(data);
+       state_estimator_->Update(data);
         test_->getCommand(test_cmd_);
     }
     // Ramp up the command
@@ -118,7 +122,14 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
              (sp_->curr_time_ - initialization_time)/(ramp_time_-initialization_time);
         }
     }
-
+#if MEASURE_TIME
+        std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> time_span1 = std::chrono::duration_cast< std::chrono::duration<double> >(t2 - t1);
+        if(count_%1000 == 1){
+            std::cout << "[Mercury_interface] All process took me " << time_span1.count()*1000.0 << "ms."<<std::endl;
+        }
+#endif
+ 
     /// Begin of Torque Limit && NAN command (decide torque & jpos command)
     static bool isTurnoff_forever(false);
 
