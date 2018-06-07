@@ -30,10 +30,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     np.genfromtxt(file_path+'com_vel.txt', delimiter=None, dtype=(float))
     data_body_des = \
     np.genfromtxt(file_path+'body_pos_des.txt', delimiter=None, dtype=(float))
-    data_body_ori_des = \
-    np.genfromtxt(file_path+'body_ori_des.txt', delimiter=None, dtype=(float))
-    data_body_ori = \
-    np.genfromtxt(file_path+'body_ori.txt', delimiter=None, dtype=(float))
+    # data_body_ori_des = \
+    # np.genfromtxt(file_path+'body_ori_des.txt', delimiter=None, dtype=(float))
+    # data_body_ori = \
+    # np.genfromtxt(file_path+'body_ori.txt', delimiter=None, dtype=(float))
     data_body_vel = \
     np.genfromtxt(file_path+'body_vel.txt', delimiter=None, dtype=(float))
     data_body_vel_des = \
@@ -58,12 +58,20 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         # np.genfromtxt(file_path+'ekf_com_vel_kin.txt', delimiter=None, dtype=(float))
     data_est_com_vel = \
             np.genfromtxt(file_path+'est_com_vel.txt', delimiter=None, dtype=(float))
-    data_est_body_vel = \
+    data_est_mocap_body_vel = \
             np.genfromtxt(file_path+'est_mocap_body_vel.txt', delimiter=None, dtype=(float))
+    data_est_mocap_body_pos = \
+            np.genfromtxt(file_path+'est_mocap_body_pos.txt', delimiter=None, dtype=(float))
     data_ave_vel = \
             np.genfromtxt(file_path+'average_vel.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
 
+    data_body_ori = np.zeros(shape = (len(data_x), 4))
+    print data_body_ori
+    data_body_ori[:, 1:4] = np.copy(data_q[:, 3:6]);
+    print data_body_ori
+    data_body_ori[:, 0] = np.copy(data_q[:, 12]);
+    print data_body_ori
     data_com_global = data_com + data_global_pos_offset
     data_body_global = data_q[:,0:3] + data_global_pos_offset
     data_est_com_global = data_estimated_com[:,0:2] + \
@@ -83,15 +91,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             else:
                 pass
     axes = plt.gca()
-    print phseChange 
-    stand_up_idx = phseChange[2]
+    stand_up_idx = phseChange[3]
+    stand_up_idx += st_idx  
     # stand_up_idx = phseChange[1]
-    data_LED_body = data_LED[:, 0:3] - data_LED[stand_up_idx, 0:3] \
-                    + data_body_global[stand_up_idx, :];
 
     ### Local body position computation
     # foot position
-    body_pos_offset = [-0.027, 0, 0]
+    body_pos_offset = [-0.077, 0, 0]
     rfoot_LED_idx = [6, 7];
     lfoot_LED_idx = [11, 12];
    
@@ -99,16 +105,19 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             + (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]))/2.;
     data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]) \
             + (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3]))/2.;
+
     # TEST
-    data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]))
-    data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]))
+    # data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]))
+    # data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]))
 
+    data_LED_body = data_LED[:, 0:3] \
+              - data_LED[stand_up_idx, 0:3] + data_body_global[stand_up_idx,:]
+    data_LED_local_body_from_rfoot = data_LED[:, 0:3] - data_LED_rfoot \
+            + body_pos_offset
+    data_LED_local_body_from_lfoot = data_LED[:, 0:3] - data_LED_lfoot \
+            + body_pos_offset
+    # data_est_mocap_body_pos += body_pos_offset
 
-
-    data_LED_local_body_from_rfoot = data_LED[:, 0:3] \
-                                    - data_LED_rfoot + body_pos_offset;
-    data_LED_local_body_from_lfoot = data_LED[:, 0:3] \
-                                    - data_LED_lfoot + body_pos_offset;
     ## plot global
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
@@ -155,6 +164,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             color='indigo')
         plt.plot(data_x, data_LED_local_body_from_lfoot[st_idx:end_idx, i-1], \
             color='olive')
+        plt.plot(data_x, data_est_mocap_body_pos[st_idx:end_idx, i-1], \
+            color='orange', linewidth=2.)
         # plt.legend(('command', 'pos'), loc='upper left')
         plt.grid(True)
         for j in phseChange:
@@ -189,7 +200,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         if i != 3:
             # plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "k-")
             plt.plot(data_x, data_est_com_vel[st_idx:end_idx, i-1], "g-", linewidth=2)
-            plt.plot(data_x, data_est_body_vel[st_idx:end_idx, i-1], color="crimson", linewidth=2)
+            plt.plot(data_x, data_est_mocap_body_vel[st_idx:end_idx, i-1], color="crimson", linewidth=2)
             plt.plot(data_x, data_ave_vel[st_idx:end_idx,i-1], linewidth=2, color="olive")
 
         plt.grid(True)
@@ -211,10 +222,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
     fig.canvas.set_window_title('body ori (quaternion)')
+
+    print data_body_ori.shape
+    print len(data_x)
+
     for i in range(1,5,1):
         ax1 = plt.subplot(4, 1, i)
-        plt.plot(data_x, data_body_ori_des[st_idx:end_idx,i-1], "r-" , \
-                data_x, data_body_ori[st_idx:end_idx,i-1], "b-")
+        plt.plot(data_x, data_body_ori[st_idx:end_idx,i-1], "b-")
         plt.grid(True)
 
         for j in phseChange:

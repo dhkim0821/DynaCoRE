@@ -53,7 +53,10 @@ public:
   dynacore::Vect3 CoM_pos_;
   dynacore::Vect3 CoM_vel_;
   dynacore::Vect2 est_CoM_vel_;
+  
   dynacore::Vect2 est_mocap_body_vel_;
+  dynacore::Vect3 est_mocap_body_pos_;
+
   dynacore::Vect3 com_pos_des_;
   dynacore::Vect3 com_vel_des_;
 

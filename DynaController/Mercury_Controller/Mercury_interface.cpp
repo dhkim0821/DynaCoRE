@@ -95,7 +95,7 @@ Mercury_interface::Mercury_interface():
     DataManager::GetDataManager()->RegisterData(
             &jjvel_, DYN_VEC, "jjvel", mercury::num_act_joint);
     _ParameterSetting();
-    printf("[Mercury_interface] Contruct\n");
+    //printf("[Mercury_interface] Contruct\n");
 }
 
 Mercury_interface::~Mercury_interface(){
@@ -277,6 +277,9 @@ void Mercury_interface::_ParameterSetting(){
     handler.getVector("joint_max", jpos_limit_max_);
     handler.getVector("joint_min", jpos_limit_min_);
 
+    // Joint pos based model update
+    handler.getBoolean("jpos_model_update", b_tmp);
+    state_estimator_->setJPosModelUpdate(b_tmp);
 
     printf("[Mercury_interface] Parameter setup is done\n");
 }

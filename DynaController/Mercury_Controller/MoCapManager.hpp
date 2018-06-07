@@ -29,7 +29,7 @@ class MoCapManager: public dynacore_pThread{
 public:
     friend class BodyFootPosEstimator;
 
-  MoCapManager(RobotSystem* );
+  MoCapManager(const RobotSystem* );
   virtual ~MoCapManager(){}
 
   virtual void run(void);
@@ -40,6 +40,8 @@ public:
 protected:
   double initialization_duration_;
   dynacore::Vect3 offset_;
+  dynacore::Quaternion imu_body_ori_;
+
   Mercury_StateProvider * sp_;
   dynacore::Matrix R_coord_;
   bool b_update_call_;
@@ -52,7 +54,6 @@ protected:
           const dynacore::Vect3 &, const dynacore::Vect3 &);
 
   int socket_;
-  std::vector<dynacore::Vect3> mocap_data_;
   std::vector<int> marker_cond_;
 
   dynacore::Vector led_pos_data_;

@@ -183,6 +183,8 @@
   <joint name="abduct_l_to_thigh_l_j" type="continuous">
     <axis xyz="0 1 0"/>
     <origin rpy="-0.017 0 0.01" xyz="0.0 0.0 -0.03535"/>
+    <!--TEST-->
+    <!--<origin rpy="-0.037 0 0.04" xyz="0.0 0.0 -0.03535"/>-->
     <parent link="abduct_l"/>
     <child link="thigh_l"/>
   </joint>

@@ -10,10 +10,11 @@ test_name: walking_config_test
 ## Stance and Swing Test ********************************* 
 #test_name: config_stance_swing_test
 
-
 base_condition: floating
 #base_condition: fixed
 #base_condition: lying
+
+jpos_model_update: false
 
 torque_max: [  150,  100,  100,  150,  100,  100]
 torque_min: [ -150, -100, -200, -150, -100, -200]

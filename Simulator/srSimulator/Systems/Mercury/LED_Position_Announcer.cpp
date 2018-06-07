@@ -5,8 +5,19 @@
 
 
 LED_Position_Announcer::LED_Position_Announcer(Mercury_Dyn_environment* dyn_env):
-    socket_(0){
+    socket_(0), count_(0){
     dyn_env_ = dyn_env;
+    turn_off_count_ = 0;
+
+    led_turn_off_st_count_.push_back(1000);
+    led_turn_off_end_count_.push_back(1500);
+
+    led_turn_off_st_count_.push_back(3000);
+    led_turn_off_end_count_.push_back(3500);
+
+    led_turn_off_st_count_.push_back(5000);
+    led_turn_off_end_count_.push_back(5500);
+
 }
 
 void LED_Position_Announcer::run(){
@@ -36,14 +47,31 @@ void LED_Position_Announcer::run(){
 
      while(true){
          for(int j(0); j<NUM_MARKERS; ++j){
-             mercury_msg.visible[j] = 1.;
+             mercury_msg.visible[j] = 1;
              for (int i(0); i<3; ++i){
                  mercury_msg.data[3*j + i] = 
                      dyn_env_->m_Mercury->link_[ led_link_idx_list_[j] ]->GetMassCenter()[i]*1000.0;
              }
          }
+
+         if(count_>led_turn_off_st_count_[turn_off_count_]){
+             mercury_msg.visible[7] = 0;
+             mercury_msg.visible[12] = 0;
+             for(int i(0); i<3; ++i){
+                 mercury_msg.data[3*7 + i] = 0.;
+                 mercury_msg.data[3*12 + i] = 0.;
+             }
+         }
+         if(count_> led_turn_off_end_count_[turn_off_count_]){
+              mercury_msg.visible[7] = 1;
+             mercury_msg.visible[12] = 1;
+             ++turn_off_count_;
+         }
          COMM::send_data(socket_, MOCAP_DATA_PORT, &mercury_msg, sizeof(mercury_message), IP_ADDR_MYSELF);
-         usleep(1000);
+         usleep(2000);
+         ++count_;
+         if(count_%100 == 1)
+         printf("count: %d\n", count_);
      }
 }
 

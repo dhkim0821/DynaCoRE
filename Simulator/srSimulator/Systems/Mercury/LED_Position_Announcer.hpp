@@ -24,6 +24,10 @@ public:
     virtual void run(void);
 
 protected:
+    int count_;
+    int turn_off_count_;
+    std::vector<int> led_turn_off_st_count_;
+    std::vector<int> led_turn_off_end_count_;
     int socket_;
     std::vector<int> led_link_idx_list_;
     Mercury_Dyn_environment* dyn_env_;
