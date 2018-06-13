@@ -22,6 +22,7 @@ class JPosTrajPlanningCtrl:public SwingPlanningCtrl{
 
     protected:
         double pitch_offset_gain_;
+        double roll_offset_gain_;
         void _SetBspline(
                 const dynacore::Vect3 & st_pos,
                 const dynacore::Vect3 & st_vel,

@@ -150,7 +150,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
 
     sp_->num_step_copy_ = num_step_;
     // TEST
-    if (num_step_ > 35) {
+    if (num_step_ > 235) {
         exit(0);
     }
 

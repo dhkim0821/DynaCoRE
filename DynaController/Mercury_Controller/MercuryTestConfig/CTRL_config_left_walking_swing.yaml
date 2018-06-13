@@ -22,6 +22,7 @@ gain_decreasing_period_portion: 0.0
 body_pt_offset: [-0.022, 0.0]
 swing_time_reduction: 0.0
 foot_landing_offset: [-0.0, 0.]
+roll_offset_gain: -2.0
 pitch_offset_gain: -3.0
 
 #body_pt_offset: [-0.077, 0.0]
