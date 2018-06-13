@@ -15,7 +15,7 @@ BodyFootKalmanFilter::BodyFootKalmanFilter():
     Q_ = dynacore::Matrix::Identity(num_state, num_state);
     //F_.block(0,10, 2, 2) = dynacore::Matrix::Identity(2,2) * dt_;
 
-    dynacore::pretty_print(F_, std::cout, "F matx");
+    // dynacore::pretty_print(F_, std::cout, "F matx");
     // Observation
     R_ = dynacore::Matrix::Identity(num_obs, num_obs);
     H_ = dynacore::Matrix::Identity(num_obs, num_state);

@@ -84,8 +84,14 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
         // Joint encoder update
         jjpos_config_[mercury::num_virtual + i] = data->joint_jpos[i];
         jjvel_qdot_[mercury::num_virtual + i] = data->joint_jvel[i];
-
     }
+
+    // TEST
+    // curr_config_[mercury_joint::rightHip] = 
+    //    data->joint_jpos[mercury_joint::rightHip - mercury::num_virtual];
+    // curr_config_[mercury_joint::leftHip] = 
+    //    data->joint_jpos[mercury_joint::leftHip - mercury::num_virtual];
+
     std::vector<double> imu_acc(3);
     std::vector<double> imu_ang_vel(3);
 
@@ -214,6 +220,13 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
         jjpos_config_[mercury::num_virtual + i] = data->joint_jpos[i];
         jjvel_qdot_[mercury::num_virtual + i] = data->joint_jvel[i];
     }
+    
+    // TEST
+    // curr_config_[mercury_joint::rightHip] = 
+    //    data->joint_jpos[mercury_joint::rightHip - mercury::num_virtual];
+    // curr_config_[mercury_joint::leftHip] = 
+    //    data->joint_jpos[mercury_joint::leftHip - mercury::num_virtual];
+
     std::vector<double> imu_acc(3);
     std::vector<double> imu_ang_vel(3);
     std::vector<double> imu_inc(3);

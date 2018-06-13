@@ -24,7 +24,7 @@
 // Stance and Swing Test
 #include <Mercury_Controller/TestSet/ConfigStanceSwingTest.hpp>
 
-#define MEASURE_TIME 1
+#define MEASURE_TIME 0
 #if MEASURE_TIME
 #include <chrono>
 #endif

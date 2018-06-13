@@ -14,6 +14,7 @@ base_condition: floating
 #base_condition: fixed
 #base_condition: lying
 
+# jpos_model_update: true
 jpos_model_update: false
 
 torque_max: [  150,  100,  100,  150,  100,  100]

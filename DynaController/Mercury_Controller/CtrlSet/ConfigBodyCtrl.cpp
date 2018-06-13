@@ -100,6 +100,10 @@ void ConfigBodyCtrl::_jpos_task_setup(){
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
     rpy_des.setZero();
+
+    // TEST
+    rpy_des[1] = DES_PITCH_CMD;
+
     dynacore::convert(rpy_des, des_quat);    
 
     dynacore::Vector pos_des(mercury::num_qdot); pos_des.setZero();

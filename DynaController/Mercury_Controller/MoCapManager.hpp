@@ -4,6 +4,7 @@
 #include <Utils/dynacore_pThread.hpp>
 #include <Utils/wrap_eigen.hpp>
 #include <Mercury_Controller/StateEstimator/BodyFootPosEstimator.hpp>
+#include <Filter/filters.hpp>
 class Mercury_StateProvider;
 class RobotSystem;
 
@@ -38,6 +39,12 @@ public:
   void CoordinateUpdateCall(){ b_update_call_ = true; }
 
 protected:
+  std::vector<dynacore::Vect3> healthy_led_list_;
+
+  std::vector<filter*> body_led0_filter_;
+  std::vector<filter*> body_led1_filter_;
+  std::vector<filter*> body_led2_filter_;
+
   double initialization_duration_;
   dynacore::Vect3 offset_;
   dynacore::Quaternion imu_body_ori_;

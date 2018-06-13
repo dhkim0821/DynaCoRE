@@ -129,7 +129,9 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         robot_sys_->getPos(mercury_link::leftFoot, next_local_frame_location);
         // when it start the left leg is already stance foot and 
         // global set by 0.15
-        if(num_step_>1) sp_->global_pos_local_ += next_local_frame_location;
+        if(num_step_>1) { 
+            sp_->global_pos_local_ += next_local_frame_location; 
+        }
         sp_->global_foot_height_ = next_local_frame_location[2];
     }
     if(phase == WkConfigPhase::double_contact_2){
@@ -148,7 +150,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
 
     sp_->num_step_copy_ = num_step_;
     // TEST
-    if (num_step_ > 30) {
+    if (num_step_ > 35) {
         exit(0);
     }
 

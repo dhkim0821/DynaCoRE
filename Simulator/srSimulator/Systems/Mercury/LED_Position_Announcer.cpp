@@ -70,8 +70,7 @@ void LED_Position_Announcer::run(){
          COMM::send_data(socket_, MOCAP_DATA_PORT, &mercury_msg, sizeof(mercury_message), IP_ADDR_MYSELF);
          usleep(2000);
          ++count_;
-         if(count_%100 == 1)
-         printf("count: %d\n", count_);
+         // if(count_%100 == 1)  printf("count: %d\n", count_);
      }
 }
 

@@ -41,7 +41,7 @@ void BodyFootPosEstimator::getMoCapBodyPos(const dynacore::Quaternion& body_ori,
     Eigen::Matrix3d Body_rot(body_ori);
     dynacore::Vect3 body_led_offset;
     body_led_offset.setZero();
-    body_led_offset[0] = -0.077;
+    body_led_offset[0] = -0.075;
     local_body_pos += Body_rot * body_led_offset;
 }
 
@@ -74,8 +74,8 @@ void BodyFootPosEstimator::_KalmanFilterPredictionInputSetup(){
     kalman_input_->stance_foot_idx_ = sp_->stance_foot_;
 }
 void BodyFootPosEstimator::Initialization(const dynacore::Quaternion & body_ori){
-    mocap_manager_->CoordinateUpdateCall();
     mocap_manager_->imu_body_ori_ = body_ori;
+    mocap_manager_->CoordinateUpdateCall();
 
     _KalmanFilterOberservationSetup();
     // Height

@@ -29,6 +29,7 @@ public:
   }
 
 protected:
+
   bool b_set_height_target_;
   double des_body_height_;
 
