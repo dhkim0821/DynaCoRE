@@ -43,8 +43,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
  
     data_LED = \
             np.genfromtxt(file_path+'LED_Pos.txt', delimiter=None, dtype=(float))
-    data_LED_kin = \
-            np.genfromtxt(file_path+'LED_Kin_Pos.txt', delimiter=None, dtype=(float))
+    # data_LED_kin = \
+            # np.genfromtxt(file_path+'LED_Kin_Pos.txt', delimiter=None, dtype=(float))
     #data_foot_vel_des = \
     #np.genfromtxt(file_path+'rfoot_vel_des.txt', delimiter=None, dtype=(float))
     data_rfoot_vel = \
@@ -128,6 +128,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
                 linewidth=1.0, color="indigo")
         plt.plot(data_x, data_LED_rfoot_in[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
                 linewidth=1.0, color="indigo")
+        ## TEST 
+        # plt.plot(data_x, data_LED_rfoot[st_idx:end_idx, i-1], linewidth=2.0, color='orange')
+        # plt.plot(data_x, data_LED_rfoot_out[st_idx:end_idx, i-1], linewidth=1.0, color="indigo")
+        # plt.plot(data_x, data_LED_rfoot_in[st_idx:end_idx, i-1], linewidth=1.0, color="indigo")
        # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:

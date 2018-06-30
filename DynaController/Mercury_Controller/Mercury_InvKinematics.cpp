@@ -254,7 +254,7 @@ void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & c
     dynacore::Vector delta_q(mercury::num_qdot); delta_q.setZero();
     delta_q = J2N1_pinv*delta_x;
     //dynacore::pretty_print(delta_q, std::cout, "delta q");
-    config_sol.segment(mercury::num_virtual, mercury::num_act_joint) += delta_q.segment(mercury::num_act_joint, mercury::num_act_joint);
+    config_sol.segment(mercury::num_virtual, mercury::num_act_joint) += delta_q.segment(mercury::num_virtual, mercury::num_act_joint);
 
 }
 

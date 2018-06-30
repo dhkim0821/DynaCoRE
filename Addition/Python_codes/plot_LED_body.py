@@ -67,11 +67,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
 
     data_body_ori = np.zeros(shape = (len(data_x), 4))
-    print data_body_ori
     data_body_ori[:, 1:4] = np.copy(data_q[:, 3:6]);
-    print data_body_ori
     data_body_ori[:, 0] = np.copy(data_q[:, 12]);
-    print data_body_ori
+    
     data_com_global = data_com + data_global_pos_offset
     data_body_global = data_q[:,0:3] + data_global_pos_offset
     data_est_com_global = data_estimated_com[:,0:2] + \
@@ -101,14 +99,14 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     rfoot_LED_idx = [6, 7];
     lfoot_LED_idx = [11, 12];
    
-    data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]) \
-            + (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]))/2.;
-    data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]) \
-            + (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3]))/2.;
+    # data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]) \
+            # + (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]))/2.;
+    # data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]) \
+            # + (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3]))/2.;
 
     # TEST
-    # data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]))
-    # data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]))
+    data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]))
+    data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]))
 
     data_LED_body = data_LED[:, 0:3] \
               - data_LED[stand_up_idx, 0:3] + data_body_global[stand_up_idx,:]
@@ -116,7 +114,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             + body_pos_offset
     data_LED_local_body_from_lfoot = data_LED[:, 0:3] - data_LED_lfoot \
             + body_pos_offset
-    # data_est_mocap_body_pos += body_pos_offset
 
     ## plot global
     fig = plt.figure(figure_number)
@@ -222,9 +219,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
     fig.canvas.set_window_title('body ori (quaternion)')
-
-    print data_body_ori.shape
-    print len(data_x)
 
     for i in range(1,5,1):
         ax1 = plt.subplot(4, 1, i)
