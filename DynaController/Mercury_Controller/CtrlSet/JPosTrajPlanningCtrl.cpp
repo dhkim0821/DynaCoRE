@@ -166,6 +166,9 @@ void JPosTrajPlanningCtrl::_task_setup(){
     dynacore::Quaternion des_quat;
     rpy_des.setZero();
 
+    // TEST
+    rpy_des[1] = DES_PITCH_CMD;
+
     dynacore::convert(rpy_des, des_quat);
 
     _CoMEstiamtorUpdate();
@@ -210,6 +213,10 @@ void JPosTrajPlanningCtrl::_task_setup(){
             // end_jpos_traj_.getCurveDerPoint(traj_time, 1, vel);
             // end_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
         }
+        // TEST
+        config_sol[swing_leg_jidx_] += roll_offset_gain_ * sp_->Q_[3];
+        config_sol[swing_leg_jidx_+ 1] += pitch_offset_gain_ * sp_->Q_[4];
+
     }else{
         if(state_machine_time_ < half_swing_time_ * initial_traj_mix_ratio_){
             for(int i(0); i<3; ++i){
@@ -562,6 +569,8 @@ void JPosTrajPlanningCtrl::CtrlInitialization(const std::string & setting_file_n
     // Foot landing offset
     handler.getVector("foot_landing_offset", foot_landing_offset_);
 
+    handler.getValue("roll_offset_gain", roll_offset_gain_);
+    handler.getValue("pitch_offset_gain", pitch_offset_gain_);
 
     static bool b_bodypute_eigenvalue(true);
     if(b_bodypute_eigenvalue){

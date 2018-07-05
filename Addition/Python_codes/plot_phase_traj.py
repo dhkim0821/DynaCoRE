@@ -90,7 +90,7 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
     data_estimated_com_global[:,0:2] += data_global_pos_offset[:, 0:2]
     x_pos_offset = 0.0
     st_step = 0
-    num_steps = 20
+    num_steps = 10
 
     lin_width = 3
     fig_width = 480

@@ -15,6 +15,13 @@ MoCapManager::MoCapManager(const RobotSystem* robot):dynacore_pThread(),
     initialization_duration_(0.5),
     b_update_call_(false)
 {
+    healthy_led_list_.resize(NUM_MARKERS);
+
+    imu_body_ori_.w() = 1.0;
+    imu_body_ori_.x() = 0.0;
+    imu_body_ori_.y() = 0.0;
+    imu_body_ori_.z() = 0.0;
+
     robot_sys_ = robot;
     marker_cond_.resize(NUM_MARKERS, 0.);
 
@@ -25,6 +32,12 @@ MoCapManager::MoCapManager(const RobotSystem* robot):dynacore_pThread(),
     DataManager::GetDataManager()->RegisterData(&led_pos_raw_data_, DYN_VEC, "LED_Pos_Raw", 3*NUM_MARKERS);
 
     sp_ = Mercury_StateProvider::getStateProvider();
+
+    for(int i(0); i<3; ++i){
+        body_led0_filter_.push_back(new digital_lp_filter(2.*M_PI*50, mercury::servo_rate));
+        body_led1_filter_.push_back(new digital_lp_filter(2.*M_PI*50, mercury::servo_rate));
+        body_led2_filter_.push_back(new digital_lp_filter(2.*M_PI*50, mercury::servo_rate));
+    }
 
     //printf("[Mo Cap Manager] Constructed\n");
 }
@@ -58,23 +71,27 @@ void MoCapManager::run(){
 void MoCapManager::_CoordinateUpdate(mercury_message & msg) {
     double start_idx = mercury_link::LED_BODY_0;
     double len_to_virtual = 77;
-    std::vector<dynacore::Vect3> led_list;
-    led_list.resize(NUM_MARKERS);
+    
     for (int i = 0; i < NUM_MARKERS; ++i) {
-        led_list[i][0] = msg.data[3*i];
-        led_list[i][1] = msg.data[3*i + 1];
-        led_list[i][2] = msg.data[3*i + 2];
+        if(marker_cond_[i] > 0){
+            healthy_led_list_[i][0] = msg.data[3*i];
+            healthy_led_list_[i][1] = msg.data[3*i + 1];
+            healthy_led_list_[i][2] = msg.data[3*i + 2];    
+        }
     }
+
     if(!b_update_call_){
-        R_coord_ = _GetOrientation(led_list[mercury_link::LED_BODY_0-start_idx],
-                led_list[mercury_link::LED_BODY_1-start_idx],
-                led_list[mercury_link::LED_BODY_2-start_idx]);
+        R_coord_ = _GetOrientation(healthy_led_list_[mercury_link::LED_BODY_0-start_idx],
+                healthy_led_list_[mercury_link::LED_BODY_1-start_idx],
+                healthy_led_list_[mercury_link::LED_BODY_2-start_idx]);
+        // Eigen::Matrix3d Body_rot(imu_body_ori_);
+        // R_coord_ = R_coord_ * Body_rot;
     }
     dynacore::Vect3 local_pos;
-    offset_ = led_list[0];
-
+    offset_ = healthy_led_list_[0];
+    // dynacore::pretty_print(R_coord_, std::cout, "R coord");
     for (int i = 0; i < NUM_MARKERS; ++i) {
-        local_pos = R_coord_*(led_list[i] - offset_);
+        local_pos = R_coord_*(healthy_led_list_[i] - offset_);
 
         msg.data[3*i] = local_pos[0];
         msg.data[3*i + 1] = local_pos[1];
@@ -102,9 +119,23 @@ void MoCapManager::_CoordinateChange(mercury_message & msg) {
     }
 }
 
-dynacore::Matrix MoCapManager::_GetOrientation(const dynacore::Vect3 &b0,
-        const dynacore::Vect3 &b1,
-        const dynacore::Vect3 &b2) {
+dynacore::Matrix MoCapManager::_GetOrientation(const dynacore::Vect3 &b0_raw,
+        const dynacore::Vect3 &b1_raw,
+        const dynacore::Vect3 &b2_raw) {
+
+    dynacore::Vect3 b0, b1, b2;
+
+    for(int i(0); i<3; ++i){
+        body_led0_filter_[i]->input(b0_raw[i]);
+        body_led1_filter_[i]->input(b1_raw[i]);
+        body_led2_filter_[i]->input(b2_raw[i]);
+
+        b0[i] = body_led0_filter_[i]->output();
+        b1[i] = body_led1_filter_[i]->output();
+        b2[i] = body_led2_filter_[i]->output();    
+    }
+    
+
     dynacore::Vect3 normal;
     //normal = (b2 - b0).cross( (b1 - b0) );
     normal = (b1 - b0).cross( (b2 - b0) );

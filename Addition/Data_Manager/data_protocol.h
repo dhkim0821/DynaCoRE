@@ -12,7 +12,11 @@
 #define IP_ADDR_DH    "192.168.50.159"
 
 #define IP_ADDR IP_ADDR_DH
+<<<<<<< HEAD
 //#define IP_ADDR IP_ADDR_MYSELF
+=======
+// #define IP_ADDR IP_ADDR_MYSELF
+>>>>>>> 4557b33d5371c90d3e04befde191fc578f0c20c8
 
 #define LEG_PORT 51129
 #define NUM_JOINT_Q 13

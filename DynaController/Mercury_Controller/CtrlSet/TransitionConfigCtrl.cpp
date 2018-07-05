@@ -43,7 +43,7 @@ TransitionConfigCtrl::TransitionConfigCtrl(RobotSystem* robot, int moving_foot, 
     wbdc_rotor_data_->cost_weight[config_task_->getDim() + 5]  = 0.001; // Fr_z
 
     sp_ = Mercury_StateProvider::getStateProvider();
-    printf("[Transition Controller] Constructed\n");
+    // printf("[Transition Controller] Constructed\n");
 }
 
 TransitionConfigCtrl::~TransitionConfigCtrl(){
@@ -106,6 +106,9 @@ void TransitionConfigCtrl::_body_task_setup(){
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion quat_des;
     rpy_des.setZero();
+
+    // TEST
+    rpy_des[1] = DES_PITCH_CMD;
 
     dynacore::convert(rpy_des, quat_des);
     pos_des[3] = quat_des.w();
