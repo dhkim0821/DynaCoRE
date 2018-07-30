@@ -9,7 +9,7 @@
 MoCapManager::MoCapManager(const RobotSystem* robot):dynacore_pThread(),
     socket_(0),
     led_pos_data_(3*NUM_MARKERS),
-    // led_kin_data_(3*NUM_MARKERS),
+    led_kin_data_(3*NUM_MARKERS),
     led_pos_raw_data_(3*NUM_MARKERS),
     body_quat_(1.0, 0., 0., 0. ),
     initialization_duration_(0.5),
@@ -26,9 +26,9 @@ MoCapManager::MoCapManager(const RobotSystem* robot):dynacore_pThread(),
     marker_cond_.resize(NUM_MARKERS, 0.);
 
     led_pos_data_.setZero();
-    // led_kin_data_.setZero();
+    led_kin_data_.setZero();
     DataManager::GetDataManager()->RegisterData(&led_pos_data_, DYN_VEC, "LED_Pos", 3*NUM_MARKERS);
-    // DataManager::GetDataManager()->RegisterData(&led_kin_data_, DYN_VEC, "LED_Kin_Pos", 3*NUM_MARKERS);
+    DataManager::GetDataManager()->RegisterData(&led_kin_data_, DYN_VEC, "LED_Kin_Pos", 3*NUM_MARKERS);
     DataManager::GetDataManager()->RegisterData(&led_pos_raw_data_, DYN_VEC, "LED_Pos_Raw", 3*NUM_MARKERS);
 
     sp_ = Mercury_StateProvider::getStateProvider();
@@ -179,15 +179,15 @@ void MoCapManager::_print_message(const mercury_message & msg){
 }
 
 void MoCapManager::_UpdateLEDPosData(const mercury_message & msg){
-    // dynacore::Vect3 pos;
+    dynacore::Vect3 pos;
 
-    // int led_idx = mercury_link::LED_BODY_0;
+    int led_idx = mercury_link::LED_BODY_0;
 
-    // for(int i(0); i<NUM_MARKERS; ++i){
-    //   robot_sys_->getPos(mercury_link::LED_BODY_0 + i, pos);
+    for(int i(0); i<NUM_MARKERS; ++i){
+      robot_sys_->getPos(mercury_link::LED_BODY_0 + i, pos);
 
-    //   for (int j(0); j<3; ++j)  led_kin_data_[3*i + j] = pos[j];
-    // }
+      for (int j(0); j<3; ++j)  led_kin_data_[3*i + j] = pos[j];
+    }
 
     int led_number(0);
     for(int i(0); i<3*NUM_MARKERS; ++i){

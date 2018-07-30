@@ -315,6 +315,8 @@ void JPosTrajPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     // TEST
     for(int i(0); i<2; ++i){
         // com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
+        // TEST jpos update must be true
+        // com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
         //com_pos[i] += body_pt_offset_[i];
         // com_vel[i] = sp_->average_vel_[i]; 
         // com_vel[i] = sp_->est_CoM_vel_[i]; 
@@ -351,9 +353,10 @@ void JPosTrajPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     end_time_ += pl_output.time_modification;
     target_loc -= sp_->global_pos_local_;
 
+    // TEST 
     if(sp_->num_step_copy_ < 2){
         // target_loc[0] = sp_->Q_[0] + default_target_loc_[0];
-        target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
+        // target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
     }
 
     //target_loc[2] -= push_down_height_;
