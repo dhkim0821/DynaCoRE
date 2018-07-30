@@ -30,22 +30,22 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     # (3, 4, 5, 6, 7): Right Leg
     # (8, 9, 10, 11, 12): Left Leg
     # LED_idx = [3, 4]; # right thigh
-    # LED_idx = [5, 6, 7]; # right shank
+    LED_idx = [5, 6, 7]; # right shank
     # LED_idx = [8, 9]; #left thigh
-    LED_idx = [10, 11, 12]; #left shank
+    # LED_idx = [10, 11, 12]; #left shank
     
     # Plot Figure --------------------------------------------------------------------
     ## plot X (YZ plane)
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
     #plt.get_current_fig_manager().window.wm_geometry("480x600+0+0")
-    fig.canvas.set_window_title('jpos (right_leg)')
+    fig.canvas.set_window_title('YZ plane (X axis)')
     for i in LED_idx:
         plt.plot(data_LED[st_idx:end_idx, 3*i + 1], data_LED[st_idx:end_idx, 3*i+2], 'r*')
         plt.plot(data_LED_kin[st_idx:end_idx, 3*i + 1], data_LED_kin[st_idx:end_idx, 3*i+2], 'b*')
         # plt.legend(('command', 'pos'), loc='upper left')
     plt.grid(True)
-    plt.xlabel('time (sec)')
+    plt.xlabel('Y (m)')
     ## increment figure number and index
     figure_number += 1
     if plot_configuration == PLOT_HORIZONTALLY:
@@ -59,13 +59,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
     #plt.get_current_fig_manager().window.wm_geometry("480x600+0+0")
-    fig.canvas.set_window_title('jpos (right_leg)')
+    fig.canvas.set_window_title('XZ plane (Y axis)')
     for i in LED_idx:
         plt.plot(data_LED[st_idx:end_idx, 3*i + 0], data_LED[st_idx:end_idx, 3*i+2], 'r*')
         plt.plot(data_LED_kin[st_idx:end_idx, 3*i + 0], data_LED_kin[st_idx:end_idx, 3*i+2], 'b*')
         # plt.legend(('command', 'pos'), loc='upper left')
     plt.grid(True)
-    plt.xlabel('time (sec)')
+    plt.xlabel('X(m)')
     ## increment figure number and index
     figure_number += 1
     if plot_configuration == PLOT_HORIZONTALLY:
@@ -79,13 +79,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
     #plt.get_current_fig_manager().window.wm_geometry("480x600+0+0")
-    fig.canvas.set_window_title('jpos (right_leg)')
+    fig.canvas.set_window_title('XY plane (Z axis)')
     for i in LED_idx:
         plt.plot(data_LED[st_idx:end_idx, 3*i + 0], data_LED[st_idx:end_idx, 3*i+1], 'r*')
         plt.plot(data_LED_kin[st_idx:end_idx, 3*i + 0], data_LED_kin[st_idx:end_idx, 3*i+1], 'b*')
         # plt.legend(('command', 'pos'), loc='upper left')
     plt.grid(True)
-    plt.xlabel('time (sec)')
+    plt.xlabel('X (m)')
     ## increment figure number and index
     figure_number += 1
     if plot_configuration == PLOT_HORIZONTALLY:

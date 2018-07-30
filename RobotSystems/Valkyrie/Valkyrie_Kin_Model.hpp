@@ -28,7 +28,7 @@ class Valkyrie_Kin_Model{
 
         void UpdateKinematics(const dynacore::Vector & q, const dynacore::Vector & qdot);
 
-        dynacore::Vector com_pos_;
+        dynacore::Vect3 com_pos_;
         dynacore::Vector centroid_vel_;
     protected:
         void _UpdateCentroidFrame(const dynacore::Vector & q, const dynacore::Vector & qdot);

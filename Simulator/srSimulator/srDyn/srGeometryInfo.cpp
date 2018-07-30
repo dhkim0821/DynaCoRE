@@ -106,6 +106,14 @@ void srGeometryInfo::SetDimension(double w, double h, double d)
 	m_Dimension[2] = d;
 }
 
+void srGeometryInfo::SetMeshScale(double x, double y, double z){
+    m_Mesh_scale[0] = x;
+    m_Mesh_scale[1] = y;
+    m_Mesh_scale[2] = z;
+}
+Vec3 & srGeometryInfo::GetMeshScale(){
+    return m_Mesh_scale;
+}
 //void srGeometryInfo::SetDiameter(float d)
 //{
 //	m_Dimension[0] = d;

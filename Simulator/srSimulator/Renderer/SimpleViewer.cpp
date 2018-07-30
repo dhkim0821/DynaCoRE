@@ -472,6 +472,8 @@ void srgLink::DynamicRender( void* pVoid )
 		break;
 	case srGeometryInfo::USER:
 		break;
+    default:
+        break;
 	}
 
 	MColor.PopAttrib();

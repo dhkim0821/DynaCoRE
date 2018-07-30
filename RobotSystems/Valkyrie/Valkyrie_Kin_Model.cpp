@@ -359,6 +359,10 @@ unsigned int Valkyrie_Kin_Model::_find_body_idx(int id) const {
             return model_->GetBodyId("rightCOP_Frame");
         case valkyrie_link::leftCOP_Frame:
             return model_->GetBodyId("leftCOP_Frame");
+        case valkyrie_link::rightFoot:
+            return model_->GetBodyId("rightFoot");
+        case valkyrie_link::leftFoot:
+            return model_->GetBodyId("leftFoot");
         case valkyrie_link::rightPalm:
             return model_->GetBodyId("rightPalm");
         case valkyrie_link::leftPalm:

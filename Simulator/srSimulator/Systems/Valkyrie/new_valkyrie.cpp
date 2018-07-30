@@ -3,6 +3,9 @@
 New_Valkyrie::New_Valkyrie():
   SystemGenerator()
 {
+      //BuildRobot(Vec3(0., 0., 0.), srSystem::FIXED, srJoint::TORQUE,
+          //ModelPath"Valkyrie/valkyrie.urdf");
+ 
   printf("[Valkyrie] ASSEMBLED\n");
 }
 
@@ -108,14 +111,16 @@ void New_Valkyrie::_SetInitialConf(){
     vp_joint_[2]->m_State.m_rValue[0] =  1.079;
 
     r_joint_[r_joint_idx_map_.find("leftHipYaw" )->second]->m_State.m_rValue[0] =  0.001277;
-    r_joint_[r_joint_idx_map_.find("leftHipRoll" )->second]->m_State.m_rValue[0] =  0.000066;
+    r_joint_[r_joint_idx_map_.find("leftHipRoll" )->second]
+        ->m_State.m_rValue[0] =  0.000066;
     r_joint_[r_joint_idx_map_.find("leftHipPitch" )->second]->m_State.m_rValue[0] =  -0.421068;
     r_joint_[r_joint_idx_map_.find("leftKneePitch" )->second]->m_State.m_rValue[0] = 0.915849;
     r_joint_[r_joint_idx_map_.find("leftAnklePitch" )->second]->m_State.m_rValue[0] =  -0.470756;
     r_joint_[r_joint_idx_map_.find("leftAnkleRoll" )->second]->m_State.m_rValue[0] =  0.000312;
 
     r_joint_[r_joint_idx_map_.find("rightHipYaw" )->second]->m_State.m_rValue[0] =  0.003021;
-    r_joint_[r_joint_idx_map_.find("rightHipRoll" )->second]->m_State.m_rValue[0] =  -0.000109;
+    r_joint_[r_joint_idx_map_.find("rightHipRoll" )->second]
+        ->m_State.m_rValue[0] =  -0.000109;
     r_joint_[r_joint_idx_map_.find("rightHipPitch" )->second]->m_State.m_rValue[0] =  -0.421119;
     r_joint_[r_joint_idx_map_.find("rightKneePitch" )->second]->m_State.m_rValue[0] = 0.917231;
     r_joint_[r_joint_idx_map_.find("rightAnklePitch" )->second]->m_State.m_rValue[0] =  -0.467243;

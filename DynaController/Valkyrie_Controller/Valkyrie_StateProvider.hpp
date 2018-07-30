@@ -1,20 +1,38 @@
-#ifndef VALKYRIE_STATE_PROVIDER
-#define VALKYRIE_STATE_PROVIDER
+#ifndef STATE_PROVIDER_VALKYRIE
+#define STATE_PROVIDER_VALKYRIE
 
+#include <Utils/utilities.hpp>
 #include <Utils/wrap_eigen.hpp>
-#include <Valkyrie/Valkyrie_Definition.h>
+#include <Configuration.h>
+
+using namespace dynacore;
+
+class RobotSystem;
 
 class Valkyrie_StateProvider{
-    public:
-        dynacore::Vector q_;
-        dynacore::Vector qdot_;
+public:
+  static Valkyrie_StateProvider* getStateProvider();
+  ~Valkyrie_StateProvider(){}
 
-        static Valkyrie_StateProvider* getStateProvider(){
-            static Valkyrie_StateProvider sp;
-            return & sp;
-        }
+  dynacore::Vect3 imu_ang_vel_;
+  // Important!!!!!!!!
+  int stance_foot_;
 
-    private:
-        Valkyrie_StateProvider():q_(valkyrie::num_q), qdot_(valkyrie::num_qdot){}
+  double curr_time_;
+
+  Vector Q_;
+  Vector Qdot_;
+  
+  dynacore::Vect3 global_pos_local_;
+  dynacore::Vect2 des_location_;
+
+  int b_rfoot_contact_;
+  int b_lfoot_contact_;
+  int num_step_copy_;
+
+private:
+  Valkyrie_StateProvider();
 };
+
+
 #endif

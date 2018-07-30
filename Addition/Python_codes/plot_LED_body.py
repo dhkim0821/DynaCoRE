@@ -89,7 +89,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             else:
                 pass
     axes = plt.gca()
-    stand_up_idx = phseChange[3]
+
+    ## TEST
+    # stand_up_idx = phseChange[3]
+    stand_up_idx = 1
     stand_up_idx += st_idx  
     # stand_up_idx = phseChange[1]
 

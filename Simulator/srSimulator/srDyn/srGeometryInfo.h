@@ -23,7 +23,7 @@ class srGeometryInfo
 {
 public:
 
-	enum SHAPETYPE { SPHERE, BOX, CAPSULE, CYLINDER, PLANE, TDS, USER };
+	enum SHAPETYPE { SPHERE, BOX, CAPSULE, CYLINDER, PLANE, TDS, MESH, USER };
 
 	/*!
 		Shape type of primitive geometry.
@@ -39,6 +39,7 @@ public:
 	*/
 	Vec3	m_Dimension;
 
+	Vec3	m_Mesh_scale;
 	/*!
 		Color of geometry in OpenGL manner. (R, G, B, alpha).
 	*/
@@ -70,6 +71,9 @@ public:
 		Re-calculate bounding radius in case dimension changed.
 	*/
 	void	UpdateBoundingRadius();
+
+    void SetMeshScale(double x, double y, double z);
+    Vec3& GetMeshScale();
 	/*!
 		Set primitive geometry type.
 	*/

@@ -239,7 +239,7 @@ void WBDC::_ContactBuilding(const std::vector<ContactSpec*> & contact_list){
 
         // Jc append
         Jc_.conservativeResize(dim_rf_ + dim_new_rf, num_qdot_);
-        Jc_ = Jc_.block(dim_rf_, 0, dim_new_rf, num_qdot_) = Jc;
+        Jc_.block(dim_rf_, 0, dim_new_rf, num_qdot_) = Jc;
 
         // JcDotQdot append
         JcDotQdot_.conservativeResize(dim_rf_ + dim_new_rf, 1);

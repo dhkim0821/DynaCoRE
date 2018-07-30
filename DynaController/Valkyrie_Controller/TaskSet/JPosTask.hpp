@@ -1,7 +1,7 @@
-#ifndef VALKYRIE_WBC_JPOS_TASK
-#define VALKYRIE_WBC_JPOS_TASK
+#ifndef WBDC_JPOS_TASK_VALKYRIE
+#define WBDC_JPOS_TASK_VALKYRIE
 
-#include <WBC/Task.hpp>
+#include <Task.hpp>
 
 class Valkyrie_StateProvider;
 
@@ -22,8 +22,8 @@ protected:
   virtual bool _UpdateTaskJacobian();
   // Update JtDotQdot_
   virtual bool _UpdateTaskJDotQdot();
-    // no additional update
-  virtual bool _AdditionalUpdate(){ return true;}
+  virtual bool _AdditionalUpdate(){ return true; }
+
   Valkyrie_StateProvider* sp_;
 };
 

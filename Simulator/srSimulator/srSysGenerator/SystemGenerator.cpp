@@ -1,5 +1,6 @@
 #include "SystemGenerator.h"
 #include <Utils/utilities.hpp>
+#include <sstream>
 
 #define FIX_IN_THE_AIR 0
 
@@ -15,7 +16,8 @@ SystemGenerator::SystemGenerator() :
 SystemGenerator::~SystemGenerator(){
 }
 
-void SystemGenerator::BuildRobot(Vec3 location, srSystem::BASELINKTYPE base_link_type, srJoint::ACTTYPE joint_type, 
+void SystemGenerator::BuildRobot(Vec3 location, 
+        srSystem::BASELINKTYPE base_link_type, srJoint::ACTTYPE joint_type, 
         std::string filename){
     _Parsing(filename);
     _SetLinkIdx();
@@ -33,9 +35,7 @@ void SystemGenerator::BuildRobot(Vec3 location, srSystem::BASELINKTYPE base_link
 
 void SystemGenerator::_AssembleModel(Vec3 location, srSystem::BASELINKTYPE base_link_type, srJoint::ACTTYPE joint_type){
     _SetBase(location, base_link_type);
-    //std::cout << "set base" << std::endl;
     _SetPassiveJoint(joint_type);
-    //std::cout << "set passive joint" << std::endl;
     _SetLinkJoint();
 }
 
@@ -286,22 +286,36 @@ void SystemGenerator::_SetLinkParam(int idx){
         Inertiaoffset_=Vec3(Linkidxiter->second->inertial->origin.position.x,Linkidxiter->second->inertial->origin.position.y,Linkidxiter->second->inertial->origin.position.z);
     }
     
-    // TEST
-    //if(Linkidxiter->second->visual!=0){
-    if(false){
+    //TEST
+    if(Linkidxiter->second->visual!=0){
+    //if(false){
         link_visual_xyz[0]=Linkidxiter->second->visual->origin.position.x;
         link_visual_xyz[1]=Linkidxiter->second->visual->origin.position.y;
         link_visual_xyz[2]=Linkidxiter->second->visual->origin.position.z;
-        Linkidxiter->second->visual->origin.rotation.getRPY (link_visual_rpy[2], link_visual_rpy[1], link_visual_rpy[0]);
+        Linkidxiter->second->visual->
+            origin.rotation.getRPY (link_visual_rpy[2], link_visual_rpy[1], link_visual_rpy[0]);
 
-        if((Linkidxiter->second->visual_array[0]->geometry->type)==dynacore::urdf::Geometry::MESH){
-            boost::shared_ptr<dynacore::urdf::Mesh>mesh=boost::dynamic_pointer_cast<dynacore::urdf::Mesh>(Linkidxiter->second->visual_array[0]->geometry);
-            _SplitString(first_str,mesh->filename,tok1);
-            _SplitString(second_str,first_str[5],tok2);
-            string ModelFileName_=ModelPath"meshes/" + second_str[0] + ds3D;
-            // std::cout << ModelFileName_ << std::endl;
+        if((Linkidxiter->second->visual_array[0]->geometry->type)
+                == dynacore::urdf::Geometry::MESH){
+
+            boost::shared_ptr<dynacore::urdf::Mesh> mesh
+                = boost::dynamic_pointer_cast<dynacore::urdf::Mesh>(
+                        Linkidxiter->second->visual_array[0]->geometry );
+
+            string ModelFileName_ = file_path_ + mesh->filename;
+             //std::cout << ModelFileName_ << std::endl;
             const char* modelnamepath = ModelFileName_.c_str();
-            link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::TDS);
+            link_[idx]->GetGeomInfo().SetMeshScale(mesh->scale.x, 
+                    mesh->scale.y, 
+                    mesh->scale.z);
+            link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::MESH);
+
+            std::stringstream ss(mesh->filename);
+            string extension;
+            getline(ss, extension, '.');
+            getline(ss, extension, '.');
+            if(extension == "3ds")
+                link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::TDS);
             link_[idx]->GetGeomInfo().SetFileName(modelnamepath);
         }
 
@@ -324,8 +338,16 @@ void SystemGenerator::_SetLinkParam(int idx){
         }
     }
     else{
+        //link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::MESH);
+        //link_[idx]->GetGeomInfo().SetFileName(
+                //"/Users/donghyunkim/Repository/Humanoid_2018/Simulator/SimulationModel/Mercury_Model/meshes/color_foot_R.dae");
+ 
+        //link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::TDS);
+        //link_[idx]->GetGeomInfo().SetFileName(
+                //"/Users/donghyunkim/Repository/Humanoid_2018/Simulator/SimulationModel/Mercury_Model/Updated_foot.3ds");
+ 
         link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::BOX);
-        link_[idx]->GetGeomInfo().SetDimension(Vec3(0.3,0.2,0.1));
+        link_[idx]->GetGeomInfo().SetDimension(Vec3(0.01,0.015,0.02));
     }
 
     if(Linkidxiter->second->inertial!=0){
@@ -417,6 +439,9 @@ void SystemGenerator::_SetPassiveJoint(srJoint::ACTTYPE joint_type){
 //joint_name_
 void SystemGenerator::_Parsing(std::string filename){
     std::string full_path(filename);
+    std::size_t found = full_path.find_last_of("/");
+    file_path_ =  full_path.substr(0,found) +"/";
+
     std::ifstream model_file( full_path.c_str() );
     if (!model_file) {
         std::cerr << "Error opening file '" << full_path << "'." << std::endl;
@@ -428,7 +453,8 @@ void SystemGenerator::_Parsing(std::string filename){
     model_file.seekg(0, std::ios::end);
     model_xml_string.reserve(model_file.tellg());
     model_file.seekg(0, std::ios::beg);
-    model_xml_string.assign((std::istreambuf_iterator<char>(model_file)), std::istreambuf_iterator<char>());
+    model_xml_string.assign((std::istreambuf_iterator<char>(model_file)), 
+            std::istreambuf_iterator<char>());
     model_file.close();
 
     URDFModelPtr urdf_model = dynacore::urdf::parseURDF (model_xml_string);

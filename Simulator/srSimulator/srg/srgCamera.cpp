@@ -60,8 +60,12 @@ void srgCamera::Reset(void)
 	// m_vCenter = Vec3(0.0, 0.0, 0.6);
 	m_vUp = Vec3(0.0, 0.0, 1.0);
 
-  m_vEye = Vec3(2.253063, 2.011233, 1.341073);
-	m_vCenter = Vec3(0.100610, -0.172796, 0.719789);
+  //m_vEye = Vec3(2.253063, 2.011233, 1.341073);
+	//m_vCenter = Vec3(0.100610, -0.172796, 0.719789);
+
+    m_vEye = Vec3(4.15287, 2.796113, 1.297027);
+	m_vCenter = Vec3(0.92, -0.537, 0.66);
+
 
     // Center: 2.228765, 1.549195, 0.276861
     // Eye: 6.331959, -3.582293, 1.531183
@@ -70,8 +74,8 @@ void srgCamera::Reset(void)
 
 inline void srgCamera::UpdateCameraFrame(void)
 {
-  // printf("Center: %f, %f, %f \n", m_vCenter[0], m_vCenter[1], m_vCenter[2]);
-  // printf("Eye: %f, %f, %f \n\n", m_vEye[0], m_vEye[1], m_vEye[2]);
+   printf("Center: %f, %f, %f \n", m_vCenter[0], m_vCenter[1], m_vCenter[2]);
+   printf("Eye: %f, %f, %f \n\n", m_vEye[0], m_vEye[1], m_vEye[2]);
 
 	// __z
 	__z = m_vEye - m_vCenter;

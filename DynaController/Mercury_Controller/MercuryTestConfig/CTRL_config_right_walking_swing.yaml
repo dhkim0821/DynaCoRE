@@ -20,8 +20,8 @@ gain_decreasing_ratio: 1.0
 gain_decreasing_period_portion: 0.0
 
 # body_pt_offset: [0.007, 0.005]
-# body_pt_offset: [-0.0, -0.0]
-body_pt_offset: [-0.03, -0.04]
+body_pt_offset: [-0.0, -0.0]
+#body_pt_offset: [-0.03, -0.04]
 swing_time_reduction: 0.0
 foot_landing_offset: [-0.0, 0.]
 roll_offset_gain: -2.

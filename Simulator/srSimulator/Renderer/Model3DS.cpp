@@ -75,7 +75,6 @@
 #include <stdio.h>
 #include "LieGroup/LieGroup.h"
 #include "Renderer/Model3DS.h"
-#include <srConfiguration.h>
 
 // This is used to generate a warning from the compiler
 #define _QUOTE(x) # x
@@ -1007,10 +1006,6 @@ void Model3DS::VertexListChunkProcessor(long length, long findex, int objindex)
 		fread(&Objects[objindex].Vertexes[i],sizeof(GLfloat),1,bin3ds);
 		fread(&Objects[objindex].Vertexes[i+2],sizeof(GLfloat),1,bin3ds);
 		fread(&Objects[objindex].Vertexes[i+1],sizeof(GLfloat),1,bin3ds);
-                //DH Test
-                for(int j(0); j<3; ++j){
-                    Objects[objindex].Vertexes[i+j]*=CAD_FILE_DIMENSION_RATIO;
-                }
                 
 		// Change the sign of the z coordinate
 		Objects[objindex].Vertexes[i+2] = -Objects[objindex].Vertexes[i+2];

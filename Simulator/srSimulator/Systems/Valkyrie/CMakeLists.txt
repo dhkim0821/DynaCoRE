@@ -11,9 +11,9 @@ target_link_libraries (simulation_valkyrie
   Renderer
   util
   ${OPENGL_LIBRARIES}
-  SJurdf
+  dynacore_urdf
   Valkyrie_Controller
-  SR_Terrain
+  dynacore_utils
 )
 
 if (APPLE)

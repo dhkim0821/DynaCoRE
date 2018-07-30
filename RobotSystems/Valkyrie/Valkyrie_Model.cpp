@@ -11,7 +11,7 @@ using namespace RigidBodyDynamics::Math;
 Valkyrie_Model::Valkyrie_Model(){
     model_ = new Model();
     if (!Addons::URDFReadFromFile 
-            (THIS_COM"/RobotSystems/Valkyrie/valkyrie_simple.urdf", model_, false)) {
+            (THIS_COM"RobotSystems/Valkyrie/valkyrie_simple.urdf", model_, false)) {
         std::cerr << "Error loading model valkyrie_simple.urdf" << std::endl;
         abort();
     }
@@ -58,7 +58,6 @@ bool Valkyrie_Model::getCoriolis(dynacore::Vector & coriolis) const{
 }
 
 void Valkyrie_Model::getFullJacobian(int link_id, dynacore::Matrix & J) const {
-    J.setZero();
     kin_model_->getJacobian(link_id, J);
 }
 

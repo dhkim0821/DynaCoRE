@@ -12,7 +12,7 @@ target_link_libraries (simulation_mercury
   util
   ${OPENGL_LIBRARIES}
   dynacore_urdf
-  ${CTRL_SYS}_Controller
+  Mercury_Controller
  dynacore_utils
  dynacore_param_handler
 )

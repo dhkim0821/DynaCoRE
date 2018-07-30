@@ -8,7 +8,7 @@ class Valkyrie_StateProvider;
 
 class DoubleContact: public WBDC_ContactSpec{
 public:
-  DoubleContact(RobotSystem* );
+  DoubleContact(RobotSystem*);
   virtual ~DoubleContact();
 
 protected:

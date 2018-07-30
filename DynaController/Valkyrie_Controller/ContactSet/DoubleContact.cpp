@@ -1,45 +1,37 @@
 #include "DoubleContact.hpp"
 #include <Valkyrie/Valkyrie_Model.hpp>
-#include "../Valkyrie_StateProvider.hpp"
+#include <Valkyrie/Valkyrie_Definition.h>
+#include <Valkyrie_Controller/Valkyrie_StateProvider.hpp>
 #include <Utils/utilities.hpp>
 
 DoubleContact::DoubleContact(RobotSystem* robot):WBDC_ContactSpec(12)
 {
-    robot_sys_ = robot;
-    sp_ = Valkyrie_StateProvider::getStateProvider();
-    Jc_ = dynacore::Matrix(dim_contact_, valkyrie::num_qdot);
+  robot_sys_ = robot;
+  sp_ = Valkyrie_StateProvider::getStateProvider();
+  Jc_ = dynacore::Matrix(dim_contact_, valkyrie::num_qdot);
+  // printf("[Double Contact] Constructed\n");
 }
 
 DoubleContact::~DoubleContact(){}
 
 bool DoubleContact::_UpdateJc(){
   dynacore::Matrix Jtmp;
-  robot_sys_->getFullJacobian(valkyrie_link::rightCOP_Frame, Jtmp);
+  robot_sys_->getFullJacobian(valkyrie_link::rightFoot, Jtmp);
   Jc_.block(0, 0, 6, valkyrie::num_qdot) = Jtmp;
 
-  robot_sys_->getFullJacobian(valkyrie_link::leftCOP_Frame, Jtmp);
+  robot_sys_->getFullJacobian(valkyrie_link::leftFoot, Jtmp);
   Jc_.block(6, 0, 6, valkyrie::num_qdot) = Jtmp;
 
-   //dynacore::pretty_print(Jc_, std::cout, "double] Jc");
+  // dynacore::pretty_print(Jc_, std::cout, "double] Jc");
   return true;
 }
 bool DoubleContact::_UpdateJcDotQdot(){
-  dynacore::Matrix JcDot(dim_contact_, valkyrie::num_qdot);
-  dynacore::Matrix jcdot_tmp;
-  // Right
-  robot_sys_->getFullJacobianDot(valkyrie_link::rightCOP_Frame, jcdot_tmp);
-  JcDot.block(0, 0, 6, valkyrie::num_qdot) = jcdot_tmp;
-  // Left
-  robot_sys_->getFullJacobianDot(valkyrie_link::leftCOP_Frame, jcdot_tmp);
-  JcDot.block(6, 0, 6, valkyrie::num_qdot) = jcdot_tmp;
-
-   //dynacore::pretty_print(JcDot, std::cout,  "JcDot");
-  JcDotQdot_ = JcDot * sp_->qdot_;
+  JcDotQdot_ = dynacore::Vector::Zero(dim_contact_);
   return true;
 }
 
 bool DoubleContact::_UpdateUf(){
-   double mu(0.3);
+    double mu(0.3);
   double X(0.08);
   double Y(0.05);
 
@@ -65,15 +57,14 @@ bool DoubleContact::_UpdateUf(){
   Uf_.block(0,0, size_u, 6) = U * R_rfoot;
   Uf_.block(size_u, 6, size_u, 6) = U * R_lfoot;
 
-
-  //dynacore::pretty_print(Uf_, std::cout, "Uf");
- return true;
+  return true;
 }
 
 bool DoubleContact::_UpdateInequalityVector(){
   ieq_vec_ = dynacore::Vector::Zero(17*2);
   ieq_vec_[0] = 5.0;
   ieq_vec_[17] = 5.0;
+
   return true;
 }
 

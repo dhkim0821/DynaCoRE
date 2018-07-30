@@ -56,6 +56,8 @@ class SystemGenerator: public srSystem
   virtual void _SetInitialConf() = 0;
   virtual void _SetJointLimit() = 0;
 
+  std::string file_path_;
+ 
  public:
   SystemGenerator();
   virtual ~SystemGenerator();
