@@ -19,11 +19,13 @@ Kd: [ 0, 0, 0, 0, 0, 0, 15,  10,  10,  15,  15,  10]
 gain_decreasing_ratio: 1.0
 gain_decreasing_period_portion: 0.0
 
-body_pt_offset: [-0.022, 0.0]
+# body_pt_offset: [0.007, 0.0]
+# body_pt_offset: [-0.0, 0.0]
+body_pt_offset: [-0.03, 0.015]
 swing_time_reduction: 0.0
 foot_landing_offset: [-0.0, 0.]
-roll_offset_gain: -2.0
-pitch_offset_gain: -3.0
+roll_offset_gain: -2.
+pitch_offset_gain: -2.8
 
 #body_pt_offset: [-0.077, 0.0]
 #foot_landing_offset: [0.0, 0.]
