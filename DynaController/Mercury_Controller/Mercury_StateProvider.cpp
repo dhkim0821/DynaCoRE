@@ -42,6 +42,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
     est_mocap_body_vel_.setZero();
 
   Q_.setZero();
+  Q_[mercury::num_qdot] = 1.;
   Qdot_.setZero();
   reaction_forces_.setZero();
   qddot_cmd_.setZero();

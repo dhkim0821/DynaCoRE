@@ -4,7 +4,7 @@
 #include <Utils/wrap_eigen.hpp>
 #include <Configuration.h>
 #include <interface.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 #include <Filter/filters.hpp>
 
 class Mercury_StateEstimator;

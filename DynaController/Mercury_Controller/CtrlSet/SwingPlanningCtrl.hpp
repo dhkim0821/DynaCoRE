@@ -2,7 +2,7 @@
 #define ABSTRACT_CLASS_SWING_LEG_CONTROL
 
 #include <Controller.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 #include <Mercury_Controller/StateEstimator/LIPM_KalmanFilter.hpp>
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>

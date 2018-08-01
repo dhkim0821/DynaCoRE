@@ -2,7 +2,8 @@
 #include <time.h>
 #include <iostream>
 #include <stdio.h>
-#include "Configuration.h"
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
+#include <Configuration.h>
 #include <ParamHandler/ParamHandler.hpp>
 
 Mercury::Mercury(const  Vec3 & location, BASELINKTYPE base_link_type, srJoint::ACTTYPE joint_type):

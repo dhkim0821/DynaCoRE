@@ -9,7 +9,7 @@
 #include <Utils/DataManager.hpp>
 
 #include <Mercury/Mercury_Model.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 
 ConfigStanceSwingTest::ConfigStanceSwingTest(RobotSystem* robot):Test(robot){
     sp_ = Mercury_StateProvider::getStateProvider();

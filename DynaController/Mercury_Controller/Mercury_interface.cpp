@@ -18,6 +18,9 @@
 // Walking Test
 #include <Mercury_Controller/TestSet/WalkingConfigTest.hpp>
 
+// Walking JPos Test
+#include <Mercury_Controller/TestSet/WalkingJPosTest.hpp>
+
 // Body Ctrl Test
 #include <Mercury_Controller/TestSet/BodyConfigTest.hpp>
 
@@ -242,16 +245,24 @@ void Mercury_interface::_ParameterSetting(){
     bool b_tmp;
     // Test SETUP
     handler.getString("test_name", tmp_string);
+
     // Basic Test ***********************************
     if(tmp_string == "joint_ctrl_test"){
         test_ = new JointCtrlTest(robot_sys_);
-        // Walking Test ***********************************
+
+    // Walking Test ***********************************
     }else if(tmp_string == "walking_config_test"){
         test_ = new WalkingConfigTest(robot_sys_);
-        // Body Ctrl Test ***********************************
+
+    // Walking JPos Test ***********************************
+    }else if(tmp_string == "walking_jpos_test"){
+        test_ = new WalkingJPosTest(robot_sys_);
+    
+    // Body Ctrl Test ***********************************
     }else if(tmp_string == "body_ctrl_test"){
         test_ = new BodyConfigTest(robot_sys_);    
-        // Stance and Swing Test ***********************************
+    
+    // Stance and Swing Test ***********************************
     }else if(tmp_string == "config_stance_swing_test"){
         test_ = new ConfigStanceSwingTest(robot_sys_);
     }else {

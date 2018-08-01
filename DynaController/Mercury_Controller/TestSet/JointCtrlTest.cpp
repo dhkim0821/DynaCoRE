@@ -2,7 +2,7 @@
 #include <Mercury_Controller/CtrlSet/JPosCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/JPosTargetCtrl.hpp>
 #include <ParamHandler/ParamHandler.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 
 JointCtrlTest::JointCtrlTest(RobotSystem* robot):Test(robot){
   phase_ = 0;

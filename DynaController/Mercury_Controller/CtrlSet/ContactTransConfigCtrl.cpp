@@ -5,7 +5,7 @@
 #include <Mercury_Controller/ContactSet/DoubleTransitionContact.hpp>
 #include <Mercury/Mercury_Model.hpp>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Mercury_Controller/Mercury_InvKinematics.hpp>
 

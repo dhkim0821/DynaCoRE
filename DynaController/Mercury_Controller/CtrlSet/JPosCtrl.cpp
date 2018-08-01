@@ -7,7 +7,7 @@
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Utils/DataManager.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 
 JPosCtrl::JPosCtrl(RobotSystem* robot):Controller(robot),
     end_time_(1000.0),

@@ -3,9 +3,10 @@
 #include <Mercury_Controller/TaskSet/StanceTask.hpp>
 #include <Mercury_Controller/TaskSet/JPosSwingTask.hpp>
 #include <Mercury_Controller/ContactSet/SingleContact.hpp>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
+
 #include <Mercury/Mercury_Model.hpp>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
-#include <Mercury/Mercury_Definition.h>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Planner/PIPM_FootPlacementPlanner/Reversal_LIPM_Planner.hpp>
 #include <Utils/DataManager.hpp>

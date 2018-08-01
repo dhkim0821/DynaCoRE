@@ -10,7 +10,7 @@
 #include <Utils/DataManager.hpp>
 
 #include <Mercury/Mercury_Model.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 
 #include <Mercury_Controller/CtrlSet/BodyPriorFootPlanningCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/ConfigBodyFootPlanningCtrl.hpp>

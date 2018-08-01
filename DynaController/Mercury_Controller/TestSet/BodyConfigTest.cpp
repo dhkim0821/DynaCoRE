@@ -6,7 +6,7 @@
 
 #include <ParamHandler/ParamHandler.hpp>
 #include <Mercury/Mercury_Model.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 
 BodyConfigTest::BodyConfigTest(RobotSystem* robot):Test(robot){
   phase_ = BodyConfigPhase::BCJPOS_initial_jpos;

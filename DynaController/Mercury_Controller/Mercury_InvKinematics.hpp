@@ -18,6 +18,13 @@ class Mercury_InvKinematics{
                 int link_id, const dynacore::Vect3 & target_pos,
                 const dynacore::Vector & guess_Q, dynacore::Vector & config_sol);
 
+        void solveFullInvKinematics(
+                double des_height,
+                const dynacore::Quaternion des_quat,
+                const dynacore::Vect3 rfoot_pos,
+                const dynacore::Vect3 lfoot_pos,
+                dynacore::Vector & config_sol);
+
         void getDoubleSupportLegConfig(const dynacore::Vector & current_Q,
                                        const dynacore::Quaternion & des_quat,
                                        const double & des_height, dynacore::Vector & config_sol);

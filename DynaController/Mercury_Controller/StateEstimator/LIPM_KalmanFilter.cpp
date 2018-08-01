@@ -2,7 +2,7 @@
 #include <Configuration.h>
 #include <ParamHandler/ParamHandler.hpp>
 #include <string>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 
 LIPM_KalmanFilter::LIPM_KalmanFilter():CoMStateEstimator(),
                                        prediction_var_(LIPM_KFILTER_STATE_DIM),

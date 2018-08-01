@@ -23,8 +23,13 @@ public:
 
   void setMovingTime(double time) { end_time_ = time; }
   void setTargetPosition(const std::vector<double> & jpos);
+  void setTargetPosition(const dynacore::Vector & jpos){ jpos_target_ = jpos; }
+
+  void setInitialPosition(const std::vector<double> & jpos);
+
 protected:
   double end_time_;
+  bool b_external_initial_pos_set_;
 
   Task* jpos_task_;
   WBDC_ContactSpec* fixed_body_contact_;

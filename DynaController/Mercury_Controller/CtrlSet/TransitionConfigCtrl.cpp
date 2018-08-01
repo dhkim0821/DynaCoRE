@@ -5,7 +5,7 @@
 #include <Mercury_Controller/ContactSet/DoubleContactBounding.hpp>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <Mercury/Mercury_Model.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 #include <ParamHandler/ParamHandler.hpp>
 
 TransitionConfigCtrl::TransitionConfigCtrl(RobotSystem* robot, int moving_foot, bool b_increase):

@@ -3,14 +3,16 @@
 #include <Mercury_Controller/TaskSet/JPosTask.hpp>
 #include <Mercury_Controller/ContactSet/FixedBodyContact.hpp>
 #include <Mercury/Mercury_Model.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Utils/utilities.hpp>
 
 JPosTargetCtrl::JPosTargetCtrl(RobotSystem* robot):Controller(robot),
     jpos_target_(mercury::num_act_joint),
+    jpos_ini_(mercury::num_act_joint),
     end_time_(1000.0),
+    b_external_initial_pos_set_(false),
     ctrl_start_time_(0.),
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint)
@@ -95,9 +97,16 @@ void JPosTargetCtrl::_fixed_body_contact_setup(){
     contact_list_.push_back(fixed_body_contact_);
 }
 
+void JPosTargetCtrl::setInitialPosition(const std::vector<double> & jpos_ini){
+    for(int i(0); i<mercury::num_act_joint; ++i){
+        jpos_ini_[i] = jpos_ini[i];
+    }
+    b_external_initial_pos_set_ = true;
+}
 void JPosTargetCtrl::FirstVisit(){
     ctrl_start_time_ = sp_->curr_time_;
-    jpos_ini_ = sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint);
+    if(!b_external_initial_pos_set_)
+        jpos_ini_ = sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint);
 }
 
 void JPosTargetCtrl::LastVisit(){

@@ -1,7 +1,7 @@
 #include "EKF_RotellaEstimator.hpp"
 #include <Configuration.h>
 #include <Utils/utilities.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 #include <Utils/DataManager.hpp>
 
 #include <rbdl/urdfreader.h>

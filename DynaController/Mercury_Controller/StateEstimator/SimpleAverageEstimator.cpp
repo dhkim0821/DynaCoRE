@@ -1,6 +1,6 @@
 #include "SimpleAverageEstimator.hpp"
 #include <ParamHandler/ParamHandler.hpp>
-#include <Mercury/Mercury_Definition.h>
+#include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 #include <Configuration.h>
 #include <math.h>
 
