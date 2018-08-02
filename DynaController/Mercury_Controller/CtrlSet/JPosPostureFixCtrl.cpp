@@ -88,7 +88,18 @@ void JPosPostureFixCtrl::_jpos_task_setup(){
     }else{
         des_jpos_ = jpos_ini_;
     }
-    
+    //double Kp_roll(2.0);
+    //double Kp_pitch(2.0);
+    //des_jpos_[mercury_joint::rightAbduction - mercury::num_virtual] 
+        //+= Kp_roll * sp_->Q_[mercury_joint::virtual_Rx];
+    //des_jpos_[mercury_joint::leftAbduction - mercury::num_virtual] 
+        //+= Kp_roll * sp_->Q_[mercury_joint::virtual_Rx];
+
+    //des_jpos_[mercury_joint::rightHip - mercury::num_virtual] 
+        //+= Kp_pitch * sp_->Q_[mercury_joint::virtual_Ry];
+    //des_jpos_[mercury_joint::leftHip - mercury::num_virtual] 
+        //+= Kp_pitch * sp_->Q_[mercury_joint::virtual_Ry];
+ 
     jpos_task_->UpdateTask(&(des_jpos_), des_jvel_, jacc_des);
     task_list_.push_back(jpos_task_);
 }

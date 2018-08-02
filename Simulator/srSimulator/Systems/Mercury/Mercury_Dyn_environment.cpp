@@ -136,6 +136,7 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
   // Hold Body
   if(pDyn_env->count_*mercury::servo_rate < pDyn_env->release_time_){
     pDyn_env->FixXY();
+    pDyn_env->FixRxRy();
   }
 }
 
@@ -185,8 +186,26 @@ void Mercury_Dyn_environment::FixXY(){
   vel = m_Mercury->vp_joint_[idx]->m_State.m_rValue[1];
 
   m_Mercury->vp_joint_[idx]->m_State.m_rCommand = -kp * pos - kd * vel;
-
 }
+
+void Mercury_Dyn_environment::FixRxRy(){
+  double pos,vel;
+
+  double kp(2000.0);
+  double kd(300.0);
+
+  int idx(0);
+  pos = m_Mercury->vr_joint_[idx]->m_State.m_rValue[0];
+  vel = m_Mercury->vr_joint_[idx]->m_State.m_rValue[1];
+  m_Mercury->vr_joint_[idx]->m_State.m_rCommand = -kp * pos - kd * vel;
+
+  idx = 1;
+  pos = m_Mercury->vr_joint_[idx]->m_State.m_rValue[0];
+  vel = m_Mercury->vr_joint_[idx]->m_State.m_rValue[1];
+
+  m_Mercury->vr_joint_[idx]->m_State.m_rCommand = -kp * pos - kd * vel;
+}
+
 
 void Mercury_Dyn_environment::Rendering_Fnc(){}
 

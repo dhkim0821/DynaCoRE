@@ -33,10 +33,12 @@ JPosSwingCtrl::JPosSwingCtrl(
     contact_constraint_ = new FixedBodyContact(robot);
 
     if(swing_foot == mercury_link::leftFoot) {
-        swing_leg_jidx_ = mercury_joint::leftAbduction;
+        swing_leg_jidx_ = mercury_joint::leftAbduction - mercury::num_virtual;
+        stance_leg_jidx_ = mercury_joint::rightAbduction - mercury::num_virtual;
     }
     else if(swing_foot == mercury_link::rightFoot) {
-        swing_leg_jidx_ = mercury_joint::rightAbduction;
+        swing_leg_jidx_ = mercury_joint::rightAbduction - mercury::num_virtual;
+        stance_leg_jidx_ = mercury_joint::leftAbduction - mercury::num_virtual;
     }
     else printf("[Warnning] swing foot is not foot: %i\n", swing_foot);
 
@@ -151,6 +153,20 @@ void JPosSwingCtrl::_task_setup(){
     des_jvel_.setZero(); acc_des.setZero();
     des_jpos_ = stance_jpos_;
 
+    double amp;
+    double omega(M_PI/end_time_);
+
+    for(int i(0); i<3; ++i){
+        amp = jpos_swing_delta_[i];
+        des_jpos_[swing_leg_jidx_ + i] += amp * (1 - cos(omega * state_machine_time_));
+        des_jvel_[swing_leg_jidx_ + i] = amp * omega * sin(omega * state_machine_time_);
+        acc_des[swing_leg_jidx_ + i] = amp * omega * omega * cos(omega * state_machine_time_);
+    }
+    //double Kp_roll(1.0);
+    //double Kp_pitch(1.0);
+    //des_jpos_[stance_leg_jidx_] += Kp_roll * sp_->Q_[mercury_joint::virtual_Rx];
+    //des_jpos_[stance_leg_jidx_ + 1] += Kp_pitch * sp_->Q_[mercury_joint::virtual_Ry];
+    
     // Push back to task list
     jpos_task_->UpdateTask(&(des_jpos_), des_jvel_, acc_des);
     task_list_.push_back(jpos_task_);

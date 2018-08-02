@@ -25,6 +25,7 @@ public:
 
   void Rendering_Fnc();
   void FixXY();
+  void FixRxRy();
   void PassiveAnkleSpring();
   void PushRobotBody();
   

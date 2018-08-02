@@ -58,6 +58,7 @@ class JPosSwingCtrl:public Controller{
         dynacore::Vector jpos_swing_delta_;
 
         int swing_leg_jidx_;
+        int stance_leg_jidx_;
         bool b_contact_switch_check_;
         bool b_set_height_target_;
         double des_body_height_;
