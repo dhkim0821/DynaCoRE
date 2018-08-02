@@ -14,14 +14,11 @@ st_transition_time: 0.03
 end_transition_time: 0.03
 stance_time: 0.01
 
-## Slow
-#swing_time: 0.35
-#st_transition_time: 0.035
-#end_transition_time: 0.035
-#stance_time: 0.02
+## Swing Leg JPos delta
+swing_jpos_delta: [ 0.0, -0.2, 0.5 ]
 
 # 0: default stepping test (no planning)
-replanning: true
+replanning: false
 transition_phase_mix_ratio: 0.2
 double_stance_mix_ratio: 0.0
 # contact_switch_check: false

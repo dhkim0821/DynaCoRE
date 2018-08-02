@@ -7,7 +7,7 @@ class Mercury_StateProvider;
 
 class FixedBodyContact: public WBDC_ContactSpec{
 public:
-  FixedBodyContact(RobotSystem* );
+  FixedBodyContact(const RobotSystem* );
   virtual ~FixedBodyContact();
 
 protected:
@@ -16,7 +16,7 @@ protected:
   virtual bool _UpdateUf();
   virtual bool _UpdateInequalityVector();
 
-  RobotSystem* robot_sys_;
+  const RobotSystem* robot_sys_;
   Mercury_StateProvider* sp_;
 };
 

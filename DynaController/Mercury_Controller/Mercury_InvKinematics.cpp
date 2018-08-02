@@ -126,50 +126,29 @@ void Mercury_InvKinematics::solveFullInvKinematics(
     dynacore::Quaternion curr_quat, err_quat;
     dynacore::Vect3 ori_err;
 
-
-    // X, Y, Z, Rx, Ry
     // Rfoot (x, y, z)
     // Lfoot (x, y, z)
-    J = dynacore::Matrix::Zero(11, mercury::num_qdot);
-    J(0, 0) = 1.;
-    J(1, 1) = 1.;
-    J(2, 2) = 1.;
-    J(3, 3) = 1.;
-    J(4, 4) = 1.;
-    dynacore::Vector op_err(11);
+    J = dynacore::Matrix::Zero(6, mercury::num_qdot);
+    dynacore::Vector op_err(6);
     // search
     while((num_iter < 10) && (err > 0.000001)){  // && (pre_err > err)){
-        // X, Y, Z
-        op_err[0] = -config_sol[0];
-        op_err[1] = -config_sol[1];
-        op_err[2] = des_height - config_sol[2];
-        // Body orientation
-        curr_quat.x() = config_sol[mercury_joint::virtual_Rx];
-        curr_quat.y() = config_sol[mercury_joint::virtual_Ry];
-        curr_quat.z() = config_sol[mercury_joint::virtual_Rz];
-        curr_quat.w() = config_sol[mercury_joint::virtual_Rw];
-
-        err_quat = dynacore::QuatMultiply(des_quat, curr_quat.inverse());
-        dynacore::convert(err_quat, ori_err);
-        op_err[3] = ori_err[0];
-        op_err[4] = ori_err[2];
-
         // Right Foot error
         pos_tmp = CalcBodyToBaseCoordinates(*model_, config_sol, rfootID, zero_vec, true);
-        for (int i(0); i<3; ++i){ op_err[5 + i] = rfoot_pos[i] - pos_tmp[i]; }
+        for (int i(0); i<3; ++i){ op_err[i] = rfoot_pos[i] - pos_tmp[i]; }
 
         Jtmp.setZero();
         CalcPointJacobian(*model_, config_sol, rfootID, zero_vec, Jtmp, false);
-        J.block(5, 0, 3, mercury::num_qdot) = Jtmp;
+        J.block(0, 0, 3, mercury::num_qdot) = Jtmp;
 
         // Left Foot error
         pos_tmp = CalcBodyToBaseCoordinates(*model_, config_sol, lfootID, zero_vec, false);
-        for (int i(0); i<3; ++i){ op_err[8 + i] = lfoot_pos[i] - pos_tmp[i]; }
+        for (int i(0); i<3; ++i){ op_err[3 + i] = lfoot_pos[i] - pos_tmp[i]; }
 
         Jtmp.setZero();
         CalcPointJacobian(*model_, config_sol, lfootID, zero_vec, Jtmp, false);
-        J.block(8, 0, 3, mercury::num_qdot) = Jtmp;
+        J.block(3, 0, 3, mercury::num_qdot) = Jtmp;
 
+        J.block(0,0, 6,6) = dynacore::Matrix::Zero(6,6);
         dynacore::pseudoInverse(J, 0.0001, Jinv);
 
        delta_q = Jinv *  op_err;
@@ -185,7 +164,7 @@ void Mercury_InvKinematics::solveFullInvKinematics(
         ++num_iter;
         err = op_err.norm();
 
-        printf("%d iter, err: %f\n", num_iter, err);
+        //printf("%d iter, err: %f\n", num_iter, err);
         if(num_iter == max_iter_){
             printf("%d iter, err: %f\n", num_iter, err);
         }

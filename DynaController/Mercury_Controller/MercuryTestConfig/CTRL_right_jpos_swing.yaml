@@ -1,0 +1,11 @@
+push_down_height: 0.0
+jpos_swing_delta: [0.0, -0.12, 0.2]
+
+## Feedback Gain
+Kp: [ 150, 150, 150, 150, 150, 150]
+Kd: [ 10,  10,  10,  10,  10,  10]
+
+body_pt_offset: [-0.0, -0.0]
+
+roll_offset_gain: -2.
+pitch_offset_gain: -2.8

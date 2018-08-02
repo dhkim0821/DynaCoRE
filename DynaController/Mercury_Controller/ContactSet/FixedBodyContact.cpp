@@ -4,7 +4,7 @@
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <Utils/utilities.hpp>
 
-FixedBodyContact::FixedBodyContact(RobotSystem* robot):WBDC_ContactSpec(6)
+FixedBodyContact::FixedBodyContact(const RobotSystem* robot):WBDC_ContactSpec(6)
 {
   robot_sys_ = robot;
   sp_ = Mercury_StateProvider::getStateProvider();
