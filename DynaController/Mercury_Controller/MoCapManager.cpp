@@ -49,7 +49,8 @@ void MoCapManager::run(){
 
     while(true){
         ++count;
-        COMM::receive_data(socket_, MOCAP_DATA_PORT, &mercury_msg, sizeof(mercury_message), IP_ADDRESS);
+        COMM::receive_data(socket_, MOCAP_DATA_PORT, 
+                &mercury_msg, sizeof(mercury_message), IP_ADDRESS);
 
         for(int i(0); i<NUM_MARKERS; ++i){
             for(int j(0); j<3; ++j){

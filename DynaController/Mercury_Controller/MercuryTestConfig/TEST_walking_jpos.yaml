@@ -21,5 +21,5 @@ swing_jpos_delta: [ 0.0, -0.2, 0.5 ]
 replanning: false
 transition_phase_mix_ratio: 0.2
 double_stance_mix_ratio: 0.0
-contact_switch_check: false
-#contact_switch_check: true
+#contact_switch_check: false
+contact_switch_check: true

@@ -20,6 +20,7 @@
 JPosSwingCtrl::JPosSwingCtrl(
         const RobotSystem* robot, int swing_foot, Planner* planner):
     Controller(robot),
+    swing_foot_(swing_foot),
     planner_(planner),
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
@@ -32,11 +33,15 @@ JPosSwingCtrl::JPosSwingCtrl(
     jpos_task_ = new JPosTask();
     contact_constraint_ = new FixedBodyContact(robot);
 
-    if(swing_foot == mercury_link::leftFoot) {
+    curr_foot_pos_des_.setZero();
+    curr_foot_vel_des_.setZero();
+    curr_foot_acc_des_.setZero();
+
+    if(swing_foot_ == mercury_link::leftFoot) {
         swing_leg_jidx_ = mercury_joint::leftAbduction - mercury::num_virtual;
         stance_leg_jidx_ = mercury_joint::rightAbduction - mercury::num_virtual;
     }
-    else if(swing_foot == mercury_link::rightFoot) {
+    else if(swing_foot_ == mercury_link::rightFoot) {
         swing_leg_jidx_ = mercury_joint::rightAbduction - mercury::num_virtual;
         stance_leg_jidx_ = mercury_joint::leftAbduction - mercury::num_virtual;
     }
@@ -154,10 +159,10 @@ void JPosSwingCtrl::_task_setup(){
     des_jpos_ = stance_jpos_;
 
     double amp;
-    double omega(M_PI/end_time_);
+    double omega(2.*M_PI/end_time_);
 
     for(int i(0); i<3; ++i){
-        amp = jpos_swing_delta_[i];
+        amp = jpos_swing_delta_[i]/2.;
         des_jpos_[swing_leg_jidx_ + i] += amp * (1 - cos(omega * state_machine_time_));
         des_jvel_[swing_leg_jidx_ + i] = amp * omega * sin(omega * state_machine_time_);
         acc_des[swing_leg_jidx_ + i] = amp * omega * omega * cos(omega * state_machine_time_);
@@ -254,8 +259,8 @@ void JPosSwingCtrl::LastVisit(){
 
 bool JPosSwingCtrl::EndOfPhase(){
     if(state_machine_time_ > end_time_){
-        //printf("[Body Foot Ctrl] End, state_machine time/ end time: (%f, %f)\n", 
-        //state_machine_time_, end_time_);
+        printf("[Body Foot Ctrl] End, state_machine time/ end time: (%f, %f)\n",
+        state_machine_time_, end_time_);
         return true;
     }
     // Swing foot contact = END

@@ -52,6 +52,28 @@ WalkingJPosTest::WalkingJPosTest(RobotSystem* robot):Test(robot),
     state_list_.push_back(left_swing_ctrl_);
     state_list_.push_back(left_swing_end_trans_ctrl_);
 
+    DataManager::GetDataManager()->RegisterData(
+            &(((JPosSwingCtrl*)right_swing_ctrl_)->curr_foot_pos_des_), 
+            VECT3, "rfoot_pos_des", 3);
+    DataManager::GetDataManager()->RegisterData(
+            &(((JPosSwingCtrl*)left_swing_ctrl_)->curr_foot_pos_des_), 
+            VECT3, "lfoot_pos_des", 3);
+
+    DataManager::GetDataManager()->RegisterData(
+            &(((JPosSwingCtrl*)right_swing_ctrl_)->curr_foot_vel_des_), 
+            VECT3, "rfoot_vel_des", 3);
+    DataManager::GetDataManager()->RegisterData(
+            &(((JPosSwingCtrl*)left_swing_ctrl_)->curr_foot_vel_des_), 
+            VECT3, "lfoot_vel_des", 3);
+
+    DataManager::GetDataManager()->RegisterData(
+            &(((JPosSwingCtrl*)right_swing_ctrl_)->curr_foot_acc_des_), 
+            VECT3, "rfoot_acc_des", 3);
+    DataManager::GetDataManager()->RegisterData(
+            &(((JPosSwingCtrl*)left_swing_ctrl_)->curr_foot_acc_des_), 
+            VECT3, "lfoot_acc_des", 3);
+
+
     printf("[Walking JPos Test] Constructure\n");
 }
 WalkingJPosTest::~WalkingJPosTest(){

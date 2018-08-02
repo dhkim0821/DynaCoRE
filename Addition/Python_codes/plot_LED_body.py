@@ -118,6 +118,15 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_LED_local_body_from_lfoot = data_LED[:, 0:3] - data_LED_lfoot \
             + body_pos_offset
 
+    data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]))
+    data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3]))
+
+    data_LED_local_body_from_rfoot2 = data_LED[:, 0:3] - data_LED_rfoot \
+            + body_pos_offset
+    data_LED_local_body_from_lfoot2 = data_LED[:, 0:3] - data_LED_lfoot \
+            + body_pos_offset
+
+
     ## plot global
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
@@ -163,6 +172,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_LED_local_body_from_rfoot[st_idx:end_idx, i-1], \
             color='indigo')
         plt.plot(data_x, data_LED_local_body_from_lfoot[st_idx:end_idx, i-1], \
+            color='olive')
+        plt.plot(data_x, data_LED_local_body_from_rfoot2[st_idx:end_idx, i-1], \
+            color='indigo')
+        plt.plot(data_x, data_LED_local_body_from_lfoot2[st_idx:end_idx, i-1], \
             color='olive')
         plt.plot(data_x, data_est_mocap_body_pos[st_idx:end_idx, i-1], \
             color='orange', linewidth=2.)

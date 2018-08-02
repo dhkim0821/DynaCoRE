@@ -5,7 +5,7 @@
 #include <vector>
 
 #define NUM_MARKERS 13
-#define MOCAP_DATA_PORT 51128
+//#define MOCAP_DATA_PORT 51128
 
 typedef struct{
   int visible[NUM_MARKERS];

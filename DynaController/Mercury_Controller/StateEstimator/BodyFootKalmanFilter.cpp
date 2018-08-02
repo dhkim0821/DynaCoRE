@@ -57,10 +57,10 @@ void BodyFootKalmanFilter::Estimation(void* obs_input, void * pred_input){
     }
     // LED visibility check
     for (int i(0); i<num_led; ++i){
-        if(_obs_input->led_visible_[i]){
+        if(_obs_input->led_visible_[i]>0){
             R_.block(2*i, 2*i, 2, 2) = 1. * dynacore::Matrix::Identity(2,2);
         }else {
-            R_.block(2*i, 2*i, 2, 2) = 1000. * dynacore::Matrix::Identity(2,2);
+            R_.block(2*i, 2*i, 2, 2) = 100000. * dynacore::Matrix::Identity(2,2);
         }
     }
     _Predict(pred_input);

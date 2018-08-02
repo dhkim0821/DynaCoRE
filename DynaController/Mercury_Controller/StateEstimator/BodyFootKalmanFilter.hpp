@@ -44,6 +44,12 @@ class BodyFootKalmanFilter{
     protected:
         void _Predict(void* );
         void _Update();
+        // State: body x, y
+        // rfoot out x, y
+        // rfoot in x, y
+        // lfoot out x, y
+        // lfoot in x, y
+        // body vel x, y
         static constexpr int num_state = 12;
         static constexpr int num_obs = 12;
         static constexpr int num_led = 5;
