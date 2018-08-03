@@ -11,7 +11,6 @@
 #include <Utils/utilities.hpp>
 #include <Utils/DataManager.hpp>
 
-
 #if MEASURE_TIME_WBDC
 #include <chrono>
 #endif 

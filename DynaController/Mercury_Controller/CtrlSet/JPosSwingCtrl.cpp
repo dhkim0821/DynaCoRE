@@ -3,6 +3,10 @@
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <Mercury_Controller/TaskSet/JPosTask.hpp>
 #include <Mercury_Controller/ContactSet/FixedBodyContact.hpp>
+
+#include <Mercury_Controller/TaskSet/ConfigTask.hpp>
+#include <Mercury_Controller/ContactSet/SingleContact.hpp>
+
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury/Mercury_Definition.h>
@@ -30,8 +34,11 @@ JPosSwingCtrl::JPosSwingCtrl(
     push_down_height_(0.0),
     b_replan_(false)
 {
-    jpos_task_ = new JPosTask();
-    contact_constraint_ = new FixedBodyContact(robot);
+    //jpos_task_ = new JPosTask();
+    //contact_constraint_ = new FixedBodyContact(robot);
+
+    jpos_task_ = new ConfigTask();
+
 
     curr_foot_pos_des_.setZero();
     curr_foot_vel_des_.setZero();
@@ -40,10 +47,14 @@ JPosSwingCtrl::JPosSwingCtrl(
     if(swing_foot_ == mercury_link::leftFoot) {
         swing_leg_jidx_ = mercury_joint::leftAbduction - mercury::num_virtual;
         stance_leg_jidx_ = mercury_joint::rightAbduction - mercury::num_virtual;
+
+        contact_constraint_ = new SingleContact(robot, mercury_link::rightFoot);
     }
     else if(swing_foot_ == mercury_link::rightFoot) {
         swing_leg_jidx_ = mercury_joint::rightAbduction - mercury::num_virtual;
         stance_leg_jidx_ = mercury_joint::leftAbduction - mercury::num_virtual;
+
+        contact_constraint_ = new SingleContact(robot, mercury_link::leftFoot);
     }
     else printf("[Warnning] swing foot is not foot: %i\n", swing_foot);
 
@@ -171,9 +182,23 @@ void JPosSwingCtrl::_task_setup(){
     //double Kp_pitch(1.0);
     //des_jpos_[stance_leg_jidx_] += Kp_roll * sp_->Q_[mercury_joint::virtual_Rx];
     //des_jpos_[stance_leg_jidx_ + 1] += Kp_pitch * sp_->Q_[mercury_joint::virtual_Ry];
-    
+
+    // Configuration Setting
+    dynacore::Vector config_des = sp_->Q_;
+    config_des.segment(mercury::num_virtual, mercury::num_act_joint) = 
+        des_jpos_;
+    dynacore::Vector qdot_des(mercury::num_qdot);
+    qdot_des.setZero();
+    qdot_des.tail(mercury::num_act_joint) = des_jvel_;
+
+    dynacore::Vector qddot_des(mercury::num_qdot);
+    qddot_des.setZero();
+    qddot_des.tail(mercury::num_act_joint) = acc_des;
+
+   
     // Push back to task list
-    jpos_task_->UpdateTask(&(des_jpos_), des_jvel_, acc_des);
+    //jpos_task_->UpdateTask(&(des_jpos_), des_jvel_, acc_des);
+    jpos_task_->UpdateTask(&(config_des), qdot_des, qddot_des);
     task_list_.push_back(jpos_task_);
 }
 

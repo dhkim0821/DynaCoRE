@@ -1,10 +1,10 @@
-#include "JPosPostureFixCtrl.hpp"
+#include "JPosSingleTransCtrl.hpp"
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <Mercury_Controller/TaskSet/JPosTask.hpp>
 #include <Mercury_Controller/ContactSet/FixedBodyContact.hpp>
 
 #include <Mercury_Controller/TaskSet/ConfigTask.hpp>
-#include <Mercury_Controller/ContactSet/DoubleContact.hpp>
+#include <Mercury_Controller/ContactSet/DoubleContactBounding.hpp>
 
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
@@ -12,7 +12,10 @@
 #include <Utils/DataManager.hpp>
 #include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 
-JPosPostureFixCtrl::JPosPostureFixCtrl(RobotSystem* robot):Controller(robot),
+JPosSingleTransCtrl::JPosSingleTransCtrl(RobotSystem* robot,
+        int moving_foot, bool b_increase):
+    Controller(robot),
+    b_increase_(b_increase),
     end_time_(1000.0),
     b_jpos_set_(false),
     des_jpos_(mercury::num_act_joint),
@@ -23,9 +26,9 @@ JPosPostureFixCtrl::JPosPostureFixCtrl(RobotSystem* robot):Controller(robot),
     set_jpos_.setZero();
 
     //jpos_task_ = new JPosTask();
-    //fixed_body_contact_ = new FixedBodyContact(robot);
+    //contact_ = new FixedBodyContact(robot);
     jpos_task_ = new ConfigTask();
-    fixed_body_contact_ = new DoubleContact(robot);
+    contact_ = new DoubleContactBounding(robot, moving_foot);
 
     std::vector<bool> act_list;
     act_list.resize(mercury::num_qdot, true);
@@ -36,33 +39,32 @@ JPosPostureFixCtrl::JPosPostureFixCtrl(RobotSystem* robot):Controller(robot),
     wbdc_rotor_data_->A_rotor = 
         dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
     wbdc_rotor_data_->cost_weight = 
-        dynacore::Vector::Constant(fixed_body_contact_->getDim() + 
+        dynacore::Vector::Constant(contact_->getDim() + 
                 jpos_task_->getDim(), 100.0);
-    wbdc_rotor_data_->cost_weight.tail(fixed_body_contact_->getDim()) = 
-        dynacore::Vector::Constant(fixed_body_contact_->getDim(), 0.1);
+    wbdc_rotor_data_->cost_weight.tail(contact_->getDim()) = 
+        dynacore::Vector::Constant(contact_->getDim(), 0.1);
 
     wbdc_rotor_data_->cost_weight[jpos_task_->getDim() + 2] = 0.001;
     wbdc_rotor_data_->cost_weight[jpos_task_->getDim() + 5] = 0.001;
 
-
     sp_ = Mercury_StateProvider::getStateProvider();
 
-    printf("[Joint Position Control] Constructed\n");
+    //printf("[Joint Position Single Transition Controller] Constructeh\n");
 }
 
-JPosPostureFixCtrl::~JPosPostureFixCtrl(){
+JPosSingleTransCtrl::~JPosSingleTransCtrl(){
     delete jpos_task_;
-    delete fixed_body_contact_;
+    delete contact_;
     delete wbdc_rotor_;
     delete wbdc_rotor_data_;
 }
 
-void JPosPostureFixCtrl::OneStep(void* _cmd){
+void JPosSingleTransCtrl::OneStep(void* _cmd){
     _PreProcessing_Command();
     dynacore::Vector gamma = dynacore::Vector::Zero(mercury::num_act_joint);
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
-    _fixed_body_contact_setup();
+    _contact_setup();
     _jpos_task_setup();
     _jpos_ctrl_wbdc_rotor(gamma);
 
@@ -75,7 +77,7 @@ void JPosPostureFixCtrl::OneStep(void* _cmd){
     _PostProcessing_Command();
 }
 
-void JPosPostureFixCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
+void JPosSingleTransCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
     for (int i(0); i<mercury::num_act_joint; ++i){
         wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
@@ -89,7 +91,7 @@ void JPosPostureFixCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
 }
 
-void JPosPostureFixCtrl::_jpos_task_setup(){
+void JPosSingleTransCtrl::_jpos_task_setup(){
     des_jvel_.setZero();
 
     if(b_jpos_set_){
@@ -122,26 +124,34 @@ void JPosPostureFixCtrl::_jpos_task_setup(){
     task_list_.push_back(jpos_task_);
 }
 
-void JPosPostureFixCtrl::_fixed_body_contact_setup(){
-    fixed_body_contact_->UpdateContactSpec();
-    contact_list_.push_back(fixed_body_contact_);
+void JPosSingleTransCtrl::_contact_setup(){
+    if(b_increase_){
+        ((DoubleContactBounding*)contact_)->setFzUpperLimit(
+            min_rf_z_ + state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_));
+    } else {
+        ((DoubleContactBounding*)contact_)->setFzUpperLimit(
+            max_rf_z_ - state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_));
+    }
+
+    contact_->UpdateContactSpec();
+    contact_list_.push_back(contact_);
 }
 
-void JPosPostureFixCtrl::FirstVisit(){
+void JPosSingleTransCtrl::FirstVisit(){
     jpos_ini_ = sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint);
     ctrl_start_time_ = sp_->curr_time_;
 }
 
-void JPosPostureFixCtrl::LastVisit(){
+void JPosSingleTransCtrl::LastVisit(){
 }
 
-bool JPosPostureFixCtrl::EndOfPhase(){
+bool JPosSingleTransCtrl::EndOfPhase(){
     if(state_machine_time_ > end_time_){
         return true;
     }
     return false;
 }
-void JPosPostureFixCtrl::CtrlInitialization(const std::string & setting_file_name){
+void JPosSingleTransCtrl::CtrlInitialization(const std::string & setting_file_name){
     jpos_ini_ = sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint);
 
     ParamHandler handler(MercuryConfigPath + setting_file_name + ".yaml");

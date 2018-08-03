@@ -10,6 +10,7 @@
 
 #include <Mercury_Controller/CtrlSet/JPosTargetCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/JPosPostureFixCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/JPosSingleTransCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/JPosSwingCtrl.hpp>
 
 WalkingJPosTest::WalkingJPosTest(RobotSystem* robot):Test(robot),
@@ -29,15 +30,19 @@ WalkingJPosTest::WalkingJPosTest(RobotSystem* robot):Test(robot),
     body_fix_ctrl_ = new JPosPostureFixCtrl(robot);
 
     // Right
-    right_swing_start_trans_ctrl_ = new JPosPostureFixCtrl(robot);
+    right_swing_start_trans_ctrl_ = 
+        new JPosSingleTransCtrl(robot, mercury_link::rightFoot, false);
     right_swing_ctrl_ = 
         new JPosSwingCtrl(robot, mercury_link::rightFoot, reversal_planner_);
-    right_swing_end_trans_ctrl_ = new JPosPostureFixCtrl(robot);
+    right_swing_end_trans_ctrl_ = 
+        new JPosSingleTransCtrl(robot, mercury_link::rightFoot, true);
     // Left
-    left_swing_start_trans_ctrl_ = new JPosPostureFixCtrl(robot);
+    left_swing_start_trans_ctrl_ = 
+        new JPosSingleTransCtrl(robot, mercury_link::leftFoot, false);
     left_swing_ctrl_ = 
         new JPosSwingCtrl(robot, mercury_link::leftFoot, reversal_planner_);
-    left_swing_end_trans_ctrl_ = new JPosPostureFixCtrl(robot);
+    left_swing_end_trans_ctrl_ = 
+        new JPosSingleTransCtrl(robot, mercury_link::leftFoot, true);
 
 
     _SettingParameter();
@@ -89,12 +94,12 @@ void WalkingJPosTest::TestInitialization(){
     // Yaml file name
     jpos_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
     body_up_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
-    body_fix_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
+    body_fix_ctrl_->CtrlInitialization("CTRL_jpos_fix_stance");
 
-    right_swing_start_trans_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
-    right_swing_end_trans_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
-    left_swing_start_trans_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
-    left_swing_end_trans_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
+    right_swing_start_trans_ctrl_->CtrlInitialization("CTRL_jpos_trans");
+    right_swing_end_trans_ctrl_->CtrlInitialization("CTRL_jpos_trans");
+    left_swing_start_trans_ctrl_->CtrlInitialization("CTRL_jpos_trans");
+    left_swing_end_trans_ctrl_->CtrlInitialization("CTRL_jpos_trans");
 
     right_swing_ctrl_->CtrlInitialization("CTRL_right_jpos_swing");
     left_swing_ctrl_->CtrlInitialization("CTRL_left_jpos_swing");
@@ -154,10 +159,10 @@ void WalkingJPosTest::_SettingParameter(){
     // Double Contact
     ((JPosPostureFixCtrl*)body_fix_ctrl_)->setPosture(stance_jpos_);
     // Transition
-    ((JPosPostureFixCtrl*)right_swing_start_trans_ctrl_)->setPosture(stance_jpos_);
-    ((JPosPostureFixCtrl*)right_swing_end_trans_ctrl_)->setPosture(stance_jpos_);
-    ((JPosPostureFixCtrl*)left_swing_start_trans_ctrl_)->setPosture(stance_jpos_);
-    ((JPosPostureFixCtrl*)left_swing_end_trans_ctrl_)->setPosture(stance_jpos_);
+    ((JPosSingleTransCtrl*)right_swing_start_trans_ctrl_)->setPosture(stance_jpos_);
+    ((JPosSingleTransCtrl*)right_swing_end_trans_ctrl_)->setPosture(stance_jpos_);
+    ((JPosSingleTransCtrl*)left_swing_start_trans_ctrl_)->setPosture(stance_jpos_);
+    ((JPosSingleTransCtrl*)left_swing_end_trans_ctrl_)->setPosture(stance_jpos_);
     // Swing
     ((JPosSwingCtrl*)right_swing_ctrl_)->setStancePosture(stance_jpos_);
     ((JPosSwingCtrl*)left_swing_ctrl_)->setStancePosture(stance_jpos_);
@@ -181,10 +186,10 @@ void WalkingJPosTest::_SettingParameter(){
 
     // Transition Time
     handler.getValue("st_transition_time", tmp);
-    ((JPosPostureFixCtrl*)right_swing_start_trans_ctrl_)->setMovingTime(tmp);
-    ((JPosPostureFixCtrl*)right_swing_end_trans_ctrl_)->setMovingTime(tmp);
-    ((JPosPostureFixCtrl*)left_swing_start_trans_ctrl_)->setMovingTime(tmp);
-    ((JPosPostureFixCtrl*)left_swing_end_trans_ctrl_)->setMovingTime(tmp);
+    ((JPosSingleTransCtrl*)right_swing_start_trans_ctrl_)->setMovingTime(tmp);
+    ((JPosSingleTransCtrl*)right_swing_end_trans_ctrl_)->setMovingTime(tmp);
+    ((JPosSingleTransCtrl*)left_swing_start_trans_ctrl_)->setMovingTime(tmp);
+    ((JPosSingleTransCtrl*)left_swing_end_trans_ctrl_)->setMovingTime(tmp);
 
     ((JPosSwingCtrl*)right_swing_ctrl_)->notifyTransitionTime(tmp);
     ((JPosSwingCtrl*)left_swing_ctrl_)->notifyTransitionTime(tmp);

@@ -24,7 +24,8 @@ ConfigBodyCtrl::ConfigBodyCtrl(RobotSystem* robot):Controller(robot),
     
     wbdc_rotor_ = new WBDC_Rotor(act_list);
     wbdc_rotor_data_ = new WBDC_Rotor_ExtraData();
-    wbdc_rotor_data_->A_rotor =  dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
+    wbdc_rotor_data_->A_rotor =  
+        dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
    
     wbdc_rotor_data_->cost_weight = 
     dynacore::Vector::Constant(

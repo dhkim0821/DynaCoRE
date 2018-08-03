@@ -8,7 +8,8 @@
 #include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 #include <ParamHandler/ParamHandler.hpp>
 
-TransitionConfigCtrl::TransitionConfigCtrl(RobotSystem* robot, int moving_foot, bool b_increase):
+TransitionConfigCtrl::TransitionConfigCtrl(RobotSystem* robot, 
+        int moving_foot, bool b_increase):
     Controller(robot),
     b_set_height_target_(false),
     moving_foot_(moving_foot),
