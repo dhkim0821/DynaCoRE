@@ -11,8 +11,8 @@
 #define IP_ADDR_MAC    "192.168.1.131"
 #define IP_ADDR_DH    "192.168.50.159"
 
-#define IP_ADDR IP_ADDR_DH
-// #define IP_ADDR IP_ADDR_MYSELF
+//#define IP_ADDR IP_ADDR_DH
+ #define IP_ADDR IP_ADDR_MYSELF
 
 #define LEG_PORT 51129
 #define NUM_JOINT_Q 13

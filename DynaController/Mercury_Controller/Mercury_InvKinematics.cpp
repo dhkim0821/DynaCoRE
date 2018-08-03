@@ -135,7 +135,7 @@ void Mercury_InvKinematics::solveFullInvKinematics(
         // Right Foot error
         pos_tmp = CalcBodyToBaseCoordinates(*model_, config_sol, rfootID, zero_vec, true);
         for (int i(0); i<3; ++i){ op_err[i] = rfoot_pos[i] - pos_tmp[i]; }
-
+        dynacore::pretty_print(pos_tmp, std::cout, "rfoot pos");
         Jtmp.setZero();
         CalcPointJacobian(*model_, config_sol, rfootID, zero_vec, Jtmp, false);
         J.block(0, 0, 3, mercury::num_qdot) = Jtmp;
@@ -143,7 +143,7 @@ void Mercury_InvKinematics::solveFullInvKinematics(
         // Left Foot error
         pos_tmp = CalcBodyToBaseCoordinates(*model_, config_sol, lfootID, zero_vec, false);
         for (int i(0); i<3; ++i){ op_err[3 + i] = lfoot_pos[i] - pos_tmp[i]; }
-
+        dynacore::pretty_print(pos_tmp, std::cout, "lfoot pos");
         Jtmp.setZero();
         CalcPointJacobian(*model_, config_sol, lfootID, zero_vec, Jtmp, false);
         J.block(3, 0, 3, mercury::num_qdot) = Jtmp;
@@ -152,11 +152,11 @@ void Mercury_InvKinematics::solveFullInvKinematics(
         dynacore::pseudoInverse(J, 0.0001, Jinv);
 
        delta_q = Jinv *  op_err;
-        //dynacore::pretty_print(config_sol, std::cout, "config_sol");
-        //dynacore::pretty_print(delta_q, std::cout, "delta_q");
-        //dynacore::pretty_print(op_err, std::cout, "op err");
-        //dynacore::pretty_print(J, std::cout, "J");
-        //dynacore::pretty_print(Jinv, std::cout, "Jinv");
+        dynacore::pretty_print(config_sol, std::cout, "config_sol");
+        dynacore::pretty_print(delta_q, std::cout, "delta_q");
+        dynacore::pretty_print(op_err, std::cout, "op err");
+        dynacore::pretty_print(J, std::cout, "J");
+        dynacore::pretty_print(Jinv, std::cout, "Jinv");
          config_sol.segment(mercury::num_virtual, mercury::num_act_joint) +=  
              delta_q.tail(mercury::num_act_joint);
 

@@ -159,6 +159,9 @@ void JPosSingleTransCtrl::CtrlInitialization(const std::string & setting_file_na
     jpos_ini_ = sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint);
 
     ParamHandler handler(MercuryConfigPath + setting_file_name + ".yaml");
+    handler.getValue("max_rf_z", max_rf_z_);
+    handler.getValue("min_rf_z", min_rf_z_);
+
 
     std::vector<double> tmp_vec;
     // Feedback Gain

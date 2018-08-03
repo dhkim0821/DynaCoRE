@@ -225,10 +225,15 @@ void WalkingJPosTest::_SetupStancePosture(double body_height){
     dynacore::Vector config_sol;
     dynacore::Vect3 rfoot_pos; rfoot_pos.setZero();
     dynacore::Vect3 lfoot_pos; lfoot_pos.setZero();
+
+    //body_height = 0.85;
+    //rfoot_pos[0] = -0.05;
+    //lfoot_pos[0] = -0.05;
+
     rfoot_pos[1] = -0.1;
     lfoot_pos[1] = 0.1;
 
-    double theta(0.0);
+    double theta(0.3);
     dynacore::Quaternion des_quat(cos(theta/2.), 0., sin(theta/2.), 0);
     
     inv_kin_->solveFullInvKinematics(
