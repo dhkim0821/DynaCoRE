@@ -52,7 +52,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             phseChange.append(i - st_idx)
         else:
             pass
-
     data_filtered_jvel = None
     try:
         data_filtered_jvel = np.genfromtxt(file_path+'filtered_jvel.txt', delimiter=None, dtype=(float))
@@ -60,7 +59,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     except:
         filtered_vel_available = False
         print "Note: Filtered Joint Velocity not available"
-
+    # TEST
+    filtered_vel_available = False
 
     # Plot Figure --------------------------------------------------------------------
     ## plot command/jpos
