@@ -265,6 +265,6 @@ void Valkyrie_InvKinematics::getSingleSupportStanceLegConfiguration(
     //dynacore::pretty_print(current_Q, std::cout, "Current Q");
     //dynacore::pretty_print(Jop, std::cout, "Jop");
     //dynacore::pretty_print(Jfoot, std::cout, "Jfoot");
-    if(isnan(current_Q[1])){ exit(0); }
+    // if(isnan(current_Q[1])){ exit(0); }
 }
 

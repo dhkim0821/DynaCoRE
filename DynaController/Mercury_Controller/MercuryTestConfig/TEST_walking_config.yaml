@@ -21,7 +21,7 @@ com_lifting_time: 2.0
 swing_time: 0.33
 st_transition_time: 0.03
 end_transition_time: 0.03
-stance_time: 0.01
+stance_time: s0.01
 
 ## Slow
 #swing_time: 0.35

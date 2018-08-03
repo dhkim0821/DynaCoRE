@@ -126,7 +126,7 @@ BMPError _Bitmap::BMPLoad(char* fname)
 
 	char header[54];
 
-	fread(header, 54, 1, f);			//read the 54bit main header
+	size_t ret = fread(header, 54, 1, f);			//read the 54bit main header
 
 	if(header[0] != 'B' || header[1] != 'M') 
 	{
@@ -152,7 +152,7 @@ BMPError _Bitmap::BMPLoad(char* fname)
 	{
 	case(24):
 		fseek(f, offset, SEEK_SET);
-		fread(m_Data, m_Width * m_Height * 3, 1, f);	//24bit is easy
+		ret = fread(m_Data, m_Width * m_Height * 3, 1, f);	//24bit is easy
 		for(x = 0; x < m_Width * m_Height * 3; x += 3)	//except the format is BGR, grr
 		{
 			BYTE temp = m_Data[x];
@@ -162,7 +162,7 @@ BMPError _Bitmap::BMPLoad(char* fname)
 		break;
 
 	case(8):
-		fread(cols, 256 * 4, 1, f);							//read color table
+		ret = fread(cols, 256 * 4, 1, f);							//read color table
 		fseek(f, offset, SEEK_SET);
 		for(y = 0; y < m_Height; ++y)						//(Notice 4bytes/col for some reason)
 			for(x = 0; x < m_Width; ++x)
@@ -175,7 +175,7 @@ BMPError _Bitmap::BMPLoad(char* fname)
 		break;
 
 	case(4):
-		fread(cols, 16 * 4, 1, f);
+		ret = fread(cols, 16 * 4, 1, f);
 		fseek(f, offset, SEEK_SET);
 		for(y = 0; y < 256; ++y)
 			for(x = 0; x < 256; x += 2)
@@ -190,13 +190,13 @@ BMPError _Bitmap::BMPLoad(char* fname)
 		break;
 
 	case(1):
-		fread(cols, 8, 1, f);
+		ret = fread(cols, 8, 1, f);
 		fseek(f, offset, SEEK_SET);
 		for(y = 0; y < m_Height; ++y)
 			for(x = 0; x < m_Width; x += 8)
 			{
 				BYTE byte;
-				fread(&byte, 1, 1, f);
+				ret = fread(&byte, 1, 1, f);
 				//Every byte is eight pixels
 				//so I'm shifting the byte to the relevant position, then masking out
 				//all but the lowest bit in order to get the index into the color table.

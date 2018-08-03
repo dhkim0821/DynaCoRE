@@ -14,7 +14,7 @@ set_property( GLOBAL PROPERTY CXX_STANDARD 11 )
 
 CONFIGURE_FILE(
   ${CMAKE_CURRENT_LIST_DIR}/include/assimp/config.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/include/assimp/config.h
+  ${CMAKE_CURRENT_LIST_DIR}/include/assimp/config.h
 )
 
 INCLUDE_DIRECTORIES(

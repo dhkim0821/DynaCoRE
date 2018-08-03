@@ -16,6 +16,7 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/Simulator/srSimulator/srconfig.h.cmake ${PR
 
 
 include_directories ("${PROJECT_SOURCE_DIR}/Simulator/srSimulator")
+include_directories ("${PROJECT_SOURCE_DIR}/Simulator/srSimulator/assimp/include/")
 
 add_subdirectory(Renderer)
 add_subdirectory(srDyn)

@@ -245,8 +245,8 @@ void Model3DS::Load(char *name)
 	fseek(bin3ds, 0, SEEK_SET);
 
 	// Load the Main Chunk's header
-	fread(&main.id, sizeof(main.id),1,bin3ds);
-        fread(&main.len,sizeof(main.len),1,bin3ds);
+	size_t ret = fread(&main.id, sizeof(main.id),1,bin3ds);
+    ret = fread(&main.len,sizeof(main.len),1,bin3ds);
 
 	// Start Processing
         
@@ -495,10 +495,11 @@ void Model3DS::MainChunkProcessor(long length, long findex)
 	fseek(bin3ds, findex, SEEK_SET);
         int max_iter(10000000);
         int iter(0);
+    size_t fread_ret;
 	while (ftell(bin3ds) < (findex + length - 6))
 	{
-            fread(&h.id,sizeof(h.id),1,bin3ds);
-		fread(&h.len,sizeof(h.len),1,bin3ds);
+        fread_ret = fread(&h.id,sizeof(h.id),1,bin3ds);
+		fread_ret = fread(&h.len,sizeof(h.len),1,bin3ds);
 
 		//cerr << ftell(bin3ds) << endl;
 		switch (h.id)
@@ -537,12 +538,12 @@ void Model3DS::EditChunkProcessor(long length, long findex)
 	// move the file pointer to the beginning of the main
 	// chunk's data findex + the size of the header
 	fseek(bin3ds, findex, SEEK_SET);
-
+	size_t fread_ret;
 	// First count the number of Objects and Materials
 	while (ftell(bin3ds) < (findex + length - 6))
 	{
-		fread(&h.id,sizeof(h.id),1,bin3ds);
-		fread(&h.len,sizeof(h.len),1,bin3ds);
+		fread_ret = fread(&h.id,sizeof(h.id),1,bin3ds);
+		fread_ret = fread(&h.len,sizeof(h.len),1,bin3ds);
 
 		switch (h.id)
 		{
