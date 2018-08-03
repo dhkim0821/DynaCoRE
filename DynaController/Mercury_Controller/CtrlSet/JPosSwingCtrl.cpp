@@ -72,6 +72,9 @@ JPosSwingCtrl::JPosSwingCtrl(
                 jpos_task_->getDim() + 
                 contact_constraint_->getDim(), 100.0);
 
+    wbdc_rotor_data_->cost_weight.head(2) = 
+        dynacore::Vector::Constant(2, 0.00001);
+
     wbdc_rotor_data_->cost_weight.tail(contact_constraint_->getDim()) = 
         dynacore::Vector::Constant(contact_constraint_->getDim(), 1.0);
 

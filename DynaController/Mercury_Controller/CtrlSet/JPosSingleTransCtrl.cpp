@@ -41,6 +41,10 @@ JPosSingleTransCtrl::JPosSingleTransCtrl(RobotSystem* robot,
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(contact_->getDim() + 
                 jpos_task_->getDim(), 100.0);
+
+    wbdc_rotor_data_->cost_weight.head(2) = 
+        dynacore::Vector::Constant(2, 0.00001);
+
     wbdc_rotor_data_->cost_weight.tail(contact_->getDim()) = 
         dynacore::Vector::Constant(contact_->getDim(), 0.1);
 
