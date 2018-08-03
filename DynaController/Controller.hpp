@@ -35,6 +35,9 @@ protected:
       robot_sys_->getGravity(grav_);
       robot_sys_->getCoriolis(coriolis_);
 
+      // TEST
+      coriolis_.setZero();
+
       task_list_.clear();
       contact_list_.clear();
   }

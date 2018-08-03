@@ -107,6 +107,15 @@ void WalkingJPosTest::TestInitialization(){
 
 int WalkingJPosTest::_NextPhase(const int & phase){
     int next_phase = phase + 1;
+
+    // TEST
+    // if(next_phase == WkJPosPhase::right_swing_start_trans ||
+    //    next_phase == WkJPosPhase::right_swing_end_trans ||
+    //    next_phase == WkJPosPhase::left_swing_start_trans ||
+    //    next_phase == WkJPosPhase::left_swing_end_trans ){
+
+    //     ++next_phase;
+    // }
      printf("next phase: %i\n", next_phase);
 
     if(phase == WkJPosPhase::double_contact_1) {
