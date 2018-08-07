@@ -7,6 +7,7 @@
 #include <Mercury_Controller/ContactSet/DoubleContact.hpp>
 
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
+#include <Mercury_Controller/WBWC.hpp>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Utils/DataManager.hpp>
@@ -23,9 +24,9 @@ JPosPostureFixCtrl::JPosPostureFixCtrl(RobotSystem* robot):Controller(robot),
     set_jpos_.setZero();
 
     //jpos_task_ = new JPosTask();
-    //fixed_body_contact_ = new FixedBodyContact(robot);
+    //contact_constraint_ = new FixedBodyContact(robot);
     jpos_task_ = new ConfigTask();
-    fixed_body_contact_ = new DoubleContact(robot);
+    contact_constraint_ = new DoubleContact(robot);
 
     std::vector<bool> act_list;
     act_list.resize(mercury::num_qdot, true);
@@ -36,14 +37,24 @@ JPosPostureFixCtrl::JPosPostureFixCtrl(RobotSystem* robot):Controller(robot),
     wbdc_rotor_data_->A_rotor = 
         dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
     wbdc_rotor_data_->cost_weight = 
-        dynacore::Vector::Constant(fixed_body_contact_->getDim() + 
-                jpos_task_->getDim(), 100.0);
-    wbdc_rotor_data_->cost_weight.tail(fixed_body_contact_->getDim()) = 
-        dynacore::Vector::Constant(fixed_body_contact_->getDim(), 0.1);
+        dynacore::Vector::Constant(contact_constraint_->getDim() + 
+                jpos_task_->getDim(), 1000.0);
+    wbdc_rotor_data_->cost_weight.tail(contact_constraint_->getDim()) = 
+        dynacore::Vector::Constant(contact_constraint_->getDim(), 0.1);
 
     wbdc_rotor_data_->cost_weight[jpos_task_->getDim() + 2] = 0.001;
     wbdc_rotor_data_->cost_weight[jpos_task_->getDim() + 5] = 0.001;
 
+    //wbdc_rotor_data_->cost_weight.head(mercury::num_virtual) 
+        //= dynacore::Vector::Constant(mercury::num_virtual, 0.001);
+    //wbdc_rotor_data_->cost_weight.segment(mercury::num_virtual, mercury::num_act_joint) 
+        //= dynacore::Vector::Constant(mercury::num_act_joint, 100000.0);
+
+    wbwc_ = new WBWC(robot);
+    wbwc_->W_virtual_ = dynacore::Vector::Constant(6, 100.0);
+    wbwc_->W_rf_[2] = 0.01;
+    wbwc_->W_rf_[5] = 0.01;
+    wbwc_->W_foot_ = dynacore::Vector::Constant(6, 10000.0);
 
     sp_ = Mercury_StateProvider::getStateProvider();
 
@@ -52,7 +63,7 @@ JPosPostureFixCtrl::JPosPostureFixCtrl(RobotSystem* robot):Controller(robot),
 
 JPosPostureFixCtrl::~JPosPostureFixCtrl(){
     delete jpos_task_;
-    delete fixed_body_contact_;
+    delete contact_constraint_;
     delete wbdc_rotor_;
     delete wbdc_rotor_data_;
 }
@@ -62,7 +73,7 @@ void JPosPostureFixCtrl::OneStep(void* _cmd){
     dynacore::Vector gamma = dynacore::Vector::Zero(mercury::num_act_joint);
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
-    _fixed_body_contact_setup();
+    _contact_constraint_setup();
     _jpos_task_setup();
     _jpos_ctrl_wbdc_rotor(gamma);
 
@@ -77,16 +88,33 @@ void JPosPostureFixCtrl::OneStep(void* _cmd){
 
 void JPosPostureFixCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+    // WBDC
+    //for (int i(0); i<mercury::num_act_joint; ++i){
+        //wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            //= sp_->rotor_inertia_[i];
+    //}
+    //wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    //wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
+
+    //gamma = wbdc_rotor_data_->cmd_ff;
+    //dynacore::Vector reaction_force = 
+             //(wbdc_rotor_data_->opt_result_).tail(contact_constraint_->getDim());
+    //for(int i(0); i<contact_constraint_->getDim(); ++i)
+        //sp_->reaction_forces_[i] = reaction_force[i];
+
+    //sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+
+    // WBWC
+    dynacore::Matrix A_rotor = A_;
     for (int i(0); i<mercury::num_act_joint; ++i){
-        wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+        A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
             = sp_->rotor_inertia_[i];
     }
-    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
-
-    gamma = wbdc_rotor_data_->cmd_ff;
-
-    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+    wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
+    dynacore::Vector des_acc(mercury::num_act_joint); des_acc.setZero();
+    wbwc_->computeTorque(des_jpos_, des_jvel_, des_acc, gamma);
+    sp_->qddot_cmd_ = wbwc_->qddot_;
+    sp_->reaction_forces_ = wbwc_->Fr_;
 }
 
 void JPosPostureFixCtrl::_jpos_task_setup(){
@@ -122,9 +150,9 @@ void JPosPostureFixCtrl::_jpos_task_setup(){
     task_list_.push_back(jpos_task_);
 }
 
-void JPosPostureFixCtrl::_fixed_body_contact_setup(){
-    fixed_body_contact_->UpdateContactSpec();
-    contact_list_.push_back(fixed_body_contact_);
+void JPosPostureFixCtrl::_contact_constraint_setup(){
+    contact_constraint_->UpdateContactSpec();
+    contact_list_.push_back(contact_constraint_);
 }
 
 void JPosPostureFixCtrl::FirstVisit(){
@@ -156,4 +184,6 @@ void JPosPostureFixCtrl::CtrlInitialization(const std::string & setting_file_nam
     for(int i(0); i<tmp_vec.size(); ++i){
         ((JPosTask*)jpos_task_)->Kd_vec_[i] = tmp_vec[i];
     }
+    wbwc_->Kp_ = ((JPosTask*)jpos_task_)->Kp_vec_.tail(mercury::num_act_joint);
+    wbwc_->Kd_ = ((JPosTask*)jpos_task_)->Kd_vec_.tail(mercury::num_act_joint);
 }

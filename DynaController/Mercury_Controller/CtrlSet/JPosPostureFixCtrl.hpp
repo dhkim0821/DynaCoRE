@@ -9,6 +9,7 @@ class WBDC_ContactSpec;
 class WBDC_Rotor;
 class WBDC_Rotor_ExtraData;
 
+class WBWC;
 
 class JPosPostureFixCtrl: public Controller{
     public:
@@ -29,10 +30,11 @@ class JPosPostureFixCtrl: public Controller{
         }
 
     protected:
+        WBWC* wbwc_;
         double end_time_;
 
         Task* jpos_task_;
-        WBDC_ContactSpec* fixed_body_contact_;
+        WBDC_ContactSpec* contact_constraint_;
         WBDC_Rotor* wbdc_rotor_;
         WBDC_Rotor_ExtraData* wbdc_rotor_data_;
 
@@ -45,7 +47,7 @@ class JPosPostureFixCtrl: public Controller{
         dynacore::Vector set_jpos_;
 
         void _jpos_task_setup();
-        void _fixed_body_contact_setup();
+        void _contact_constraint_setup();
         void _jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma);
 
         double ctrl_start_time_;

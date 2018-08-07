@@ -11,7 +11,7 @@ class RobotSystem;
 class WBDC_ContactSpec;
 class WBDC_Rotor;
 class WBDC_Rotor_ExtraData;
-
+class WBWC;
 
 class JPosSwingCtrl:public Controller{
     public:
@@ -45,6 +45,7 @@ class JPosSwingCtrl:public Controller{
         dynacore::Vect3 curr_foot_acc_des_;
 
     protected:
+        WBWC* wbwc_;
         double planning_moment_portion_;
         bool b_replan_;
         dynacore::Vect3 body_pt_offset_;
@@ -102,6 +103,7 @@ class JPosSwingCtrl:public Controller{
 
         dynacore::Vector des_jpos_;
         dynacore::Vector des_jvel_;
+        dynacore::Vector des_jacc_;
 
         Mercury_StateProvider* sp_;
         double ctrl_start_time_;

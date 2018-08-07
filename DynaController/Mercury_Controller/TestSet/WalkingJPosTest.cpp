@@ -9,6 +9,7 @@
 
 
 #include <Mercury_Controller/CtrlSet/JPosTargetCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/JPosDoubleTransCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/JPosPostureFixCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/JPosSingleTransCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/JPosSwingCtrl.hpp>
@@ -26,7 +27,7 @@ WalkingJPosTest::WalkingJPosTest(RobotSystem* robot):Test(robot),
     state_list_.clear();
 
     jpos_ctrl_ = new JPosTargetCtrl(robot);
-    body_up_ctrl_ = new JPosTargetCtrl(robot);
+    body_up_ctrl_ = new JPosDoubleTransCtrl(robot);
     body_fix_ctrl_ = new JPosPostureFixCtrl(robot);
 
     // Right
@@ -93,7 +94,7 @@ void WalkingJPosTest::TestInitialization(){
     reversal_planner_->PlannerInitialization(MercuryConfigPath"PLANNER_velocity_reversal");
     // Yaml file name
     jpos_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
-    body_up_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
+    body_up_ctrl_->CtrlInitialization("CTRL_jpos_double_trans");
     body_fix_ctrl_->CtrlInitialization("CTRL_jpos_fix_stance");
 
     right_swing_start_trans_ctrl_->CtrlInitialization("CTRL_jpos_trans");
@@ -158,13 +159,13 @@ void WalkingJPosTest::_SettingParameter(){
     std::string tmp_str;
     handler.getVector("initial_jpos", tmp_vec);
     ((JPosTargetCtrl*)jpos_ctrl_)->setTargetPosition(tmp_vec);
-    ((JPosTargetCtrl*)body_up_ctrl_)->setInitialPosition(tmp_vec);
+    ((JPosDoubleTransCtrl*)body_up_ctrl_)->setInitialPosition(tmp_vec);
 
     handler.getValue("body_height", tmp);
     ((Reversal_LIPM_Planner*)reversal_planner_)->setOmega(tmp);
 
     _SetupStancePosture(tmp);
-    ((JPosTargetCtrl*)body_up_ctrl_)->setTargetPosition(stance_jpos_);
+    ((JPosDoubleTransCtrl*)body_up_ctrl_)->setTargetPosition(stance_jpos_);
     // Double Contact
     ((JPosPostureFixCtrl*)body_fix_ctrl_)->setPosture(stance_jpos_);
     // Transition
@@ -180,7 +181,7 @@ void WalkingJPosTest::_SettingParameter(){
     handler.getValue("jpos_initialization_time", tmp);
     ((JPosTargetCtrl*)jpos_ctrl_)->setMovingTime(tmp);
     handler.getValue("body_lifting_time", tmp);
-    ((JPosTargetCtrl*)body_up_ctrl_)->setMovingTime(tmp);
+    ((JPosDoubleTransCtrl*)body_up_ctrl_)->setMovingTime(tmp);
 
     // Stance Time
     handler.getValue("stance_time", tmp);

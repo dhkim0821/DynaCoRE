@@ -8,7 +8,7 @@ class RobotSystem;
 class WBDC_ContactSpec;
 class WBDC_Rotor;
 class WBDC_Rotor_ExtraData;
-
+class WBWC;
 
 class JPosSingleTransCtrl: public Controller{
     public:
@@ -29,6 +29,8 @@ class JPosSingleTransCtrl: public Controller{
         }
 
     protected:
+        int swing_foot_;
+        WBWC* wbwc_;
         double end_time_;
         double max_rf_z_;
         double min_rf_z_;
@@ -43,6 +45,7 @@ class JPosSingleTransCtrl: public Controller{
         dynacore::Vector jpos_target_;
         dynacore::Vector des_jpos_;
         dynacore::Vector des_jvel_;
+        dynacore::Vector des_jacc_;
 
         bool b_jpos_set_;
         dynacore::Vector set_jpos_;

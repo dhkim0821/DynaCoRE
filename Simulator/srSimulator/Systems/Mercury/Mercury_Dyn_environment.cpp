@@ -173,8 +173,8 @@ void Mercury_Dyn_environment::PassiveAnkleSpring(){
 void Mercury_Dyn_environment::FixXY(){
   double pos,vel;
 
-  double kp(500.0);
-  double kd(50.0);
+  double kp(1500.0);
+  double kd(150.0);
 
   int idx(0);
   pos = m_Mercury->vp_joint_[idx]->m_State.m_rValue[0];

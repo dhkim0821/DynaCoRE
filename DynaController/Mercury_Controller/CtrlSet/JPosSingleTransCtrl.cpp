@@ -8,6 +8,7 @@
 
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <WBDC_Rotor/WBDC_Rotor.hpp>
+#include <Mercury_Controller/WBWC.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Utils/DataManager.hpp>
 #include <Mercury_Controller/Mercury_DynaControl_Definition.h>
@@ -15,20 +16,31 @@
 JPosSingleTransCtrl::JPosSingleTransCtrl(RobotSystem* robot,
         int moving_foot, bool b_increase):
     Controller(robot),
+    swing_foot_(moving_foot),
     b_increase_(b_increase),
     end_time_(1000.0),
     b_jpos_set_(false),
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
+    des_jacc_(mercury::num_act_joint),
    ctrl_start_time_(0.),
     set_jpos_(mercury::num_act_joint)
 {
     set_jpos_.setZero();
+    des_jacc_.setZero();
 
     //jpos_task_ = new JPosTask();
     //contact_ = new FixedBodyContact(robot);
     jpos_task_ = new ConfigTask();
     contact_ = new DoubleContactBounding(robot, moving_foot);
+
+    wbwc_ = new WBWC(robot);
+    wbwc_->W_virtual_ = dynacore::Vector::Constant(6, 100.0);
+    wbwc_->W_rf_ = dynacore::Vector::Constant(6, 1.0);
+    wbwc_->W_foot_ = dynacore::Vector::Constant(6, 10000.0);
+    wbwc_->W_rf_[2] = 0.01;
+    wbwc_->W_rf_[5] = 0.01;
+
 
     std::vector<bool> act_list;
     act_list.resize(mercury::num_qdot, true);
@@ -40,10 +52,7 @@ JPosSingleTransCtrl::JPosSingleTransCtrl(RobotSystem* robot,
         dynacore::Matrix::Zero(mercury::num_qdot, mercury::num_qdot);
     wbdc_rotor_data_->cost_weight = 
         dynacore::Vector::Constant(contact_->getDim() + 
-                jpos_task_->getDim(), 100.0);
-
-    wbdc_rotor_data_->cost_weight.head(2) = 
-        dynacore::Vector::Constant(2, 0.00001);
+                jpos_task_->getDim(), 1000.0);
 
     wbdc_rotor_data_->cost_weight.tail(contact_->getDim()) = 
         dynacore::Vector::Constant(contact_->getDim(), 0.1);
@@ -51,6 +60,11 @@ JPosSingleTransCtrl::JPosSingleTransCtrl(RobotSystem* robot,
     wbdc_rotor_data_->cost_weight[jpos_task_->getDim() + 2] = 0.001;
     wbdc_rotor_data_->cost_weight[jpos_task_->getDim() + 5] = 0.001;
 
+    //wbdc_rotor_data_->cost_weight.head(mercury::num_virtual) 
+        //= dynacore::Vector::Constant(mercury::num_virtual, 0.001);
+    //wbdc_rotor_data_->cost_weight.segment(mercury::num_virtual, mercury::num_act_joint) 
+        //= dynacore::Vector::Constant(mercury::num_act_joint, 100000.0);
+ 
     sp_ = Mercury_StateProvider::getStateProvider();
 
     //printf("[Joint Position Single Transition Controller] Constructeh\n");
@@ -82,17 +96,33 @@ void JPosSingleTransCtrl::OneStep(void* _cmd){
 }
 
 void JPosSingleTransCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
-    dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+    //dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+    //for (int i(0); i<mercury::num_act_joint; ++i){
+        //wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            //= sp_->rotor_inertia_[i];
+    //}
+    //wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    //wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
+
+    //gamma = wbdc_rotor_data_->cmd_ff;
+
+    //dynacore::Vector reaction_force = 
+             //(wbdc_rotor_data_->opt_result_).tail(contact_->getDim());
+    //for(int i(0); i<contact_->getDim(); ++i)
+        //sp_->reaction_forces_[i] = reaction_force[i];
+
+    //sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+
+    dynacore::Matrix A_rotor = A_;
     for (int i(0); i<mercury::num_act_joint; ++i){
-        wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+        A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
             = sp_->rotor_inertia_[i];
     }
-    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
+    wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
+    wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
 
-    gamma = wbdc_rotor_data_->cmd_ff;
-
-    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+    sp_->qddot_cmd_ = wbwc_->qddot_;
+    sp_->reaction_forces_ = wbwc_->Fr_;
 }
 
 void JPosSingleTransCtrl::_jpos_task_setup(){
@@ -129,16 +159,62 @@ void JPosSingleTransCtrl::_jpos_task_setup(){
 }
 
 void JPosSingleTransCtrl::_contact_setup(){
+    //double alpha(state_machine_time_/end_time_);
+    // 0 --> 1
+    double alpha = 0.5 * (1-cos(M_PI * state_machine_time_/end_time_));
+   double upper_lim(100.);
+   double rf_weight(100.);
+   double rf_weight_z(100.);
+   double foot_weight(1000.);
+
     if(b_increase_){
         ((DoubleContactBounding*)contact_)->setFzUpperLimit(
-            min_rf_z_ + state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_));
+            min_rf_z_ + alpha*(max_rf_z_ - min_rf_z_));
+
+        upper_lim = min_rf_z_ + alpha*(max_rf_z_ - min_rf_z_);
+        rf_weight = (1. - alpha) * 5. + alpha * 1.0;
+        rf_weight_z = (1. - alpha) * 0.5 + alpha * 0.01;
+        foot_weight = 0.001 * (1. - alpha)  + 10000. * alpha;
     } else {
         ((DoubleContactBounding*)contact_)->setFzUpperLimit(
-            max_rf_z_ - state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_));
-    }
+            max_rf_z_ - alpha * (max_rf_z_ - min_rf_z_));
+
+        upper_lim = max_rf_z_ - alpha*(max_rf_z_ - min_rf_z_);
+        rf_weight = (alpha) * 5. + (1. - alpha) * 1.0;
+        rf_weight_z = (alpha) * 0.5 + (1. - alpha) * 0.01;
+        foot_weight = 0.001 * (alpha)  + 10000. * (1. - alpha);
+     }
+    //((DoubleContactBounding*)contact_)->setFrictionCoeff(0.3*(1-alpha), 0.3);
 
     contact_->UpdateContactSpec();
     contact_list_.push_back(contact_);
+
+    if(swing_foot_ == mercury_link::leftFoot) {
+        wbwc_->W_rf_[3] = rf_weight;
+        wbwc_->W_rf_[4] = rf_weight;
+        wbwc_->W_rf_[5] = rf_weight_z;
+
+        wbwc_->W_foot_[3] = foot_weight;
+        wbwc_->W_foot_[4] = foot_weight;
+        wbwc_->W_foot_[5] = foot_weight;
+
+        wbwc_->left_z_max_ = upper_lim; 
+    }
+    else if(swing_foot_ == mercury_link::rightFoot) {
+        wbwc_->W_rf_[0] = rf_weight;
+        wbwc_->W_rf_[1] = rf_weight;
+        wbwc_->W_rf_[2] = rf_weight_z;
+
+        wbwc_->W_foot_[0] = foot_weight;
+        wbwc_->W_foot_[1] = foot_weight;
+        wbwc_->W_foot_[2] = foot_weight;
+
+        wbwc_->right_z_max_ = upper_lim; 
+    }
+
+    //static int count(0);
+    //++count;
+    //if( count> 100 ){ exit(0); }
 }
 
 void JPosSingleTransCtrl::FirstVisit(){
@@ -173,4 +249,6 @@ void JPosSingleTransCtrl::CtrlInitialization(const std::string & setting_file_na
     for(int i(0); i<tmp_vec.size(); ++i){
         ((JPosTask*)jpos_task_)->Kd_vec_[i] = tmp_vec[i];
     }
+    wbwc_->Kp_ = ((JPosTask*)jpos_task_)->Kp_vec_.tail(mercury::num_act_joint);
+    wbwc_->Kd_ = ((JPosTask*)jpos_task_)->Kd_vec_.tail(mercury::num_act_joint);
 }
