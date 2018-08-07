@@ -52,9 +52,10 @@ JPosPostureFixCtrl::JPosPostureFixCtrl(RobotSystem* robot):Controller(robot),
 
     wbwc_ = new WBWC(robot);
     wbwc_->W_virtual_ = dynacore::Vector::Constant(6, 100.0);
+    wbwc_->W_rf_ = dynacore::Vector::Constant(6, 1.0);
+    wbwc_->W_foot_ = dynacore::Vector::Constant(6, 10000.0);
     wbwc_->W_rf_[2] = 0.01;
     wbwc_->W_rf_[5] = 0.01;
-    wbwc_->W_foot_ = dynacore::Vector::Constant(6, 10000.0);
 
     sp_ = Mercury_StateProvider::getStateProvider();
 
@@ -87,7 +88,7 @@ void JPosPostureFixCtrl::OneStep(void* _cmd){
 }
 
 void JPosPostureFixCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
-    dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+    // dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
     // WBDC
     //for (int i(0); i<mercury::num_act_joint; ++i){
         //wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
@@ -108,7 +109,7 @@ void JPosPostureFixCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     dynacore::Matrix A_rotor = A_;
     for (int i(0); i<mercury::num_act_joint; ++i){
         A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-            = sp_->rotor_inertia_[i];
+            += sp_->rotor_inertia_[i];
     }
     wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
     dynacore::Vector des_acc(mercury::num_act_joint); des_acc.setZero();

@@ -24,6 +24,9 @@ class WBWC{
             b_ = coriolis;
             g_ = grav;
 
+            // TEST
+            // b_.setZero();
+
             dynacore::Matrix Jtmp;
             robot_sys_->getFullJacobian(mercury_link::rightFoot, Jtmp);
             Jc_.block(0,0, 3, mercury::num_qdot) = 

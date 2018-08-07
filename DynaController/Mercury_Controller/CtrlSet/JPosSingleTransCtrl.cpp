@@ -116,7 +116,7 @@ void JPosSingleTransCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     dynacore::Matrix A_rotor = A_;
     for (int i(0); i<mercury::num_act_joint; ++i){
         A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-            = sp_->rotor_inertia_[i];
+            += sp_->rotor_inertia_[i];
     }
     wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
     wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);

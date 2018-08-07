@@ -2,7 +2,7 @@
 # test_name: joint_ctrl_test
 
 ## Walking Test ********************************* 
-#test_name: walking_config_test
+# test_name: walking_config_test
 
 ## Walking Test ********************************* 
 test_name: walking_jpos_test

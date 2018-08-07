@@ -14,6 +14,8 @@ WBWC::WBWC(const RobotSystem* robot):
     Kp_(mercury::num_act_joint),
     Kd_(mercury::num_act_joint)
 {
+    Kp_.setZero();
+    Kd_.setZero();
     W_rf_ = dynacore::Vector::Constant(dim_rforce_, 1.);
     W_foot_ = dynacore::Vector::Constant(dim_rforce_, 1.);
     W_virtual_ = dynacore::Vector::Constant(mercury::num_virtual, 1.);
