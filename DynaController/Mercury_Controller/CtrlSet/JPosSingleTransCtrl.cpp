@@ -128,22 +128,31 @@ void JPosSingleTransCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
 void JPosSingleTransCtrl::_jpos_task_setup(){
     des_jvel_.setZero();
 
-    if(b_jpos_set_){
-        des_jpos_ = set_jpos_;
-    }else{
-        des_jpos_ = jpos_ini_;
-    }
-    //double Kp_roll(2.0);
-    //double Kp_pitch(2.0);
-    //des_jpos_[mercury_joint::rightAbduction - mercury::num_virtual] 
-        //+= Kp_roll * sp_->Q_[mercury_joint::virtual_Rx];
-    //des_jpos_[mercury_joint::leftAbduction - mercury::num_virtual] 
-        //+= Kp_roll * sp_->Q_[mercury_joint::virtual_Rx];
+    //if(b_jpos_set_){
+        //des_jpos_ = set_jpos_;
+    //}else{
+        //des_jpos_ = jpos_ini_;
+    //}
 
-    //des_jpos_[mercury_joint::rightHip - mercury::num_virtual] 
-        //+= Kp_pitch * sp_->Q_[mercury_joint::virtual_Ry];
-    //des_jpos_[mercury_joint::leftHip - mercury::num_virtual] 
-        //+= Kp_pitch * sp_->Q_[mercury_joint::virtual_Ry];
+    // Abduction roll
+    sp_->curr_jpos_des_[stance_leg_jidx_] += 
+        sp_->Kp_roll_ * sp_->Q_[mercury_joint::virtual_Rx];
+    // Hip Pitch
+    sp_->curr_jpos_des_[stance_leg_jidx_ + 1] += 
+        sp_->Kp_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
+
+    int rknee_idx(mercury_joint::rightKnee - mercury::num_virtual);
+    int lknee_idx(mercury_joint::leftKnee - mercury::num_virtual);
+
+    sp_->curr_jpos_des_[rknee_idx] =
+        dynacore::smooth_changing(initial_rknee_jpos_des_, 
+                set_jpos_[rknee_idx], end_time_, state_machine_time_);
+
+    sp_->curr_jpos_des_[lknee_idx] =
+        dynacore::smooth_changing(initial_lknee_jpos_des_, 
+                set_jpos_[lknee_idx], end_time_, state_machine_time_);
+
+    des_jpos_ = sp_->curr_jpos_des_;
 
     dynacore::Vector config_des = sp_->Q_;
     config_des.segment(mercury::num_virtual, mercury::num_act_joint) = 
@@ -199,6 +208,7 @@ void JPosSingleTransCtrl::_contact_setup(){
         wbwc_->W_foot_[5] = foot_weight;
 
         wbwc_->left_z_max_ = upper_lim; 
+        stance_leg_jidx_ = mercury_joint::rightAbduction - mercury::num_virtual;
     }
     else if(swing_foot_ == mercury_link::rightFoot) {
         wbwc_->W_rf_[0] = rf_weight;
@@ -210,6 +220,7 @@ void JPosSingleTransCtrl::_contact_setup(){
         wbwc_->W_foot_[2] = foot_weight;
 
         wbwc_->right_z_max_ = upper_lim; 
+        stance_leg_jidx_ = mercury_joint::leftAbduction - mercury::num_virtual;
     }
 
     //static int count(0);
@@ -220,6 +231,12 @@ void JPosSingleTransCtrl::_contact_setup(){
 void JPosSingleTransCtrl::FirstVisit(){
     jpos_ini_ = sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint);
     ctrl_start_time_ = sp_->curr_time_;
+
+    // Set Up desired knee joint position
+    initial_rknee_jpos_des_ = 
+        sp_->curr_jpos_des_[mercury_joint::rightKnee - mercury::num_virtual];
+    initial_lknee_jpos_des_ = 
+        sp_->curr_jpos_des_[mercury_joint::leftKnee - mercury::num_virtual];
 }
 
 void JPosSingleTransCtrl::LastVisit(){

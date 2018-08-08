@@ -4,6 +4,7 @@
 #include <Controller.hpp>
 #include <Utils/BSplineBasic.h>
 #include <Utils/minjerk_one_dim.hpp>
+#include <Mercury_Controller/Mercury_InvKinematics.hpp>
 
 class Planner;
 class Mercury_StateProvider;
@@ -45,13 +46,27 @@ class JPosSwingCtrl:public Controller{
         dynacore::Vect3 curr_foot_acc_des_;
 
     protected:
+        double abduction_addition_;
+        double hip_addition_;
+
+        double abduction_addition_replan_;
+        double hip_addition_replan_;
+
+        dynacore::Vector prev_jpos_des_;
+
         WBWC* wbwc_;
         double planning_moment_portion_;
         bool b_replan_;
+        bool b_planned_;
+
         dynacore::Vect3 body_pt_offset_;
         double pitch_offset_gain_;
         double roll_offset_gain_;
 
+        dynacore::Vect3 noplan_landing_loc_;
+
+        dynacore::Vector swing_jpos_addition_;
+        dynacore::Vector swing_jpos_replanned_addition_;
         dynacore::Vector target_swing_leg_config_;
         dynacore::Vector ini_config_;
 
@@ -108,6 +123,7 @@ class JPosSwingCtrl:public Controller{
         Mercury_StateProvider* sp_;
         double ctrl_start_time_;
         Planner* planner_;
+        Mercury_InvKinematics inv_kin_;
 };
 
 #endif

@@ -164,7 +164,18 @@ void WalkingJPosTest::_SettingParameter(){
     handler.getValue("body_height", tmp);
     ((Reversal_LIPM_Planner*)reversal_planner_)->setOmega(tmp);
 
+    handler.getValue("Kp_roll", sp_->Kp_roll_);
+    handler.getValue("Kp_pitch", sp_->Kp_pitch_);
+
+    handler.getVector("default_rfoot_loc", tmp_vec);
+    for(int i(0); i<3; ++i) sp_->default_rfoot_loc_[i] = tmp_vec[i];
+    
+    handler.getVector("default_lfoot_loc", tmp_vec);
+    for(int i(0); i<3; ++i) sp_->default_lfoot_loc_[i] = tmp_vec[i];
+
+
     _SetupStancePosture(tmp);
+    sp_->curr_jpos_des_ = stance_jpos_;
     ((JPosDoubleTransCtrl*)body_up_ctrl_)->setTargetPosition(stance_jpos_);
     // Double Contact
     ((JPosPostureFixCtrl*)body_fix_ctrl_)->setPosture(stance_jpos_);
@@ -176,7 +187,7 @@ void WalkingJPosTest::_SettingParameter(){
     // Swing
     ((JPosSwingCtrl*)right_swing_ctrl_)->setStancePosture(stance_jpos_);
     ((JPosSwingCtrl*)left_swing_ctrl_)->setStancePosture(stance_jpos_);
-
+    
     //// Timing Setup
     handler.getValue("jpos_initialization_time", tmp);
     ((JPosTargetCtrl*)jpos_ctrl_)->setMovingTime(tmp);
@@ -228,11 +239,10 @@ void WalkingJPosTest::_SetupStancePosture(double body_height){
     dynacore::Vect3 lfoot_pos; lfoot_pos.setZero();
 
     //body_height = 0.85;
-    //rfoot_pos[0] = -0.05;
-    //lfoot_pos[0] = -0.05;
-
-    rfoot_pos[1] = -0.1;
-    lfoot_pos[1] = 0.1;
+    for (int i(0); i<2; ++i){
+        rfoot_pos[i] = sp_->default_rfoot_loc_[i];
+        lfoot_pos[i] = sp_->default_lfoot_loc_[i];
+    }
 
     double theta(0.2);
     dynacore::Quaternion des_quat(cos(theta/2.), 0., sin(theta/2.), 0);

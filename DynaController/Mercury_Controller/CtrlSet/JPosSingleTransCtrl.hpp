@@ -29,6 +29,14 @@ class JPosSingleTransCtrl: public Controller{
         }
 
     protected:
+        double right_knee_add_;
+        double left_knee_add_;
+
+        double initial_rknee_jpos_des_;
+        double initial_lknee_jpos_des_;
+
+
+        int stance_leg_jidx_;
         int swing_foot_;
         WBWC* wbwc_;
         double end_time_;

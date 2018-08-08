@@ -143,9 +143,7 @@
 
   <joint name="abduct_l_to_thigh_l_j" type="continuous">
     <axis xyz="0 1 0"/>
-<!--     <origin rpy="-0.017 0 0.01" xyz="0.0 0.0 -0.03535"/> -->
-    <origin rpy="0.0 0 0.007" xyz="0.0 0.0 -0.03535"/>
-    <!-- <origin rpy="-0.045 0 0.01" xyz="0.0 0.0 -0.03535"/> -->
+    <origin rpy="0.0 0 0.007" xyz="0.0 -0.005 -0.03535"/>
     <parent link="abduct_l"/>
     <child link="thigh_l"/>
   </joint>
@@ -153,7 +151,6 @@
     <inertial>
       <!-- <mass value="3.682"/> -->
       <mass value="3.6"/>
-      <!-- <origin xyz="-0.00396 -0.000018 -0.24"/> -->
       <origin xyz="-0.00396 -0.000018 -0.175"/>
       <inertia ixx="0.038482" ixy="0" ixz="0.0" iyy="0.039835" iyz="0" izz="0.0042934"/>
     </inertial>
@@ -189,7 +186,6 @@
 
   <joint name="ankle_l" type="continuous">
     <axis xyz="0 1 0"/>
-    <!-- <origin rpy="0 0 0" xyz="0.0 -0.038 -0.47"/> -->
     <origin rpy="0 0 0" xyz="0.0 -0.002 -0.47"/>
     <parent link="shank_l"/>
     <child link="lfoot" />

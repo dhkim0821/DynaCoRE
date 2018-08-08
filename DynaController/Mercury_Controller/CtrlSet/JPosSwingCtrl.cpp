@@ -34,10 +34,22 @@ JPosSwingCtrl::JPosSwingCtrl(
     stance_jpos_(mercury::num_act_joint),
     planning_moment_portion_(0.5),
     push_down_height_(0.0),
-    b_replan_(false)
+    abduction_addition_(0.),
+    hip_addition_(0.),
+    abduction_addition_replan_(0.),
+    hip_addition_replan_(0.),
+    b_replan_(false),
+    b_planned_(false),
+    prev_jpos_des_(mercury::num_act_joint),
+    target_swing_leg_config_(3),
+    swing_jpos_addition_(3),
+    swing_jpos_replanned_addition_(3)
 {
     //jpos_task_ = new JPosTask();
     //contact_constraint_ = new FixedBodyContact(robot);
+    default_target_loc_.setZero();
+    prev_jpos_des_.setZero();
+    swing_jpos_addition_.setZero();
 
     wbwc_ = new WBWC(robot);
     wbwc_->W_virtual_ = dynacore::Vector::Constant(6, 100.0);
@@ -46,9 +58,7 @@ JPosSwingCtrl::JPosSwingCtrl(
     wbwc_->W_rf_[2] = 0.01;
     wbwc_->W_rf_[5] = 0.01;
 
-
     jpos_task_ = new ConfigTask();
-
 
     curr_foot_pos_des_.setZero();
     curr_foot_vel_des_.setZero();
@@ -224,16 +234,52 @@ void JPosSwingCtrl::_task_setup(){
     double amp;
     double omega(2.*M_PI/end_time_);
 
+    if(b_replan_)   _CheckPlanning();
+
     for(int i(0); i<3; ++i){
         amp = jpos_swing_delta_[i]/2.;
-        des_jpos_[swing_leg_jidx_ + i] += amp * (1 - cos(omega * state_machine_time_));
-        des_jvel_[swing_leg_jidx_ + i] = amp * omega * sin(omega * state_machine_time_);
-        des_jacc_[swing_leg_jidx_ + i] = amp * omega * omega * cos(omega * state_machine_time_);
+ 
+        sp_->curr_jpos_des_[swing_leg_jidx_ + i] = 
+            prev_jpos_des_[swing_leg_jidx_ + i]
+            + amp * (1 - cos(omega * state_machine_time_))
+            + dynacore::smooth_changing(
+                    0., swing_jpos_addition_[i], end_time_, state_machine_time_);
+        des_jvel_[swing_leg_jidx_ + i] = 
+            amp * omega * sin(omega * state_machine_time_)
+            + dynacore::smooth_changing_vel(
+                    0., swing_jpos_addition_[i], end_time_, state_machine_time_);
+         des_jacc_[swing_leg_jidx_ + i] = 
+            amp * omega * omega * cos(omega * state_machine_time_)
+             + dynacore::smooth_changing_acc(
+                    0., swing_jpos_addition_[i], end_time_, state_machine_time_);
+       
+        //des_jpos_[swing_leg_jidx_ + i] += amp * (1 - cos(omega * state_machine_time_));
+        //des_jvel_[swing_leg_jidx_ + i] = amp * omega * sin(omega * state_machine_time_);
+        //des_jacc_[swing_leg_jidx_ + i] = amp * omega * omega * cos(omega * state_machine_time_);
     }
-    //double Kp_roll(1.0);
-    //double Kp_pitch(1.0);
-    //des_jpos_[stance_leg_jidx_] += Kp_roll * sp_->Q_[mercury_joint::virtual_Rx];
-    //des_jpos_[stance_leg_jidx_ + 1] += Kp_pitch * sp_->Q_[mercury_joint::virtual_Ry];
+
+    if(state_machine_time_ > planning_moment_portion_ * end_time_){
+        double time_after(state_machine_time_ - planning_moment_portion_ * end_time_);
+        double remain_duration(end_time_ * (1-planning_moment_portion_));
+
+        for(int i(0); i<3; ++i){
+            sp_->curr_jpos_des_[swing_leg_jidx_ + i] += 
+                dynacore::smooth_changing(0., swing_jpos_replanned_addition_[i], 
+                        remain_duration, time_after);
+
+            des_jvel_[swing_leg_jidx_ + i] += 
+                dynacore::smooth_changing_vel(0., swing_jpos_replanned_addition_[i], 
+                        remain_duration, time_after);
+        }
+    }
+    // Abduction roll
+    sp_->curr_jpos_des_[stance_leg_jidx_] += 
+        sp_->Kp_roll_ * sp_->Q_[mercury_joint::virtual_Rx];
+    // Hip Pitch
+    sp_->curr_jpos_des_[stance_leg_jidx_ + 1] += 
+        sp_->Kp_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
+
+    des_jpos_ = sp_->curr_jpos_des_;
 
     // Configuration Setting
     dynacore::Vector config_des = sp_->Q_;
@@ -255,9 +301,10 @@ void JPosSwingCtrl::_task_setup(){
 }
 
 void JPosSwingCtrl::_CheckPlanning(){
-    if( state_machine_time_ > planning_moment_portion_ * end_time_ ){
+    if( (state_machine_time_ > planning_moment_portion_ * end_time_) && !b_planned_ ){
         dynacore::Vect3 target_loc;
         _Replanning(target_loc);
+        b_planned_ = true;
     }
 }
 
@@ -314,7 +361,20 @@ void JPosSwingCtrl::_Replanning(dynacore::Vect3 & target_loc){
     end_time_ += pl_output.time_modification;
     target_loc -= sp_->global_pos_local_;
 
+ 
     target_loc[2] = default_target_loc_[2];
+    
+    dynacore::Vector config_sol = sp_->Q_;
+    inv_kin_.getLegConfigAtVerticalPosture(
+            swing_foot_, target_loc, sp_->Q_, config_sol);
+ 
+    dynacore::Vector new_target_pos = 
+        config_sol.segment(swing_leg_jidx_ + mercury::num_virtual, 3);
+
+    swing_jpos_replanned_addition_ = 
+        new_target_pos - target_swing_leg_config_;
+
+    curr_foot_pos_des_ = target_loc;
     dynacore::pretty_print(target_loc, std::cout, "next foot loc");
 }
 
@@ -329,6 +389,39 @@ void JPosSwingCtrl::FirstVisit(){
     ctrl_start_time_ = sp_->curr_time_;
     state_machine_time_ = 0.;
     replan_moment_ = 0.;
+    
+    prev_jpos_des_ = sp_->curr_jpos_des_;
+
+    dynacore::Vector config_sol = sp_->Q_;
+    dynacore::Vector guess_q = sp_->Q_;
+
+    noplan_landing_loc_.setZero();
+    if(swing_foot_ == mercury_link::leftFoot){
+        noplan_landing_loc_.head(2) = 
+            sp_->Q_.head(2) + sp_->default_lfoot_loc_.head(2);
+    }else{
+        noplan_landing_loc_.head(2) = 
+            sp_->Q_.head(2) + sp_->default_rfoot_loc_.head(2);
+    }
+    inv_kin_.getLegConfigAtVerticalPosture(
+            swing_foot_, noplan_landing_loc_, guess_q, config_sol);
+ 
+    target_swing_leg_config_ = 
+        config_sol.segment(mercury::num_virtual + swing_leg_jidx_, 3);
+
+    swing_jpos_addition_ = 
+        target_swing_leg_config_ - prev_jpos_des_.segment(swing_leg_jidx_, 3);
+
+    //dynacore::pretty_print(config_sol, std::cout, "config sol");
+    //dynacore::pretty_print(noplan_landing_loc_, std::cout, "landing loc");
+    //dynacore::pretty_print(sp_->default_rfoot_loc_,std::cout, "defa rfoot");
+    //dynacore::pretty_print(sp_->default_lfoot_loc_,std::cout, "defa lfoot");
+    //dynacore::pretty_print(swing_jpos_addition_,std::cout, "jpos addition");
+    //dynacore::pretty_print(target_swing_leg_config_,std::cout, "target");
+    //dynacore::pretty_print(prev_jpos_des_,std::cout, "prev des jpos");
+    //dynacore::pretty_print(guess_q,std::cout, "guess_q");
+
+    b_planned_ = false;
 }
 
 void JPosSwingCtrl::LastVisit(){
