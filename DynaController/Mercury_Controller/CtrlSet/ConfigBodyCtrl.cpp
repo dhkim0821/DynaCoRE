@@ -7,14 +7,25 @@
 #include <ParamHandler/ParamHandler.hpp>
 #include <Utils/DataManager.hpp>
 #include <Mercury_Controller/Mercury_DynaControl_Definition.h>
+#include <Mercury_Controller/WBWC.hpp>
 
 ConfigBodyCtrl::ConfigBodyCtrl(RobotSystem* robot):Controller(robot),
     end_time_(1000.0),
     ctrl_start_time_(0.),
     b_set_height_target_(false),
     des_jpos_(mercury::num_act_joint),
-    des_jvel_(mercury::num_act_joint)
+    des_jvel_(mercury::num_act_joint),
+    des_jacc_(mercury::num_act_joint)
 {
+    des_jacc_.setZero();
+
+    wbwc_ = new WBWC(robot);
+    wbwc_->W_virtual_ = dynacore::Vector::Constant(6, 100.0);
+    wbwc_->W_rf_ = dynacore::Vector::Constant(6, 1.0);
+    wbwc_->W_foot_ = dynacore::Vector::Constant(6, 10000.0);
+    wbwc_->W_rf_[2] = 0.01;
+    wbwc_->W_rf_[5] = 0.01;
+
     jpos_task_ = new ConfigTask();
     double_body_contact_ = new DoubleContact(robot);
     
@@ -72,22 +83,33 @@ void ConfigBodyCtrl::OneStep(void* _cmd){
 }
 
 void ConfigBodyCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
-    dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+    //dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+    //for (int i(0); i<mercury::num_act_joint; ++i){
+        //wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            //= sp_->rotor_inertia_[i];
+    //}
+    //wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    //wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
+
+    //gamma = wbdc_rotor_data_->cmd_ff;
+
+    //sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+    //dynacore::Vector reaction_force = 
+             //(wbdc_rotor_data_->opt_result_).tail(double_body_contact_->getDim());
+    //for(int i(0); i<double_body_contact_->getDim(); ++i)
+        //sp_->reaction_forces_[i] = reaction_force[i];
+    //sp_->reflected_reaction_force_ = wbdc_rotor_data_->reflected_reaction_force_;
+
+    // WBWC
+    dynacore::Matrix A_rotor = A_;
     for (int i(0); i<mercury::num_act_joint; ++i){
-        wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-            = sp_->rotor_inertia_[i];
+        A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            += sp_->rotor_inertia_[i];
     }
-    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
-
-    gamma = wbdc_rotor_data_->cmd_ff;
-
-    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
-    dynacore::Vector reaction_force = 
-             (wbdc_rotor_data_->opt_result_).tail(double_body_contact_->getDim());
-    for(int i(0); i<double_body_contact_->getDim(); ++i)
-        sp_->reaction_forces_[i] = reaction_force[i];
-    sp_->reflected_reaction_force_ = wbdc_rotor_data_->reflected_reaction_force_;
+    wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
+    wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
+    sp_->qddot_cmd_ = wbwc_->qddot_;
+    sp_->reaction_forces_ = wbwc_->Fr_;
 }
 
 void ConfigBodyCtrl::_jpos_task_setup(){
@@ -167,4 +189,6 @@ void ConfigBodyCtrl::CtrlInitialization(const std::string & setting_file_name){
     for(int i(0); i<tmp_vec.size(); ++i){
         ((ConfigTask*)jpos_task_)->Kd_vec_[i] = tmp_vec[i];
     }
+    wbwc_->Kp_ = ((ConfigTask*)jpos_task_)->Kp_vec_.tail(mercury::num_act_joint);
+    wbwc_->Kd_ = ((ConfigTask*)jpos_task_)->Kd_vec_.tail(mercury::num_act_joint);
 }

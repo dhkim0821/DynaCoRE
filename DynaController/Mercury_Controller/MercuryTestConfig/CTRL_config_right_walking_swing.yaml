@@ -24,8 +24,8 @@ body_pt_offset: [0.02, -0.0]
 #body_pt_offset: [-0.03, -0.04]
 swing_time_reduction: 0.0
 foot_landing_offset: [-0.0, 0.]
-roll_offset_gain: -1.
-pitch_offset_gain: -2.
+roll_offset_gain: -1.5
+pitch_offset_gain: -3.
 
 #body_pt_offset: [-0.077, 0.0]
 #foot_landing_offset: [0.0, 0.]

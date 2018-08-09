@@ -10,6 +10,7 @@
 #include <Planner/PIPM_FootPlacementPlanner/Reversal_LIPM_Planner.hpp>
 #include <Utils/utilities.hpp>
 #include <Utils/DataManager.hpp>
+#include <Mercury_Controller/WBWC.hpp>
 
 #if MEASURE_TIME_WBDC
 #include <chrono>
@@ -20,20 +21,49 @@ JPosTrajPlanningCtrl::JPosTrajPlanningCtrl(
     SwingPlanningCtrl(robot, swing_foot, planner),
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
+    des_jacc_(mercury::num_act_joint),
     push_down_height_(0.0),
     initial_traj_mix_ratio_(0.6)
 {
+    des_jacc_.setZero();
     prev_ekf_vel.setZero();
     acc_err_ekf.setZero();
 
+    wbwc_ = new WBWC(robot);
+    wbwc_->W_virtual_ = dynacore::Vector::Constant(6, 100.0);
+    wbwc_->W_rf_ = dynacore::Vector::Constant(6, 1.0);
+    wbwc_->W_foot_ = dynacore::Vector::Constant(6, 10000.0);
+    wbwc_->W_rf_[2] = 0.01;
+    wbwc_->W_rf_[5] = 0.01;
+
+ 
     config_body_foot_task_ = new ConfigTask();
     if(swing_foot == mercury_link::leftFoot) {
         single_contact_ = new SingleContact(robot, mercury_link::rightFoot); 
         swing_leg_jidx_ = mercury_joint::leftAbduction;
+
+        wbwc_->W_rf_[3] = 5.0;
+        wbwc_->W_rf_[4] = 5.0;
+        wbwc_->W_rf_[5] = 0.5;
+
+        wbwc_->W_foot_[3] = 0.001;
+        wbwc_->W_foot_[4] = 0.001;
+        wbwc_->W_foot_[5] = 0.001;
+
+        wbwc_->left_z_max_ = 0.0001; 
     }
     else if(swing_foot == mercury_link::rightFoot) {
         single_contact_ = new SingleContact(robot, mercury_link::leftFoot);
         swing_leg_jidx_ = mercury_joint::rightAbduction;
+        wbwc_->W_rf_[0] = 5.0;
+        wbwc_->W_rf_[1] = 5.0;
+        wbwc_->W_rf_[2] = 0.5;
+
+        wbwc_->W_foot_[0] = 0.001;
+        wbwc_->W_foot_[1] = 0.001;
+        wbwc_->W_foot_[2] = 0.001;
+
+        wbwc_->right_z_max_ = 0.0001; 
     }
     else printf("[Warnning] swing foot is not foot: %i\n", swing_foot);
 
@@ -129,24 +159,35 @@ void JPosTrajPlanningCtrl::OneStep(void* _cmd){
     _PostProcessing_Command();
 }
 void JPosTrajPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
-    dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+    //dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+    //for (int i(0); i<mercury::num_act_joint; ++i){
+        //wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            //= sp_->rotor_inertia_[i];
+    //}
+    //wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    //wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
+
+    //gamma = wbdc_rotor_data_->cmd_ff;
+
+    //int offset(0);
+    //if(swing_foot_ == mercury_link::rightFoot) offset = 3;
+    //dynacore::Vector reaction_force = 
+        //(wbdc_rotor_data_->opt_result_).tail(single_contact_->getDim());
+    //for(int i(0); i<3; ++i)
+        //sp_->reaction_forces_[i + offset] = reaction_force[i];
+
+    //sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+
+    dynacore::Matrix A_rotor = A_;
     for (int i(0); i<mercury::num_act_joint; ++i){
-        wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-            = sp_->rotor_inertia_[i];
+        A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            += sp_->rotor_inertia_[i];
     }
-    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
+    wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
+    wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
 
-    gamma = wbdc_rotor_data_->cmd_ff;
-
-    int offset(0);
-    if(swing_foot_ == mercury_link::rightFoot) offset = 3;
-    dynacore::Vector reaction_force = 
-        (wbdc_rotor_data_->opt_result_).tail(single_contact_->getDim());
-    for(int i(0); i<3; ++i)
-        sp_->reaction_forces_[i + offset] = reaction_force[i];
-
-    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+    sp_->qddot_cmd_ = wbwc_->qddot_;
+    sp_->reaction_forces_ = wbwc_->Fr_;
 }
 
 
@@ -262,6 +303,7 @@ void JPosTrajPlanningCtrl::_task_setup(){
 
         des_jpos_[i] = pos_des[mercury::num_virtual + i];
         des_jvel_[i] = vel_des[mercury::num_virtual + i];
+        des_jacc_[i] = acc_des[mercury::num_virtual + i];
     }
 
     // Push back to task list
@@ -584,4 +626,7 @@ void JPosTrajPlanningCtrl::CtrlInitialization(const std::string & setting_file_n
                     end_time_- swing_time_reduction_);
         b_bodypute_eigenvalue = false;
     }
+    wbwc_->Kp_ = ((ConfigTask*)config_body_foot_task_)->Kp_vec_.tail(mercury::num_act_joint);
+    wbwc_->Kd_ = ((ConfigTask*)config_body_foot_task_)->Kd_vec_.tail(mercury::num_act_joint);
+
 }

@@ -18,11 +18,13 @@ JPosPostureFixCtrl::JPosPostureFixCtrl(RobotSystem* robot):Controller(robot),
     b_jpos_set_(false),
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
+    des_jacc_(mercury::num_act_joint),
    ctrl_start_time_(0.),
     set_jpos_(mercury::num_act_joint)
 {
     set_jpos_.setZero();
 
+    des_jacc_.setZero();
     //jpos_task_ = new JPosTask();
     //contact_constraint_ = new FixedBodyContact(robot);
     jpos_task_ = new ConfigTask();
@@ -95,8 +97,7 @@ void JPosPostureFixCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
             += sp_->rotor_inertia_[i];
     }
     wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
-    dynacore::Vector des_acc(mercury::num_act_joint); des_acc.setZero();
-    wbwc_->computeTorque(des_jpos_, des_jvel_, des_acc, gamma);
+    wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
     sp_->qddot_cmd_ = wbwc_->qddot_;
     sp_->reaction_forces_ = wbwc_->Fr_;
 }
@@ -113,9 +114,9 @@ void JPosPostureFixCtrl::_jpos_task_setup(){
     sp_->curr_jpos_des_[mercury_joint::rightHip - mercury::num_virtual] += 
         sp_->Kp_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
 
-    qddot_des[mercury_joint::leftHip] = 
+    des_jacc_[mercury_joint::leftHip - mercury::num_virtual] = 
         sp_->Kd_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
-    qddot_des[mercury_joint::rightHip] = 
+    des_jacc_[mercury_joint::rightHip - mercury::num_virtual] = 
         sp_->Kd_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
 
     des_jpos_ = sp_->curr_jpos_des_;

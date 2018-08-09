@@ -42,6 +42,7 @@ class JPosPostureFixCtrl: public Controller{
         dynacore::Vector jpos_target_;
         dynacore::Vector des_jpos_;
         dynacore::Vector des_jvel_;
+        dynacore::Vector des_jacc_;
 
         bool b_jpos_set_;
         dynacore::Vector set_jpos_;

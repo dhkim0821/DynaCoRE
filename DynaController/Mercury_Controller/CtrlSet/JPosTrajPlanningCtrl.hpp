@@ -9,6 +9,7 @@
 
 class Mercury_StateProvider;
 class WBDC_ContactSpec;
+class WBWC;
 
 class JPosTrajPlanningCtrl:public SwingPlanningCtrl{
     public:
@@ -67,8 +68,11 @@ class JPosTrajPlanningCtrl:public SwingPlanningCtrl{
         void _Replanning(dynacore::Vect3 & target_loc);
 
 
+        WBWC* wbwc_;
+
         dynacore::Vector des_jpos_;
         dynacore::Vector des_jvel_;
+        dynacore::Vector des_jacc_;
 
         dynacore::Vect3 ini_body_pos_;
         dynacore::Vect3 ini_com_pos_;

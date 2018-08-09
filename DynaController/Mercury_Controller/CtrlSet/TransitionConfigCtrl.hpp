@@ -9,6 +9,7 @@ class Mercury_StateProvider;
 class WBDC_ContactSpec;
 class WBDC_Rotor;
 class WBDC_Rotor_ExtraData;
+class WBWC;
 
 class TransitionConfigCtrl: public Controller{
 public:
@@ -38,7 +39,8 @@ protected:
   bool b_increase_; // Increasing or decreasing reaction force
   double max_rf_z_;
   double min_rf_z_;
-  
+ 
+  WBWC* wbwc_;
   Task* config_task_;
   WBDC_ContactSpec* double_contact_;
   WBDC_Rotor* wbdc_rotor_;
@@ -47,6 +49,7 @@ protected:
 
   dynacore::Vector des_jpos_;
   dynacore::Vector des_jvel_;
+  dynacore::Vector des_jacc_;
   
   dynacore::Vector body_pos_ini_;
   dynacore::Vect3 ini_body_pos_;

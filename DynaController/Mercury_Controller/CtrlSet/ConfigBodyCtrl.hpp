@@ -10,6 +10,7 @@ class RobotSystem;
 class WBDC_ContactSpec;
 class WBDC_Rotor;
 class WBDC_Rotor_ExtraData;
+class WBWC;
 
 
 class ConfigBodyCtrl: public Controller{
@@ -31,6 +32,7 @@ class ConfigBodyCtrl: public Controller{
          }
 
     protected:
+        WBWC* wbwc_;
         bool b_set_height_target_;
         int trj_type_;
         double end_time_;
@@ -44,6 +46,7 @@ class ConfigBodyCtrl: public Controller{
         dynacore::Vector jpos_target_;
         dynacore::Vector des_jpos_;
         dynacore::Vector des_jvel_;
+        dynacore::Vector des_jacc_;
 
         double target_body_height_;
         double ini_body_height_;

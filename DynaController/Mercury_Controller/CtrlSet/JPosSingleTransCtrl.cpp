@@ -119,12 +119,12 @@ void JPosSingleTransCtrl::_jpos_task_setup(){
     // Abduction roll
     sp_->curr_jpos_des_[stance_leg_jidx_] += 
         sp_->Kp_roll_ * sp_->Q_[mercury_joint::virtual_Rx];
-    qddot_des[stance_leg_jidx_ + mercury::num_virtual] = 
+    des_jacc_[stance_leg_jidx_] = 
         sp_->Kd_roll_ * sp_->Q_[mercury_joint::virtual_Rx];
      // Hip Pitch
     sp_->curr_jpos_des_[stance_leg_jidx_ + 1] += 
         sp_->Kp_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
-    qddot_des[stance_leg_jidx_ + 1 + mercury::num_virtual] = 
+    des_jacc_[stance_leg_jidx_ + 1] = 
         sp_->Kd_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
  
     int rknee_idx(mercury_joint::rightKnee - mercury::num_virtual);

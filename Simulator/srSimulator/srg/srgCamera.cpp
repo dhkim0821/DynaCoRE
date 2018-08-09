@@ -74,8 +74,8 @@ void srgCamera::Reset(void)
 
 inline void srgCamera::UpdateCameraFrame(void)
 {
-   printf("Center: %f, %f, %f \n", m_vCenter[0], m_vCenter[1], m_vCenter[2]);
-   printf("Eye: %f, %f, %f \n\n", m_vEye[0], m_vEye[1], m_vEye[2]);
+   //printf("Center: %f, %f, %f \n", m_vCenter[0], m_vCenter[1], m_vCenter[2]);
+   //printf("Eye: %f, %f, %f \n\n", m_vEye[0], m_vEye[1], m_vEye[2]);
 
 	// __z
 	__z = m_vEye - m_vCenter;
