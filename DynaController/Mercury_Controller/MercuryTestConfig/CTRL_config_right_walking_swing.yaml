@@ -1,6 +1,6 @@
 planner_name: velocity_reversal_lipm
 swing_height: 0.1
-push_down_height: 0.0
+push_down_height: 0.00
 #push_down_height: 0.02
 default_target_foot_location: [-0.08, -0.12, 0.0]
 
@@ -12,6 +12,9 @@ default_target_foot_location: [-0.08, -0.12, 0.0]
 Kp: [ 0, 0, 0, 0, 0, 0, 300, 350, 250, 300, 300, 400]
 Kd: [ 0, 0, 0, 0, 0, 0, 15,  15,  10,  15,  10,  10]
 
+# Kp: [ 0, 0, 0, 0, 0, 0, 235, 235, 235, 235, 235, 235]
+# Kd: [ 0, 0, 0, 0, 0, 0, 10, 10, 10, 10, 10, 10]
+
 # stance(left) & swing (right)
 # Kp: [ 0, 0, 0, 0, 0, 0, 50, 50, 50, 10, 10, 10]
 # Kd: [ 0, 0, 0, 0, 0, 0, 5,  5,  5,  2,  2,  2]
@@ -19,13 +22,12 @@ Kd: [ 0, 0, 0, 0, 0, 0, 15,  15,  10,  15,  10,  10]
 gain_decreasing_ratio: 1.0
 gain_decreasing_period_portion: 0.0
 
-# body_pt_offset: [0.007, 0.005]
-body_pt_offset: [0.02, -0.0]
-#body_pt_offset: [-0.03, -0.04]
+# body_pt_offset: [0.02, -0.0]
+body_pt_offset: [-0.02, -0.04]
 swing_time_reduction: 0.0
 foot_landing_offset: [-0.0, 0.]
-roll_offset_gain: -1.5
-pitch_offset_gain: -3.
+roll_offset_gain: -1.
+pitch_offset_gain: -2.5
 
 #body_pt_offset: [-0.077, 0.0]
 #foot_landing_offset: [0.0, 0.]

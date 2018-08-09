@@ -159,35 +159,35 @@ void JPosTrajPlanningCtrl::OneStep(void* _cmd){
     _PostProcessing_Command();
 }
 void JPosTrajPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
-    //dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
-    //for (int i(0); i<mercury::num_act_joint; ++i){
-        //wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-            //= sp_->rotor_inertia_[i];
-    //}
-    //wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    //wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
-
-    //gamma = wbdc_rotor_data_->cmd_ff;
-
-    //int offset(0);
-    //if(swing_foot_ == mercury_link::rightFoot) offset = 3;
-    //dynacore::Vector reaction_force = 
-        //(wbdc_rotor_data_->opt_result_).tail(single_contact_->getDim());
-    //for(int i(0); i<3; ++i)
-        //sp_->reaction_forces_[i + offset] = reaction_force[i];
-
-    //sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
-
-    dynacore::Matrix A_rotor = A_;
+    dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
     for (int i(0); i<mercury::num_act_joint; ++i){
-        A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-            += sp_->rotor_inertia_[i];
+        wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            = sp_->rotor_inertia_[i];
     }
-    wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
-    wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
+    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
 
-    sp_->qddot_cmd_ = wbwc_->qddot_;
-    sp_->reaction_forces_ = wbwc_->Fr_;
+    gamma = wbdc_rotor_data_->cmd_ff;
+
+    int offset(0);
+    if(swing_foot_ == mercury_link::rightFoot) offset = 3;
+    dynacore::Vector reaction_force = 
+        (wbdc_rotor_data_->opt_result_).tail(single_contact_->getDim());
+    for(int i(0); i<3; ++i)
+        sp_->reaction_forces_[i + offset] = reaction_force[i];
+
+    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+
+    // dynacore::Matrix A_rotor = A_;
+    // for (int i(0); i<mercury::num_act_joint; ++i){
+    //     A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+    //         += sp_->rotor_inertia_[i];
+    // }
+    // wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
+    // wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
+
+    // sp_->qddot_cmd_ = wbwc_->qddot_;
+    // sp_->reaction_forces_ = wbwc_->Fr_;
 }
 
 
@@ -254,8 +254,12 @@ void JPosTrajPlanningCtrl::_task_setup(){
             // end_jpos_traj_.getCurveDerPoint(traj_time, 2, acc);
         }
         // TEST
-        config_sol[swing_leg_jidx_] += roll_offset_gain_ * sp_->Q_[3];
-        config_sol[swing_leg_jidx_+ 1] += pitch_offset_gain_ * sp_->Q_[4];
+        double alpha(1.);
+        if(traj_time < ramp_time){
+            alpha = traj_time/ramp_time;
+        }
+        config_sol[swing_leg_jidx_] += alpha*roll_offset_gain_ * sp_->Q_[3];
+        config_sol[swing_leg_jidx_+ 1] += alpha*pitch_offset_gain_ * sp_->Q_[4];
 
     }else{
         if(state_machine_time_ < half_swing_time_ * initial_traj_mix_ratio_){

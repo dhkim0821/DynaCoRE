@@ -85,35 +85,35 @@ void TransitionConfigCtrl::OneStep(void* _cmd){
 
 void TransitionConfigCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     
-   //dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
-    //for (int i(0); i<mercury::num_act_joint; ++i){
-        //wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-            //= sp_->rotor_inertia_[i];
-    //}
-    
-    //wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    //wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
-
-    //gamma = wbdc_rotor_data_->cmd_ff;
-    
-    //dynacore::Vector reaction_force = 
-        //(wbdc_rotor_data_->opt_result_).tail(double_contact_->getDim());
-    //for(int i(0); i<double_contact_->getDim(); ++i)
-        //sp_->reaction_forces_[i] = reaction_force[i];
-
-    //sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
-    //sp_->reflected_reaction_force_ = wbdc_rotor_data_->reflected_reaction_force_;
-
-    dynacore::Matrix A_rotor = A_;
+   dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
     for (int i(0); i<mercury::num_act_joint; ++i){
-        A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-            += sp_->rotor_inertia_[i];
+        wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            = sp_->rotor_inertia_[i];
     }
-    wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
-    wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
+    
+    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+    wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
 
-    sp_->qddot_cmd_ = wbwc_->qddot_;
-    sp_->reaction_forces_ = wbwc_->Fr_;
+    gamma = wbdc_rotor_data_->cmd_ff;
+    
+    dynacore::Vector reaction_force = 
+        (wbdc_rotor_data_->opt_result_).tail(double_contact_->getDim());
+    for(int i(0); i<double_contact_->getDim(); ++i)
+        sp_->reaction_forces_[i] = reaction_force[i];
+
+    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+    sp_->reflected_reaction_force_ = wbdc_rotor_data_->reflected_reaction_force_;
+
+    // dynacore::Matrix A_rotor = A_;
+    // for (int i(0); i<mercury::num_act_joint; ++i){
+    //     A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+    //         += sp_->rotor_inertia_[i];
+    // }
+    // wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
+    // wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
+
+    // sp_->qddot_cmd_ = wbwc_->qddot_;
+    // sp_->reaction_forces_ = wbwc_->Fr_;
 }
 
 void TransitionConfigCtrl::_body_task_setup(){
