@@ -21,6 +21,7 @@ public:
   dynacore::Vect3 default_lfoot_loc_;
   dynacore::Vector curr_jpos_des_;
   double Kp_roll_, Kp_pitch_;
+  double Kd_roll_, Kd_pitch_;
 
   RobotSystem* jjpos_robot_sys_;
   dynacore::Vect3 jjpos_body_pos_;

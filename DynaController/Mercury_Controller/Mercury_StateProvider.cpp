@@ -30,7 +30,8 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 led_kin_data_(3*NUM_MARKERS),
                                 filtered_jvel_(mercury::num_act_joint),
                                 curr_jpos_des_(mercury::num_act_joint),
-                                Kp_roll_(0.), Kp_pitch_(0.)
+                                Kp_roll_(0.), Kp_pitch_(0.),
+                                Kd_roll_(0.), Kd_pitch_(0.)
 {
     default_lfoot_loc_.setZero();
     default_rfoot_loc_.setZero();

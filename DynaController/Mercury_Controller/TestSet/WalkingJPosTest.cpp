@@ -166,6 +166,8 @@ void WalkingJPosTest::_SettingParameter(){
 
     handler.getValue("Kp_roll", sp_->Kp_roll_);
     handler.getValue("Kp_pitch", sp_->Kp_pitch_);
+    handler.getValue("Kd_roll", sp_->Kd_roll_);
+    handler.getValue("Kd_pitch", sp_->Kd_pitch_);
 
     handler.getVector("default_rfoot_loc", tmp_vec);
     for(int i(0); i<3; ++i) sp_->default_rfoot_loc_[i] = tmp_vec[i];

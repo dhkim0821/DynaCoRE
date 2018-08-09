@@ -279,10 +279,14 @@ void JPosSwingCtrl::_task_setup(){
     // Abduction roll
     sp_->curr_jpos_des_[stance_leg_jidx_] += 
         sp_->Kp_roll_ * sp_->Q_[mercury_joint::virtual_Rx];
-    // Hip Pitch
+    des_jvel_[stance_leg_jidx_] += 
+        sp_->Kd_roll_ * sp_->Q_[mercury_joint::virtual_Rx];
+     // Hip Pitch
     sp_->curr_jpos_des_[stance_leg_jidx_ + 1] += 
         sp_->Kp_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
-
+    des_jvel_[stance_leg_jidx_ + 1] += 
+        sp_->Kd_roll_ * sp_->Q_[mercury_joint::virtual_Ry];
+ 
     des_jpos_ = sp_->curr_jpos_des_;
 
     // Configuration Setting
@@ -333,8 +337,8 @@ void JPosSwingCtrl::_Replanning(dynacore::Vect3 & target_loc){
         // com_vel[i] = sp_->average_vel_[i]; 
         // com_vel[i] = sp_->est_CoM_vel_[i]; 
 
-        //com_pos[i] = sp_->est_mocap_body_pos_[i] + body_pt_offset_[i];
-        //com_vel[i] = sp_->est_mocap_body_vel_[i]; 
+        com_pos[i] = sp_->est_mocap_body_pos_[i] + body_pt_offset_[i];
+        com_vel[i] = sp_->est_mocap_body_vel_[i]; 
         
         //com_vel[i] = sp_->ekf_body_vel_[i]; 
     }

@@ -121,31 +121,17 @@ void JPosPostureFixCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
 void JPosPostureFixCtrl::_jpos_task_setup(){
     des_jvel_.setZero();
 
-    //if(b_jpos_set_){
-        //des_jpos_ = set_jpos_;
-    //}else{
-        //des_jpos_ = jpos_ini_;
-        //}
-
     sp_->curr_jpos_des_[mercury_joint::leftHip - mercury::num_virtual] += 
         sp_->Kp_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
     sp_->curr_jpos_des_[mercury_joint::rightHip - mercury::num_virtual] += 
         sp_->Kp_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
 
+    des_jvel_[mercury_joint::leftHip - mercury::num_virtual] += 
+        sp_->Kd_pitch_ * sp_->Qdot_[mercury_joint::virtual_Ry];
+    des_jvel_[mercury_joint::rightHip - mercury::num_virtual] += 
+        sp_->Kd_pitch_ * sp_->Qdot_[mercury_joint::virtual_Ry];
+
     des_jpos_ = sp_->curr_jpos_des_;
-
-    //double Kp_roll(2.0);
-    //double Kp_pitch(2.0);
-    //des_jpos_[mercury_joint::rightAbduction - mercury::num_virtual] 
-    //+= Kp_roll * sp_->Q_[mercury_joint::virtual_Rx];
-    //des_jpos_[mercury_joint::leftAbduction - mercury::num_virtual] 
-        //+= Kp_roll * sp_->Q_[mercury_joint::virtual_Rx];
-
-    //des_jpos_[mercury_joint::rightHip - mercury::num_virtual] 
-        //+= Kp_pitch * sp_->Q_[mercury_joint::virtual_Ry];
-    //des_jpos_[mercury_joint::leftHip - mercury::num_virtual] 
-        //+= Kp_pitch * sp_->Q_[mercury_joint::virtual_Ry];
-
     dynacore::Vector config_des = sp_->Q_;
     config_des.segment(mercury::num_virtual, mercury::num_act_joint) = 
         des_jpos_;
