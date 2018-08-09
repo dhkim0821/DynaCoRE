@@ -1,7 +1,7 @@
-#include "WBWC.hpp"
+#include "WBWC_Relax.hpp"
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 
-WBWC::WBWC(const RobotSystem* robot):
+WBWC_Relax::WBWC_Relax(const RobotSystem* robot):
     robot_sys_(robot),
     torque_cmd_(mercury::num_act_joint),
     mu_(0.3),
@@ -19,16 +19,19 @@ WBWC::WBWC(const RobotSystem* robot):
     W_rf_ = dynacore::Vector::Constant(dim_rforce_, 1.);
     W_foot_ = dynacore::Vector::Constant(dim_rforce_, 1.);
     W_virtual_ = dynacore::Vector::Constant(mercury::num_virtual, 1.);
+    W_joint_ = dynacore::Vector::Constant(mercury::num_act_joint, 10000.);
 
     Jc_ = dynacore::Matrix::Zero(dim_rforce_, mercury::num_qdot);
     Fr_ = dynacore::Vector::Zero(dim_rforce_);
 
-    dim_opt_ = mercury::num_virtual + dim_rforce_ + dim_rforce_;
+    dim_opt_ = mercury::num_virtual + dim_rforce_ + dim_rforce_ + 
+        mercury::num_act_joint;
+
     sp_ = Mercury_StateProvider::getStateProvider();
     qddot_.setZero();
 }
 
-void WBWC::computeTorque(
+void WBWC_Relax::computeTorque(
         const dynacore::Vector & jpos_des,
         const dynacore::Vector & jvel_des,
         const dynacore::Vector & jacc_des, 
@@ -37,6 +40,7 @@ void WBWC::computeTorque(
     //dynacore::pretty_print(jacc_des, std::cout, "jacc_des");
     //dynacore::pretty_print(jpos_des, std::cout, "jpos_des");
     //dynacore::pretty_print(jvel_des, std::cout, "jvel_des");
+    qddot_.setZero();
     for(int i(0); i<mercury::num_act_joint; ++i){
         qddot_[i + mercury::num_virtual] = jacc_des[i] + 
             Kp_[i] * (jpos_des[i] - sp_->Q_[mercury::num_virtual + i]) + 
@@ -50,9 +54,9 @@ void WBWC::computeTorque(
 
     _GetSolution(torque_cmd);
 
-    //std::cout << "f: " << f << std::endl;
-    //std::cout << "x: " << z << std::endl;
-    //std::cout << "cmd: "<<torque_cmd<<std::endl;
+    // std::cout << "f: " << f << std::endl;
+    // std::cout << "x: " << z << std::endl;
+    // std::cout << "cmd: "<<torque_cmd<<std::endl;
 
     //printf("G:\n");
     //std::cout<<G<<std::endl;
@@ -75,7 +79,7 @@ void WBWC::computeTorque(
     //if( count> 500 ) exit(0);
 }
 
-void WBWC::_SetEqualityConstraint(){
+void WBWC_Relax::_SetEqualityConstraint(){
     // Ax = b
     // virtual 0 x6, foot acceleration
     int dim_eq = mercury::num_virtual + dim_rforce_;
@@ -89,6 +93,9 @@ void WBWC::_SetEqualityConstraint(){
         A_.block(0,0, mercury::num_virtual, mercury::num_virtual);
     A.block(0, mercury::num_virtual, mercury::num_virtual, dim_rforce_) = 
         - Jc_tr.block(0,0, mercury::num_virtual, dim_rforce_);
+    A.block(0, mercury::num_virtual + 2*dim_rforce_, 
+        mercury::num_virtual, mercury::num_act_joint) = 
+        A_.block(0, mercury::num_virtual, mercury::num_virtual, mercury::num_act_joint);
 
     b.head(mercury::num_virtual) = 
         -b_.head(mercury::num_virtual) - g_.head(mercury::num_virtual);
@@ -101,7 +108,10 @@ void WBWC::_SetEqualityConstraint(){
         Jc_.block(0, 0, dim_rforce_, mercury::num_virtual);
     A.block(mercury::num_virtual, mercury::num_virtual + dim_rforce_, 
             dim_rforce_, dim_rforce_) = 
-        dynacore::Matrix::Identity(dim_rforce_, dim_rforce_);
+        -dynacore::Matrix::Identity(dim_rforce_, dim_rforce_);
+    A.block(mercury::num_virtual, mercury::num_virtual + 2*dim_rforce_, 
+        dim_rforce_, mercury::num_act_joint) = 
+        Jc_.block(0, mercury::num_virtual, dim_rforce_, mercury::num_act_joint);
 
     b.tail(dim_rforce_) = -Jc_ * qddot_;
 
@@ -116,7 +126,7 @@ void WBWC::_SetEqualityConstraint(){
     }
 }
 
-void WBWC::_SetInEqualityConstraint(){
+void WBWC_Relax::_SetInEqualityConstraint(){
     // C*x >= d
     int dim_ieq = 5*2 + 2;
     dynacore::Matrix C(dim_ieq, dim_opt_); C.setZero();
@@ -152,7 +162,7 @@ void WBWC::_SetInEqualityConstraint(){
    //dynacore::pretty_print(d, std::cout, "inequality vec");
 }
 
-void WBWC::_SetWeightMatrix(){
+void WBWC_Relax::_SetWeightMatrix(){
     G.resize(dim_opt_, dim_opt_);
     g0.resize(dim_opt_);
 
@@ -175,14 +185,21 @@ void WBWC::_SetWeightMatrix(){
     for(int i(0); i < dim_rforce_; ++i){
         G[i + offset][i + offset] = W_foot_[i];
     }
-
+    offset += dim_rforce_;
+    for(int i(0); i < mercury::num_act_joint; ++i){
+        G[i + offset][i + offset] = W_joint_[i];
+    }
     //dynacore::pretty_print(W_virtual_, std::cout, "W virtual");
     //dynacore::pretty_print(W_rf_, std::cout, "W rf");
     //dynacore::pretty_print(W_foot_, std::cout, "W foot");
 }
 
-void WBWC::_GetSolution(dynacore::Vector & cmd){
+void WBWC_Relax::_GetSolution(dynacore::Vector & cmd){
     for(int i(0); i<mercury::num_virtual; ++i) qddot_[i] += z[i];
+    for(int i(0); i<mercury::num_act_joint; ++i) {
+        qddot_[i + mercury::num_virtual] += 
+            z[i + mercury::num_virtual + dim_rforce_];
+    }
     for(int i(0); i<dim_rforce_; ++i) Fr_[i] = z[i + mercury::num_virtual];
    
     dynacore::Vector full_torque = 
@@ -192,3 +209,5 @@ void WBWC::_GetSolution(dynacore::Vector & cmd){
 
     //dynacore::pretty_print(full_torque, std::cout, "full torque");
 }
+
+

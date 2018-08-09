@@ -1,6 +1,5 @@
-#ifndef WHOLE_BODY_WALKING_CONTROL
-#define WHOLE_BODY_WALKING_CONTROL
-
+#ifndef WHOLE_BODY_WALKING_CONTROL_RELAXED
+#define WHOLE_BODY_WALKING_CONTROL_RELAXED
 // Only for Mercury
 
 #include <Utils/wrap_eigen.hpp>
@@ -11,10 +10,10 @@
 
 class Mercury_StateProvider;
 
-class WBWC{
+class WBWC_Relax{
     public:
-        WBWC(const RobotSystem* robot);
-        ~WBWC(){}
+        WBWC_Relax(const RobotSystem* robot);
+        ~WBWC_Relax(){}
 
         void UpdateSetting(
                 const dynacore::Matrix & A, 
@@ -61,6 +60,7 @@ class WBWC{
         dynacore::Vector W_rf_; // right (x, y, z), left (x, y, z)
         dynacore::Vector W_virtual_;
         dynacore::Vector W_foot_;
+        dynacore::Vector W_joint_;
 
         double left_z_min_;
         double left_z_max_;
@@ -89,6 +89,7 @@ class WBWC{
         void _GetSolution(dynacore::Vector & cmd);
 
         // virtual (x, y, z, Rx, Ry, Rz)
+        // full joint (6 - right abduction, hip, knee, left ...)
         // Reaction Forces (Right X, Right Y, Righ Z), (Left X, Left Y, Left Z)
         // Foot acceleration ''
         GolDIdnani::GVect<double> z;

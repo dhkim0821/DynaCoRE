@@ -26,7 +26,7 @@ TransitionConfigCtrl::TransitionConfigCtrl(RobotSystem* robot,
     wbwc_ = new WBWC(robot);
     wbwc_->W_virtual_ = dynacore::Vector::Constant(6, 100.0);
     wbwc_->W_rf_ = dynacore::Vector::Constant(6, 1.0);
-    wbwc_->W_foot_ = dynacore::Vector::Constant(6, 10000.0);
+    wbwc_->W_foot_ = dynacore::Vector::Constant(6, 1000.0);
     wbwc_->W_rf_[2] = 0.01;
     wbwc_->W_rf_[5] = 0.01;
 
@@ -85,35 +85,35 @@ void TransitionConfigCtrl::OneStep(void* _cmd){
 
 void TransitionConfigCtrl::_body_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     
-   dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+   // dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
+   //  for (int i(0); i<mercury::num_act_joint; ++i){
+   //      wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+   //          = sp_->rotor_inertia_[i];
+   //  }
+    
+   //  wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
+   //  wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
+
+   //  gamma = wbdc_rotor_data_->cmd_ff;
+    
+   //  dynacore::Vector reaction_force = 
+   //      (wbdc_rotor_data_->opt_result_).tail(double_contact_->getDim());
+   //  for(int i(0); i<double_contact_->getDim(); ++i)
+   //      sp_->reaction_forces_[i] = reaction_force[i];
+
+   //  sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
+   //  sp_->reflected_reaction_force_ = wbdc_rotor_data_->reflected_reaction_force_;
+
+    dynacore::Matrix A_rotor = A_;
     for (int i(0); i<mercury::num_act_joint; ++i){
-        wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-            = sp_->rotor_inertia_[i];
+        A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            += sp_->rotor_inertia_[i];
     }
-    
-    wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
+    wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
+    wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
 
-    gamma = wbdc_rotor_data_->cmd_ff;
-    
-    dynacore::Vector reaction_force = 
-        (wbdc_rotor_data_->opt_result_).tail(double_contact_->getDim());
-    for(int i(0); i<double_contact_->getDim(); ++i)
-        sp_->reaction_forces_[i] = reaction_force[i];
-
-    sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
-    sp_->reflected_reaction_force_ = wbdc_rotor_data_->reflected_reaction_force_;
-
-    // dynacore::Matrix A_rotor = A_;
-    // for (int i(0); i<mercury::num_act_joint; ++i){
-    //     A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-    //         += sp_->rotor_inertia_[i];
-    // }
-    // wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
-    // wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
-
-    // sp_->qddot_cmd_ = wbwc_->qddot_;
-    // sp_->reaction_forces_ = wbwc_->Fr_;
+    sp_->qddot_cmd_ = wbwc_->qddot_;
+    sp_->reaction_forces_ = wbwc_->Fr_;
 }
 
 void TransitionConfigCtrl::_body_task_setup(){
@@ -166,7 +166,7 @@ void TransitionConfigCtrl::_double_contact_setup(){
         upper_lim = min_rf_z_ + alpha*(max_rf_z_ - min_rf_z_);
         rf_weight = (1. - alpha) * 5. + alpha * 1.0;
         rf_weight_z = (1. - alpha) * 0.5 + alpha * 0.01;
-        foot_weight = 0.001 * (1. - alpha)  + 10000. * alpha;
+        foot_weight = 0.001 * (1. - alpha)  + 1000. * alpha;
     } else {
         ((DoubleContactBounding*)double_contact_)->setFzUpperLimit(
             max_rf_z_ - alpha * (max_rf_z_ - min_rf_z_));
@@ -174,7 +174,7 @@ void TransitionConfigCtrl::_double_contact_setup(){
         upper_lim = max_rf_z_ - alpha*(max_rf_z_ - min_rf_z_);
         rf_weight = (alpha) * 5. + (1. - alpha) * 1.0;
         rf_weight_z = (alpha) * 0.5 + (1. - alpha) * 0.01;
-        foot_weight = 0.001 * (alpha)  + 10000. * (1. - alpha);
+        foot_weight = 0.001 * (alpha)  + 1000. * (1. - alpha);
      }
     //((DoubleContactBounding*)double_contact_)->setFrictionCoeff(0.3*(1-alpha), 0.3);
 
