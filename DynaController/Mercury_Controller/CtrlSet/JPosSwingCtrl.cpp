@@ -271,6 +271,10 @@ void JPosSwingCtrl::_task_setup(){
                 dynacore::smooth_changing_vel(0., swing_jpos_replanned_addition_[i], 
                         remain_duration, time_after);
         }
+        sp_->curr_jpos_des_[swing_leg_jidx_] += 
+            roll_offset_gain_ *  sp_->Q_[mercury_joint::virtual_Rx];
+        sp_->curr_jpos_des_[swing_leg_jidx_ + 1] += 
+            pitch_offset_gain_ *  sp_->Q_[mercury_joint::virtual_Ry];
     }
     // Abduction roll
     sp_->curr_jpos_des_[stance_leg_jidx_] += 
@@ -328,8 +332,10 @@ void JPosSwingCtrl::_Replanning(dynacore::Vect3 & target_loc){
         //com_pos[i] += body_pt_offset_[i];
         // com_vel[i] = sp_->average_vel_[i]; 
         // com_vel[i] = sp_->est_CoM_vel_[i]; 
-        com_pos[i] = sp_->est_mocap_body_pos_[i] + body_pt_offset_[i];
-        com_vel[i] = sp_->est_mocap_body_vel_[i]; 
+
+        //com_pos[i] = sp_->est_mocap_body_pos_[i] + body_pt_offset_[i];
+        //com_vel[i] = sp_->est_mocap_body_vel_[i]; 
+        
         //com_vel[i] = sp_->ekf_body_vel_[i]; 
     }
 

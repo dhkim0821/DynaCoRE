@@ -16,8 +16,8 @@ st_transition_time: 0.03
 end_transition_time: 0.03
 stance_time: 0.01
 
-Kp_roll: 0.01
-Kp_pitch: 0.01
+Kp_roll: 0.02
+Kp_pitch: 0.02
 
 ## Swing Leg JPos delta
 swing_jpos_delta: [ 0.0, -0.2, 0.5 ]
