@@ -3,6 +3,7 @@ swing_height: 0.1
 push_down_height: 0.005
 #push_down_height: 0.02
 default_target_foot_location: [-0.08, 0.12, 0.0]
+swing_jpos_delta: [ 0.0, -0.17, 0.4]
 
 ## Feedback Gain
 # virtual (x, y, z, Rx, Ry, Rz) config x6
@@ -23,8 +24,8 @@ gain_decreasing_ratio: 1.0
 gain_decreasing_period_portion: 0.0
 
 
-# body_pt_offset: [0.02, 0.0]
-body_pt_offset: [0.0, 0.035]
+body_pt_offset: [0.02, 0.0]
+#body_pt_offset: [0.0, 0.035]
 swing_time_reduction: 0.0
 foot_landing_offset: [-0.0, 0.]
 roll_offset_gain: -1.

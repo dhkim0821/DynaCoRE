@@ -11,11 +11,11 @@ LED_Position_Announcer::LED_Position_Announcer(Mercury_Dyn_environment* dyn_env)
     //led_turn_off_st_count_.push_back(1000);
     //led_turn_off_end_count_.push_back(1500);
 
-    led_turn_off_st_count_.push_back(3000);
-    led_turn_off_end_count_.push_back(3300);
+    //led_turn_off_st_count_.push_back(3000);
+    //led_turn_off_end_count_.push_back(3300);
 
-    led_turn_off_st_count_.push_back(4000);
-    led_turn_off_end_count_.push_back(4500);
+    //led_turn_off_st_count_.push_back(4000);
+    //led_turn_off_end_count_.push_back(4500);
 
 }
 

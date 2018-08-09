@@ -78,6 +78,7 @@ void ConfigBodyCtrl::OneStep(void* _cmd){
         ((Mercury_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
         ((Mercury_Command*)_cmd)->jvel_cmd[i] = des_jvel_[i];
     }
+    sp_->curr_jpos_des_ = des_jpos_;
 
     _PostProcessing_Command();
 }
