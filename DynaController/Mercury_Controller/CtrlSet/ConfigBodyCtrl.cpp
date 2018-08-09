@@ -22,7 +22,7 @@ ConfigBodyCtrl::ConfigBodyCtrl(RobotSystem* robot):Controller(robot),
     wbwc_ = new WBWC(robot);
     wbwc_->W_virtual_ = dynacore::Vector::Constant(6, 100.0);
     wbwc_->W_rf_ = dynacore::Vector::Constant(6, 1.0);
-    wbwc_->W_foot_ = dynacore::Vector::Constant(6, 10000.0);
+    wbwc_->W_foot_ = dynacore::Vector::Constant(6, 1000.0);
     wbwc_->W_rf_[2] = 0.01;
     wbwc_->W_rf_[5] = 0.01;
 
@@ -101,15 +101,15 @@ void ConfigBodyCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     sp_->reflected_reaction_force_ = wbdc_rotor_data_->reflected_reaction_force_;
 
     // WBWC
-    // dynacore::Matrix A_rotor = A_;
-    // for (int i(0); i<mercury::num_act_joint; ++i){
-    //     A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-    //         += sp_->rotor_inertia_[i];
-    // }
-    // wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
-    // wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
-    // sp_->qddot_cmd_ = wbwc_->qddot_;
-    // sp_->reaction_forces_ = wbwc_->Fr_;
+    dynacore::Matrix A_rotor = A_;
+    for (int i(0); i<mercury::num_act_joint; ++i){
+        A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
+            += sp_->rotor_inertia_[i];
+    }
+    wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
+    wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
+    sp_->qddot_cmd_ = wbwc_->qddot_;
+    sp_->reaction_forces_ = wbwc_->Fr_;
 }
 
 void ConfigBodyCtrl::_jpos_task_setup(){
