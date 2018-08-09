@@ -96,22 +96,6 @@ void JPosSingleTransCtrl::OneStep(void* _cmd){
 }
 
 void JPosSingleTransCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
-    //dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
-    //for (int i(0); i<mercury::num_act_joint; ++i){
-        //wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-            //= sp_->rotor_inertia_[i];
-    //}
-    //wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    //wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
-
-    //gamma = wbdc_rotor_data_->cmd_ff;
-
-    //dynacore::Vector reaction_force = 
-             //(wbdc_rotor_data_->opt_result_).tail(contact_->getDim());
-    //for(int i(0); i<contact_->getDim(); ++i)
-        //sp_->reaction_forces_[i] = reaction_force[i];
-
-    //sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
 
     dynacore::Matrix A_rotor = A_;
     for (int i(0); i<mercury::num_act_joint; ++i){
@@ -127,23 +111,21 @@ void JPosSingleTransCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
 
 void JPosSingleTransCtrl::_jpos_task_setup(){
     des_jvel_.setZero();
-
-    //if(b_jpos_set_){
-        //des_jpos_ = set_jpos_;
-    //}else{
-        //des_jpos_ = jpos_ini_;
-    //}
+    dynacore::Vector qdot_des(mercury::num_qdot);
+    qdot_des.setZero();
+    dynacore::Vector qddot_des(mercury::num_qdot);
+    qddot_des.setZero();
 
     // Abduction roll
     sp_->curr_jpos_des_[stance_leg_jidx_] += 
         sp_->Kp_roll_ * sp_->Q_[mercury_joint::virtual_Rx];
-    des_jvel_[stance_leg_jidx_] += 
+    qddot_des[stance_leg_jidx_ + mercury::num_virtual] = 
         sp_->Kd_roll_ * sp_->Q_[mercury_joint::virtual_Rx];
      // Hip Pitch
     sp_->curr_jpos_des_[stance_leg_jidx_ + 1] += 
         sp_->Kp_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
-    des_jvel_[stance_leg_jidx_ + 1] += 
-        sp_->Kd_roll_ * sp_->Q_[mercury_joint::virtual_Ry];
+    qddot_des[stance_leg_jidx_ + 1 + mercury::num_virtual] = 
+        sp_->Kd_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
  
     int rknee_idx(mercury_joint::rightKnee - mercury::num_virtual);
     int lknee_idx(mercury_joint::leftKnee - mercury::num_virtual);
@@ -162,10 +144,6 @@ void JPosSingleTransCtrl::_jpos_task_setup(){
     config_des.segment(mercury::num_virtual, mercury::num_act_joint) = 
         des_jpos_;
     
-    dynacore::Vector qdot_des(mercury::num_qdot);
-    qdot_des.setZero();
-    dynacore::Vector qddot_des(mercury::num_qdot);
-    qddot_des.setZero();
 
     jpos_task_->UpdateTask(&(config_des), qdot_des, qddot_des);
     task_list_.push_back(jpos_task_);

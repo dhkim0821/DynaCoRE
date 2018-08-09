@@ -88,23 +88,6 @@ void JPosPostureFixCtrl::OneStep(void* _cmd){
 }
 
 void JPosPostureFixCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
-    // dynacore::Vector fb_cmd = dynacore::Vector::Zero(mercury::num_act_joint);
-    // WBDC
-    //for (int i(0); i<mercury::num_act_joint; ++i){
-        //wbdc_rotor_data_->A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
-            //= sp_->rotor_inertia_[i];
-    //}
-    //wbdc_rotor_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
-    //wbdc_rotor_->MakeTorque(task_list_, contact_list_, fb_cmd, wbdc_rotor_data_);
-
-    //gamma = wbdc_rotor_data_->cmd_ff;
-    //dynacore::Vector reaction_force = 
-             //(wbdc_rotor_data_->opt_result_).tail(contact_constraint_->getDim());
-    //for(int i(0); i<contact_constraint_->getDim(); ++i)
-        //sp_->reaction_forces_[i] = reaction_force[i];
-
-    //sp_->qddot_cmd_ = wbdc_rotor_data_->result_qddot_;
-
     // WBWC
     dynacore::Matrix A_rotor = A_;
     for (int i(0); i<mercury::num_act_joint; ++i){
@@ -120,26 +103,27 @@ void JPosPostureFixCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
 
 void JPosPostureFixCtrl::_jpos_task_setup(){
     des_jvel_.setZero();
+    dynacore::Vector qdot_des(mercury::num_qdot);
+    qdot_des.setZero();
+    dynacore::Vector qddot_des(mercury::num_qdot);
+    qddot_des.setZero();
 
     sp_->curr_jpos_des_[mercury_joint::leftHip - mercury::num_virtual] += 
         sp_->Kp_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
     sp_->curr_jpos_des_[mercury_joint::rightHip - mercury::num_virtual] += 
         sp_->Kp_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
 
-    des_jvel_[mercury_joint::leftHip - mercury::num_virtual] += 
-        sp_->Kd_pitch_ * sp_->Qdot_[mercury_joint::virtual_Ry];
-    des_jvel_[mercury_joint::rightHip - mercury::num_virtual] += 
-        sp_->Kd_pitch_ * sp_->Qdot_[mercury_joint::virtual_Ry];
+    qddot_des[mercury_joint::leftHip] = 
+        sp_->Kd_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
+    qddot_des[mercury_joint::rightHip] = 
+        sp_->Kd_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
 
     des_jpos_ = sp_->curr_jpos_des_;
     dynacore::Vector config_des = sp_->Q_;
     config_des.segment(mercury::num_virtual, mercury::num_act_joint) = 
         des_jpos_;
     
-    dynacore::Vector qdot_des(mercury::num_qdot);
-    qdot_des.setZero();
-    dynacore::Vector qddot_des(mercury::num_qdot);
-    qddot_des.setZero();
+
 
     jpos_task_->UpdateTask(&(config_des), qdot_des, qddot_des);
     task_list_.push_back(jpos_task_);

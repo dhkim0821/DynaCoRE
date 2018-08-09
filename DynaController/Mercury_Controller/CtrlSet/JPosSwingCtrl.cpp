@@ -258,7 +258,7 @@ void JPosSwingCtrl::_task_setup(){
         //des_jacc_[swing_leg_jidx_ + i] = amp * omega * omega * cos(omega * state_machine_time_);
     }
 
-    if(state_machine_time_ > planning_moment_portion_ * end_time_){
+    if((state_machine_time_ > planning_moment_portion_ * end_time_) && b_replan_){
         double time_after(state_machine_time_ - planning_moment_portion_ * end_time_);
         double remain_duration(end_time_ * (1-planning_moment_portion_));
 
@@ -279,13 +279,13 @@ void JPosSwingCtrl::_task_setup(){
     // Abduction roll
     sp_->curr_jpos_des_[stance_leg_jidx_] += 
         sp_->Kp_roll_ * sp_->Q_[mercury_joint::virtual_Rx];
-    des_jvel_[stance_leg_jidx_] += 
+    des_jacc_[stance_leg_jidx_] = 
         sp_->Kd_roll_ * sp_->Q_[mercury_joint::virtual_Rx];
-     // Hip Pitch
+    // Hip Pitch
     sp_->curr_jpos_des_[stance_leg_jidx_ + 1] += 
         sp_->Kp_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
-    des_jvel_[stance_leg_jidx_ + 1] += 
-        sp_->Kd_roll_ * sp_->Q_[mercury_joint::virtual_Ry];
+    des_jacc_[stance_leg_jidx_ + 1] = 
+        sp_->Kd_pitch_ * sp_->Q_[mercury_joint::virtual_Ry];
  
     des_jpos_ = sp_->curr_jpos_des_;
 
