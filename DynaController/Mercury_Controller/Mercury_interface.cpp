@@ -117,6 +117,7 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
        state_estimator_->Update(data);
         test_->getCommand(test_cmd_);
     }
+
     // Ramp up the command
     if(sp_->curr_time_ < ramp_time_){
         double initialization_time = waiting_count_ * mercury::servo_rate;
@@ -196,7 +197,6 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
     ++count_;
     // When there is sensed time
     sp_->curr_time_ = running_time_;
-
     sp_->phase_copy_ = test_->getPhase();
 }
 void Mercury_interface::GetReactionForce(std::vector<dynacore::Vect3> & reaction_force ){

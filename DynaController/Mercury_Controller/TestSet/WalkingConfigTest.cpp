@@ -28,6 +28,7 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     sp_->stance_foot_ = mercury_link::rightFoot;
 #endif
     sp_->global_pos_local_[1] = 0.15;
+    sp_->global_jjpos_local_[1] = 0.15;
     robot_sys_ = robot;
     reversal_planner_ = new Reversal_LIPM_Planner();
     phase_ = WkConfigPhase::initiation;
@@ -115,7 +116,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
 #if (CONFIG_INITIAL_SWING_FOOT == 1)  
     if(phase == WkConfigPhase::lift_up) { next_phase = WkConfigPhase::double_contact_2; }
 #endif
-     printf("next phase: %i\n", next_phase);
+     // printf("next phase: %i\n", next_phase);
 
     if(phase == WkConfigPhase::double_contact_1) {
         //if(phase == WkConfigPhase::right_swing_start_trans) {
@@ -131,6 +132,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         // global set by 0.15
         if(num_step_>1) { 
             sp_->global_pos_local_ += next_local_frame_location; 
+            sp_->global_jjpos_local_ += sp_->jjpos_lfoot_pos_; 
         }
         sp_->global_foot_height_ = next_local_frame_location[2];
     }
@@ -145,14 +147,15 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         dynacore::Vect3 next_local_frame_location;
         robot_sys_->getPos(mercury_link::rightFoot, next_local_frame_location);
         sp_->global_pos_local_ += next_local_frame_location;
+        sp_->global_jjpos_local_ += sp_->jjpos_rfoot_pos_; 
         sp_->global_foot_height_ = next_local_frame_location[2];
     }
 
     sp_->num_step_copy_ = num_step_;
     // TEST
-    if (num_step_ > 235) {
-        exit(0);
-    }
+    // if (num_step_ > 235) {
+    //     exit(0);
+    // }
 
     if(next_phase == WkConfigPhase::NUM_WALKING_PHASE) {
         return WkConfigPhase::double_contact_1;

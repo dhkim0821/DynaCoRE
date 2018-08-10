@@ -8,7 +8,7 @@
 #include <ContactSpec.hpp>
 
 // TEST
-#define DES_PITCH_CMD 0.05
+#define DES_PITCH_CMD 0.0
 
 class Controller{
 public:

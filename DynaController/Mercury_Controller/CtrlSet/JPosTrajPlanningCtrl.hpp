@@ -38,6 +38,7 @@ class JPosTrajPlanningCtrl:public SwingPlanningCtrl{
         dynacore::Vector prev_jpos_des_;
 
         int swing_leg_jidx_;
+        int stance_leg_jidx_;
         double push_down_height_; // push foot below the ground at landing
         dynacore::Vect3 default_target_loc_;
 

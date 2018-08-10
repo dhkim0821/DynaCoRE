@@ -184,11 +184,11 @@ void Mercury_InvKinematics::solveFullInvKinematics(
         //config_sol[mercury_joint::virtual_Rw] = 1.;
 
         // TEST
-        double theta(0.0);
-        config_sol[mercury_joint::virtual_Rx] = 0.;
-        config_sol[mercury_joint::virtual_Ry] = sin(theta/2.0);
-        config_sol[mercury_joint::virtual_Rz] = 0.;
-        config_sol[mercury_joint::virtual_Rw] = cos(theta/2.0);
+        // double theta(-0.02);
+        // config_sol[mercury_joint::virtual_Rx] = 0.;
+        // config_sol[mercury_joint::virtual_Ry] = sin(theta/2.0);
+        // config_sol[mercury_joint::virtual_Rz] = 0.;
+        // config_sol[mercury_joint::virtual_Rw] = cos(theta/2.0);
 
 
         // Find Foot body id
@@ -228,7 +228,8 @@ void Mercury_InvKinematics::solveFullInvKinematics(
                     *model_, config_sol, bodyid, Local_CoM, true);
             err_vec = (target_foot_pos - current_pos);
 
-            CalcPointJacobian(*model_, config_sol, bodyid, Local_CoM, J, false);
+            CalcPointJacobian(*model_, config_sol, 
+                bodyid, Local_CoM, J, false);
             J_leg = J.block(0, leg_jidx, 3, 3);
             //dynacore::pretty_print(J, std::cout, "J");
             //dynacore::pretty_print(J_leg, std::cout, "J leg");

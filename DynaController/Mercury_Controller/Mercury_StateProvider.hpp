@@ -54,6 +54,8 @@ public:
   dynacore::Vector reflected_reaction_force_;
 
   dynacore::Vect3 global_pos_local_;
+  dynacore::Vect3 global_jjpos_local_;
+  
   double global_foot_height_;
   dynacore::Vect2 des_location_;
 

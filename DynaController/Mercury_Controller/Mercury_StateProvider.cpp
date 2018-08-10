@@ -54,6 +54,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   qddot_cmd_.setZero();
   reflected_reaction_force_.setZero();
   global_pos_local_.setZero();
+  global_jjpos_local_.setZero();
   des_location_.setZero();
   estimated_com_state_.setZero();
 
@@ -132,9 +133,10 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&body_pos_des_, VECT3, "body_pos_des", 3);
   data_manager->RegisterData(&body_vel_des_, VECT3, "body_vel_des", 3);
   data_manager->RegisterData(&global_pos_local_, VECT3, "global_pos_local", 3);
+  data_manager->RegisterData(&global_jjpos_local_, VECT3, "global_jjpos_local", 3);
 
 
-  data_manager->RegisterData(&imu_acc_inc_, VECT3, "imu_acc_inc", 3);
+  // data_manager->RegisterData(&imu_acc_inc_, VECT3, "imu_acc_inc", 3);
   data_manager->RegisterData(&imu_acc_, VECT3, "imu_acc", 3);
   data_manager->RegisterData(&imu_ang_vel_, VECT3, "imu_ang_vel", 3);
   //data_manager->RegisterData(&com_state_imu_, DYN_VEC, "com_state_imu", 6);

@@ -37,6 +37,7 @@ JPosTrajPlanningCtrl::JPosTrajPlanningCtrl(
  
     if(swing_foot == mercury_link::leftFoot) {
         swing_leg_jidx_ = mercury_joint::leftAbduction;
+        stance_leg_jidx_ = mercury_joint::rightAbduction;
 
         wbwc_->W_rf_[3] = 5.0;
         wbwc_->W_rf_[4] = 5.0;
@@ -50,6 +51,8 @@ JPosTrajPlanningCtrl::JPosTrajPlanningCtrl(
     }
     else if(swing_foot == mercury_link::rightFoot) {
         swing_leg_jidx_ = mercury_joint::rightAbduction;
+        stance_leg_jidx_ = mercury_joint::leftAbduction;
+
         wbwc_->W_rf_[0] = 5.0;
         wbwc_->W_rf_[1] = 5.0;
         wbwc_->W_rf_[2] = 0.5;
@@ -197,6 +200,9 @@ void JPosTrajPlanningCtrl::_task_setup(){
         config_sol[swing_leg_jidx_] += alpha*roll_offset_gain_ * sp_->Q_[3];
         config_sol[swing_leg_jidx_+ 1] += alpha*pitch_offset_gain_ * sp_->Q_[4];
     }
+    // CAREFULL!!!!!!!!!!!!!!!!!!!!!
+    // TEST 
+   // config_sol[stance_leg_jidx_+ 2] -= 0.05; 
 
     for(int i(0); i<mercury::num_act_joint; ++i){
         sp_->jacc_des_[i] = qddot_cmd[i + mercury::num_virtual];
@@ -207,6 +213,7 @@ void JPosTrajPlanningCtrl::_task_setup(){
         des_jvel_[i] = qdot_cmd[mercury::num_virtual + i];
         des_jacc_[i] = qddot_cmd[mercury::num_virtual + i];
     }
+
 }
 
 void JPosTrajPlanningCtrl::_CheckPlanning(){
@@ -219,7 +226,8 @@ void JPosTrajPlanningCtrl::_CheckPlanning(){
         dynacore::Vector guess_q = sp_->Q_;
         dynacore::Vector config_sol = sp_->Q_;
 
-        inv_kin_.getLegConfigAtVerticalPosture(swing_foot_, target_loc, guess_q, config_sol);
+        inv_kin_.getLegConfigAtVerticalPosture(
+            swing_foot_, target_loc, guess_q, config_sol);
         target_swing_leg_config_ = config_sol.segment(swing_leg_jidx_, 3);
 
         adjust_jpos_ = 
@@ -336,7 +344,6 @@ void JPosTrajPlanningCtrl::FirstVisit(){
 
     com_estimator_->EstimatorInitialization(input_state);
     _CoMEstiamtorUpdate();
-    printf("first visit is done\n");
 }
 
 bool JPosTrajPlanningCtrl::EndOfPhase(){
