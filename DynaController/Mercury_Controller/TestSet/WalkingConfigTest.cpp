@@ -216,6 +216,8 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         // Initial JPos
         handler.getVector("initial_jpos", tmp_vec);
         ((JPosTargetCtrl*)jpos_ctrl_)->setTargetPosition(tmp_vec);
+        // Body Pitch
+        handler.getValue("body_pitch", sp_->des_body_pitch_);
         // CoM Height
         handler.getValue("body_height", tmp);
         ((ContactTransConfigCtrl*)body_up_ctrl_)->setStanceHeight(tmp);

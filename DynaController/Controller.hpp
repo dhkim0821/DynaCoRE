@@ -7,9 +7,6 @@
 #include <Task.hpp>
 #include <ContactSpec.hpp>
 
-// TEST
-#define DES_PITCH_CMD 0.0
-
 class Controller{
 public:
   Controller(const RobotSystem* robot):robot_sys_(robot),state_machine_time_(0.){}

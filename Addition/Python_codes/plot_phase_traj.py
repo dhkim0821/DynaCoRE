@@ -21,6 +21,8 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
     # CoM data
     data_global_pos_offset = \
         np.genfromtxt(file_path+'global_pos_local.txt', delimiter=None, dtype=(float))
+    # data_global_pos_offset = \
+        # np.genfromtxt(file_path+'global_jjpos_local.txt', delimiter=None, dtype=(float))
     data_estimated_com = \
         np.genfromtxt(file_path+'estimated_com_state.txt', delimiter=None, dtype=(float))
     data_com_pos = \
@@ -34,6 +36,10 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
         np.genfromtxt(file_path+'rfoot_contact.txt', delimiter=None, dtype=(float))
     data_rfoot_pos = \
         np.genfromtxt(file_path+'rfoot_pos.txt', delimiter=None, dtype=(float))
+    data_jj_rfoot_pos = \
+        np.genfromtxt(file_path+'jjpos_rfoot_pos.txt', delimiter=None, dtype=(float))
+    data_jj_lfoot_pos = \
+        np.genfromtxt(file_path+'jjpos_lfoot_pos.txt', delimiter=None, dtype=(float))
     data_rfoot_pos_des = \
         np.genfromtxt(file_path+'rfoot_pos_des.txt', delimiter=None, dtype=(float))
     data_lfoot_contact = \
@@ -93,7 +99,7 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
     data_estimated_com_global[:,0:2] += data_global_pos_offset[:, 0:2]
     x_pos_offset = 0.0
     st_step = 0
-    num_steps = 5
+    num_steps = 8
 
     lin_width = 3
     fig_width = 480
@@ -190,14 +196,25 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
 
         ### planner choice #########################################################
         # planning start com state
-        plt.scatter(data_planner[st_step+i, plot_axis] + x_pos_offset, data_planner[st_step+i, 2 + plot_axis], \
+        plt.scatter(data_planner[st_step+i, plot_axis] + x_pos_offset, \
+                data_planner[st_step+i, 2 + plot_axis], \
                 s = 90, facecolors='none', edgecolor='sienna')
         plt.scatter(data_planner[st_step+i, 4 + plot_axis] + x_pos_offset, data_planner[st_step+i, 6 + plot_axis], \
                 s = 60, facecolors='none', edgecolor='green')
         # Foot location
-        plt.scatter(data_planner[st_step + i, 8], 0, s=80, facecolors='none', edgecolor='r')
+        plt.scatter(data_planner[st_step + i, 8], 0, s=80, facecolors='none',\
+                edgecolor='r')
         plt.plot(np_stancefoot[st_step + i, 0], 0, '*', color='orange', markersize=12) # current stance foot
-        plt.plot(np_stancefoot[st_step + i+1, 0], 0, 'b+', markersize = 15, linewidth=3) # next stance foot (landing location)
+        plt.plot(np_stancefoot[st_step + i+1, 0], 0, \
+                'b+', markersize = 15, linewidth=4) # next stance foot (landing location)
+
+        if (st_step+i)%2 ==1:
+            landing_loc = data_jj_lfoot_pos[swing_end_idx - 1, plot_axis] + np_stancefoot[st_step+i,0]
+        else:
+            landing_loc = data_jj_rfoot_pos[swing_end_idx-1, plot_axis] + np_stancefoot[st_step+i,0]
+
+        plt.plot(landing_loc, 0, \
+                '+', color='black', markersize = 17, linewidth=3)
         ### END of planner choice #########################################################
         figure_number += 1;
 

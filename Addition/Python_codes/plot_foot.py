@@ -119,7 +119,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_rfoot_pos_des[st_idx:end_idx,i-1], "r-")
         # plt.plot(data_x, data_minj_pos_des[st_idx:end_idx, i-1], color="black", linewidth=1.5)
-        plt.plot(data_x, data_jjpos_rfoot_pos[st_idx:end_idx, i-1], color="black", linewidth=1.5)
+        plt.plot(data_x, data_jjpos_rfoot_pos[st_idx:end_idx, i-1], \
+                color="black", linewidth=1.5)
         plt.plot(data_x, data_rfoot_pos[st_idx:end_idx,i-1], "b-")
 
         plt.plot(data_x, data_LED_rfoot[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \

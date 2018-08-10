@@ -10,6 +10,7 @@ Mercury_StateProvider* Mercury_StateProvider::getStateProvider(){
 }
 
 Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
+    des_body_pitch_(0.),
                                 system_count_(0),
                                 stance_foot_(mercury_link::leftFoot),
                                 Q_(mercury::num_q),

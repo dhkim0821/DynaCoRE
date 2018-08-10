@@ -141,7 +141,7 @@ void ContactTransConfigCtrl::_body_task_setup(){
     rpy_des.setZero();
 
     // TEST
-    rpy_des[1] = DES_PITCH_CMD;
+    rpy_des[1] = sp_->des_body_pitch_;
 
     dynacore::convert(rpy_des, des_quat);
     dynacore::Vector config_sol; 

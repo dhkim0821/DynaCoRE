@@ -16,6 +16,7 @@ public:
   static Mercury_StateProvider* getStateProvider();
   ~Mercury_StateProvider(){}
 
+  double des_body_pitch_; // (rad)
     // Walking related data
   dynacore::Vect3 default_rfoot_loc_;
   dynacore::Vect3 default_lfoot_loc_;
