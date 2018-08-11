@@ -224,6 +224,7 @@ void JPosTrajPlanningCtrl::_CheckPlanning(){
 
         curr_foot_pos_des_ = target_loc;
         dynacore::Vector guess_q = sp_->Q_;
+        // dynacore::Vector guess_q = sp_->jjpos_config_;
         dynacore::Vector config_sol = sp_->Q_;
 
         inv_kin_.getLegConfigAtVerticalPosture(
@@ -266,8 +267,8 @@ void JPosTrajPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
         // com_vel[i] = sp_->average_vel_[i]; 
         // com_vel[i] = sp_->est_CoM_vel_[i]; 
 
-        com_pos[i] = sp_->est_mocap_body_pos_[i] + body_pt_offset_[i];
-        com_vel[i] = sp_->est_mocap_body_vel_[i]; 
+        // com_pos[i] = sp_->est_mocap_body_pos_[i] + body_pt_offset_[i];
+        // com_vel[i] = sp_->est_mocap_body_vel_[i]; 
         
         //com_vel[i] = sp_->ekf_body_vel_[i]; 
     }

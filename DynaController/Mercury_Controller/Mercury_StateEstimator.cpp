@@ -291,9 +291,6 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
         for(int i(0); i<3; ++i)
             curr_qdot_[i+3] = sp_->body_ang_vel_[i];
 
-        //TEST
-        curr_qdot_[5] = 0.; // Yaw velocity is zero
-
 
         robot_sys_->UpdateSystem(curr_config_, curr_qdot_);
 
@@ -332,6 +329,8 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
             jjvel_qdot_[2] = -foot_vel[2];
 
             sp_->jjpos_robot_sys_->UpdateSystem(jjpos_config_, jjvel_qdot_);
+            sp_->jjpos_config_ = jjpos_config_;
+            sp_->jjvel_qdot_ = jjvel_qdot_;
         }
         /// END of Jpos based model update  /////////////////////////
     } else if (base_cond_ == base_condition::fixed){

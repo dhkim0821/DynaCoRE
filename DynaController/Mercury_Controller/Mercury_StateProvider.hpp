@@ -25,6 +25,8 @@ public:
   double Kd_roll_, Kd_pitch_;
 
   RobotSystem* jjpos_robot_sys_;
+  dynacore::Vector jjpos_config_;
+  dynacore::Vector jjvel_qdot_;
   dynacore::Vect3 jjpos_body_pos_;
   dynacore::Vect3 jjvel_body_vel_;
   dynacore::Vect3 jjpos_rfoot_pos_;
