@@ -209,12 +209,12 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
                 'b+', markersize = 15, linewidth=4) # next stance foot (landing location)
 
         if (st_step+i)%2 ==1:
-            landing_loc = data_jj_lfoot_pos[swing_end_idx - 1, plot_axis] + np_stancefoot[st_step+i,0]
+            landing_loc = data_jj_lfoot_pos[swing_end_idx - 3, plot_axis] + np_stancefoot[st_step+i,0]
         else:
-            landing_loc = data_jj_rfoot_pos[swing_end_idx-1, plot_axis] + np_stancefoot[st_step+i,0]
+            landing_loc = data_jj_rfoot_pos[swing_end_idx-3, plot_axis] + np_stancefoot[st_step+i,0]
 
         plt.plot(landing_loc, 0, \
-                '+', color='black', markersize = 17, linewidth=3)
+                '+', color='black', markersize = 17, linewidth=6)
         ### END of planner choice #########################################################
         figure_number += 1;
 
@@ -284,6 +284,15 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
         plt.scatter(data_planner[st_step + i, 8+plot_axis], 0, s=80, facecolors='none', edgecolor='r') # planned location
         plt.plot(np_stancefoot[st_step + i, plot_axis], 0, '*', color='orange', markersize=12) # current stance foot
         plt.plot(np_stancefoot[st_step + i+1, plot_axis], 0, 'b+', markersize=12) # next stance foot (landing location)
+        if (st_step+i)%2 ==1:
+            landing_loc = data_jj_lfoot_pos[swing_end_idx - 3, plot_axis] + np_stancefoot[st_step+i, plot_axis]
+        else:
+            landing_loc = data_jj_rfoot_pos[swing_end_idx-3, plot_axis] + np_stancefoot[st_step+i, plot_axis]
+
+        plt.plot(landing_loc, 0, \
+                '+', color='black', markersize = 17, linewidth=7)
+
+
         figure_number += 1;
 
 if __name__ == "__main__":

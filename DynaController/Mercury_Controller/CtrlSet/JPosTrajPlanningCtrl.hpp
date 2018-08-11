@@ -7,7 +7,6 @@
 #include <Utils/minjerk_one_dim.hpp>
 
 class Mercury_StateProvider;
-class WBDC_ContactSpec;
 class WBWC;
 
 class JPosTrajPlanningCtrl:public SwingPlanningCtrl{

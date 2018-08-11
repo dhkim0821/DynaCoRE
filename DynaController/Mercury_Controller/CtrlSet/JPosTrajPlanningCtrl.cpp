@@ -248,7 +248,6 @@ void JPosTrajPlanningCtrl::_CheckPlanning(){
 
 void JPosTrajPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     dynacore::Vect3 com_pos, com_vel;
-    dynacore::Vect3 del_com_pos;
     // Direct value used
     robot_sys_->getCoMPosition(com_pos);
     robot_sys_->getCoMVelocity(com_vel);
