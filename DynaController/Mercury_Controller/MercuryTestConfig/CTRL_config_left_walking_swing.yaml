@@ -1,8 +1,8 @@
 planner_name: velocity_reversal_lipm
-swing_height: 0.1
-push_down_height: 0.0
+swing_height: 0.09
+push_down_height: 0.005
 #push_down_height: 0.02
-default_target_foot_location: [-0.08, 0.15, 0.0]
+default_target_foot_location: [-0.08, 0.23, 0.0]
 swing_jpos_delta: [ 0.0, -0.145, 0.4]
 
 ## Feedback Gain
@@ -24,8 +24,8 @@ gain_decreasing_ratio: 1.0
 gain_decreasing_period_portion: 0.0
 
 
-body_pt_offset: [0.0, 0.0]
-# body_pt_offset: [-0.025, 0.021]
+# body_pt_offset: [0.0, 0.0]
+body_pt_offset: [-0.043, 0.0]
 swing_time_reduction: 0.0
 foot_landing_offset: [-0.0, 0.]
 roll_offset_gain: -1.0

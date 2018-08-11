@@ -95,7 +95,7 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
     rpy_des.setZero();
-
+    rpy_des[1] = sp_->des_body_pitch_;
     dynacore::convert(rpy_des, des_quat);
 
     _CheckPlanning();
