@@ -1,6 +1,6 @@
 planner_name: velocity_reversal_lipm
 swing_height: 0.09
-push_down_height: 0.005
+push_down_height: 0.00
 #push_down_height: 0.02
 default_target_foot_location: [-0.08, -0.23, 0.0]
 swing_jpos_delta: [ 0.0, -0.145, 0.4]
@@ -20,8 +20,8 @@ Kd: [ 0, 0, 0, 0, 0, 0, 15,  15,  10,  15,  10,  10]
 # Kp: [ 0, 0, 0, 0, 0, 0, 50, 50, 50, 10, 10, 10]
 # Kd: [ 0, 0, 0, 0, 0, 0, 5,  5,  5,  2,  2,  2]
 
-body_pt_offset: [0.0, -0.0]
-#body_pt_offset: [-0.043, -0.03]
+body_pt_offset: [0.014, 0.023]
+# body_pt_offset: [-0.042, -0.035]
 swing_time_reduction: 0.0
 foot_landing_offset: [-0.0, 0.]
 # roll_offset_gain: -1.
