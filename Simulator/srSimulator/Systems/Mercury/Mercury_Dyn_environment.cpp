@@ -109,8 +109,8 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
     robot->vr_joint_[i]->m_State.m_rCommand = 0.0;
   }
 
-  double Kp(200.);
-  double Kd(20.);
+  double Kp(20.);
+  double Kd(2.);
   // double Kp(30.);
   // double Kd(0.5);
   // Right

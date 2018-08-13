@@ -13,7 +13,8 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
     push_down_height_(0.),
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
-    des_jacc_(mercury::num_act_joint)
+    des_jacc_(mercury::num_act_joint),
+    waiting_time_limit_(0.02)
 {
     des_jacc_.setZero();
 
@@ -99,7 +100,7 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
     dynacore::convert(rpy_des, des_quat);
 
     _CheckPlanning();
-
+curr_foot_acc_des_.setZero();
     for (int i(0); i<2; ++i){
         curr_foot_pos_des_[i] = 
             dynacore::smooth_changing(ini_foot_pos_[i], default_target_loc_[i], 
@@ -136,6 +137,14 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
             curr_foot_acc_des_[i] += acc;
         }
     }
+    if(state_machine_time_> end_time_){
+        for(int i(0); i<3; ++i){
+            curr_foot_vel_des_[i] = 0;
+            curr_foot_acc_des_[i] = 0;
+        }
+        curr_foot_pos_des_[2] = 
+          -push_down_height_ - 0.1*(state_machine_time_ - end_time_);
+    }
  
     dynacore::Vector config_sol, qdot_cmd, qddot_cmd;
     inv_kin_.getSingleSupportFullConfigSeperation(
@@ -153,19 +162,22 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
 void ConfigBodyFootPlanningCtrl::_CheckPlanning(){
     if( state_machine_time_ > 
             (end_time_/(planning_frequency_ + 1.) * (num_planning_ + 1.) + 0.002) ){
-        dynacore::Vect3 target_loc;
-        _Replanning(target_loc);
+        if(num_planning_<planning_frequency_){
+            dynacore::Vect3 target_loc;
+            _Replanning(target_loc);
 
-        dynacore::Vect3 target_offset;
-        // X, Y target is originally set by default_traget_loc
-        for(int i(0); i<2; ++i)
-            target_offset[i] = target_loc[i] - default_target_loc_[i];
+            dynacore::Vect3 target_offset;
+            // X, Y target is originally set by default_traget_loc
+            for(int i(0); i<2; ++i)
+                target_offset[i] = target_loc[i] - default_target_loc_[i];
 
-        // Foot height (z) is set by the initial height
-        target_offset[2] = target_loc[2] - ini_foot_pos_[2];
+            // Foot height (z) is set by the initial height
+            target_offset[2] = target_loc[2] - ini_foot_pos_[2];
 
-        _SetMinJerkOffset(target_offset);
-        ++num_planning_;
+            _SetMinJerkOffset(target_offset);
+            ++num_planning_;
+
+        }
     }
 }
 
@@ -203,6 +215,7 @@ void ConfigBodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
         + transition_time_ * transition_phase_ratio_
         + stance_time_ * double_stance_ratio_;
 
+      
     pl_param.des_loc = sp_->des_location_;
     pl_param.stance_foot_loc = sp_->global_pos_local_;
 
@@ -211,7 +224,10 @@ void ConfigBodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     else
         pl_param.b_positive_sidestep = false;
 
-    planner_->getNextFootLocation(com_pos + sp_->global_pos_local_,
+    
+    dynacore::Vect3 tmp_global_pos_local = sp_->global_pos_local_;
+
+    planner_->getNextFootLocation(com_pos + tmp_global_pos_local,
             com_vel,
             target_loc,
             &pl_param, &pl_output);
@@ -278,9 +294,9 @@ void ConfigBodyFootPlanningCtrl::_SetMinJerkOffset(const dynacore::Vect3 & offse
 }
 
 bool ConfigBodyFootPlanningCtrl::EndOfPhase(){
-    if(state_machine_time_ > end_time_){
-        //printf("[Body Foot Ctrl] End, state_machine time/ end time: (%f, %f)\n", 
-        //state_machine_time_, end_time_);
+    if(state_machine_time_ > (end_time_ + waiting_time_limit_)){
+        printf("[Body Foot Ctrl] End, state_machine time/ end time: (%f, %f)\n", 
+            state_machine_time_, end_time_);
         return true;
     }
     // Swing foot contact = END

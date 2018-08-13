@@ -25,6 +25,8 @@ class Mercury_StateEstimator{
         void setFloatingBase(int base_cond){ base_cond_ = base_cond; }
         void setJPosModelUpdate(bool b_enable){ b_jpos_model_update_ = b_enable; }
 
+        bool b_using_jpos_;
+
     protected:
         bool b_jpos_model_update_;
         int base_cond_;

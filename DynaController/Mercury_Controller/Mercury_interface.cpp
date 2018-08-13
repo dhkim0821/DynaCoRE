@@ -34,7 +34,7 @@
 
 Mercury_interface::Mercury_interface():
     interface(),
-    filtered_torque_command_(mercury::num_act_joint),
+    // filtered_torque_command_(mercury::num_act_joint),
     torque_command_(mercury::num_act_joint),
     jpos_command_(mercury::num_act_joint),
     jvel_command_(mercury::num_act_joint),
@@ -43,6 +43,7 @@ Mercury_interface::Mercury_interface():
     torque_limit_min_(mercury::num_act_joint),    
     jpos_limit_max_(mercury::num_act_joint),
     jpos_limit_min_(mercury::num_act_joint),
+    spring_const_(mercury::num_act_joint),
     motor_current_(mercury::num_act_joint),
     bus_current_(mercury::num_act_joint),
     bus_voltage_(mercury::num_act_joint),
@@ -54,12 +55,12 @@ Mercury_interface::Mercury_interface():
 {
 
     double cut_freq = 2* M_PI * 100.;
-    filter_jtorque_cmd_.resize(mercury::num_act_joint);
-    for(int i(0); i<mercury::num_act_joint; ++i){
-        filter_jtorque_cmd_[i] = new digital_lp_filter(cut_freq, mercury::servo_rate);
-    }
+    // filter_jtorque_cmd_.resize(mercury::num_act_joint);
+    // for(int i(0); i<mercury::num_act_joint; ++i){
+    //     filter_jtorque_cmd_[i] = new digital_lp_filter(cut_freq, mercury::servo_rate);
+    // }
 
-    filtered_torque_command_.setZero();
+    // filtered_torque_command_.setZero();
     robot_sys_ = new Mercury_Model();
     sensed_torque_.setZero();
     torque_command_.setZero();
@@ -79,8 +80,8 @@ Mercury_interface::Mercury_interface():
             &jpos_command_, DYN_VEC, "jpos_des", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &jvel_command_, DYN_VEC, "jvel_des", mercury::num_act_joint);
-    DataManager::GetDataManager()->RegisterData(
-            &filtered_torque_command_, DYN_VEC, "filtered_cmd", mercury::num_act_joint);
+    // DataManager::GetDataManager()->RegisterData(
+    //         &filtered_torque_command_, DYN_VEC, "filtered_cmd", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &running_time_, DOUBLE, "running_time");
     DataManager::GetDataManager()->RegisterData(
@@ -173,15 +174,16 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
                 jpos_command_[i] = test_cmd_->jpos_cmd[i];
                 jvel_command_[i] = test_cmd_->jvel_cmd[i];
             }
-            filter_jtorque_cmd_[i]->input(torque_command_[i]);
-            filtered_torque_command_[i] = filter_jtorque_cmd_[i]->output();
+            // filter_jtorque_cmd_[i]->input(torque_command_[i]);
+            // filtered_torque_command_[i] = filter_jtorque_cmd_[i]->output();
        }
     }
 
     // Update Command (and Data)
     for(int i(0); i<mercury::num_act_joint; ++i){
         cmd->jtorque_cmd[i] = torque_command_[i];
-        cmd->jpos_cmd[i] = jpos_command_[i];
+        cmd->jpos_cmd[i] = 
+            jpos_command_[i] + torque_command_[i]/spring_const_[i];
         cmd->jvel_cmd[i] = jvel_command_[i];
 
         sensed_torque_[i] = data->jtorque[i];
@@ -288,9 +290,13 @@ void Mercury_interface::_ParameterSetting(){
     handler.getVector("joint_max", jpos_limit_max_);
     handler.getVector("joint_min", jpos_limit_min_);
 
+    handler.getVector("spring_constant", spring_const_);
+
     // Joint pos based model update
     handler.getBoolean("jpos_model_update", b_tmp);
     state_estimator_->setJPosModelUpdate(b_tmp);
+
+    handler.getBoolean("using_jpos", state_estimator_->b_using_jpos_);
 
     printf("[Mercury_interface] Parameter setup is done\n");
 }

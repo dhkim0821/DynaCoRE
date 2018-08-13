@@ -29,13 +29,14 @@ private:
   std::vector<double> torque_limit_max_;
   std::vector<double> jpos_limit_min_;
   std::vector<double> jpos_limit_max_;
-  std::vector<filter*> filter_jtorque_cmd_;
+  std::vector<double> spring_const_;
+  // std::vector<filter*> filter_jtorque_cmd_;
   
   void _ParameterSetting();
   bool _Initialization(Mercury_SensorData* );
 
   Mercury_Command* test_cmd_;
-  dynacore::Vector filtered_torque_command_;
+  // dynacore::Vector filtered_torque_command_;
   dynacore::Vector torque_command_;
   dynacore::Vector jpos_command_;
   dynacore::Vector jvel_command_;
@@ -46,6 +47,7 @@ private:
   dynacore::Vector bus_current_;
   dynacore::Vector bus_voltage_;
   dynacore::Vector last_config_;
+
   bool b_last_config_update_;
 
   dynacore::Vector jjvel_;

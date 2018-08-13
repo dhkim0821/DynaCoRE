@@ -126,6 +126,7 @@ void TransitionConfigCtrl::_body_task_setup(){
     // Body Height
     double target_height = ini_body_pos_[2];
     if(b_set_height_target_) target_height = des_body_height_;
+
     // Orientation
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion quat_des;
@@ -141,16 +142,12 @@ void TransitionConfigCtrl::_body_task_setup(){
     pos_des[6] = quat_des.z();
 
     dynacore::Vector config_sol;
-    inv_kin_.getDoubleSupportLegConfig(sp_->Q_, quat_des, target_height, config_sol);
-    for (int i(0); i<mercury::num_act_joint; ++i){
-        pos_des[mercury::num_virtual + i] = config_sol[mercury::num_virtual + i];  
-        des_jpos_[i] = pos_des[mercury::num_virtual + i];
+    inv_kin_.getDoubleSupportLegConfig(sp_->Q_, quat_des, 
+        target_height, config_sol);
+    for (int i(0); i<mercury::num_act_joint; ++i){       
+        des_jpos_[i] = config_sol[mercury::num_virtual + i];
         des_jvel_[i] = 0.;
     }
-    config_task_->UpdateTask(&(pos_des), vel_des, acc_des);
-
-    // Push back to task list
-    task_list_.push_back(config_task_);
 }
 
 void TransitionConfigCtrl::_double_contact_setup(){

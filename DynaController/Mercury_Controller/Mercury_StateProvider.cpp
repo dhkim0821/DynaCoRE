@@ -11,6 +11,7 @@ Mercury_StateProvider* Mercury_StateProvider::getStateProvider(){
 
 Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
     des_body_pitch_(0.),
+    mjpos_(mercury::num_act_joint),
                                 system_count_(0),
                                 stance_foot_(mercury_link::leftFoot),
                                 Q_(mercury::num_q),
@@ -34,6 +35,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 Kp_roll_(0.), Kp_pitch_(0.),
                                 Kd_roll_(0.), Kd_pitch_(0.)
 {
+  mjpos_.setZero();
     default_lfoot_loc_.setZero();
     default_rfoot_loc_.setZero();
     curr_jpos_des_.setZero();
@@ -103,6 +105,7 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&average_vel_, VECT2, "average_vel", 2);
 
   data_manager->RegisterData(&curr_time_, DOUBLE, "time");
+  data_manager->RegisterData(&mjpos_, DYN_VEC, "mjpos", mercury::num_act_joint);
   data_manager->RegisterData(&Q_, DYN_VEC, "config", mercury::num_q);
   data_manager->RegisterData(&Qdot_, DYN_VEC, "qdot", mercury::num_qdot);
   data_manager->RegisterData(&reaction_forces_, DYN_VEC, "reaction_force", 6);
@@ -129,24 +132,24 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   data_manager->RegisterData(&est_mocap_body_pos_, VECT3, "est_mocap_body_pos", 3);
   // data_manager->RegisterData(&com_pos_des_, VECT3, "com_pos_des", 3);
   // data_manager->RegisterData(&com_vel_des_, VECT3, "com_vel_des", 3);
-  data_manager->RegisterData(&body_pos_, VECT3, "body_pos", 3);
-  data_manager->RegisterData(&body_vel_, VECT3, "body_vel", 3);
-  data_manager->RegisterData(&body_pos_des_, VECT3, "body_pos_des", 3);
-  data_manager->RegisterData(&body_vel_des_, VECT3, "body_vel_des", 3);
+  // data_manager->RegisterData(&body_pos_, VECT3, "body_pos", 3);
+  // data_manager->RegisterData(&body_vel_, VECT3, "body_vel", 3);
+  // data_manager->RegisterData(&body_pos_des_, VECT3, "body_pos_des", 3);
+  // data_manager->RegisterData(&body_vel_des_, VECT3, "body_vel_des", 3);
   data_manager->RegisterData(&global_pos_local_, VECT3, "global_pos_local", 3);
   data_manager->RegisterData(&global_jjpos_local_, VECT3, "global_jjpos_local", 3);
 
 
   // data_manager->RegisterData(&imu_acc_inc_, VECT3, "imu_acc_inc", 3);
   data_manager->RegisterData(&imu_acc_, VECT3, "imu_acc", 3);
-  data_manager->RegisterData(&imu_ang_vel_, VECT3, "imu_ang_vel", 3);
+  // data_manager->RegisterData(&imu_ang_vel_, VECT3, "imu_ang_vel", 3);
   //data_manager->RegisterData(&com_state_imu_, DYN_VEC, "com_state_imu", 6);
 
   //data_manager->RegisterData(&body_ori_, QUATERNION, "body_ori", 4);
   // data_manager->RegisterData(&body_ori_rpy_, VECT3, "body_ori_rpy", 3);
   //data_manager->RegisterData(&body_ori_des_, QUATERNION, "body_ori_des", 4);
   //data_manager->RegisterData(&body_ang_vel_des_, VECT3, "body_ang_vel_des", 3);
-  data_manager->RegisterData(&body_ang_vel_, VECT3, "body_ang_vel", 3);
+  // data_manager->RegisterData(&body_ang_vel_, VECT3, "body_ang_vel", 3);
 
   //data_manager->RegisterData(&jpos_des_, DYN_VEC, "jpos_des", mercury::num_act_joint);
   //data_manager->RegisterData(&jvel_des_, DYN_VEC, "jvel_des", mercury::num_act_joint);
@@ -162,12 +165,12 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
   // Simulation Ground Truth
   sim_imu_pos.setZero();
   sim_imu_vel.setZero();    
-  data_manager->RegisterData(&sim_imu_pos, VECT3, "sim_imu_pos", 3);
-  data_manager->RegisterData(&sim_imu_vel, VECT3, "sim_imu_vel", 3);
+  // data_manager->RegisterData(&sim_imu_pos, VECT3, "sim_imu_pos", 3);
+  // data_manager->RegisterData(&sim_imu_vel, VECT3, "sim_imu_vel", 3);
 
   //Filtered joint velocity
-  data_manager->RegisterData(&filtered_jvel_, DYN_VEC, "filtered_jvel", mercury::num_act_joint);
-  data_manager->RegisterData(&filtered_ang_vel_, VECT3, "filtered_ang_vel", 3);
+  // data_manager->RegisterData(&filtered_jvel_, DYN_VEC, "filtered_jvel", mercury::num_act_joint);
+  // data_manager->RegisterData(&filtered_ang_vel_, VECT3, "filtered_ang_vel", 3);
 
   // Test Minimum Jerk
   test_minjerk_pos.setZero();

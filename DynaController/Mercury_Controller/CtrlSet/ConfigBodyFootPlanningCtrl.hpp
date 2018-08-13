@@ -18,6 +18,7 @@ class ConfigBodyFootPlanningCtrl:public SwingPlanningCtrl{
 
         virtual void CtrlInitialization(const std::string & setting_file_name);
     protected:
+        double waiting_time_limit_;
         int swing_leg_jidx_;
         double push_down_height_; // push foot below the ground at landing
         dynacore::Vect3 default_target_loc_;

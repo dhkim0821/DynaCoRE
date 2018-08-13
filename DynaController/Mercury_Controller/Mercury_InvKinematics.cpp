@@ -249,9 +249,10 @@ void Mercury_InvKinematics::solveFullInvKinematics(
         }
         }
 
-        void Mercury_InvKinematics::getDoubleSupportLegConfig(const dynacore::Vector & current_Q,
-                const dynacore::Quaternion & des_quat,
-                const double & des_height, dynacore::Vector & config_sol){
+        void Mercury_InvKinematics::getDoubleSupportLegConfig(
+            const dynacore::Vector & current_Q,
+            const dynacore::Quaternion & des_quat,
+            const double & des_height, dynacore::Vector & config_sol){
             config_sol = current_Q;
 
             // Find Foot body id

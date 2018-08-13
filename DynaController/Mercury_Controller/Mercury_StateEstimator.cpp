@@ -27,6 +27,7 @@
 
 Mercury_StateEstimator::Mercury_StateEstimator(RobotSystem* robot):
     base_cond_(0),
+    b_using_jpos_(false),
     curr_config_(mercury::num_q),
     curr_qdot_(mercury::num_qdot),
     jjpos_config_(mercury::num_q),
@@ -78,12 +79,18 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
 
     // Joint Set
     for (int i(0); i<mercury::num_act_joint; ++i){
-        curr_config_[mercury::num_virtual + i] = data->motor_jpos[i];
+        if(b_using_jpos_){
+            curr_config_[mercury::num_virtual + i] = data->joint_jpos[i];    
+        } else{
+            curr_config_[mercury::num_virtual + i] = data->motor_jpos[i];
+        }
+          
         curr_qdot_[mercury::num_virtual + i] = data->motor_jvel[i];
         sp_->rotor_inertia_[i] = data->reflected_rotor_inertia[i];
         // Joint encoder update
         jjpos_config_[mercury::num_virtual + i] = data->joint_jpos[i];
         jjvel_qdot_[mercury::num_virtual + i] = data->joint_jvel[i];
+        sp_->mjpos_[i] = data->motor_jpos[i];
     }
 
     // TEST
@@ -212,13 +219,18 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     jjpos_config_[mercury::num_qdot] = 1.;
 
     for (int i(0); i<mercury::num_act_joint; ++i){
-        curr_config_[mercury::num_virtual + i] = data->motor_jpos[i];
+        if(b_using_jpos_){
+            curr_config_[mercury::num_virtual + i] = data->joint_jpos[i];    
+        } else{
+            curr_config_[mercury::num_virtual + i] = data->motor_jpos[i];
+        }
         curr_qdot_[mercury::num_virtual + i] = data->motor_jvel[i];
         sp_->rotor_inertia_[i] = data->reflected_rotor_inertia[i];
 
         // Joint encoder update
         jjpos_config_[mercury::num_virtual + i] = data->joint_jpos[i];
         jjvel_qdot_[mercury::num_virtual + i] = data->joint_jvel[i];
+        sp_->mjpos_[i] = data->motor_jpos[i];
     }
     
     // TEST
