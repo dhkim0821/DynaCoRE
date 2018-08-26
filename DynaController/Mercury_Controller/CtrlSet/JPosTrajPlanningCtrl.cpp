@@ -214,6 +214,9 @@ void JPosTrajPlanningCtrl::_task_setup(){
         des_jacc_[i] = qddot_cmd[mercury::num_virtual + i];
     }
 
+    // TEST
+    des_jacc_.setZero();
+
 }
 
 void JPosTrajPlanningCtrl::_CheckPlanning(){

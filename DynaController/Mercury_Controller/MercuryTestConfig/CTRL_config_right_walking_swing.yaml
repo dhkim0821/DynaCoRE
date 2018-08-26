@@ -21,7 +21,7 @@ Kd: [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 # Kd: [ 0, 0, 0, 0, 0, 0, 5,  5,  5,  2,  2,  2]
 
 # body_pt_offset: [0.0, 0.023]
-body_pt_offset: [0.0, 0.005]
+body_pt_offset: [0.0, 0.004]
 # body_pt_offset: [-0.042, -0.035]
 swing_time_reduction: 0.0
 foot_landing_offset: [-0.0, 0.]

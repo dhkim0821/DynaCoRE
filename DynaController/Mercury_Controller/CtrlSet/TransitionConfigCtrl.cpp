@@ -80,7 +80,7 @@ void TransitionConfigCtrl::OneStep(void* _cmd){
         ((Mercury_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
         ((Mercury_Command*)_cmd)->jvel_cmd[i] = des_jvel_[i];
     }
-    sp_->curr_jpos_des_ = des_jpos_;
+    // sp_->curr_jpos_des_ = des_jpos_;
     _PostProcessing_Command();
 }
 
@@ -148,6 +148,32 @@ void TransitionConfigCtrl::_body_task_setup(){
         des_jpos_[i] = config_sol[mercury::num_virtual + i];
         des_jvel_[i] = 0.;
     }
+
+    // TEST
+    if(b_increase_){
+        if(moving_foot_ == mercury_link::rightFoot){
+            int swing_jidx = mercury_joint::rightAbduction - mercury::num_virtual;
+
+            double h(state_machine_time_/end_time_);
+            
+            for(int i(0); i<3; ++i){
+                des_jpos_[i + swing_jidx] = 
+                    h * config_sol[mercury_joint::rightAbduction + i]
+                     + (1. - h)*sp_->curr_jpos_des_[swing_jidx + i];
+             }
+        }
+        else if(moving_foot_ == mercury_link::leftFoot){
+            int swing_jidx = mercury_joint::leftAbduction - mercury::num_virtual;
+
+            double h(state_machine_time_/end_time_);
+            
+            for(int i(0); i<3; ++i){
+                des_jpos_[i + swing_jidx] = 
+                    h * config_sol[mercury_joint::leftAbduction + i]
+                     + (1. - h)*sp_->curr_jpos_des_[swing_jidx + i];
+             }
+        }
+    }
 }
 
 void TransitionConfigCtrl::_double_contact_setup(){
@@ -210,6 +236,7 @@ void TransitionConfigCtrl::FirstVisit(){
 }
 
 void TransitionConfigCtrl::LastVisit(){
+    sp_->curr_jpos_des_ = des_jpos_;
     // printf("[Transition] End\n");
 }
 
