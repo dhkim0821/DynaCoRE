@@ -38,6 +38,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             np.genfromtxt(file_path+'jjvel.txt', delimiter=None, dtype=(float))
     data_jjpos = \
             np.genfromtxt(file_path+'jjpos.txt', delimiter=None, dtype=(float))
+    data_mjpos = \
+            np.genfromtxt(file_path+'mjpos.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
     st_idx = 1;
     end_idx = len(data_x) - 1
@@ -71,7 +73,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_jpos_des[st_idx:end_idx,i-1], "r-", \
-                data_x, data_config[st_idx:end_idx,i-1 + 6], "b-", \
+                data_x, data_mjpos[st_idx:end_idx,i-1], "b-", \
                 data_x, data_jjpos[st_idx:end_idx, i-1], "c-")
 
         # plt.legend(('command', 'pos'), loc='upper left')
@@ -97,7 +99,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_jpos_des[st_idx:end_idx,i-1 + 3], "r-" , \
-                data_x, data_config[st_idx:end_idx,i-1 + 9], "b-", \
+                data_x, data_mjpos[st_idx:end_idx,i-1 + 3], "b-", \
                 data_x, data_jjpos[st_idx:end_idx, i-1 +3 ], "c-")
         # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
@@ -124,9 +126,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('jvel (right_leg)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_jjvel[st_idx:end_idx, i-1], color="green", linewidth=1.3)
         plt.plot(data_x, data_qdot[st_idx:end_idx,i-1 + 6], "b-", \
                  data_x, data_jvel_des[st_idx:end_idx, i-1], "r-")
-        plt.plot(data_x, data_jjvel[st_idx:end_idx, i-1], color="green", linewidth=1.3)
 
         if filtered_vel_available:
             plt.plot(data_x, data_filtered_jvel[st_idx:end_idx, i-1], color="orange", linewidth=1.5)
@@ -153,9 +155,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('jvel (left_leg)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
+        plt.plot(data_x, data_jjvel[st_idx:end_idx, i-1 + 3], \
+                color="green", linewidth=1.3)
         plt.plot(data_x, data_qdot[st_idx:end_idx,i-1 + 9], "b-", \
                  data_x, data_jvel_des[st_idx:end_idx, i-1 + 3], "r-");
-        plt.plot(data_x, data_jjvel[st_idx:end_idx, i-1 + 3], color="green", linewidth=1.3)
         if filtered_vel_available:
             plt.plot(data_x, data_filtered_jvel[st_idx:end_idx, i-1 + 3], color="orange", linewidth=1.5)
        

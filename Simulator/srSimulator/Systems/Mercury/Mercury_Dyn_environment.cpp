@@ -109,22 +109,25 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
     robot->vr_joint_[i]->m_State.m_rCommand = 0.0;
   }
 
-  double Kp(20.);
-  double Kd(2.);
+  double Kp(10.0);
+  double Kd(1.0);
+  double K_friction(1.0);
   // double Kp(30.);
   // double Kd(0.5);
   // Right
   for(int i(0); i<3; ++i){
     robot->r_joint_[i]->m_State.m_rCommand = pDyn_env->cmd_->jtorque_cmd[i] + 
         Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->joint_jpos[i]) + 
-        Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->motor_jvel[i]);
+        Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->motor_jvel[i]) + 
+        K_friction * (0. - p_data->motor_jvel[i]);
   }
   // Left
   for(int i(0); i<3; ++i){
     robot->r_joint_[i+lj_start_idx]->m_State.m_rCommand = 
         pDyn_env->cmd_->jtorque_cmd[i+3] + 
          Kp * (pDyn_env->cmd_->jpos_cmd[i+3] - p_data->joint_jpos[i+3]) + 
-        Kd * (pDyn_env->cmd_->jvel_cmd[i+3] - p_data->motor_jvel[i+3]);
+        Kd * (pDyn_env->cmd_->jvel_cmd[i+3] - p_data->motor_jvel[i+3]) + 
+        K_friction * (0. - p_data->motor_jvel[i + 3]);
   }
 
   // Ankle Passive

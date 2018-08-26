@@ -28,16 +28,14 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     np.genfromtxt(file_path+'com_pos.txt', delimiter=None, dtype=(float))
     data_com_vel = \
     np.genfromtxt(file_path+'com_vel.txt', delimiter=None, dtype=(float))
-    data_body_des = \
-    np.genfromtxt(file_path+'body_pos_des.txt', delimiter=None, dtype=(float))
+    # data_body_des = \
+    # np.genfromtxt(file_path+'body_pos_des.txt', delimiter=None, dtype=(float))
     # data_body_ori_des = \
     # np.genfromtxt(file_path+'body_ori_des.txt', delimiter=None, dtype=(float))
     # data_body_ori = \
     # np.genfromtxt(file_path+'body_ori.txt', delimiter=None, dtype=(float))
-    data_body_vel = \
-    np.genfromtxt(file_path+'body_vel.txt', delimiter=None, dtype=(float))
-    data_body_vel_des = \
-    np.genfromtxt(file_path+'body_vel_des.txt', delimiter=None, dtype=(float))
+    # data_body_vel = \
+    # np.genfromtxt(file_path+'body_vel.txt', delimiter=None, dtype=(float))
     data_qdot = \
     np.genfromtxt(file_path+'qdot.txt', delimiter=None, dtype=(float))
     data_q = \
@@ -134,7 +132,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_com_global[st_idx:end_idx,i-1], "c-", \
-                data_x, data_body_des[st_idx:end_idx,i-1], "r-", \
+                # data_x, data_body_des[st_idx:end_idx,i-1], "r-", \
                 data_x, data_body_global[st_idx:end_idx,i-1], "b-")
         if i != 3:
             plt.plot(data_x, data_est_com_global[st_idx:end_idx,i-1], "k-")
@@ -162,9 +160,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_com[st_idx:end_idx,i-1], "c-", \
-                data_x, data_body_des[st_idx:end_idx,i-1], "r-", \
+                # data_x, data_body_des[st_idx:end_idx,i-1], "r-", \
                 data_x, data_q[st_idx:end_idx,i-1], "b-")
-        plt.plot(data_x, data_jjpos_body_pos[st_idx:end_idx, i-1], color="black", linewidth=1.5)
+        plt.plot(data_x, data_jjpos_body_pos[st_idx:end_idx, i-1], \
+                color="black", linewidth=1.5)
         # if i != 3:
             # plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1], "k-")
 
@@ -173,12 +172,12 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             color='indigo')
         plt.plot(data_x, data_LED_local_body_from_lfoot[st_idx:end_idx, i-1], \
             color='olive')
-        plt.plot(data_x, data_LED_local_body_from_rfoot2[st_idx:end_idx, i-1], \
-            color='indigo')
-        plt.plot(data_x, data_LED_local_body_from_lfoot2[st_idx:end_idx, i-1], \
-            color='olive')
-        plt.plot(data_x, data_est_mocap_body_pos[st_idx:end_idx, i-1], \
-            color='orange', linewidth=2.)
+        # plt.plot(data_x, data_LED_local_body_from_rfoot2[st_idx:end_idx, i-1], \
+            # color='indigo')
+        # plt.plot(data_x, data_LED_local_body_from_lfoot2[st_idx:end_idx, i-1], \
+            # color='olive')
+        # plt.plot(data_x, data_est_mocap_body_pos[st_idx:end_idx, i-1], \
+            # color='orange', linewidth=2.)
         # plt.legend(('command', 'pos'), loc='upper left')
         plt.grid(True)
         for j in phseChange:
@@ -202,7 +201,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('body vel')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        # plt.plot(data_x, data_body_vel_des[st_idx:end_idx,i-1], "r-" )
         plt.plot(data_x, data_com_vel[st_idx:end_idx,i-1], "c-", linewidth=2)
         plt.plot(data_x, data_qdot[st_idx:end_idx,i-1], "b-")
         plt.plot(data_x, data_jjvel_body_vel[st_idx:end_idx, i-1], color="black", linewidth=1.5)

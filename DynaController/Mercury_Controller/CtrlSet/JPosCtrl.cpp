@@ -107,6 +107,9 @@ void JPosCtrl::_jpos_task_setup(){
             des_jvel_[i] *= ramp_value;
             jacc_des[i] = -amp_[i] * omega * omega * sin(omega * state_machine_time_ + phase_[i]);
             jacc_des[i] *= ramp_value;
+            // TEST
+            //jacc_des[i] *= 0.;
+            //jacc_des[i] += des_jvel_[i];
         }
     } else if(trj_type_ == mercury_trj_type::ramp){
         double rising_time;

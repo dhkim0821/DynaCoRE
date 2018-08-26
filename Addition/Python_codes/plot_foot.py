@@ -45,8 +45,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             np.genfromtxt(file_path+'LED_Pos.txt', delimiter=None, dtype=(float))
     # data_LED_kin = \
             # np.genfromtxt(file_path+'LED_Kin_Pos.txt', delimiter=None, dtype=(float))
-    #data_foot_vel_des = \
-    #np.genfromtxt(file_path+'rfoot_vel_des.txt', delimiter=None, dtype=(float))
+    data_foot_vel_des = \
+    np.genfromtxt(file_path+'rfoot_vel_des.txt', delimiter=None, dtype=(float))
     data_rfoot_vel = \
     np.genfromtxt(file_path+'rfoot_vel.txt', delimiter=None, dtype=(float))
     data_rfoot_acc_des = \
@@ -62,16 +62,16 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
     rfoot_LED_idx = [6, 7];
     lfoot_LED_idx = [11, 12];
-    data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]) \
-            + (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]))/2.;
+    # data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]) \
+            # + (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]))/2.;
 
-    data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]) \
-            + (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3]))/2.;
+    # data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]) \
+            # + (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3]))/2.;
 
     data_LED_rfoot_out = (data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]) 
     data_LED_lfoot_out = (data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3])
-    data_LED_rfoot_in = (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]) 
-    data_LED_lfoot_in = (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3])
+    # data_LED_rfoot_in = (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]) 
+    # data_LED_lfoot_in = (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3])
 
 
 
@@ -117,18 +117,19 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('right foot pos')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_rfoot_pos_des[st_idx:end_idx,i-1], "r-")
+        plt.plot(data_x, data_rfoot_pos_des[st_idx:end_idx,i-1], \
+                "r-", linewidth = 3)
         # plt.plot(data_x, data_minj_pos_des[st_idx:end_idx, i-1], color="black", linewidth=1.5)
         plt.plot(data_x, data_jjpos_rfoot_pos[st_idx:end_idx, i-1], \
                 color="black", linewidth=1.5)
         plt.plot(data_x, data_rfoot_pos[st_idx:end_idx,i-1], "b-")
 
-        plt.plot(data_x, data_LED_rfoot[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
-                linewidth=2.0, color='orange')
-        plt.plot(data_x, data_LED_rfoot_out[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
+        # plt.plot(data_x, data_LED_rfoot[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
+                # linewidth=2.0, color='orange')
+        plt.plot(data_x, data_LED_rfoot_out[st_idx:end_idx, i-1] - data_LED_lfoot_out[st_idx:end_idx, i-1], \
                 linewidth=1.0, color="indigo")
-        plt.plot(data_x, data_LED_rfoot_in[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
-                linewidth=1.0, color="indigo")
+        # plt.plot(data_x, data_LED_rfoot_in[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
+                # linewidth=1.0, color="indigo")
         ## TEST 
         # plt.plot(data_x, data_LED_rfoot[st_idx:end_idx, i-1], linewidth=2.0, color='orange')
         # plt.plot(data_x, data_LED_rfoot_out[st_idx:end_idx, i-1], linewidth=1.0, color="indigo")
@@ -183,21 +184,22 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('left foot pos')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_lfoot_pos_des[st_idx:end_idx,i-1], "r-")       
+        plt.plot(data_x, data_lfoot_pos_des[st_idx:end_idx,i-1],\
+                "r-", linewidth=3)
         plt.plot(data_x, data_jjpos_lfoot_pos[st_idx:end_idx, i-1], color="black", linewidth=1.5)
         plt.plot(data_x, data_lfoot_pos[st_idx:end_idx,i-1], "b-")
 
-        plt.plot(data_x, data_LED_lfoot[st_idx:end_idx, i-1] \
-                - data_LED_rfoot[st_idx:end_idx, i-1], \
-                linewidth=2.0, color='orange')
+        # plt.plot(data_x, data_LED_lfoot[st_idx:end_idx, i-1] \
+                # - data_LED_rfoot[st_idx:end_idx, i-1], \
+                # linewidth=2.0, color='orange')
 
         plt.plot(data_x, data_LED_lfoot_out[st_idx:end_idx, i-1] \
-                - data_LED_rfoot[st_idx:end_idx, i-1], \
+                - data_LED_rfoot_out[st_idx:end_idx, i-1], \
                 linewidth=1.0, color="indigo")
 
-        plt.plot(data_x, data_LED_lfoot_in[st_idx:end_idx, i-1] \
-                - data_LED_rfoot[st_idx:end_idx, i-1], \
-                linewidth=1.0, color="indigo")
+        # plt.plot(data_x, data_LED_lfoot_in[st_idx:end_idx, i-1] \
+                # - data_LED_rfoot[st_idx:end_idx, i-1], \
+                # linewidth=1.0, color="indigo")
        # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:
@@ -246,11 +248,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     ## plot foot vel
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
-    fig.canvas.set_window_title('foot vel')
+    fig.canvas.set_window_title('rfoot vel')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        #plt.plot(data_x, data_foot_vel_des[st_idx:end_idx,i-1], "r-", \
-        #         data_x, data_rfoot_vel[st_idx:end_idx,i-1], "b-")
+        plt.plot(data_x, data_foot_vel_des[st_idx:end_idx,i-1], "r-")
         plt.plot(data_x, data_rfoot_vel[st_idx:end_idx,i-1], "b-")
         # plt.plot(data_x, data_minj_vel_des[st_idx:end_idx, i-1], color="black", linewidth=1.5)
         

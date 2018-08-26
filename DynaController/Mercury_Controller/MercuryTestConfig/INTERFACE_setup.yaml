@@ -1,8 +1,8 @@
 ## Basic Test ********************************* 
-# test_name: joint_ctrl_test
+test_name: joint_ctrl_test
 
 ## Walking Test ********************************* 
-test_name: walking_config_test
+#test_name: walking_config_test
 
 ## Walking Test ********************************* 
 #test_name: walking_jpos_test
@@ -25,6 +25,10 @@ using_jpos: true
 
 torque_max: [  150,  100,  100,  150,  100,  100]
 torque_min: [ -150, -100, -200, -150, -100, -200]
+
+#torque_max: [  0.0001,  0.0001,  0.0001,  0.0001,  0.0001,  0.0001]
+#torque_min: [ -0.0001, -0.0001, -0.0001, -0.0001, -0.0001, -0.0001]
+
 
 joint_max: [0.27, 1.5, 2.0, 0.27, 1.5, 2.0]
 joint_min: [-0.27, -1.5, 0, -0.27, -1.5, 0]
