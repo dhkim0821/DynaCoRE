@@ -322,6 +322,8 @@ void JPosTrajPlanningCtrl::FirstVisit(){
     dynacore::Vect3 target_loc = default_target_loc_; 
 
     target_loc[0] = sp_->Q_[0];
+    target_loc[1] = sp_->Q_[1] + default_target_loc_[1];
+
     // Compute Target config
     inv_kin_.getLegConfigAtVerticalPosture(swing_foot_, target_loc, 
             sp_->Q_, config_sol);

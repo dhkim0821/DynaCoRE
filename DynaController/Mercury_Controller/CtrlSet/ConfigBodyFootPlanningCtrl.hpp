@@ -4,6 +4,7 @@
 #include "SwingPlanningCtrl.hpp"
 #include <Mercury_Controller/Mercury_InvKinematics.hpp>
 #include <Utils/minjerk_one_dim.hpp>
+#include <Utils/BSplineBasic.h>
 
 class WBWC;
 
@@ -22,12 +23,19 @@ class ConfigBodyFootPlanningCtrl:public SwingPlanningCtrl{
         int swing_leg_jidx_;
         double push_down_height_; // push foot below the ground at landing
         dynacore::Vect3 default_target_loc_;
+        dynacore::Vect3 initial_target_loc_;
     
         void _CheckPlanning();
         void _Replanning(dynacore::Vect3 & target_loc);
         void _task_setup();
         void _body_foot_ctrl(dynacore::Vector & gamma);
         void _SetMinJerkOffset(const dynacore::Vect3 & offset);
+        void _SetBspline(
+            const dynacore::Vect3 & st_pos, 
+            const dynacore::Vect3 & des_pos);
+
+        void _GetSinusoidalSwingTrajectory();
+        void _GetBsplineSwingTrajectory();
 
         WBWC* wbwc_;
 
@@ -46,6 +54,7 @@ class ConfigBodyFootPlanningCtrl:public SwingPlanningCtrl{
 
         Mercury_InvKinematics inv_kin_;
         std::vector<MinJerk_OneDimension*> min_jerk_offset_;
+        BS_Basic<3, 3, 1, 2, 2> foot_traj_;
 };
 
 #endif
