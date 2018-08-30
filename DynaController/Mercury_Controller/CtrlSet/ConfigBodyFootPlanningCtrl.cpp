@@ -257,7 +257,7 @@ void ConfigBodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 
          // com_pos[i] = sp_->est_mocap_body_pos_[i] + body_pt_offset_[i];
         com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
-         com_vel[i] = sp_->est_mocap_body_vel_[i]; 
+        com_vel[i] = sp_->est_mocap_body_vel_[i]; 
     }
     printf("planning com state: %f, %f, %f, %f\n",
         com_pos[0], com_pos[1],

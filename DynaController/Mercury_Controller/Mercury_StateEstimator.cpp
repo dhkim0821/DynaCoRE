@@ -94,6 +94,11 @@ void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
     }
 
     // TEST
+    // curr_config_[mercury_joint::rightKnee] = 
+    //    data->joint_jpos[mercury_joint::rightKnee - mercury::num_virtual];
+    // curr_config_[mercury_joint::leftKnee] = 
+    //    data->joint_jpos[mercury_joint::leftKnee - mercury::num_virtual];
+
     // curr_config_[mercury_joint::rightHip] = 
     //    data->joint_jpos[mercury_joint::rightHip - mercury::num_virtual];
     // curr_config_[mercury_joint::leftHip] = 
@@ -234,6 +239,11 @@ void Mercury_StateEstimator::Update(Mercury_SensorData* data){
     }
     
     // TEST
+    // curr_config_[mercury_joint::rightKnee] = 
+    //    data->joint_jpos[mercury_joint::rightKnee - mercury::num_virtual];
+    // curr_config_[mercury_joint::leftKnee] = 
+    //    data->joint_jpos[mercury_joint::leftKnee - mercury::num_virtual];
+
     // curr_config_[mercury_joint::rightHip] = 
     //    data->joint_jpos[mercury_joint::rightHip - mercury::num_virtual];
     // curr_config_[mercury_joint::leftHip] = 
