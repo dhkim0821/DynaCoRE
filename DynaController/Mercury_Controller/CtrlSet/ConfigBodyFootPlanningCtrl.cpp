@@ -226,7 +226,7 @@ void ConfigBodyFootPlanningCtrl::_CheckPlanning(){
                 target_offset[i] = target_loc[i] - initial_target_loc_[i];
 
             // Foot height (z) is set by the initial height
-            target_offset[2] = target_loc[2] - ini_foot_pos_[2];
+            target_offset[2] = 0.; //target_loc[2] - ini_foot_pos_[2];
 
             _SetMinJerkOffset(target_offset);
             ++num_planning_;
@@ -311,12 +311,12 @@ void ConfigBodyFootPlanningCtrl::FirstVisit(){
     // TEST
     initial_target_loc_[0] = sp_->Q_[0];
     initial_target_loc_[1] = sp_->Q_[1] + default_target_loc_[1];
-    initial_target_loc_[2] = ini_foot_pos_[2];
+    initial_target_loc_[2] = -push_down_height_; //ini_foot_pos_[2];
 
     _SetBspline(ini_foot_pos_, initial_target_loc_);
 
     dynacore::Vect3 foot_pos_offset; foot_pos_offset.setZero();
-    foot_pos_offset[2] = - push_down_height_ - ini_foot_pos_[2];
+    foot_pos_offset[2] = 0.;// - ini_foot_pos_[2];
     _SetMinJerkOffset(foot_pos_offset);
 
     dynacore::Vect3 com_vel;

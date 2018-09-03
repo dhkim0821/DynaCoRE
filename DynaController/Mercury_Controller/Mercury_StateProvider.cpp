@@ -33,7 +33,9 @@ Mercury_StateProvider::Mercury_StateProvider(): initialized_(false),
                                 filtered_jvel_(mercury::num_act_joint),
                                 curr_jpos_des_(mercury::num_act_joint),
                                 Kp_roll_(0.), Kp_pitch_(0.),
-                                Kd_roll_(0.), Kd_pitch_(0.)
+                                Kd_roll_(0.), Kd_pitch_(0.),
+                                first_LED_x_(0.),
+                                first_LED_y_(0.)
 {
   mjpos_.setZero();
     default_lfoot_loc_.setZero();

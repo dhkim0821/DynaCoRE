@@ -200,5 +200,8 @@ void MoCapManager::_UpdateLEDPosData(const mercury_message & msg){
             ++led_number;
         }
     }
+    // TEST
+    sp_->first_LED_x_ = led_pos_data_[0];
+    sp_->first_LED_y_ = led_pos_data_[1];
 
 }

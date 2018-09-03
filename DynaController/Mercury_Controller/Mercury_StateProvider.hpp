@@ -44,6 +44,9 @@ public:
   // Important!!!!!!!!
   int stance_foot_;
 
+  double first_LED_x_;
+  double first_LED_y_;
+
   bool initialized_;
   double curr_time_;
   int system_count_;

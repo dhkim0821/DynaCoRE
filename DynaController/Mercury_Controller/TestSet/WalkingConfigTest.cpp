@@ -117,6 +117,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
     if(phase == WkConfigPhase::lift_up) { next_phase = WkConfigPhase::double_contact_2; }
 #endif
      // printf("next phase: %i\n", next_phase);
+    dynacore::Vect3 next_local_frame_location;
 
     if(phase == WkConfigPhase::double_contact_1) {
         //if(phase == WkConfigPhase::right_swing_start_trans) {
@@ -126,7 +127,6 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         sp_->stance_foot_ = mercury_link::leftFoot;
 
         // Global Frame Update
-        dynacore::Vect3 next_local_frame_location;
         robot_sys_->getPos(mercury_link::leftFoot, next_local_frame_location);
         // when it start the left leg is already stance foot and 
         // global set by 0.15
@@ -144,11 +144,21 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         sp_->stance_foot_ = mercury_link::rightFoot;
 
         // Global Frame Update
-        dynacore::Vect3 next_local_frame_location;
         robot_sys_->getPos(mercury_link::rightFoot, next_local_frame_location);
         sp_->global_pos_local_ += next_local_frame_location;
         sp_->global_jjpos_local_ += sp_->jjpos_rfoot_pos_; 
         sp_->global_foot_height_ = next_local_frame_location[2];
+    }
+    // TEST
+    if((phase == WkConfigPhase::double_contact_1) ||
+       (phase == WkConfigPhase::double_contact_2) &&
+       (num_step_>1) ){
+        sp_->global_pos_local_[0] = 
+            sp_->first_LED_x_ - 0.3;
+            // +  (next_local_frame_location[0] - sp_->Q_[0]);
+        sp_->global_pos_local_[1] = 
+            sp_->first_LED_y_ + 
+            (next_local_frame_location[1] - sp_->Q_[1]);
     }
 
     sp_->num_step_copy_ = num_step_;
