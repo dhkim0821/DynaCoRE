@@ -17,8 +17,8 @@ base_condition: floating
 # base_condition: fixed
 #base_condition: lying
 
-jpos_model_update: true
-# jpos_model_update: false
+# jpos_model_update: true
+jpos_model_update: false
 
 using_jpos: true
 # using_jpos: false
