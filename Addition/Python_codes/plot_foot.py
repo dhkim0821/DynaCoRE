@@ -56,8 +56,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
 
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
-    st_idx = 1
-    end_idx = len(data_x) - 10
+    st_idx = 5
+    # end_idx = len(data_x) - 1000
+    end_idx = st_idx + 2000
     data_x = data_x[st_idx:end_idx]
 
     rfoot_LED_idx = [6, 7];
@@ -78,11 +79,12 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
     # PHASE MARKER #
     data_phse = np.genfromtxt(file_path+'phase.txt', delimiter=None, dtype=(float))
+    data_phse = data_phse[st_idx:end_idx]
     # get phase.txt data #
     phseChange = []
     for i in range(0,len(data_x)-1):
         if data_phse[i] != data_phse[i+1]:
-            phseChange.append(i - st_idx)
+            phseChange.append(i)
         else:
             pass
 

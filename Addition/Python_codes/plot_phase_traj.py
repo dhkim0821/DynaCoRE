@@ -88,7 +88,7 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
     stance_foot_loc = []
     for i in range(len(data_global_pos_offset)-1):
         if (data_global_pos_offset[i,1] != data_global_pos_offset[i+1,1]):
-            stance_foot_loc.append(data_global_pos_offset[i,:])
+            stance_foot_loc.append(data_global_pos_offset[i+1,:])
 
     np_stancefoot = np.array(stance_foot_loc)
 
@@ -161,11 +161,11 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
                 # linewidth=lin_width, color='orange')
 
         #current swing
-        plt.plot(data_mocap_pos_global[swing_st_idx:swing_end_idx, plot_axis], \
+        plt.plot(data_com_pos_global[swing_st_idx:swing_end_idx, plot_axis], \
                 data_est_mocap_body_vel[swing_st_idx:swing_end_idx, plot_axis], \
                 linewidth=lin_width, color='crimson')
         # next swing
-        plt.plot(data_mocap_pos_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
+        plt.plot(data_com_pos_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
                 data_est_mocap_body_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
                 linewidth=lin_width, color='cyan')
 
@@ -248,11 +248,11 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
                 linewidth=lin_width, color='orange')
 
         #current swing
-        plt.plot(data_mocap_pos_global[swing_st_idx:swing_end_idx, plot_axis], \
+        plt.plot(data_com_pos_global[swing_st_idx:swing_end_idx, plot_axis], \
                 data_est_mocap_body_vel[swing_st_idx:swing_end_idx, plot_axis], \
                 linewidth=lin_width, color='crimson')
         # next swing
-        plt.plot(data_mocap_pos_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
+        plt.plot(data_com_pos_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
                 data_est_mocap_body_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
                 linewidth=lin_width, color='cyan')
 

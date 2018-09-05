@@ -73,17 +73,19 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_est_com_global = data_estimated_com[:,0:2] + \
                                     data_global_pos_offset[:, 0:2]
 
-    st_idx = 10
-    end_idx = len(data_x) - 10
+    st_idx = 8000
+    # end_idx = len(data_x) - 10
+    end_idx = st_idx + 3000
     data_x = data_x[st_idx:end_idx]
 
     # PHASE MARKER #
     data_phse = np.genfromtxt(file_path+'phase.txt', delimiter=None, dtype=(float))
+    data_phse = data_phse[st_idx:end_idx]
     # get phase.txt data #
     phseChange = []
-    for i in range(0,end_idx-1):
+    for i in range(0,len(data_x)-1):
             if data_phse[i] != data_phse[i+1]:
-                phseChange.append(i - st_idx)
+                phseChange.append(i)
             else:
                 pass
     axes = plt.gca()
@@ -134,10 +136,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_com_global[st_idx:end_idx,i-1], "c-", \
                 # data_x, data_body_des[st_idx:end_idx,i-1], "r-", \
                 data_x, data_body_global[st_idx:end_idx,i-1], "b-")
-        if i != 3:
-            plt.plot(data_x, data_est_com_global[st_idx:end_idx,i-1], "k-")
+        plt.plot(data_x, data_global_pos_offset[st_idx:end_idx,i-1], "crimson")
+        # if i != 3:
+            # plt.plot(data_x, data_est_com_global[st_idx:end_idx,i-1], "k-")
 
-        plt.plot(data_x, data_LED_body[st_idx:end_idx, i-1], color="orange")
+        plt.plot(data_x, data_LED[st_idx:end_idx, i-1], color="orange")
         # plt.legend(('command', 'pos'), loc='upper left')
         plt.grid(True)
         for j in phseChange:
