@@ -39,5 +39,12 @@ void DracoBiped::_SetCollision(){
 }
 
 void DracoBiped::_SetInitialConf(){
+  vp_joint_[0]->m_State.m_rValue[0] = 0.0;
+  vp_joint_[1]->m_State.m_rValue[0] = 0.0;
+  vp_joint_[2]->m_State.m_rValue[0] = 1.135;// + 0.3;
+  vr_joint_[0]->m_State.m_rValue[0] = 0.0;
+  vr_joint_[1]->m_State.m_rValue[0] = 0.0;
+  vr_joint_[2]->m_State.m_rValue[0] = 0.0;
+
   KIN_UpdateFrame_All_The_Entity();
 }
