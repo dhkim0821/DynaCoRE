@@ -37,12 +37,8 @@ DracoBiped_Dyn_environment::DracoBiped_Dyn_environment():
     m_Space->SetTimestep(0.001);
     m_Space->SetGravity(0.0,0.0,-9.81);
 
-    m_Space->SetNumberofSubstepForRendering(40);
+    m_Space->SetNumberofSubstepForRendering(10);
 
-    //std::cout<<robot_->link_[robot_->link_idx_map_.find("r_foot")->second]
-        //->GetPosition()<<std::endl;;
-    //std::cout<<robot_->link_[robot_->link_idx_map_.find("l_foot")->second]
-        //->GetPosition()<<std::endl;;
     printf("[DracoBiped Dynamic Environment] Build Dynamic Environment\n");
 }
 
@@ -50,8 +46,8 @@ void DracoBiped_Dyn_environment::ControlFunction( void* _data ) {
     static int count(0);
     ++count;
 
-    //DracoBiped_Dyn_environment* pDyn_env = (DracoBiped_Dyn_environment*)_data;
-    //DracoBiped* robot = (DracoBiped*)(pDyn_env->robot_);
+    DracoBiped_Dyn_environment* pDyn_env = (DracoBiped_Dyn_environment*)_data;
+    DracoBiped* robot = (DracoBiped*)(pDyn_env->robot_);
     //DracoBiped_SensorData* p_data = pDyn_env->data_;
     
     //std::vector<double> torque_command(robot->num_act_joint_);
@@ -72,8 +68,7 @@ void DracoBiped_Dyn_environment::ControlFunction( void* _data ) {
         //robot->vp_joint_[i]->m_State.m_rCommand = 0.0;
         //robot->vr_joint_[i]->m_State.m_rCommand = 0.0;
     //}
-
-    //if( count < 100 ){
+   //if( count < 100 ){
         //robot->vp_joint_[0]->m_State.m_rCommand = 
             //-5000. * robot->vp_joint_[0]->m_State.m_rValue[0]
             //- 10. * robot->vp_joint_[0]->m_State.m_rValue[1];
@@ -92,7 +87,6 @@ void DracoBiped_Dyn_environment::ControlFunction( void* _data ) {
         //robot->r_joint_[i]->m_State.m_rCommand = pDyn_env->cmd_->jtorque_cmd[i] + 
             //Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->jpos[i]) + 
             //Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->jvel[i]);
-        
     //}
 }
 
@@ -140,3 +134,16 @@ void DracoBiped_Dyn_environment::_CheckFootContact(bool & r_contact, bool & l_co
 
     //printf("\n");
 }
+
+    //for(int i(0); i<robot->vr_joint_.size(); ++i){
+        //printf("%f\n",robot->vr_joint_[i]->m_State.m_rValue[0] );
+    //}
+     //for(int i(0); i<robot->vp_joint_.size(); ++i){
+        //printf("%f\n",robot->vp_joint_[i]->m_State.m_rValue[0] );
+    //}
+ 
+    //for(int i(0); i<robot->r_joint_.size(); ++i){
+        //printf("%f\n",robot->r_joint_[i]->m_State.m_rValue[0] );
+    //}
+    //printf("\n");
+ 
