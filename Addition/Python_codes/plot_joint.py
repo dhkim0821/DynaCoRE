@@ -30,17 +30,18 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             np.genfromtxt(file_path+'config.txt', delimiter=None, dtype=(float))
     data_jvel_des = \
             np.genfromtxt(file_path+'jvel_des.txt', delimiter=None, dtype=(float))
-    data_jacc_des = \
-            np.genfromtxt(file_path+'jacc_des.txt', delimiter=None, dtype=(float))
+    # data_jacc_des = \
+            # np.genfromtxt(file_path+'jacc_des.txt', delimiter=None, dtype=(float))
     data_qdot = \
             np.genfromtxt(file_path+'qdot.txt', delimiter=None, dtype=(float))
     data_jjvel = \
             np.genfromtxt(file_path+'jjvel.txt', delimiter=None, dtype=(float))
     data_jjpos = \
             np.genfromtxt(file_path+'jjpos.txt', delimiter=None, dtype=(float))
-    data_mjpos = \
-            np.genfromtxt(file_path+'mjpos.txt', delimiter=None, dtype=(float))
+    # data_mjpos = \
+            # np.genfromtxt(file_path+'mjpos.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
+    num_leg_joint = 5
     st_idx = 1;
     end_idx = len(data_x) - 1
     data_x = data_x[st_idx:end_idx]
@@ -70,10 +71,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
     #plt.get_current_fig_manager().window.wm_geometry("480x600+0+0")
     fig.canvas.set_window_title('jpos (right_leg)')
-    for i in range(1,4,1):
-        ax1 = plt.subplot(3, 1, i)
+    for i in range(1,6,1):
+        ax1 = plt.subplot(5, 1, i)
         plt.plot(data_x, data_jpos_des[st_idx:end_idx,i-1], "r-", \
-                data_x, data_mjpos[st_idx:end_idx,i-1], "b-", \
+                # data_x, data_mjpos[st_idx:end_idx,i-1], "b-", \
                 data_x, data_jjpos[st_idx:end_idx, i-1], "c-")
 
         # plt.legend(('command', 'pos'), loc='upper left')
@@ -96,10 +97,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))    
     #plt.get_current_fig_manager().window.wm_geometry("480x600+480+0")
     fig.canvas.set_window_title('jpos (left_leg)')
-    for i in range(1,4,1):
-        ax1 = plt.subplot(3, 1, i)
+    for i in range(1,num_leg_joint + 1,1):
+        ax1 = plt.subplot(num_leg_joint, 1, i)
         plt.plot(data_x, data_jpos_des[st_idx:end_idx,i-1 + 3], "r-" , \
-                data_x, data_mjpos[st_idx:end_idx,i-1 + 3], "b-", \
+                # data_x, data_mjpos[st_idx:end_idx,i-1 + 3], "b-", \
                 data_x, data_jjpos[st_idx:end_idx, i-1 +3 ], "c-")
         # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
@@ -124,8 +125,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))    
     #plt.get_current_fig_manager().window.wm_geometry("480x600+960+0")
     fig.canvas.set_window_title('jvel (right_leg)')
-    for i in range(1,4,1):
-        ax1 = plt.subplot(3, 1, i)
+    for i in range(1,num_leg_joint + 1,1):
+        ax1 = plt.subplot(num_leg_joint, 1, i)
         plt.plot(data_x, data_jjvel[st_idx:end_idx, i-1], color="green", linewidth=1.3)
         plt.plot(data_x, data_qdot[st_idx:end_idx,i-1 + 6], "b-", \
                  data_x, data_jvel_des[st_idx:end_idx, i-1], "r-")
@@ -153,8 +154,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
     #plt.get_current_fig_manager().window.wm_geometry("480x600+1440+0")
     fig.canvas.set_window_title('jvel (left_leg)')
-    for i in range(1,4,1):
-        ax1 = plt.subplot(3, 1, i)
+    for i in range(1,num_leg_joint + 1,1):
+        ax1 = plt.subplot(num_leg_joint, 1, i)
         plt.plot(data_x, data_jjvel[st_idx:end_idx, i-1 + 3], \
                 color="green", linewidth=1.3)
         plt.plot(data_x, data_qdot[st_idx:end_idx,i-1 + 9], "b-", \
@@ -184,9 +185,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))    
     #plt.get_current_fig_manager().window.wm_geometry("480x600+960+0")
     fig.canvas.set_window_title('jacc (right_leg)')
-    for i in range(1,4,1):
-        ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_jacc_des[st_idx:end_idx,i-1], "r-")
+    for i in range(1,num_leg_joint,1):
+        ax1 = plt.subplot(num_leg_joint, 1, i)
+        # plt.plot(data_x, data_jacc_des[st_idx:end_idx,i-1], "r-")
         # phase marker #
         for j in phseChange:
             # phase line
@@ -209,7 +210,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('jacc (right_leg)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_jacc_des[st_idx:end_idx,i-1 + 3], "r-")
+        # plt.plot(data_x, data_jacc_des[st_idx:end_idx,i-1 + 3], "r-")
         # phase marker #
         for j in phseChange:
             # phase line

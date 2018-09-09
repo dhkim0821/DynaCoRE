@@ -1,18 +1,18 @@
-#include "DracoBiped.h"
+#include "DracoBip.h"
 
-DracoBiped::DracoBiped():SystemGenerator()
+DracoBip::DracoBip():SystemGenerator(), hanging_height_( 1.084217  + 0.3 )
 {
-  printf("[DracoBiped] ASSEMBLED\n");
+  printf("[DracoBip] ASSEMBLED\n");
 }
 
-DracoBiped::~DracoBiped(){
+DracoBip::~DracoBip(){
 }
 
-void DracoBiped::_SetJointLimit(){
+void DracoBip::_SetJointLimit(){
 }
 
-void DracoBiped::_SetCollision(){
-  collision_.resize(4);
+void DracoBip::_SetCollision(){
+  collision_.resize(4 + 1);
   for (int i = 0; i < collision_.size(); ++i) {
     collision_[i] = new srCollision();
   }
@@ -39,23 +39,38 @@ void DracoBiped::_SetCollision(){
   link_[link_idx_map_.find("lAnkle")->second]->AddCollision(collision_[2]);
   link_[link_idx_map_.find("lAnkle")->second]->AddCollision(collision_[3]);
 
-  //double fric(0.8);
-  //link_[link_idx_map_.find("r_foot")->second]->SetFriction(fric);
-  //link_[link_idx_map_.find("l_foot")->second]->SetFriction(fric);
+  double fric(0.8);
+  link_[link_idx_map_.find("rAnkle")->second]->SetFriction(fric);
+  link_[link_idx_map_.find("lAnkle")->second]->SetFriction(fric);
 
-  //double damp(0.01);
-  //link_[link_idx_map_.find("r_foot")->second]->SetDamping(damp);
-  //link_[link_idx_map_.find("l_foot")->second]->SetDamping(damp);
+  double damp(0.01);
+  link_[link_idx_map_.find("rAnkle")->second]->SetDamping(damp);
+  link_[link_idx_map_.find("lAnkle")->second]->SetDamping(damp);
 
-  //double restit(0.0);
-  //link_[link_idx_map_.find("r_foot")->second]->SetRestitution(restit);
-  //link_[link_idx_map_.find("l_foot")->second]->SetRestitution(restit);
+  double restit(0.0);
+  link_[link_idx_map_.find("rAnkle")->second]->SetRestitution(restit);
+  link_[link_idx_map_.find("lAnkle")->second]->SetRestitution(restit);
+
+  // Link
+  collision_[4] = new srCollision();
+  collision_[4]->GetGeomInfo().SetShape(srGeometryInfo::CYLINDER);
+  collision_[4]->GetGeomInfo().SetDimension(0.05, 0.1, 0.05);
+  collision_[4]->SetLocalFrame(EulerZYX(Vec3(0.,0., 0.), Vec3(0., 0., -hanging_height_ + 0.050)));
+  link_[link_idx_map_.find("torso")->second]->AddCollision(collision_[4]);
+  link_[link_idx_map_.find("torso")->second]->SetFriction(fric);
+
 }
 
-void DracoBiped::_SetInitialConf(){
+void DracoBip::_SetInitialConf(){
+
+    for(int i(0); i<3; ++i)    vr_joint_[i]->m_State.m_rValue[1] = 0.;
+    for(int i(0); i<3; ++i)    vp_joint_[i]->m_State.m_rValue[1] = 0.;
+    for(int i(0); i<num_act_joint_; ++i)    r_joint_[i]->m_State.m_rValue[1] = 0.;
+
   vp_joint_[0]->m_State.m_rValue[0] = 0.0;
   vp_joint_[1]->m_State.m_rValue[0] = 0.0;
-  vp_joint_[2]->m_State.m_rValue[0] = 1.084217;// + 0.3;
+  //vp_joint_[2]->m_State.m_rValue[0] = 1.084217;
+  vp_joint_[2]->m_State.m_rValue[0] = hanging_height_;
   vr_joint_[0]->m_State.m_rValue[0] = 0.0;
   vr_joint_[1]->m_State.m_rValue[0] = 0.0348;
   vr_joint_[2]->m_State.m_rValue[0] = 0.0;

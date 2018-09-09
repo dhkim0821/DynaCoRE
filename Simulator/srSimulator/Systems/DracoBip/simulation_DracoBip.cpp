@@ -1,7 +1,7 @@
 #include "Renderer/SimpleViewer.h"
 
 #include "srg/srgGeometryDraw.h"	// for User rendering
-#include "DracoBiped_Dyn_environment.h"
+#include "DracoBip_Dyn_environment.h"
 
 #include <vector>
 #include <err.h>
@@ -16,7 +16,7 @@
 using namespace std;
 
 srSimpleViewer& gViewer = srSimpleViewer::GetInstance();
-DracoBiped_Dyn_environment* gDyn_env = new DracoBiped_Dyn_environment();
+DracoBip_Dyn_environment* gDyn_env = new DracoBip_Dyn_environment();
 
 void User_Simulation_Go_One_Step()
 {
@@ -115,7 +115,7 @@ void parse_options(int argc, char ** argv){
 int main(int argc, char **argv) 
 {
   parse_options(argc, argv);
-  gViewer.Init(&argc, argv, "Dynamic Simulation of DracoBiped");
+  gViewer.Init(&argc, argv, "Dynamic Simulation of DracoBip");
 
   gViewer.SetTarget(gDyn_env->m_Space);
 

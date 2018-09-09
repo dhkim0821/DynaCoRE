@@ -20,6 +20,7 @@ void DataSave::run(void ) {
  
   double* data = new double[data_setup.tot_num_array_data];
   long long iter(0);
+  bool b_printed(false);
   while (true){
     COMM::receive_data(socket2_, PORT_DATA_RECEIVE, data, data_setup.tot_num_array_data*sizeof(double), IP_ADDR);
 
@@ -35,6 +36,7 @@ void DataSave::run(void ) {
             std::cout<< data[st_idx + j]<<", ";
           }
           printf("\n");
+          b_printed = true;
         }
       }
 
@@ -45,6 +47,10 @@ void DataSave::run(void ) {
       st_idx += data_setup.num_array_data[i];
     }
     ++iter;
+    if(b_printed){ 
+        printf("\n");
+        b_printed = false;
+    }
   }
 
   delete [] data;

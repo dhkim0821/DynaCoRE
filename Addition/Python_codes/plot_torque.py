@@ -25,8 +25,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             # np.genfromtxt(file_path+'filtered_cmd.txt', delimiter=None, dtype=(float))
     data_torque = \
             np.genfromtxt(file_path+'torque.txt', delimiter=None, dtype=(float))
-    data_motor_current = \
-            np.genfromtxt(file_path+'motor_current.txt', delimiter=None, dtype=(float))
+    # data_motor_current = \
+            # np.genfromtxt(file_path+'motor_current.txt', delimiter=None, dtype=(float))
     speed_ratio_lin = 200;
     speed_ratio_rot = 2942* 0.034;
     torque_const = 0.039;
@@ -34,8 +34,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     scale = [speed_ratio_lin * torque_const*eff, \
             speed_ratio_rot * torque_const*eff, \
             speed_ratio_rot * torque_const*eff];
-    data_qddot_cmd = \
-            np.genfromtxt(file_path+'qddot_cmd.txt', delimiter=None, dtype=(float))
+    # data_qddot_cmd = \
+            # np.genfromtxt(file_path+'qddot_cmd.txt', delimiter=None, dtype=(float))
     
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
     
@@ -102,11 +102,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
 
     fig.canvas.set_window_title('jtorque (right_leg)')
-    for i in range(1,4,1):
-        ax1 = plt.subplot(3, 1, i)
+    for i in range(1,6,1):
+        ax1 = plt.subplot(5, 1, i)
         # plt.plot(data_x, data_filter_cmd[st_idx:end_idx,i-1], "c-", linewidth=2.7)
         plt.plot( \
-                data_x, scale[i-1] * data_motor_current[st_idx:end_idx, i-1], "k-", \
+                # data_x, scale[i-1] * data_motor_current[st_idx:end_idx, i-1], "k-", \
                 data_x, data_torque[st_idx:end_idx,i-1], "b-",\
                 data_x, data_cmd[st_idx:end_idx, i-1], "r-")
 
@@ -155,11 +155,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
     fig.canvas.set_window_title('jtorque (left_leg)')
-    for i in range(1,4,1):
-        ax1 = plt.subplot(3, 1, i)
+    for i in range(1,6,1):
+        ax1 = plt.subplot(5, 1, i)
         # plt.plot(data_x, data_filter_cmd[st_idx:end_idx,i-1+3], "c-", linewidth=2.7)
         plt.plot(\
-                data_x, scale[i-1] * data_motor_current[st_idx:end_idx, i-1 + 3], "k-", \
+                # data_x, scale[i-1] * data_motor_current[st_idx:end_idx, i-1 + 3], "k-", \
                 data_x, data_cmd[st_idx:end_idx,i-1 + 3], "r-" , \
                 data_x, data_torque[st_idx:end_idx,i-1 + 3], "b-")
 
@@ -205,7 +205,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('qddot (floating)')
     for i in range(1,7,1):
         ax1 = plt.subplot(6, 1, i)
-        plt.plot(data_x, data_qddot_cmd[xMinIndex:xMaxIndex, i-1], "r-")
+        # plt.plot(data_x, data_qddot_cmd[xMinIndex:xMaxIndex, i-1], "r-")
         # phase marker #
         for j in phseChange:
             # phase line
@@ -225,7 +225,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('qddot (right)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_qddot_cmd[xMinIndex:xMaxIndex, i-1 + 6], "r-")
+        # plt.plot(data_x, data_qddot_cmd[xMinIndex:xMaxIndex, i-1 + 6], "r-")
         plt.grid(True)
         # phase marker #
         for j in phseChange:
@@ -245,7 +245,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('qddot (left)')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_qddot_cmd[xMinIndex:xMaxIndex, i-1 + 9], "r-")
+        # plt.plot(data_x, data_qddot_cmd[xMinIndex:xMaxIndex, i-1 + 9], "r-")
         # phase marker #
         for j in phseChange:
             # phase line

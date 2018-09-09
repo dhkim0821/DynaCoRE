@@ -12,6 +12,7 @@ target_link_libraries (simulation_dracobiped
   util
   ${OPENGL_LIBRARIES}
   dynacore_urdf
+  DracoBip_Controller
 )
 
 if (APPLE)

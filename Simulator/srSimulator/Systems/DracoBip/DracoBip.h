@@ -1,14 +1,15 @@
-#ifndef DracoBiped_H
-#define DracoBiped_H
+#ifndef DracoBip_H
+#define DracoBip_H
 
 #include <srSysGenerator/SystemGenerator.h>
 
-class DracoBiped: public SystemGenerator {
+class DracoBip: public SystemGenerator {
  public:
-  DracoBiped();
-  virtual ~DracoBiped();
+  DracoBip();
+  virtual ~DracoBip();
 
  private:
+  double hanging_height_;
   virtual void _SetCollision();
   virtual void _SetInitialConf();
   virtual void _SetJointLimit();
