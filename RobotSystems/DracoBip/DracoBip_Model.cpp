@@ -11,7 +11,7 @@ using namespace RigidBodyDynamics::Math;
 DracoBip_Model::DracoBip_Model(){
     model_ = new Model();
     if (!Addons::URDFReadFromFile 
-            (THIS_COM"RobotSystems/DracoBip/DracoBip.urdf", model_, false)) {
+            (THIS_COM"RobotSystems/DracoBip/DracoBip.urdf", model_, true, false)) {
         std::cerr << "Error loading model DracoBip.urdf" << std::endl;
         abort();
     }
@@ -26,8 +26,11 @@ DracoBip_Model::~DracoBip_Model(){
     delete kin_model_;
     delete model_;
 }
-void DracoBip_Model::UpdateSystem(const dynacore::Vector & q, const dynacore::Vector & qdot){
-    UpdateKinematicsCustom(*model_, &q, &qdot, NULL);
+void DracoBip_Model::UpdateSystem(const dynacore::Vector & q, 
+        const dynacore::Vector & qdot){
+    dynacore::Vector qddot = qdot; qddot.setZero();
+
+    UpdateKinematics(*model_, q, qdot, qddot);
     dyn_model_->UpdateDynamics(q, qdot);
     kin_model_->UpdateKinematics(q, qdot);
 }
@@ -61,8 +64,8 @@ void DracoBip_Model::getFullJacobian(int link_id, dynacore::Matrix & J) const {
     kin_model_->getJacobian(link_id, J);
 }
 
-void DracoBip_Model::getFullJacobianDot(int link_id, dynacore::Matrix & Jdot) const {
-    kin_model_->getJacobianDot6D_Analytic(link_id, Jdot);
+void DracoBip_Model::getFullJDotQdot(int link_id, dynacore::Vector & JDotQdot) const {
+    kin_model_->getJDotQdot(link_id, JDotQdot);
 }
 
 void DracoBip_Model::getPos(int link_id, dynacore::Vect3 & pos) const {

@@ -13,6 +13,7 @@
 
 // Test SET LIST
 #include <DracoBip_Controller/TestSet/JointCtrlTest.hpp>
+#include <DracoBip_Controller/TestSet/BodyCtrlTest.hpp>
 
 DracoBip_interface::DracoBip_interface():
     interface(),
@@ -137,7 +138,7 @@ void DracoBip_interface::_ParameterSetting(){
         //test_ = new WalkingConfigTest(robot_sys_);
     // Body Ctrl Test ***********************************
     }else if(tmp_string == "body_ctrl_test"){
-        //test_ = new BodyConfigTest(robot_sys_);    
+        test_ = new BodyCtrlTest(robot_sys_);
         // Stance and Swing Test ***********************************
     }else {
         printf("[Interfacce] There is no test matching with the name\n");

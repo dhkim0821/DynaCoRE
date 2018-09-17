@@ -111,7 +111,7 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
 
   double Kp(300.0);
   double Kd(50.0);
-  double K_friction(1.0);
+  double K_friction(0.0);
   // double Kp(30.);
   // double Kd(0.5);
   // Right

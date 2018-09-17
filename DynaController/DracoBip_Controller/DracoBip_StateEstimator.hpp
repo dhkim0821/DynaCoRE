@@ -29,6 +29,8 @@ class DracoBip_StateEstimator{
         dynacore::Vector curr_qdot_;
 
         OriEstimator* ori_est_;
+
+        void _RBDL_TEST();
 };
 
 #endif

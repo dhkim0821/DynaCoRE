@@ -6,7 +6,9 @@
 using namespace RigidBodyDynamics::Math;
 using namespace RigidBodyDynamics;
 
-DracoBip_Kin_Model::DracoBip_Kin_Model( RigidBodyDynamics::Model* model){
+DracoBip_Kin_Model::DracoBip_Kin_Model( RigidBodyDynamics::Model* model):
+    gravity_(9.81)
+{
     model_ = model;
     Ig_ = dynacore::Matrix::Zero(6,6);
     Jg_ = dynacore::Matrix::Zero(6, model_->qdot_size);
@@ -295,7 +297,6 @@ void DracoBip_Kin_Model::getLinearVel(int link_id, dynacore::Vect3 & vel){
     }
 
     vel = CalcPointVelocity ( *model_, q, qdot, _find_body_idx(link_id), zero, false);
-
 }
 
 void DracoBip_Kin_Model::getAngularVel(int link_id, dynacore::Vect3 & ang_vel){
@@ -323,33 +324,41 @@ void DracoBip_Kin_Model::getJacobian(int link_id, dynacore::Matrix &J){
     if(bodyid >=model_->fixed_body_discriminator){
         CalcPointJacobian6D(*model_, q, bodyid,
                 model_->mFixedBodies[bodyid - model_->fixed_body_discriminator].mCenterOfMass,
+                //zero_vector,
                 J, false);
     }
     else{
         CalcPointJacobian6D(*model_, q, bodyid,
                 model_->mBodies[bodyid].mCenterOfMass,
+                //zero_vector,
                 J, false);
     }
+    //dynacore::Matrix Jsp(6, model_->qdot_size); Jsp.setZero();
+    //CalcBodySpatialJacobian(*model_, q, bodyid, Jsp, false);
+    //dynacore::pretty_print(Jsp, std::cout, "spatial jacobian");
 }
 
-void DracoBip_Kin_Model::getJacobianDot6D_Analytic(int link_id, dynacore::Matrix & J){
-    J = dynacore::Matrix::Zero(6, model_->qdot_size);
-    dynacore::Vector q, qdot; //dummy
+void DracoBip_Kin_Model::getJDotQdot(int link_id, dynacore::Vector & JdotQdot){
+    dynacore::Vector q, qdot, qddot; //dummy
     unsigned int bodyid = _find_body_idx(link_id);
 
     if(bodyid >=model_->fixed_body_discriminator){
-        CalcPointJacobianDot(*model_, q, qdot, bodyid,
+        JdotQdot = CalcPointAcceleration6D(*model_, q, qdot, qddot, bodyid,
                 model_->mFixedBodies[bodyid - model_->fixed_body_discriminator].mCenterOfMass,
-                J, false);
+                false);
     }
     else{
-        CalcPointJacobianDot(*model_, q, qdot, bodyid,
-                model_->mBodies[bodyid].mCenterOfMass,
-                J, false);
+        JdotQdot = CalcPointAcceleration6D(*model_, q, qdot, qddot, bodyid,
+                model_->mBodies[bodyid].mCenterOfMass, false);
     }
+    JdotQdot[5] -= gravity_;
 }
 
 unsigned int DracoBip_Kin_Model::_find_body_idx(int id) const {
+    //std::cout<<"torso id: "<<model_->GetBodyId("torso")<<std::endl;
+    //std::cout<<"body name: "<<model_->GetBodyName(0)<<std::endl;
+    //std::cout<<"body name: "<<model_->GetBodyName(1)<<std::endl;
+    //std::cout<<"body name: "<<model_->GetBodyName(2)<<std::endl;
     switch(id){
         case dracobip_link::torso:
             return model_->GetBodyId("torso");

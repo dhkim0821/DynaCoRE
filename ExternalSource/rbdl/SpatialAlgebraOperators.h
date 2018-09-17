@@ -1,6 +1,6 @@
 /*
  * RBDL - Rigid Body Dynamics Library
- * Copyright (c) 2011-2016 Martin Felis <martin.felis@iwr.uni-heidelberg.de>
+ * Copyright (c) 2011-2018 Martin Felis <martin@fysx.org>
  *
  * Licensed under the zlib license. See LICENSE for more details.
  */
@@ -410,48 +410,6 @@ inline SpatialMatrix crossm (const SpatialVector &v) {
       -v[4],   v[3],         0, -v[1],   v[0],         0
       );
 }
-
-inline MatrixNd Transform2se3mtx (const SpatialVector &v) {
-  MatrixNd mt(4,4);
-  mt.setZero();
-  mt(0, 1) = -v[2]; mt(0, 2) = v[1];
-  mt(1, 0) = v[2]; mt(1, 2) = -v[0];
-  mt(2, 0) = -v[1]; mt(2, 1) = v[0];
-  mt(0, 3) = v[3];
-  mt(1, 3) = v[4];
-  mt(2, 3) = v[5];
-
-  return mt;
-}
-  inline MatrixNd Transform2adj_mtx (const SpatialVector & v){
-    MatrixNd mt(6,6);
-    mt.setZero();
-    // [w]
-    mt(0, 1) = -v[2]; mt(0, 2) =  v[1];
-    mt(1, 0) =  v[2]; mt(1, 2) = -v[0];
-    mt(2, 0) = -v[1]; mt(2, 1) =  v[0];
-    // [v]
-    mt(3, 1) = -v[5]; mt(3, 2) =  v[4];
-    mt(4, 0) =  v[5]; mt(4, 2) = -v[3];
-    mt(5, 0) = -v[4]; mt(5, 1) =  v[3];
-    // [w]
-    mt(3, 4) = -v[2]; mt(3, 5) =  v[1];
-    mt(4, 3) =  v[2]; mt(4, 5) = -v[0];
-    mt(5, 3) = -v[1]; mt(5, 4) =  v[0];
-
-    return mt;
-  }
-
-  inline MatrixNd Transform2SE3mtx (const SpatialTransform & ST){
-    MatrixNd mt(4,4);
-    mt.setZero();
-    mt.block<3,3>(0,0) = ST.E;
-    mt.block<3,1>(0,3) = ST.r;
-    mt(3,3) = 1.;
-
-    return mt;
-  }
-
 
 inline SpatialVector crossm (const SpatialVector &v1, const SpatialVector &v2) {
   return SpatialVector (

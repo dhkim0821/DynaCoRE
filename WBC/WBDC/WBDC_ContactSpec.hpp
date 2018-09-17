@@ -5,8 +5,7 @@
 
 class WBDC_ContactSpec:public ContactSpec{
 public:
-  WBDC_ContactSpec(int dim):ContactSpec(dim) {
-  }
+  WBDC_ContactSpec(int dim):ContactSpec(dim) {  }
   virtual ~WBDC_ContactSpec(){}
 
   virtual int getDimRFConstratint() { return Uf_.rows(); }
@@ -25,4 +24,5 @@ protected:
   dynacore::Matrix Uf_;
   dynacore::Vector ieq_vec_;
 };
+
 #endif

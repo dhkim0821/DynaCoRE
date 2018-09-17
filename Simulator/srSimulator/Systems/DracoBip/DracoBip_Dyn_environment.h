@@ -4,8 +4,6 @@
 #include "LieGroup/LieGroup.h"
 #include <vector>
 #include <Utils/wrap_eigen.hpp>
-
-//TEST JUNHYEOK
 #include "DracoBip.h"
 
 //TEST
@@ -54,6 +52,8 @@ class DracoBip_Dyn_environment
         void _Get_Orientation(dynacore::Quaternion & rot);
         void _Copy_Array(double * , double *, int);
         void _CheckFootContact(bool & r_contact, bool & l_contact);
+        void _hold_XY(int count);
+        void _ZeroInput_VirtualJoint();
 };
 
 #endif

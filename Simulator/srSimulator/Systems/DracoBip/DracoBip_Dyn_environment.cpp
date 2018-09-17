@@ -55,65 +55,23 @@ void DracoBip_Dyn_environment::ControlFunction( void* _data ) {
         p_data->jpos[i] = robot->r_joint_[i]->m_State.m_rValue[0];
         p_data->jvel[i] = robot->r_joint_[i]->m_State.m_rValue[1];
     }
-    pDyn_env->_CheckFootContact(
-            p_data->rfoot_contact, p_data->lfoot_contact);
+    pDyn_env->_CheckFootContact(p_data->rfoot_contact, p_data->lfoot_contact);
     for (int i(0); i<3; ++i){
         p_data->imu_ang_vel[i] = 
             robot->link_[robot->link_idx_map_.find("torso")->second]->GetVel()[i];
     }
     pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
 
-    for(int i(0); i<3; ++i){
-        robot->vp_joint_[i]->m_State.m_rCommand = 0.0;
-        robot->vr_joint_[i]->m_State.m_rCommand = 0.0;
-    }
-    static double initial_x(0.); 
-    if(count == 1){
-        initial_x = robot->vp_joint_[0]->m_State.m_rValue[0];
-    }
-    if( count < 10000 ){
-        robot->vp_joint_[0]->m_State.m_rCommand = 
-            10000. * (initial_x - robot->vp_joint_[0]->m_State.m_rValue[0])
-            - 100. * robot->vp_joint_[0]->m_State.m_rValue[1];
-        robot->vp_joint_[1]->m_State.m_rCommand = 
-            -10000. * robot->vp_joint_[1]->m_State.m_rValue[0]
-            - 100. * robot->vp_joint_[1]->m_State.m_rValue[1];
-    }
-
-    //if( count < 10000 ){
-        //robot->vr_joint_[0]->m_State.m_rCommand = 
-            //-5000. * robot->vr_joint_[0]->m_State.m_rValue[0]
-            //- 10. * robot->vr_joint_[0]->m_State.m_rValue[1];
-        //robot->vr_joint_[1]->m_State.m_rCommand = 
-            //-5000. * robot->vr_joint_[1]->m_State.m_rValue[0]
-            //- 10. * robot->vr_joint_[1]->m_State.m_rValue[1];
-        //robot->vr_joint_[2]->m_State.m_rCommand = 
-            //-5000. * robot->vr_joint_[2]->m_State.m_rValue[0]
-            //- 10. * robot->vr_joint_[2]->m_State.m_rValue[1];
-     //}
-
+    pDyn_env->_ZeroInput_VirtualJoint();
+    pDyn_env->_hold_XY(count);
 
     double Kp(100.);
-    double Kd(2.);
-    double ramp(1.);
-    if( count < 10 ){
-        ramp = ((double)count)/1000.;
-    }
+    double Kd(1.);
     for(int i(0); i<robot->num_act_joint_; ++i){
         robot->r_joint_[i]->m_State.m_rCommand = pDyn_env->cmd_->jtorque_cmd[i] + 
             Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->jpos[i]) + 
             Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->jvel[i]);
-        //printf("%f\n", p_data->jvel[i]);
     }
-    // ankle
-    //robot->r_joint_[i]->m_State.m_rCommand = ramp*(pDyn_env->cmd_->jtorque_cmd[i] + 
-            //Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->jpos[i]) + 
-            //Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->jvel[i]));
-    //robot->r_joint_[i]->m_State.m_rCommand = ramp*(pDyn_env->cmd_->jtorque_cmd[i] + 
-            //Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->jpos[i]) + 
-            //Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->jvel[i]));
- 
-    //printf("\n");
 }
 
 
@@ -134,7 +92,7 @@ void DracoBip_Dyn_environment::_Get_Orientation(dynacore::Quaternion & rot){
 }
 DracoBip_Dyn_environment::~DracoBip_Dyn_environment()
 {
-    //SR_SAFE_DELETE(interface_);
+    SR_SAFE_DELETE(interface_);
     SR_SAFE_DELETE(robot_);
     SR_SAFE_DELETE(m_Space);
     SR_SAFE_DELETE(m_ground);
@@ -142,18 +100,18 @@ DracoBip_Dyn_environment::~DracoBip_Dyn_environment()
 
 void DracoBip_Dyn_environment::_CheckFootContact(bool & r_contact, bool & l_contact){
     Vec3 lfoot_pos = robot_->
-        link_[robot_->link_idx_map_.find("l_foot")->second]->GetPosition();
+        link_[robot_->link_idx_map_.find("lAnkle")->second]->GetPosition();
     Vec3 rfoot_pos = robot_->
-        link_[robot_->link_idx_map_.find("r_foot")->second]->GetPosition();
+        link_[robot_->link_idx_map_.find("rAnkle")->second]->GetPosition();
 
     //std::cout<<rfoot_pos<<std::endl;
     //std::cout<<lfoot_pos<<std::endl;
 
-    if(  fabs(lfoot_pos[2]) < 0.016){
+    if(  fabs(lfoot_pos[2]) < 0.028){
         l_contact = true;
         //printf("left contact\n");
     }else { l_contact = false; }
-    if (fabs(rfoot_pos[2])<0.016  ){
+    if (fabs(rfoot_pos[2])<0.028  ){
         r_contact = true;
         //printf("right contact\n");
     } else { r_contact = false; }
@@ -161,6 +119,27 @@ void DracoBip_Dyn_environment::_CheckFootContact(bool & r_contact, bool & l_cont
     //printf("\n");
 }
 
+void DracoBip_Dyn_environment::_hold_XY(int count){
+    static double initial_x(0.); 
+    if(count == 1){
+        initial_x = robot_->vp_joint_[0]->m_State.m_rValue[0];
+    }
+    if( count < 1000 ){
+        robot_->vp_joint_[0]->m_State.m_rCommand = 
+            10000. * (initial_x - robot_->vp_joint_[0]->m_State.m_rValue[0])
+            - 100. * robot_->vp_joint_[0]->m_State.m_rValue[1];
+        robot_->vp_joint_[1]->m_State.m_rCommand = 
+            -10000. * robot_->vp_joint_[1]->m_State.m_rValue[0]
+            - 100. * robot_->vp_joint_[1]->m_State.m_rValue[1];
+    }
+}
+
+void DracoBip_Dyn_environment::_ZeroInput_VirtualJoint(){
+    for(int i(0); i<3; ++i){
+        robot_->vp_joint_[i]->m_State.m_rCommand = 0.0;
+        robot_->vr_joint_[i]->m_State.m_rCommand = 0.0;
+    }
+}
 //for(int i(0); i<robot->vr_joint_.size(); ++i){
 //printf("%f\n",robot->vr_joint_[i]->m_State.m_rValue[0] );
 //}

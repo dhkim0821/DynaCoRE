@@ -9,9 +9,12 @@ class DracoBip_SensorData{
     public:
         double imu_ang_vel[3];
         double imu_acc[3];
+
         double torque[dracobip::num_act_joint];
         double jpos[dracobip::num_act_joint];
         double jvel[dracobip::num_act_joint];
+
+        double rotor_inertia[dracobip::num_act_joint];
         bool rfoot_contact;
         bool lfoot_contact;
 };

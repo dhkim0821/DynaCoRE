@@ -18,7 +18,8 @@ ELSE (RBDL_STORE_VERSION)
 	SET (RBDL_BUILD_TYPE "unknown")
 ENDIF (RBDL_STORE_VERSION)
 
-CONFIGURE_FILE( ${PROJECT_SOURCE_DIR}/ExternalSource/rbdl/rbdl_config.h.cmake ${PROJECT_SOURCE_DIR}/ExternalSource/rbdl/rbdl_config.h )
+CONFIGURE_FILE( ${PROJECT_SOURCE_DIR}/ExternalSource/rbdl/rbdl_config.h.cmake 
+    ${PROJECT_SOURCE_DIR}/ExternalSource/rbdl/rbdl_config.h )
 
 add_library(dynacore_rbdl SHARED ${sources} ${headers})
 target_link_libraries(dynacore_rbdl dynacore_urdf)

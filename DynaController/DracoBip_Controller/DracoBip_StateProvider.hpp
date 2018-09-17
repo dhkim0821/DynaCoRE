@@ -5,10 +5,6 @@
 #include <Utils/wrap_eigen.hpp>
 #include <Configuration.h>
 
-using namespace dynacore;
-
-class RobotSystem;
-
 class DracoBip_StateProvider{
 public:
   static DracoBip_StateProvider* getStateProvider();
@@ -20,15 +16,19 @@ public:
 
   double curr_time_;
 
-  Vector Q_;
-  Vector Qdot_;
-  
+  dynacore::Vector Q_;
+  dynacore::Vector Qdot_;
+  dynacore::Vector rotor_inertia_;
+
   dynacore::Vect3 global_pos_local_;
   dynacore::Vect2 des_location_;
 
   int b_rfoot_contact_;
   int b_lfoot_contact_;
   int num_step_copy_;
+
+  dynacore::Vector qddot_cmd_;
+  dynacore::Vector reaction_forces_;
 
 private:
   DracoBip_StateProvider();

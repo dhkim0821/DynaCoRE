@@ -1,6 +1,9 @@
 #include "DracoBip.h"
 
-DracoBip::DracoBip():SystemGenerator(), hanging_height_( 1.084217  + 0.3 )
+DracoBip::DracoBip():SystemGenerator(), 
+    //hanging_height_( 1.084217  + 0.3 )
+    hanging_height_( 1.084217 )
+    //collision_offset_(0.0)
 {
   printf("[DracoBip] ASSEMBLED\n");
 }
@@ -55,7 +58,9 @@ void DracoBip::_SetCollision(){
   collision_[4] = new srCollision();
   collision_[4]->GetGeomInfo().SetShape(srGeometryInfo::CYLINDER);
   collision_[4]->GetGeomInfo().SetDimension(0.05, 0.1, 0.05);
-  collision_[4]->SetLocalFrame(EulerZYX(Vec3(0.,0., 0.), Vec3(0., 0., -hanging_height_ + 0.050)));
+  collision_[4]->SetLocalFrame(
+          EulerZYX(Vec3(0.,0., 0.), 
+                   Vec3(0., 0., -hanging_height_ + 0.050) ) );
   link_[link_idx_map_.find("torso")->second]->AddCollision(collision_[4]);
   link_[link_idx_map_.find("torso")->second]->SetFriction(fric);
 
@@ -67,21 +72,35 @@ void DracoBip::_SetInitialConf(){
     for(int i(0); i<3; ++i)    vp_joint_[i]->m_State.m_rValue[1] = 0.;
     for(int i(0); i<num_act_joint_; ++i)    r_joint_[i]->m_State.m_rValue[1] = 0.;
 
-  vp_joint_[0]->m_State.m_rValue[0] = 0.0;
-  vp_joint_[1]->m_State.m_rValue[0] = 0.0;
-  //vp_joint_[2]->m_State.m_rValue[0] = 1.084217;
-  vp_joint_[2]->m_State.m_rValue[0] = hanging_height_;
-  vr_joint_[0]->m_State.m_rValue[0] = 0.0;
-  vr_joint_[1]->m_State.m_rValue[0] = 0.0348;
-  vr_joint_[2]->m_State.m_rValue[0] = 0.0;
+  vp_joint_[0]->m_State.m_rValue[0] = 0.0; // X
+  vp_joint_[1]->m_State.m_rValue[0] = 0.0; // Y
 
-  r_joint_[r_joint_idx_map_.find("lHipPitch")->second]->m_State.m_rValue[0] = -0.59;
-  r_joint_[r_joint_idx_map_.find("lKnee")->second]->m_State.m_rValue[0] = 1.1;
-  r_joint_[r_joint_idx_map_.find("lAnkle")->second]->m_State.m_rValue[0] = 1.03;
+  int initial_config_type(0); // Stand up posture
+  //int initial_config_type(1);
 
-  r_joint_[r_joint_idx_map_.find("rHipPitch")->second]->m_State.m_rValue[0] = -0.59;
-  r_joint_[r_joint_idx_map_.find("rKnee")->second]->m_State.m_rValue[0] = 1.1;
-  r_joint_[r_joint_idx_map_.find("rAnkle")->second]->m_State.m_rValue[0] = 1.03;
+  switch(initial_config_type){
+    case 0:
+        vp_joint_[2]->m_State.m_rValue[0] = 1.084217;
+        vr_joint_[0]->m_State.m_rValue[0] = 0.0;
+        vr_joint_[1]->m_State.m_rValue[0] = 0.0348;
+        vr_joint_[2]->m_State.m_rValue[0] = 0.0;
 
+        r_joint_[r_joint_idx_map_.find("lHipPitch")->second]->m_State.m_rValue[0] = -0.59;
+        r_joint_[r_joint_idx_map_.find("lKnee")->second]->m_State.m_rValue[0] = 1.1;
+        r_joint_[r_joint_idx_map_.find("lAnkle")->second]->m_State.m_rValue[0] = 1.03;
+
+        r_joint_[r_joint_idx_map_.find("rHipPitch")->second]->m_State.m_rValue[0] = -0.59;
+        r_joint_[r_joint_idx_map_.find("rKnee")->second]->m_State.m_rValue[0] = 1.1;
+        r_joint_[r_joint_idx_map_.find("rAnkle")->second]->m_State.m_rValue[0] = 1.03;
+        break;
+    case 1:
+        vp_joint_[2]->m_State.m_rValue[0] = 2.0;
+
+        r_joint_[r_joint_idx_map_.find("lAnkle")->second]->
+            m_State.m_rValue[0] = M_PI/2.;
+        r_joint_[r_joint_idx_map_.find("rAnkle")->second]->
+            m_State.m_rValue[0] = M_PI/2.;
+         break;
+  }
   KIN_UpdateFrame_All_The_Entity();
 }

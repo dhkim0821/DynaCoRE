@@ -67,8 +67,8 @@ void NAO_Model::getFullJacobian(int link_id, dynacore::Matrix & J) const {
     kin_model_->getJacobian(link_id, J);
 }
 
-void NAO_Model::getFullJacobianDot(int link_id, dynacore::Matrix & Jdot) const {
-    kin_model_->getJacobianDot6D_Analytic(link_id, Jdot);
+void NAO_Model::getFullJDotQdot(int link_id, dynacore::Vector & JdotQdot) const {
+    kin_model_->getJDotQdot(link_id, JdotQdot);
 }
 
 void NAO_Model::getPos(int link_id, dynacore::Vect3 & pos) const {

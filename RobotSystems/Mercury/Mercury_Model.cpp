@@ -13,7 +13,8 @@ Mercury_Model::Mercury_Model(){
   model_ = new Model();
   rbdl_check_api_version (RBDL_API_VERSION);
 
-  if (!Addons::URDFReadFromFile (THIS_COM"/RobotSystems/Mercury/mercury.urdf", model_, false)) {
+  if (!Addons::URDFReadFromFile (
+              THIS_COM"/RobotSystems/Mercury/mercury.urdf", model_, true, true)) {
     std::cerr << "Error loading model ./mercury.urdf" << std::endl;
     abort();
   }
@@ -32,7 +33,9 @@ Mercury_Model::~Mercury_Model(){
 
 void Mercury_Model::UpdateSystem(const dynacore::Vector & q, 
         const dynacore::Vector & qdot){
-  UpdateKinematicsCustom(*model_, &q, &qdot, NULL);
+    dynacore::Vector qddot = qdot; qddot.setZero();
+
+  UpdateKinematicsCustom(*model_, &q, &qdot, &qddot);
   dyn_model_->UpdateDynamics(q, qdot);
   kin_model_->UpdateKinematics(q, qdot);
 }
@@ -66,8 +69,8 @@ void Mercury_Model::getFullJacobian(int link_id, dynacore::Matrix & J) const {
   //J = dynacore::Matrix::Zero(6, mercury::num_qdot);
   kin_model_->getJacobian(link_id, J);
 }
-void Mercury_Model::getFullJacobianDot(int link_id, dynacore::Matrix & Jdot) const {
-  kin_model_->getJacobianDot6D_Analytic(link_id, Jdot);
+
+void Mercury_Model::getFullJDotQdot(int link_id, dynacore::Vector & JDotQdot) const{
 }
 
 void Mercury_Model::getPos(int link_id, dynacore::Vect3 & pos) const {

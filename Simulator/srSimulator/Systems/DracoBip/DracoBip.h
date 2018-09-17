@@ -8,13 +8,16 @@ class DracoBip: public SystemGenerator {
   DracoBip();
   virtual ~DracoBip();
 
- private:
+ protected:
   double hanging_height_;
+  double offset_;
+
   virtual void _SetCollision();
   virtual void _SetInitialConf();
   virtual void _SetJointLimit();
 
   std::vector<srCollision*> collision_;
+
 };
 
 #endif

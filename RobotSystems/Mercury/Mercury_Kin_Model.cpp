@@ -241,21 +241,18 @@ void Mercury_Kin_Model::getJacobian(int link_id, dynacore::Matrix &J){
     //J.block(3,3,3,3) = p_mtx;
 }
 
-void Mercury_Kin_Model::getJacobianDot6D_Analytic(int link_id, dynacore::Matrix & Jdot){
-    dynacore::Vector q, qdot;
-    Jdot = dynacore::Matrix::Zero(6, model_->qdot_size);
+void Mercury_Kin_Model::getJDotQdot(int link_id, dynacore::Vector & JDotQdot){
+    dynacore::Vector q, qdot, qddot;
 
     unsigned int bodyid = _find_body_idx(link_id);
     if(bodyid >=model_->fixed_body_discriminator){
-        CalcPointJacobianDot(*model_, q, qdot, bodyid,
+        JDotQdot = CalcPointAcceleration6D(*model_, q, qdot, qddot, bodyid,
                 model_->mFixedBodies
-                [bodyid - model_->fixed_body_discriminator].mCenterOfMass,
-                Jdot, false);
+                [bodyid - model_->fixed_body_discriminator].mCenterOfMass, false);
     }
     else{
-        CalcPointJacobianDot(*model_, q, qdot, bodyid,
-                model_->mBodies[bodyid].mCenterOfMass,
-                Jdot, false);
+        JDotQdot = CalcPointAcceleration6D(*model_, q, qdot, qddot, bodyid,
+                model_->mBodies[bodyid].mCenterOfMass, false);
     }
 }
 

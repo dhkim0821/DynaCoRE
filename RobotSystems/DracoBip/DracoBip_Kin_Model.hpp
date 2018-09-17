@@ -16,7 +16,7 @@ class DracoBip_Kin_Model{
         void getAngularVel(int link_id, dynacore::Vect3 & ang_vel);
 
         void getJacobian(int link_id, dynacore::Matrix & J);
-        void getJacobianDot6D_Analytic(int link_id, dynacore::Matrix & J);
+        void getJDotQdot(int link_id, dynacore::Vector & JdotQdot);
 
         void getCoMJacobian  (dynacore::Matrix & J);
         void getCoMPos  (dynacore::Vect3 & com_pos);
@@ -35,6 +35,7 @@ class DracoBip_Kin_Model{
         void _UpdateCentroidFrame_diff(const dynacore::Vector & q, const dynacore::Vector & qdot);
         dynacore::Matrix Ig_;
         dynacore::Matrix Jg_;
+        double gravity_;
 
         RigidBodyDynamics::Model* model_;
         unsigned int _find_body_idx(int id) const ;

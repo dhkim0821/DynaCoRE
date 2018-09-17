@@ -27,7 +27,7 @@ public:
     virtual void getCoMJacobian(dynacore::Matrix & J) const = 0;
 
     virtual void getFullJacobian(int link_id, dynacore::Matrix & J) const = 0;
-    virtual void getFullJacobianDot(int link_id, dynacore::Matrix & J) const = 0;
+    virtual void getFullJDotQdot(int link_id, dynacore::Vector & JDotQdot) const = 0;
 
     virtual void UpdateSystem(const dynacore::Vector & q, const dynacore::Vector & qdot) = 0;
 };
