@@ -41,7 +41,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     # data_mjpos = \
             # np.genfromtxt(file_path+'mjpos.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
-    num_leg_joint = 3
+    num_leg_joint = 5
     st_idx = 1;
     end_idx = len(data_x) - 1
     data_x = data_x[st_idx:end_idx]
@@ -70,7 +70,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
     #plt.get_current_fig_manager().window.wm_geometry("480x600+0+0")
-    fig.canvas.set_window_title('jpos (right_leg)')
+    fig.canvas.set_window_title('jpos (left leg)')
     for i in range(1,num_leg_joint+1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
         plt.plot(data_x, data_jpos_des[st_idx:end_idx,i-1], "r-", \
@@ -96,7 +96,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))    
     #plt.get_current_fig_manager().window.wm_geometry("480x600+480+0")
-    fig.canvas.set_window_title('jpos (left_leg)')
+    fig.canvas.set_window_title('jpos (right leg)')
     for i in range(1,num_leg_joint + 1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
         plt.plot(data_x, data_jpos_des[st_idx:end_idx,i-1 + num_leg_joint], "r-" , \

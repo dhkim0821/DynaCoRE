@@ -7,13 +7,12 @@
 
 class KinWBC{
     public:
-        KinWBC(int num_qdot, int num_act_joint, 
-                const std::vector<int> & act_joint_idx);
+        KinWBC(const std::vector<bool> & act_joint);
         ~KinWBC(){}
 
         bool FindConfiguration(
                 const dynacore::Vector & curr_config,
-                const std::vector<KinTask*> & task_list,
+                const std::vector<Task*> & task_list,
                 const std::vector<ContactSpec*> & contact_list,
                 dynacore::Vector & jpos_cmd,
                 dynacore::Vector & jvel_cmd,

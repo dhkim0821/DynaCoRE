@@ -1,6 +1,6 @@
-#include "BodyCtrl.hpp"
+#include "CoMCtrl.hpp"
 #include <DracoBip_Controller/DracoBip_StateProvider.hpp>
-#include <DracoBip_Controller/TaskSet/BodyTask.hpp>
+#include <DracoBip_Controller/TaskSet/CoMTask.hpp>
 #include <DracoBip_Controller/ContactSet/DoubleContact.hpp>
 #include <DracoBip_Controller/DracoBip_StateProvider.hpp>
 #include <WBLC/KinWBC.hpp>
@@ -9,7 +9,7 @@
 #include <Utils/DataManager.hpp>
 #include <DracoBip_Controller/DracoBip_DynaCtrl_Definition.h>
 
-BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
+CoMCtrl::CoMCtrl(RobotSystem* robot):Controller(robot),
     end_time_(1000.0),
     ctrl_start_time_(0.),
     b_set_height_target_(false),
@@ -26,7 +26,7 @@ BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
     kin_wbc_ = new KinWBC(act_list);
     wblc_ = new WBLC(act_list);
     wblc_data_ = new WBLC_ExtraData();
-    body_task_ = new BodyTask(robot);
+    com_task_ = new CoMTask(robot);
     double_contact_ = new DoubleContact(robot);
 
     wblc_data_->W_qddot_ = dynacore::Vector::Constant(dracobip::num_qdot, 100.0);
@@ -41,23 +41,23 @@ BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
 
     sp_ = DracoBip_StateProvider::getStateProvider();
 
-    printf("[Body Control] Constructed\n");
+    printf("[CoM Control] Constructed\n");
 }
 
-BodyCtrl::~BodyCtrl(){
-    delete body_task_;
+CoMCtrl::~CoMCtrl(){
+    delete com_task_;
     delete double_contact_;
     delete wblc_;
     delete wblc_data_;
 }
 
-void BodyCtrl::OneStep(void* _cmd){
+void CoMCtrl::OneStep(void* _cmd){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
     dynacore::Vector gamma = dynacore::Vector::Zero(dracobip::num_act_joint);
     _double_contact_setup();
-    _body_task_setup();
+    _com_task_setup();
     _compute_torque_wblc(gamma);
 
     for(int i(0); i<dracobip::num_act_joint; ++i){
@@ -68,7 +68,7 @@ void BodyCtrl::OneStep(void* _cmd){
     _PostProcessing_Command();
 }
 
-void BodyCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
+void CoMCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
     // WBLC
     dynacore::Matrix A_rotor = A_;
     for (int i(0); i<dracobip::num_act_joint; ++i){
@@ -93,7 +93,7 @@ void BodyCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
     sp_->reaction_forces_ = wblc_data_->Fr_;
 }
 
-void BodyCtrl::_body_task_setup(){
+void CoMCtrl::_com_task_setup(){
     des_jpos_ = jpos_ini_;
     des_jvel_.setZero();
     des_jacc_.setZero();
@@ -123,16 +123,17 @@ void BodyCtrl::_body_task_setup(){
     pos_des[2] = des_quat.z();
     pos_des[3] = des_quat.w();
     // Position
-    pos_des.tail(3) = ini_body_pos_;
+    pos_des.tail(3) = ini_com_pos_;
 
-    double amp(0.05);
-    double omega(0.5 * 2. * M_PI);
+    //pos_des[4] = 0.0;
+    double amp(0.0);
+    double omega(1.0 * 2. * M_PI);
 
     pos_des[6] += amp * sin(omega * state_machine_time_);
     vel_des[5] = amp * omega * cos(omega * state_machine_time_);
 
-    body_task_->UpdateTask(&(pos_des), vel_des, acc_des);
-    task_list_.push_back(body_task_);
+    com_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+    task_list_.push_back(com_task_);
 
     kin_wbc_->FindConfiguration(sp_->Q_, task_list_, contact_list_, 
             des_jpos_, des_jvel_, des_jacc_);
@@ -142,32 +143,32 @@ void BodyCtrl::_body_task_setup(){
     //dynacore::pretty_print(des_jvel_, std::cout, "des jvel");
     //dynacore::pretty_print(des_jacc_, std::cout, "des jacc");
     //
-    dynacore::Vect3 com_pos;
-    robot_sys_->getCoMPosition(com_pos);
-    dynacore::pretty_print(com_pos, std::cout, "com_pos");
+    //dynacore::Vect3 com_pos;
+    //robot_sys_->getCoMPosition(com_pos);
+    //dynacore::pretty_print(com_pos, std::cout, "com_pos");
 }
 
-void BodyCtrl::_double_contact_setup(){
+void CoMCtrl::_double_contact_setup(){
     double_contact_->UpdateContactSpec();
     contact_list_.push_back(double_contact_);
 }
 
-void BodyCtrl::FirstVisit(){
+void CoMCtrl::FirstVisit(){
     jpos_ini_ = sp_->Q_.segment(dracobip::num_virtual, dracobip::num_act_joint);
     ctrl_start_time_ = sp_->curr_time_;
 
-    robot_sys_->getPos(dracobip_link::torso, ini_body_pos_);
+    robot_sys_->getCoMPosition(ini_com_pos_);
 }
 
-void BodyCtrl::LastVisit(){  }
+void CoMCtrl::LastVisit(){  }
 
-bool BodyCtrl::EndOfPhase(){
+bool CoMCtrl::EndOfPhase(){
     if(state_machine_time_ > end_time_){
         return true;
     }
     return false;
 }
-void BodyCtrl::CtrlInitialization(const std::string & setting_file_name){
+void CoMCtrl::CtrlInitialization(const std::string & setting_file_name){
     jpos_ini_ = sp_->Q_.segment(dracobip::num_virtual, dracobip::num_act_joint);
     ParamHandler handler(DracoBipConfigPath + setting_file_name + ".yaml");
 

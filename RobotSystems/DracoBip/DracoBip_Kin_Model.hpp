@@ -32,7 +32,6 @@ class DracoBip_Kin_Model{
         dynacore::Vector centroid_vel_;
     protected:
         void _UpdateCentroidFrame(const dynacore::Vector & q, const dynacore::Vector & qdot);
-        void _UpdateCentroidFrame_diff(const dynacore::Vector & q, const dynacore::Vector & qdot);
         dynacore::Matrix Ig_;
         dynacore::Matrix Jg_;
         double gravity_;

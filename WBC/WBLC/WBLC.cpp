@@ -22,6 +22,7 @@ void WBLC::UpdateSetting(const dynacore::Matrix & A,
         const dynacore::Vector & cori,
         const dynacore::Vector & grav,
         void* extra_setting){
+
     A_ = A;
     Ainv_ = Ainv;
     cori_ = cori;

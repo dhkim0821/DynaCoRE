@@ -93,7 +93,8 @@ void DracoBip_Model::getCoMPosition(dynacore::Vect3 & com_pos) const {
 }
 
 void DracoBip_Model::getCoMVelocity(dynacore::Vect3 & com_vel) const {
-    kin_model_->getCoMVel(com_vel);
+    //kin_model_->getCoMVel(com_vel);
+    com_vel = (kin_model_->centroid_vel_).tail(3);
 }
 
 void DracoBip_Model::getCentroidVelocity(dynacore::Vector & centroid_vel) const {

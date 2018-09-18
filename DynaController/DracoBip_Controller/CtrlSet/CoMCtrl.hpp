@@ -1,5 +1,5 @@
-#ifndef BODY_CTRL
-#define BODY_CTRL
+#ifndef COM_CTRL
+#define COM_CTRL
 
 #include <Controller.hpp>
 
@@ -10,10 +10,10 @@ class WBLC_ExtraData;
 class KinWBC;
 class WBDC_ContactSpec;
 
-class BodyCtrl: public Controller{
+class CoMCtrl: public Controller{
     public:
-        BodyCtrl(RobotSystem* );
-        virtual ~BodyCtrl();
+        CoMCtrl(RobotSystem* );
+        virtual ~CoMCtrl();
 
         virtual void OneStep(void* _cmd);
         virtual void FirstVisit();
@@ -39,7 +39,7 @@ class BodyCtrl: public Controller{
         int trj_type_;
         double end_time_;
 
-        Task* body_task_;
+        Task* com_task_;
         KinWBC* kin_wbc_;
         WBDC_ContactSpec* double_contact_;
         WBLC* wblc_;
@@ -47,11 +47,11 @@ class BodyCtrl: public Controller{
 
         double target_body_height_;
         double ini_body_height_;
-        dynacore::Vect3 ini_body_pos_;
+        dynacore::Vect3 ini_com_pos_;
 
         bool b_body_set_;
 
-        void _body_task_setup();
+        void _com_task_setup();
         void _double_contact_setup();
         void _compute_torque_wblc(dynacore::Vector & gamma);
 

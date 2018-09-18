@@ -2,8 +2,8 @@
 
 DracoBip::DracoBip():SystemGenerator(), 
     //hanging_height_( 1.084217  + 0.3 )
-    hanging_height_( 1.084217 )
-    //collision_offset_(0.0)
+    hanging_height_( 1.084217 ),
+    collision_offset_(0.1)
 {
   printf("[DracoBip] ASSEMBLED\n");
 }
@@ -60,7 +60,7 @@ void DracoBip::_SetCollision(){
   collision_[4]->GetGeomInfo().SetDimension(0.05, 0.1, 0.05);
   collision_[4]->SetLocalFrame(
           EulerZYX(Vec3(0.,0., 0.), 
-                   Vec3(0., 0., -hanging_height_ + 0.050) ) );
+                   Vec3(0., 0., -hanging_height_ + 0.050 + collision_offset_) ) );
   link_[link_idx_map_.find("torso")->second]->AddCollision(collision_[4]);
   link_[link_idx_map_.find("torso")->second]->SetFriction(fric);
 

@@ -1,6 +1,7 @@
 #include "BodyCtrlTest.hpp"
 
 #include <DracoBip_Controller/CtrlSet/BodyCtrl.hpp>
+#include <DracoBip_Controller/CtrlSet/CoMCtrl.hpp>
 
 #include <ParamHandler/ParamHandler.hpp>
 #include <DracoBip/DracoBip_Model.hpp>
@@ -10,7 +11,8 @@ BodyCtrlTest::BodyCtrlTest(RobotSystem* robot):Test(robot){
   phase_ = BodyCtrlPhase::BC_body_ctrl;
   state_list_.clear();
 
-  body_ctrl_ = new BodyCtrl(robot);
+  //body_ctrl_ = new BodyCtrl(robot);
+  body_ctrl_ = new CoMCtrl(robot);
 
   state_list_.push_back(jpos_ctrl_);
   state_list_.push_back(body_up_ctrl_);

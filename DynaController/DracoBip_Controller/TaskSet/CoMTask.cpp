@@ -1,4 +1,4 @@
-#include "BodyTask.hpp"
+#include "CoMTask.hpp"
 // Task consist of virtual joint (6) 
 // (X, Y, Z), (Rx, Ry, Rz)
 
@@ -7,16 +7,16 @@
 #include <Utils/utilities.hpp>
 #include <DracoBip/DracoBip_Model.hpp>
 
-BodyTask::BodyTask(const RobotSystem* robot):KinTask(6),
+CoMTask::CoMTask(const RobotSystem* robot):KinTask(6),
     robot_sys_(robot)
 {
     Jt_ = dynacore::Matrix::Zero(dim_task_, dracobip::num_qdot);
     JtDotQdot_ = dynacore::Vector::Zero(dim_task_);
 }
 
-BodyTask::~BodyTask(){}
+CoMTask::~CoMTask(){}
 
-bool BodyTask::_UpdateCommand(void* pos_des,
+bool CoMTask::_UpdateCommand(void* pos_des,
         const dynacore::Vector & vel_des,
         const dynacore::Vector & acc_des){
     dynacore::Vector* pos_cmd = (dynacore::Vector*)pos_des;
@@ -42,30 +42,34 @@ bool BodyTask::_UpdateCommand(void* pos_des,
     }
 
     // (X, Y, Z)
-    dynacore::Vect3 body_pos;
-    robot_sys_->getPos(dracobip_link::torso, body_pos);
+    dynacore::Vect3 com_pos;
+    robot_sys_->getCoMPosition(com_pos);
 
     for(int i(0); i<3; ++i){
-        pos_err_[i+3] =(*pos_cmd)[i+4] - body_pos[i];
+        pos_err_[i+3] =(*pos_cmd)[i+4] - com_pos[i];
         vel_des_[i+3] = vel_des[i+3];
         acc_des_[i+3] = acc_des[i+3];
     }
  
     //printf("[Stance Task]\n");
-     //dynacore::pretty_print(acc_des, std::cout, "acc_des");
-     //dynacore::pretty_print(pos_err_, std::cout, "pos_err_");
-     //dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");
+     dynacore::pretty_print(com_pos, std::cout, "com_pos");
+     dynacore::pretty_print(pos_err_, std::cout, "pos_err_");
+     dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");
      //dynacore::pretty_print(Jt_, std::cout, "Jt");
 
     return true;
 }
 
-bool BodyTask::_UpdateTaskJacobian(){
-    robot_sys_->getFullJacobian(dracobip_link::torso, Jt_);
+bool CoMTask::_UpdateTaskJacobian(){
+    dynacore::Matrix Jtmp;
+    robot_sys_->getFullJacobian(dracobip_link::torso, Jtmp);
+    Jt_ = Jtmp;
+    robot_sys_->getCoMJacobian(Jtmp);
+    Jt_.block(3, 0, 3, dracobip::num_qdot) = Jtmp;
     return true;
 }
 
-bool BodyTask::_UpdateTaskJDotQdot(){
+bool CoMTask::_UpdateTaskJDotQdot(){
     JtDotQdot_.setZero();
     return true;
 }

@@ -21,91 +21,9 @@ void DracoBip_Kin_Model::UpdateKinematics(const dynacore::Vector & q, const dyna
     _UpdateCentroidFrame(q, qdot);
 }
 
-void DracoBip_Kin_Model::_UpdateCentroidFrame_diff(const dynacore::Vector & q, const dynacore::Vector & qdot){
-    double mass;
-    Vector3d zero_vector;
-    zero_vector.setZero();
-
-    Vector3d com_pos;
-    Vector3d cm;
-    Vector3d link_pos;
-    Vector3d p_g;
-
-    getCoMPos(com_pos);
-    com_pos_ = com_pos;
-    dynacore::pretty_print(com_pos, std::cout, "com_pos");
-    dynacore::Matrix Xg_inv = dynacore::Matrix::Zero(6, 6);
-    Ig_.setZero();
-    dynacore::Matrix Ag = dynacore::Matrix::Zero(6, model_->qdot_size);
-
-    dynacore::Matrix I = dynacore::Matrix::Zero(6, 6);
-    dynacore::Matrix Jsp = dynacore::Matrix::Zero(6, model_->qdot_size);
-
-    int start_idx = _find_body_idx(dracobip_link::torso);
-    Matrix3d p;
-    Matrix3d cmm;
-    Matrix3d R;
-
-    for (int i(start_idx); i<model_->mBodies.size(); ++i){
-        R = CalcBodyWorldOrientation(*model_, q, i, false);
-        dynacore::pretty_print((dynacore::Matrix)R, std::cout, "Rot");
-        //R = R.transpose();
-        dynacore::Matrix R_check = R * R.transpose();
-        dynacore::Matrix R_check_2 = R.transpose() * R;
-        dynacore::Matrix Rmtx(6,6);
-    Rmtx.setZero();
-    Rmtx.block(0,0, 3,3) = R;
-    Rmtx.block(3,3, 3,3) = R;
-        cm = model_->mBodies[i].mCenterOfMass;
-        link_pos = CalcBodyToBaseCoordinates ( *model_, q, i, cm, false);
-// Diff computation
-        Jsp.setZero();
-        CalcPointJacobian6D( *model_, q, i, model_->mBodies[i].mCenterOfMass, 
-                Jsp, false);
-Jsp = Rmtx * Jsp;
-        mass = model_->mBodies[i].mMass;
-           I.setZero();
-            I.block(0, 0, 3, 3) = model_->mBodies[i].mInertia; 
-            I.block(3, 3, 3, 3) = mass * dynacore::Matrix::Identity(3,3);
-
-            p_g = R * (com_pos - link_pos);
-            p << 0.0, -p_g[2], p_g[1],
-            p_g[2], 0.0, -p_g[0],
-            -p_g[1], p_g[0], 0.0;
-
-            Xg_inv.block(0,0, 3,3) = R;
-            Xg_inv.block(3,3, 3,3) = R;
-            Xg_inv.block(3,0, 3,3) = p * R;
-
-            dynacore::Matrix Xg_test = Xg_inv.transpose() * Xg_inv;
-
-
-            Ig_ = Ig_ + Xg_inv.transpose() * I * Xg_inv;
-            Ag = Ag + Xg_inv.transpose() * I * Jsp;
-             //dynacore::pretty_print(Xg_inv, std::cout, "Xg inv");
-            //dynacore::pretty_print(I, std::cout, "I");
-            //dynacore::pretty_print(Ig_, std::cout, "Ig sequence");
-            //dynacore::pretty_print(Xg_test, std::cout, "Xg test");
-            //dynacore::pretty_print(R_check, std::cout, "Rcheck");
-            //dynacore::pretty_print(R_check_2, std::cout, "Rcheck_2");
-   }
-    Jg_ = Ig_.inverse() * Ag;
-    dynacore::pretty_print(Ig_, std::cout, "diff_Ig");
-    centroid_vel_ = Jg_ * qdot;
-    dynacore::Vector h_tot = Ag * qdot;
-
-    dynacore::Vect3 com_vel;
-    getCoMVel(com_vel);
-
-    dynacore::pretty_print(h_tot, std::cout, "diff cent momentum");
-    dynacore::pretty_print(centroid_vel_, std::cout, "diff cent vel");
-    dynacore::pretty_print(com_vel, std::cout, "diff com_vel");
-}
-
-
 void DracoBip_Kin_Model::_UpdateCentroidFrame(const dynacore::Vector & q, 
         const dynacore::Vector & qdot){
-    //_UpdateCentroidFrame_diff(q, qdot);
+    
     double mass;
     Vector3d zero_vector;
     zero_vector.setZero();

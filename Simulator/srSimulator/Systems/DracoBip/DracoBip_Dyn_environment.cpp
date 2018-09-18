@@ -65,7 +65,7 @@ void DracoBip_Dyn_environment::ControlFunction( void* _data ) {
     pDyn_env->_ZeroInput_VirtualJoint();
     pDyn_env->_hold_XY(count);
 
-    double Kp(100.);
+    double Kp(10.);
     double Kd(1.);
     for(int i(0); i<robot->num_act_joint_; ++i){
         robot->r_joint_[i]->m_State.m_rCommand = pDyn_env->cmd_->jtorque_cmd[i] + 
