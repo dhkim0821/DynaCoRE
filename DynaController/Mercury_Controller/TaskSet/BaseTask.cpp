@@ -48,10 +48,10 @@ bool BaseTask::_UpdateCommand(void* pos_des,
         vel_des_[i] = vel_des[i];
         acc_des_[i] = acc_des[i];
     }
-     dynacore::pretty_print(pos_err_, std::cout, "pos_err");
-     dynacore::pretty_print(vel_des_, std::cout, "vel_des");
-     dynacore::pretty_print(acc_des_, std::cout, "acc_des");
-     dynacore::pretty_print(Jt_, std::cout, "Jt");
+     //dynacore::pretty_print(pos_err_, std::cout, "pos_err");
+     //dynacore::pretty_print(vel_des_, std::cout, "vel_des");
+     //dynacore::pretty_print(acc_des_, std::cout, "acc_des");
+     //dynacore::pretty_print(Jt_, std::cout, "Jt");
     return true;
 }
 

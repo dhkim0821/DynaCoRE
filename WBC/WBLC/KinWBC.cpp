@@ -27,7 +27,7 @@ bool KinWBC::FindConfiguration(
         dynacore::Vector & jvel_cmd,
         dynacore::Vector & jacc_cmd){
 
-    printf("contact list size: %d\n", contact_list.size());
+    //printf("contact list size: %d\n", contact_list.size());
     // Contact Jacobian Setup
     dynacore::Matrix Jc, Jc_i;
     contact_list[0]->getContactJacobian(Jc);
@@ -57,13 +57,6 @@ bool KinWBC::FindConfiguration(
     qdot = JtPre_pinv * (task->vel_des_);
     qddot = JtPre_pinv * (task->acc_des_ - JtDotQdot);
 
-    dynacore::pretty_print(Jt, std::cout, "Jt");
-    dynacore::pretty_print(Jc, std::cout, "Jc");
-    dynacore::pretty_print(Nc, std::cout, "Nc");
-    dynacore::pretty_print(JtPre, std::cout, "JtNc");
-    dynacore::pretty_print(JtPre_pinv, std::cout, "JtNc_inv");
-    dynacore::pretty_print(delta_q, std::cout, "delta q");
-
     dynacore::Vector prev_delta_q = delta_q;
     dynacore::Vector prev_qdot = qdot;
     dynacore::Vector prev_qddot = qddot;
@@ -87,7 +80,6 @@ bool KinWBC::FindConfiguration(
         prev_delta_q = delta_q;
         prev_qdot = qdot;
         prev_qddot = qddot;
-    //dynacore::pretty_print(delta_q, std::cout, "delta q");
     }
     
     for(int i(0); i<num_act_joint_; ++i){
@@ -95,6 +87,12 @@ bool KinWBC::FindConfiguration(
         jvel_cmd[i] = qdot[act_jidx_[i]];
         jacc_cmd[i] = qddot[act_jidx_[i]];
     }
+    //dynacore::pretty_print(Jt, std::cout, "Jt");
+    //dynacore::pretty_print(Jc, std::cout, "Jc");
+    //dynacore::pretty_print(Nc, std::cout, "Nc");
+    //dynacore::pretty_print(JtPre, std::cout, "JtNc");
+    //dynacore::pretty_print(JtPre_pinv, std::cout, "JtNc_inv");
+    //dynacore::pretty_print(delta_q, std::cout, "delta q");
 
     return true;
 }

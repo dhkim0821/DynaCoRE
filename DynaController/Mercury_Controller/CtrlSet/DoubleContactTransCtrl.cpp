@@ -128,7 +128,6 @@ void DoubleContactTransCtrl::_task_setup(){
 
     base_task_->UpdateTask(&(pos_des), vel_des, acc_des);
     task_list_.push_back(base_task_);
-    printf("aaa\n");
     kin_wbc_->FindConfiguration(sp_->Q_, task_list_, contact_list_, 
             des_jpos_, des_jvel_, des_jacc_);
     //dynacore::pretty_print(des_jpos_, std::cout, "des_jpos");
