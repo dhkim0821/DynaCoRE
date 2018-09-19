@@ -6,9 +6,8 @@
 class Mercury_StateProvider;
 class RobotSystem;
 class WBDC_ContactSpec;
-class WBDC_Rotor;
-class WBDC_Rotor_ExtraData;
-
+class WBLC;
+class WBLC_ExtraData;
 
 class JPosCtrl: public Controller{
     public:
@@ -41,17 +40,21 @@ class JPosCtrl: public Controller{
 
     protected:
         int trj_type_;
+        int dim_contact_;
         double end_time_;
 
-        Task* jpos_task_;
         WBDC_ContactSpec* fixed_body_contact_;
-        WBDC_Rotor* wbdc_rotor_;
-        WBDC_Rotor_ExtraData* wbdc_rotor_data_;
+        WBLC* wblc_;
+        WBLC_ExtraData* wblc_data_;
 
         dynacore::Vector jpos_ini_;
         dynacore::Vector jpos_target_;
         dynacore::Vector des_jpos_;
         dynacore::Vector des_jvel_;
+        dynacore::Vector des_jacc_;
+
+        dynacore::Vector Kp_;
+        dynacore::Vector Kd_;
 
         bool b_jpos_set_;
         std::vector<double> set_jpos_;
@@ -66,10 +69,9 @@ class JPosCtrl: public Controller{
         std::vector<double> start_time_;
         std::vector<double> delta_time_;
 
-
-        void _jpos_task_setup();
-        void _fixed_body_contact_setup();
-        void _jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma);
+        void _task_setup();
+        void _contact_setup();
+        void _compute_torque_wblc(dynacore::Vector & gamma);
 
         double ctrl_start_time_;
         Mercury_StateProvider* sp_;

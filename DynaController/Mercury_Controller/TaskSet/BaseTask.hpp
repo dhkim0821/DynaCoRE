@@ -1,20 +1,17 @@
-#ifndef WBDC_STANCE_LEG_TASK
-#define WBDC_STANCE_LEG_TASK
-// Task consist of virtual joint (6) and stance leg joint (3)
-#include <Task.hpp>
+#ifndef WBDC_BODY_HEIGHT_ORIENTATION_TASK
+#define WBDC_BODY_HEIGHT_ORIENTATION_TASK
+
+#include <WBLC/KinTask.hpp>
 
 class Mercury_StateProvider;
+class RobotSystem;
 
-class StanceTask: public Task{
+class BaseTask: public KinTask{
 public:
-  StanceTask(int stance_leg);
-  virtual ~StanceTask();
-
-  dynacore::Vector Kp_vec_;
-  dynacore::Vector Kd_vec_;
+  BaseTask(const RobotSystem*); // Z, Rx, Ry
+  virtual ~BaseTask();
 
 protected:
-  int stance_leg_;
   // Update op_cmd_
   virtual bool _UpdateCommand(void* pos_des,
                               const dynacore::Vector & vel_des,
@@ -23,10 +20,10 @@ protected:
   virtual bool _UpdateTaskJacobian();
   // Update JtDotQdot_
   virtual bool _UpdateTaskJDotQdot();
-  virtual bool _AdditionalUpdate(){ return true; }
+  virtual bool _AdditionalUpdate(){ return true;}
 
+  const RobotSystem* robot_sys_;
   Mercury_StateProvider* sp_;
-  int stance_leg_jidx_;
 };
 
 #endif

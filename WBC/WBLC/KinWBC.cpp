@@ -27,6 +27,7 @@ bool KinWBC::FindConfiguration(
         dynacore::Vector & jvel_cmd,
         dynacore::Vector & jacc_cmd){
 
+    printf("contact list size: %d\n", contact_list.size());
     // Contact Jacobian Setup
     dynacore::Matrix Jc, Jc_i;
     contact_list[0]->getContactJacobian(Jc);
@@ -34,7 +35,7 @@ bool KinWBC::FindConfiguration(
     for(int i(1); i<contact_list.size(); ++i){
         contact_list[i]->getContactJacobian(Jc_i);
         int num_new_rows = Jc_i.rows();
-        Jc.conservativeResize(num_rows, num_qdot_);
+        Jc.conservativeResize(num_rows + num_new_rows, num_qdot_);
         Jc.block(num_rows, 0, num_new_rows, num_qdot_) = Jc_i;
         num_rows += num_new_rows;
     }
@@ -56,12 +57,12 @@ bool KinWBC::FindConfiguration(
     qdot = JtPre_pinv * (task->vel_des_);
     qddot = JtPre_pinv * (task->acc_des_ - JtDotQdot);
 
-    //dynacore::pretty_print(Jt, std::cout, "Jt");
-    //dynacore::pretty_print(Jc, std::cout, "Jc");
-    //dynacore::pretty_print(Nc, std::cout, "Nc");
-    //dynacore::pretty_print(JtPre, std::cout, "JtNc");
-    //dynacore::pretty_print(JtPre_pinv, std::cout, "JtNc_inv");
-    //dynacore::pretty_print(delta_q, std::cout, "delta q");
+    dynacore::pretty_print(Jt, std::cout, "Jt");
+    dynacore::pretty_print(Jc, std::cout, "Jc");
+    dynacore::pretty_print(Nc, std::cout, "Nc");
+    dynacore::pretty_print(JtPre, std::cout, "JtNc");
+    dynacore::pretty_print(JtPre_pinv, std::cout, "JtNc_inv");
+    dynacore::pretty_print(delta_q, std::cout, "delta q");
 
     dynacore::Vector prev_delta_q = delta_q;
     dynacore::Vector prev_qdot = qdot;

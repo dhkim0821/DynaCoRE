@@ -2,16 +2,13 @@
 #define CONFIGURATION_BODY_CTRL
 
 #include <Controller.hpp>
-#include <Mercury_Controller/Mercury_InvKinematics.hpp>
-
 
 class Mercury_StateProvider;
 class RobotSystem;
+class WBLC;
+class WBLC_ExtraData;
+class KinWBC;
 class WBDC_ContactSpec;
-class WBDC_Rotor;
-class WBDC_Rotor_ExtraData;
-class WBWC;
-
 
 class ConfigBodyCtrl: public Controller{
     public:
@@ -32,34 +29,35 @@ class ConfigBodyCtrl: public Controller{
          }
 
     protected:
-        WBWC* wbwc_;
-        bool b_set_height_target_;
-        int trj_type_;
-        double end_time_;
-
-        Task* jpos_task_;
-        WBDC_ContactSpec* double_body_contact_;
-        WBDC_Rotor* wbdc_rotor_;
-        WBDC_Rotor_ExtraData* wbdc_rotor_data_;
-
+        dynacore::Vector Kp_, Kd_;
         dynacore::Vector jpos_ini_;
         dynacore::Vector jpos_target_;
         dynacore::Vector des_jpos_;
         dynacore::Vector des_jvel_;
         dynacore::Vector des_jacc_;
 
+        bool b_set_height_target_;
+        int trj_type_;
+        int contact_dim_;
+        double end_time_;
+
+        Task* base_task_;
+        KinWBC* kin_wbc_;
+        WBDC_ContactSpec* rfoot_contact_;
+        WBDC_ContactSpec* lfoot_contact_;
+        WBLC* wblc_;
+        WBLC_ExtraData* wblc_data_;
+
         double target_body_height_;
         double ini_body_height_;
-
         bool b_jpos_set_;
 
-        void _jpos_task_setup();
-        void _double_body_contact_setup();
-        void _jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma);
+        void _base_task_setup();
+        void _double_contact_setup();
+        void _compute_torque_wblc(dynacore::Vector & gamma);
 
         double ctrl_start_time_;
         Mercury_StateProvider* sp_;
-        Mercury_InvKinematics inv_kin_;
 };
 
 #endif

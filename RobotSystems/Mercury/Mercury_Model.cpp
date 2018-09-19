@@ -14,7 +14,7 @@ Mercury_Model::Mercury_Model(){
   rbdl_check_api_version (RBDL_API_VERSION);
 
   if (!Addons::URDFReadFromFile (
-              THIS_COM"/RobotSystems/Mercury/mercury.urdf", model_, true, true)) {
+              THIS_COM"/RobotSystems/Mercury/mercury.urdf", model_, true, false)) {
     std::cerr << "Error loading model ./mercury.urdf" << std::endl;
     abort();
   }
@@ -71,6 +71,7 @@ void Mercury_Model::getFullJacobian(int link_id, dynacore::Matrix & J) const {
 }
 
 void Mercury_Model::getFullJDotQdot(int link_id, dynacore::Vector & JDotQdot) const{
+    kin_model_->getJDotQdot(link_id, JDotQdot);
 }
 
 void Mercury_Model::getPos(int link_id, dynacore::Vect3 & pos) const {

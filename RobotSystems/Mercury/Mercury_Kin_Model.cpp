@@ -7,7 +7,9 @@
 using namespace RigidBodyDynamics::Math;
 using namespace RigidBodyDynamics;
 
-Mercury_Kin_Model::Mercury_Kin_Model( RigidBodyDynamics::Model* model){
+Mercury_Kin_Model::Mercury_Kin_Model( RigidBodyDynamics::Model* model):
+    gravity_(9.81)
+{
     model_ = model;
     Ig_ = dynacore::Matrix::Zero(6,6);
     Jg_ = dynacore::Matrix::Zero(6, model_->qdot_size);
@@ -254,6 +256,7 @@ void Mercury_Kin_Model::getJDotQdot(int link_id, dynacore::Vector & JDotQdot){
         JDotQdot = CalcPointAcceleration6D(*model_, q, qdot, qddot, bodyid,
                 model_->mBodies[bodyid].mCenterOfMass, false);
     }
+    JDotQdot[5] -= gravity_;
 }
 
 

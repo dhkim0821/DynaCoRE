@@ -10,9 +10,8 @@
 class Mercury_StateProvider;
 class Planner;
 class WBDC_ContactSpec;
-class WBDC_Rotor;
-class WBDC_Rotor_ExtraData;
-
+class WBLC;
+class WBLC_ExtraData;
 
 class SwingPlanningCtrl:public Controller{
     public:
@@ -90,8 +89,8 @@ class SwingPlanningCtrl:public Controller{
         double t_prime_y_;
 
         WBDC_ContactSpec* single_contact_;
-        WBDC_Rotor* wbdc_rotor_;
-        WBDC_Rotor_ExtraData* wbdc_rotor_data_;
+        WBLC* wblc_;
+        WBLC_ExtraData* wblc_data_;
         Planner* planner_;
 
         CoMStateEstimator* com_estimator_;

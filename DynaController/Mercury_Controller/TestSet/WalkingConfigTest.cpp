@@ -2,7 +2,7 @@
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 
 #include <Mercury_Controller/CtrlSet/JPosTargetCtrl.hpp>
-#include <Mercury_Controller/CtrlSet/ContactTransConfigCtrl.hpp>
+#include <Mercury_Controller/CtrlSet/DoubleContactTransCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/ConfigBodyCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/TransitionConfigCtrl.hpp>
 #include <ParamHandler/ParamHandler.hpp>
@@ -12,11 +12,7 @@
 #include <Mercury/Mercury_Model.hpp>
 #include <Mercury_Controller/Mercury_DynaControl_Definition.h>
 
-#include <Mercury_Controller/CtrlSet/BodyPriorFootPlanningCtrl.hpp>
 #include <Mercury_Controller/CtrlSet/ConfigBodyFootPlanningCtrl.hpp>
-#include <Mercury_Controller/CtrlSet/BodyJPosSwingPlanningCtrl.hpp>
-#include <Mercury_Controller/CtrlSet/JPosTrajPlanningCtrl.hpp>
-#include <Mercury_Controller/CtrlSet/ConfigBodyRetractingFootPlanningCtrl.hpp>
 
 WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     num_step_(0)
@@ -36,7 +32,7 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     state_list_.clear();
 
     jpos_ctrl_ = new JPosTargetCtrl(robot);
-    body_up_ctrl_ = new ContactTransConfigCtrl(robot);
+    body_up_ctrl_ = new DoubleContactTransCtrl(robot);
     config_body_fix_ctrl_ = new ConfigBodyCtrl(robot);
     // Right
     right_swing_start_trans_ctrl_ = 
@@ -116,7 +112,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
 #if (CONFIG_INITIAL_SWING_FOOT == 1)  
     if(phase == WkConfigPhase::lift_up) { next_phase = WkConfigPhase::double_contact_2; }
 #endif
-     // printf("next phase: %i\n", next_phase);
+    // printf("next phase: %i\n", next_phase);
     dynacore::Vect3 next_local_frame_location;
 
     if(phase == WkConfigPhase::double_contact_1) {
@@ -134,7 +130,6 @@ int WalkingConfigTest::_NextPhase(const int & phase){
             sp_->global_pos_local_ += next_local_frame_location; 
             sp_->global_jjpos_local_ += sp_->jjpos_lfoot_pos_; 
         }
-        sp_->global_foot_height_ = next_local_frame_location[2];
     }
     if(phase == WkConfigPhase::double_contact_2){
         //if(phase == WkConfigPhase::left_swing_start_trans){
@@ -147,32 +142,28 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         robot_sys_->getPos(mercury_link::rightFoot, next_local_frame_location);
         sp_->global_pos_local_ += next_local_frame_location;
         sp_->global_jjpos_local_ += sp_->jjpos_rfoot_pos_; 
-        sp_->global_foot_height_ = next_local_frame_location[2];
     }
     // TEST
-    if((phase == WkConfigPhase::double_contact_1) ||
-       (phase == WkConfigPhase::double_contact_2) &&
-       (num_step_>1) ){
+    if( ( (phase == WkConfigPhase::double_contact_1) ||
+                (phase == WkConfigPhase::double_contact_2) ) &&
+            (num_step_>1) ){
         sp_->global_pos_local_[0] = 
             sp_->first_LED_x_;
-            +  (next_local_frame_location[0] - sp_->Q_[0]);
+        +  (next_local_frame_location[0] - sp_->Q_[0]);
         sp_->global_pos_local_[1] = 
             sp_->first_LED_y_ + 
             (next_local_frame_location[1] - sp_->Q_[1]);
     }
 
     sp_->num_step_copy_ = num_step_;
-    // TEST
-    // if (num_step_ > 235) {
-    //     exit(0);
-    // }
 
     if(next_phase == WkConfigPhase::NUM_WALKING_PHASE) {
         return WkConfigPhase::double_contact_1;
     }
-    else{ return next_phase; }
+    else{ 
+        return next_phase; 
     }
-
+    }
 
     void WalkingConfigTest::_SettingParameter(){
         // Setting Parameters
@@ -190,31 +181,6 @@ int WalkingConfigTest::_NextPhase(const int & phase){
             config_left_swing_ctrl_ = 
                 new ConfigBodyFootPlanningCtrl(robot_sys_, mercury_link::leftFoot, reversal_planner_);
             ////////////////////////////////////////////////////////////////////////////////////////////
-        }else if(tmp_str == "ConfigBodyRetractingFootPlanningCtrl"){
-            config_right_swing_ctrl_ = 
-                new ConfigBodyRetractingFootPlanningCtrl(robot_sys_, mercury_link::rightFoot, reversal_planner_);
-            config_left_swing_ctrl_ = 
-                new ConfigBodyRetractingFootPlanningCtrl(robot_sys_, mercury_link::leftFoot, reversal_planner_);
-            ////////////////////////////////////////////////////////////////////////////////////////////
-        }
-        else if(tmp_str == "BodyJPosSwingPlanningCtrl"){
-            config_right_swing_ctrl_ = 
-                new BodyJPosSwingPlanningCtrl(robot_sys_, mercury_link::rightFoot, reversal_planner_);
-            config_left_swing_ctrl_ = 
-                new BodyJPosSwingPlanningCtrl(robot_sys_, mercury_link::leftFoot, reversal_planner_);
-            ////////////////////////////////////////////////////////////////////////////////////////////
-        }else if(tmp_str == "BodyPriorFootPlanningCtrl"){
-            config_right_swing_ctrl_ = 
-                new BodyPriorFootPlanningCtrl(robot_sys_, mercury_link::rightFoot, reversal_planner_);
-            config_left_swing_ctrl_ = 
-                new BodyPriorFootPlanningCtrl(robot_sys_, mercury_link::leftFoot, reversal_planner_);
-            ////////////////////////////////////////////////////////////////////////////////////////////
-        }else if(tmp_str == "JPosTrajPlanningCtrl"){
-            config_right_swing_ctrl_ = 
-                new JPosTrajPlanningCtrl(robot_sys_, mercury_link::rightFoot, reversal_planner_);
-            config_left_swing_ctrl_ = 
-                new JPosTrajPlanningCtrl(robot_sys_, mercury_link::leftFoot, reversal_planner_);
-            ////////////////////////////////////////////////////////////////////////////////////////////
         }else{
             printf("[Warning] No matched planning controller\n");
             exit(0);
@@ -230,7 +196,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         handler.getValue("body_pitch", sp_->des_body_pitch_);
         // CoM Height
         handler.getValue("body_height", tmp);
-        ((ContactTransConfigCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
+        ((DoubleContactTransCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
         ((ConfigBodyCtrl*)config_body_fix_ctrl_)->setStanceHeight(tmp);
 
         ((TransitionConfigCtrl*)right_swing_start_trans_ctrl_)->setStanceHeight(tmp);
@@ -246,7 +212,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         handler.getValue("jpos_initialization_time", tmp);
         ((JPosTargetCtrl*)jpos_ctrl_)->setMovingTime(tmp);
         handler.getValue("com_lifting_time", tmp);
-        ((ContactTransConfigCtrl*)body_up_ctrl_)->setStanceTime(tmp);
+        ((DoubleContactTransCtrl*)body_up_ctrl_)->setStanceTime(tmp);
 
         // Stance Time
         handler.getValue("stance_time", tmp);

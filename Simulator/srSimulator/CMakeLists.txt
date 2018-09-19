@@ -18,6 +18,7 @@ CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/Simulator/srSimulator/srconfig.h.cmake ${PR
 include_directories ("${PROJECT_SOURCE_DIR}/Simulator/srSimulator")
 include_directories ("${PROJECT_SOURCE_DIR}/Simulator/srSimulator/assimp/include/")
 
+add_subdirectory(assimp)
 add_subdirectory(Renderer)
 add_subdirectory(srDyn)
 add_subdirectory(srg)
@@ -25,9 +26,8 @@ add_subdirectory(common)
 add_subdirectory(LieGroup)
 add_subdirectory(libpng)
 add_subdirectory(srSysGenerator)
-add_subdirectory(assimp)
 
-#add_subdirectory(Systems/Mercury)
+add_subdirectory(Systems/Mercury)
 #add_subdirectory(Systems/Atlas)
 #add_subdirectory(Systems/Valkyrie)
 add_subdirectory(Systems/DracoBip)

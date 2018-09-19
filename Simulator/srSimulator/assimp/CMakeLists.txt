@@ -1,11 +1,3 @@
-# Define here the needed parameters
-SET (ASSIMP_VERSION_MAJOR 4)
-SET (ASSIMP_VERSION_MINOR 1)
-SET (ASSIMP_VERSION_PATCH 0)
-SET (ASSIMP_VERSION ${ASSIMP_VERSION_MAJOR}.${ASSIMP_VERSION_MINOR}.${ASSIMP_VERSION_PATCH})
-SET (ASSIMP_SOVERSION 4)
-SET (PROJECT_VERSION "${ASSIMP_VERSION}")
-
 SET( ASSIMP_PACKAGE_VERSION "0" CACHE STRING "the package-specific version used for uploading the sources" )
 
 # Needed for openddl_parser config, no use of c++11 at this moment

@@ -35,7 +35,7 @@ Mercury_Dyn_environment::Mercury_Dyn_environment():
   m_Space->SetNumberofSubstepForRendering(num_substep_rendering_);
 
   led_pos_announcer_ = new LED_Position_Announcer(this);
-led_pos_announcer_->start();
+  led_pos_announcer_->start();
   // Initialize differentiation values
   prev_imu_pos.clear();  cur_imu_pos.clear();
   prev_imu_vel.clear();  cur_imu_vel.clear();
@@ -100,15 +100,10 @@ void Mercury_Dyn_environment::ContolFunction( void* _data ) {
 
   pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_);
 
-
-
-//          alternate_time, jpos, mjvel, jjvel, jtorque, imu_acc, imu_ang_vel, imu_acc, rfoot_contact, lfoot_contact, jtorque, torque_command);
-
   for(int i(0); i<3; ++i){
     robot->vp_joint_[i]->m_State.m_rCommand = 0.0;
     robot->vr_joint_[i]->m_State.m_rCommand = 0.0;
   }
-
   double Kp(300.0);
   double Kd(50.0);
   double K_friction(0.0);
@@ -215,7 +210,6 @@ void Mercury_Dyn_environment::Rendering_Fnc(){}
 
 void Mercury_Dyn_environment::_ParamterSetup(){
   ParamHandler handler(MercuryConfigPath"SIM_sr_sim_setting.yaml");
-
   handler.getInteger("num_substep_rendering", num_substep_rendering_);
   handler.getValue("releasing_time", release_time_);
   handler.getVector("imu_angular_velocity_bias", imu_ang_vel_bias_);

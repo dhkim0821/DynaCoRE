@@ -18,14 +18,8 @@
 // Walking Test
 #include <Mercury_Controller/TestSet/WalkingConfigTest.hpp>
 
-// Walking JPos Test
-#include <Mercury_Controller/TestSet/WalkingJPosTest.hpp>
-
 // Body Ctrl Test
 #include <Mercury_Controller/TestSet/BodyConfigTest.hpp>
-
-// Stance and Swing Test
-#include <Mercury_Controller/TestSet/ConfigStanceSwingTest.hpp>
 
 #define MEASURE_TIME 0
 #if MEASURE_TIME
@@ -50,18 +44,11 @@ Mercury_interface::Mercury_interface():
     jjvel_(mercury::num_act_joint),
     jjpos_(mercury::num_act_joint),
     b_last_config_update_(true),
-    waiting_count_(1000),
+    waiting_count_(1500),
     ramp_time_(0.5)
 {
-
-    double cut_freq = 2* M_PI * 100.;
-    // filter_jtorque_cmd_.resize(mercury::num_act_joint);
-    // for(int i(0); i<mercury::num_act_joint; ++i){
-    //     filter_jtorque_cmd_[i] = new digital_lp_filter(cut_freq, mercury::servo_rate);
-    // }
-
-    // filtered_torque_command_.setZero();
     robot_sys_ = new Mercury_Model();
+    
     sensed_torque_.setZero();
     torque_command_.setZero();
     jpos_command_.setZero();
@@ -76,12 +63,11 @@ Mercury_interface::Mercury_interface():
 
     sp_ = Mercury_StateProvider::getStateProvider();
     state_estimator_ = new Mercury_StateEstimator(robot_sys_);  
+
     DataManager::GetDataManager()->RegisterData(
             &jpos_command_, DYN_VEC, "jpos_des", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &jvel_command_, DYN_VEC, "jvel_des", mercury::num_act_joint);
-    // DataManager::GetDataManager()->RegisterData(
-    //         &filtered_torque_command_, DYN_VEC, "filtered_cmd", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &running_time_, DOUBLE, "running_time");
     DataManager::GetDataManager()->RegisterData(
@@ -90,14 +76,15 @@ Mercury_interface::Mercury_interface():
             &torque_command_, DYN_VEC, "command", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &motor_current_, DYN_VEC, "motor_current", mercury::num_act_joint);
-    DataManager::GetDataManager()->RegisterData(
-            &jjpos_, DYN_VEC, "jjpos", mercury::num_act_joint);
+    //DataManager::GetDataManager()->RegisterData(
+            //&jjpos_, DYN_VEC, "jjpos", mercury::num_act_joint);
+    //DataManager::GetDataManager()->RegisterData(
+            //&jjvel_, DYN_VEC, "jjvel", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &bus_current_, DYN_VEC, "bus_current", mercury::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &bus_voltage_, DYN_VEC, "bus_voltage", mercury::num_act_joint);
-    DataManager::GetDataManager()->RegisterData(
-            &jjvel_, DYN_VEC, "jjvel", mercury::num_act_joint);
+    
     _ParameterSetting();
     //printf("[Mercury_interface] Contruct\n");
 }
@@ -195,6 +182,9 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
 
         if(b_last_config_update_) last_config_ = jpos_command_;
     }
+    //dynacore::pretty_print(cmd->jtorque_cmd, "torque cmd", mercury::num_act_joint);
+    //dynacore::pretty_print(cmd->jpos_cmd, "jpos cmd", mercury::num_act_joint);
+    //dynacore::pretty_print(cmd->jvel_cmd, "jvel cmd", mercury::num_act_joint);
     running_time_ = (double)(count_) * mercury::servo_rate;
     ++count_;
     // When there is sensed time
@@ -256,17 +246,9 @@ void Mercury_interface::_ParameterSetting(){
     }else if(tmp_string == "walking_config_test"){
         test_ = new WalkingConfigTest(robot_sys_);
 
-    // Walking JPos Test ***********************************
-    }else if(tmp_string == "walking_jpos_test"){
-        test_ = new WalkingJPosTest(robot_sys_);
-    
     // Body Ctrl Test ***********************************
     }else if(tmp_string == "body_ctrl_test"){
         test_ = new BodyConfigTest(robot_sys_);    
-    
-    // Stance and Swing Test ***********************************
-    }else if(tmp_string == "config_stance_swing_test"){
-        test_ = new ConfigStanceSwingTest(robot_sys_);
     }else {
         printf("[Interfacce] There is no test matching with the name\n");
         exit(0);

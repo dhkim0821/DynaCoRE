@@ -1,19 +1,20 @@
-#ifndef WBDC_CONFIGURATION_TASK
-#define WBDC_CONFIGURATION_TASK
+#ifndef WBDC_COM_BODY_ORIENTATION_FOOT_TASK
+#define WBDC_COM_BODY_ORIENTATION_FOOT_TASK
 
-#include <Task.hpp>
+#include <WBLC/KinTask.hpp>
 
 class Mercury_StateProvider;
+class RobotSystem;
 
-class ConfigTask: public Task{
+// CoM_{x, y, z}, BodyOri_{Rx, Ry, Rz}, Foot (x, y, z)
+class FootTask: public KinTask{
 public:
-  ConfigTask();
-  virtual ~ConfigTask();
-
-  dynacore::Vector Kp_vec_;
-  dynacore::Vector Kd_vec_;
+  FootTask(RobotSystem*, int swing_foot);
+  virtual ~FootTask();
 
 protected:
+  int swing_foot_;
+
   // Update op_cmd_
   virtual bool _UpdateCommand(void* pos_des,
                               const dynacore::Vector & vel_des,
@@ -22,9 +23,9 @@ protected:
   virtual bool _UpdateTaskJacobian();
   // Update JtDotQdot_
   virtual bool _UpdateTaskJDotQdot();
-  virtual bool _AdditionalUpdate(){ return true; }
 
   Mercury_StateProvider* sp_;
+  const RobotSystem* robot_sys_;
 };
 
 #endif

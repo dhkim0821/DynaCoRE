@@ -4,8 +4,11 @@
 #include <ParamHandler/ParamHandler.hpp>
 #include <Planner/PIPM_FootPlacementPlanner/Reversal_LIPM_Planner.hpp>
 #include <Utils/utilities.hpp>
-#include <Mercury_Controller/WBWC.hpp>
-
+#include <WBLC/KinWBC.hpp>
+#include <WBLC/WBLC.hpp>
+#include <Mercury_Controller/ContactSet/SingleContact.hpp>
+#include <Mercury_Controller/TaskSet/BaseTask.hpp>
+#include <Mercury_Controller/TaskSet/FootTask.hpp>
 
 ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
         const RobotSystem* robot, int swing_foot, Planner* planner):
@@ -14,40 +17,55 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
     des_jacc_(mercury::num_act_joint),
-    waiting_time_limit_(0.02)
+    waiting_time_limit_(0.02),
+    Kp_(mercury::num_act_joint),
+    Kd_(mercury::num_act_joint)
 {
     des_jacc_.setZero();
+    rfoot_contact_ = new SingleContact(robot_sys_, mercury_link::rightFoot);
+    lfoot_contact_ = new SingleContact(robot_sys_, mercury_link::leftFoot);
+    dim_contact_ = rfoot_contact_->getDim() + lfoot_contact_->getDim();
 
-    wbwc_ = new WBWC(robot);
-    wbwc_->W_virtual_ = dynacore::Vector::Constant(6, 100.0);
-    wbwc_->W_rf_ = dynacore::Vector::Constant(6, 1.0);
-    wbwc_->W_foot_ = dynacore::Vector::Constant(6, 1000.0);
-    wbwc_->W_rf_[2] = 0.01;
-    wbwc_->W_rf_[5] = 0.01;
- 
+    std::vector<bool> act_list;
+    act_list.resize(mercury::num_qdot, true);
+    for(int i(0); i<mercury::num_virtual; ++i) act_list[i] = false;
+
+    kin_wbc_ = new KinWBC(act_list);
+    wblc_ = new WBLC(act_list);
+    wblc_data_->W_qddot_ = dynacore::Vector::Constant(mercury::num_qdot, 100.0);
+    wblc_data_->W_rf_ = dynacore::Vector::Constant(dim_contact_, 1.0);
+    wblc_data_->W_xddot_ = dynacore::Vector::Constant(dim_contact_, 1000.0);
+    wblc_data_->W_rf_[2] = 0.01;
+    wblc_data_->W_rf_[5] = 0.01;
+
+    kin_wbc_contact_list_.clear();
     if(swing_foot == mercury_link::leftFoot) {
-        wbwc_->W_rf_[3] = 5.0;
-        wbwc_->W_rf_[4] = 5.0;
-        wbwc_->W_rf_[5] = 0.5;
+        wblc_data_->W_rf_[3] = 5.0;
+        wblc_data_->W_rf_[4] = 5.0;
+        wblc_data_->W_rf_[5] = 0.5;
 
-        wbwc_->W_foot_[3] = 0.001;
-        wbwc_->W_foot_[4] = 0.001;
-        wbwc_->W_foot_[5] = 0.001;
+        wblc_data_->W_xddot_[3] = 0.001;
+        wblc_data_->W_xddot_[4] = 0.001;
+        wblc_data_->W_xddot_[5] = 0.001;
 
-        wbwc_->left_z_max_ = 0.0001; 
+        ((SingleContact*)lfoot_contact_)->setMaxFz(0.0001); 
+
+        kin_wbc_contact_list_.push_back(rfoot_contact_);
     }
     else if(swing_foot == mercury_link::rightFoot) {
-        wbwc_->W_rf_[0] = 5.0;
-        wbwc_->W_rf_[1] = 5.0;
-        wbwc_->W_rf_[2] = 0.5;
+        wblc_data_->W_rf_[0] = 5.0;
+        wblc_data_->W_rf_[1] = 5.0;
+        wblc_data_->W_rf_[2] = 0.5;
 
-        wbwc_->W_foot_[0] = 0.001;
-        wbwc_->W_foot_[1] = 0.001;
-        wbwc_->W_foot_[2] = 0.001;
+        wblc_data_->W_xddot_[0] = 0.001;
+        wblc_data_->W_xddot_[1] = 0.001;
+        wblc_data_->W_xddot_[2] = 0.001;
 
-        wbwc_->right_z_max_ = 0.0001; 
+        ((SingleContact*)rfoot_contact_)->setMaxFz(0.0001); 
+        kin_wbc_contact_list_.push_back(lfoot_contact_);
     }
     else printf("[Warnning] swing foot is not foot: %i\n", swing_foot);
+
 
     // Create Minimum jerk objects
     for(size_t i = 0; i < 3; i++){
@@ -61,111 +79,52 @@ void ConfigBodyFootPlanningCtrl::OneStep(void* _cmd){
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
     dynacore::Vector gamma;
+    _contact_setup();
     _task_setup();
-    _body_foot_ctrl(gamma);
+    _compute_torque_wblc(gamma);
 
     for(int i(0); i<mercury::num_act_joint; ++i){
         ((Mercury_Command*)_cmd)->jtorque_cmd[i] = gamma[i];
         ((Mercury_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
         ((Mercury_Command*)_cmd)->jvel_cmd[i] = des_jvel_[i];
     }
-    sp_->curr_jpos_des_ = des_jpos_;
     _PostProcessing_Command();
 }
 
-void ConfigBodyFootPlanningCtrl::_body_foot_ctrl(dynacore::Vector & gamma){
+void ConfigBodyFootPlanningCtrl::_contact_setup(){
+    rfoot_contact_->UpdateContactSpec();
+    lfoot_contact_->UpdateContactSpec();
+    contact_list_.push_back(rfoot_contact_);
+    contact_list_.push_back(lfoot_contact_);
+}
+
+void ConfigBodyFootPlanningCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
     dynacore::Matrix A_rotor = A_;
     for (int i(0); i<mercury::num_act_joint; ++i){
         A_rotor(i + mercury::num_virtual, i + mercury::num_virtual)
             += sp_->rotor_inertia_[i];
     }
-    wbwc_->UpdateSetting(A_rotor, coriolis_, grav_);
-    wbwc_->computeTorque(des_jpos_, des_jvel_, des_jacc_, gamma);
+    dynacore::Matrix A_rotor_inv = A_rotor.inverse();
 
-    sp_->qddot_cmd_ = wbwc_->qddot_;
-    sp_->reaction_forces_ = wbwc_->Fr_;
-}
+    wblc_->UpdateSetting(A_rotor, A_rotor_inv, coriolis_, grav_);
+    dynacore::Vector des_jacc_cmd = des_jacc_ 
+        + Kp_.cwiseProduct(des_jpos_ - 
+                sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint))
+        + Kd_.cwiseProduct(des_jvel_ - sp_->Qdot_.tail(mercury::num_act_joint));
 
-void ConfigBodyFootPlanningCtrl::_GetSinusoidalSwingTrajectory(){
-    curr_foot_acc_des_.setZero();
-    for (int i(0); i<2; ++i){
-        curr_foot_pos_des_[i] = 
-            dynacore::smooth_changing(ini_foot_pos_[i], initial_target_loc_[i], 
-                    end_time_, state_machine_time_);
-        curr_foot_vel_des_[i] = 
-            dynacore::smooth_changing_vel(ini_foot_pos_[i], initial_target_loc_[i], 
-                    end_time_, state_machine_time_);
-        curr_foot_acc_des_[i] = 
-            dynacore::smooth_changing_acc(ini_foot_pos_[i], initial_target_loc_[i], 
-                    end_time_, state_machine_time_);
-    }
-    // for Z (height)
-    double amp(swing_height_/2.);
-    double omega ( 2.*M_PI /end_time_ );
+    wblc_->MakeWBLC_Torque(
+            des_jacc_cmd, contact_list_,
+            gamma, wblc_data_);
 
-    curr_foot_pos_des_[2] = 
-        ini_foot_pos_[2] + amp * (1-cos(omega * state_machine_time_));
-    curr_foot_vel_des_[2] = 
-        amp * omega * sin(omega * state_machine_time_);
-    curr_foot_acc_des_[2] = 
-        amp * omega * omega * cos(omega * state_machine_time_);
-}
-
-void ConfigBodyFootPlanningCtrl::_GetBsplineSwingTrajectory(){
-    double pos[3];
-    double vel[3];
-    double acc[3];
-    
-    foot_traj_.getCurvePoint(state_machine_time_, pos);
-    foot_traj_.getCurveDerPoint(state_machine_time_, 1, vel);
-    foot_traj_.getCurveDerPoint(state_machine_time_, 2, acc);
-
-    for(int i(0); i<3; ++i){
-        curr_foot_pos_des_[i] = pos[i];
-        curr_foot_vel_des_[i] = vel[i];
-        curr_foot_acc_des_[i] = acc[i];
-    }
-}
-void ConfigBodyFootPlanningCtrl::_SetBspline(
-            const dynacore::Vect3 & st_pos, 
-            const dynacore::Vect3 & des_pos){
-    // Trajectory Setup
-    double init[9];
-    double fin[9];
-    double** middle_pt = new double*[1];
-    middle_pt[0] = new double[3];
-    dynacore::Vect3 middle_pos;
-
-    middle_pos = (st_pos + des_pos)/2.;
-    middle_pos[2] = swing_height_;
-
-    // Initial and final position & velocity & acceleration
-    for(int i(0); i<3; ++i){
-        // Initial
-        init[i] = st_pos[i];
-        init[i+3] = 0.;
-        init[i+6] = 0.;
-        // Final
-        fin[i] = des_pos[i];
-        fin[i+3] = 0.;
-        fin[i+6] = 0.;
-        // Middle
-        middle_pt[0][i] = middle_pos[i];
-    }
-    // TEST
-    fin[5] = -0.5;
-    fin[8] = 5.;
-    foot_traj_.SetParam(init, fin, middle_pt, end_time_);
-
-    delete [] *middle_pt;
-    delete [] middle_pt;    
+    sp_->qddot_cmd_ = wblc_data_->qddot_;
+    sp_->reaction_forces_ = wblc_data_->Fr_;
 }
 
 void ConfigBodyFootPlanningCtrl::_task_setup(){
     // Body height
-    double target_height = ini_body_pos_[2];
-    if(b_set_height_target_) target_height = des_body_height_;
-
+    double base_height_cmd = ini_base_height_;
+    if(b_set_height_target_) base_height_cmd = des_body_height_;
+ 
     // Orientation
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
@@ -198,19 +157,27 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
         curr_foot_pos_des_[2] = 
           -push_down_height_ - 0.1*(state_machine_time_ - end_time_);
     }
- 
-    dynacore::Vector config_sol, qdot_cmd, qddot_cmd;
-    inv_kin_.getSingleSupportFullConfigSeperation(
-            sp_->Q_, des_quat, target_height, 
-            swing_foot_, 
-            curr_foot_pos_des_, curr_foot_vel_des_, curr_foot_acc_des_,
-            config_sol, qdot_cmd, qddot_cmd);
 
-    for (int i(0); i<mercury::num_act_joint; ++i){
-        des_jpos_[i] = config_sol[mercury::num_virtual + i];
-        des_jvel_[i] = qdot_cmd[mercury::num_virtual + i];
-        des_jacc_[i] = qddot_cmd[mercury::num_virtual + i];
-    }
+    dynacore::Vector pos_des(base_task_->getDim()); pos_des.setZero();
+    dynacore::Vector vel_des(base_task_->getDim()); vel_des.setZero();
+    dynacore::Vector acc_des(base_task_->getDim()); acc_des.setZero();
+
+    pos_des[0] = base_height_cmd;
+    pos_des[1] = des_quat.x();
+    pos_des[2] = des_quat.y();
+    pos_des[3] = des_quat.z();
+    pos_des[4] = des_quat.w();
+
+    base_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+    foot_task_->UpdateTask(
+            &(curr_foot_pos_des_), 
+            curr_foot_vel_des_, 
+            curr_foot_acc_des_);
+    task_list_.push_back(base_task_);
+    task_list_.push_back(foot_task_);
+
+    kin_wbc_->FindConfiguration(sp_->Q_, task_list_, kin_wbc_contact_list_, 
+            des_jpos_, des_jvel_, des_jacc_);
 }
 
 void ConfigBodyFootPlanningCtrl::_CheckPlanning(){
@@ -374,8 +341,9 @@ bool ConfigBodyFootPlanningCtrl::EndOfPhase(){
     return false;
 }
 
-void ConfigBodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_file_name){
-    ini_body_pos_ = sp_->Q_.head(3);
+void ConfigBodyFootPlanningCtrl::CtrlInitialization(
+        const std::string & setting_file_name){
+    ini_base_height_ = sp_->Q_[mercury_joint::virtual_Z];
     std::vector<double> tmp_vec;
 
     // Setting Parameters
@@ -391,11 +359,11 @@ void ConfigBodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_
     // Feedback Gain
     handler.getVector("Kp", tmp_vec);
     for(int i(0); i<mercury::num_act_joint; ++i){
-        wbwc_->Kp_[i] = tmp_vec[i + mercury::num_virtual];
+        Kp_[i] = tmp_vec[i];
     }
     handler.getVector("Kd", tmp_vec);
     for(int i(0); i<mercury::num_act_joint; ++i){
-        wbwc_->Kd_[i] = tmp_vec[i + mercury::num_virtual];
+        Kd_[i] = tmp_vec[i];
     }
 
     // Body Point offset
@@ -418,7 +386,84 @@ void ConfigBodyFootPlanningCtrl::CtrlInitialization(const std::string & setting_
 }
 
 ConfigBodyFootPlanningCtrl::~ConfigBodyFootPlanningCtrl(){
-    delete wbwc_;
+    delete wblc_;
+    delete lfoot_contact_;
+    delete rfoot_contact_;
+}
+
+void ConfigBodyFootPlanningCtrl::_GetBsplineSwingTrajectory(){
+    double pos[3];
+    double vel[3];
+    double acc[3];
+    
+    foot_traj_.getCurvePoint(state_machine_time_, pos);
+    foot_traj_.getCurveDerPoint(state_machine_time_, 1, vel);
+    foot_traj_.getCurveDerPoint(state_machine_time_, 2, acc);
+
+    for(int i(0); i<3; ++i){
+        curr_foot_pos_des_[i] = pos[i];
+        curr_foot_vel_des_[i] = vel[i];
+        curr_foot_acc_des_[i] = acc[i];
+    }
+}
+void ConfigBodyFootPlanningCtrl::_GetSinusoidalSwingTrajectory(){
+    curr_foot_acc_des_.setZero();
+    for (int i(0); i<2; ++i){
+        curr_foot_pos_des_[i] = 
+            dynacore::smooth_changing(ini_foot_pos_[i], initial_target_loc_[i], 
+                    end_time_, state_machine_time_);
+        curr_foot_vel_des_[i] = 
+            dynacore::smooth_changing_vel(ini_foot_pos_[i], initial_target_loc_[i], 
+                    end_time_, state_machine_time_);
+        curr_foot_acc_des_[i] = 
+            dynacore::smooth_changing_acc(ini_foot_pos_[i], initial_target_loc_[i], 
+                    end_time_, state_machine_time_);
+    }
+    // for Z (height)
+    double amp(swing_height_/2.);
+    double omega ( 2.*M_PI /end_time_ );
+
+    curr_foot_pos_des_[2] = 
+        ini_foot_pos_[2] + amp * (1-cos(omega * state_machine_time_));
+    curr_foot_vel_des_[2] = 
+        amp * omega * sin(omega * state_machine_time_);
+    curr_foot_acc_des_[2] = 
+        amp * omega * omega * cos(omega * state_machine_time_);
+}
+
+void ConfigBodyFootPlanningCtrl::_SetBspline(
+            const dynacore::Vect3 & st_pos, 
+            const dynacore::Vect3 & des_pos){
+    // Trajectory Setup
+    double init[9];
+    double fin[9];
+    double** middle_pt = new double*[1];
+    middle_pt[0] = new double[3];
+    dynacore::Vect3 middle_pos;
+
+    middle_pos = (st_pos + des_pos)/2.;
+    middle_pos[2] = swing_height_;
+
+    // Initial and final position & velocity & acceleration
+    for(int i(0); i<3; ++i){
+        // Initial
+        init[i] = st_pos[i];
+        init[i+3] = 0.;
+        init[i+6] = 0.;
+        // Final
+        fin[i] = des_pos[i];
+        fin[i+3] = 0.;
+        fin[i+6] = 0.;
+        // Middle
+        middle_pt[0][i] = middle_pos[i];
+    }
+    // TEST
+    fin[5] = -0.5;
+    fin[8] = 5.;
+    foot_traj_.SetParam(init, fin, middle_pt, end_time_);
+
+    delete [] *middle_pt;
+    delete [] middle_pt;    
 }
 
 

@@ -110,9 +110,8 @@ void WBLC::MakeWBLC_Torque(
     //   printf("ci0:\n");
     //   std::cout<<ci0<<std::endl;
     // }
-
-
 }
+
 void WBLC::_Build_Inequality_Constraint(){
     Cieq_ = dynacore::Matrix::Zero(dim_ieq_cstr_, dim_opt_);
     dieq_ = dynacore::Vector::Zero(dim_ieq_cstr_);
@@ -254,17 +253,18 @@ void WBLC::_GetSolution(dynacore::Vector & cmd){
 
     dynacore::Vector delta_qddot(num_qdot_);
     for(int i(0); i<num_qdot_; ++i) delta_qddot[i] = z[i];
-    dynacore::Vector Fr(dim_rf_);
-    for(int i(0); i<dim_rf_; ++i) Fr[i] = z[i + num_qdot_];
+    data_->Fr_ = dynacore::Vector(dim_rf_);
+    for(int i(0); i<dim_rf_; ++i) data_->Fr_[i] = z[i + num_qdot_];
 
     dynacore::Vector tau = 
-        A_ * (qddot_ + delta_qddot) + cori_ + grav_ - Jc_.transpose() * Fr;
+        A_ * (qddot_ + delta_qddot) + cori_ + grav_ - Jc_.transpose() * data_->Fr_;
 
+    data_->qddot_ = qddot_ + delta_qddot;
     cmd = Sa_ * tau;
 
     //dynacore::pretty_print(qddot_, std::cout, "qddot_");
     //dynacore::pretty_print(delta_qddot, std::cout, "delta_qddot");
-    //dynacore::pretty_print(Fr, std::cout, "Fr");
+    //dynacore::pretty_print(data_->Fr_, std::cout, "Fr");
     //dynacore::pretty_print(tau, std::cout, "total tau");
     //dynacore::Vector x_check = Jc_ * (qddot_ + delta_qddot)  + JcDotQdot_;
     //dynacore::pretty_print(x_check, std::cout, "x check");

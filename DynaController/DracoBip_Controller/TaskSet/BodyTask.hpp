@@ -25,7 +25,6 @@ protected:
 
   const RobotSystem* robot_sys_;
   DracoBip_StateProvider* sp_;
-  int stance_leg_jidx_;
 };
 
 #endif

@@ -31,6 +31,7 @@ class Mercury_Kin_Model{
         dynacore::Vect3 com_pos_;
         dynacore::Vector centroid_vel_;
     protected:
+        double gravity_;
         void _UpdateCentroidFrame(const dynacore::Vector & q, const dynacore::Vector & qdot);
         dynacore::Matrix Ig_;
         dynacore::Matrix Jg_;

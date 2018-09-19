@@ -3,14 +3,11 @@
 
 #include <Configuration.h>
 #include <Utils/wrap_eigen.hpp>
-#include <Mercury_Controller/StateEstimator/BiasCompensatedBodyVelocityEstimator.hpp>
-
 
 class Mercury_StateProvider;
 class RobotSystem;
 class filter;
 class OriEstimator;
-class EKF_PoseEstimator; // EKF estimator
 class BodyFootPosEstimator;
 class Mercury_SensorData;
 class SimpleAverageEstimator;
@@ -28,10 +25,18 @@ class Mercury_StateEstimator{
         bool b_using_jpos_;
 
     protected:
+        void _JointUpdate(Mercury_SensorData* data);
+        void _ConfigurationAndModelUpdate();
+        void _FootContactUpdate(Mercury_SensorData* data);
+
         bool b_jpos_model_update_;
         int base_cond_;
         double initial_height_;
         int fixed_foot_;
+
+        dynacore::Quaternion body_ori_;
+        dynacore::Vect3 body_ang_vel_;
+
         dynacore::Vect3 foot_pos_;
         Mercury_StateProvider* sp_;
         RobotSystem* robot_sys_;
@@ -42,19 +47,10 @@ class Mercury_StateEstimator{
         dynacore::Vector jjpos_config_;
         dynacore::Vector jjvel_qdot_;
 
-        std::vector<filter*> filter_com_vel_;
-        std::vector<filter*> filter_jpos_vel_;
-        std::vector<filter*> filter_ang_vel_;
-
-
-        BiasCompensatedBodyVelocityEstimator* bias_vel_est_; 
         OriEstimator* ori_est_;
         BodyFootPosEstimator* body_foot_est_;
-        EKF_PoseEstimator* ekf_est_;  // EKF estimator
         SimpleAverageEstimator* vel_est_;
         SimpleAverageEstimator* mocap_vel_est_;
-
-        std::vector<filter*> jvel_filter_;
 };
 
 #endif
