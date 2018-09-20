@@ -112,7 +112,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
 #if (CONFIG_INITIAL_SWING_FOOT == 1)  
     if(phase == WkConfigPhase::lift_up) { next_phase = WkConfigPhase::double_contact_2; }
 #endif
-     printf("next phase: %i\n", next_phase);
+     //printf("next phase: %i\n", next_phase);
     dynacore::Vect3 next_local_frame_location;
 
     if(phase == WkConfigPhase::double_contact_1) {

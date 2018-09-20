@@ -147,8 +147,8 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
     dynacore::convert(rpy_des, des_quat);
 
     _CheckPlanning();
-     _GetSinusoidalSwingTrajectory();
-    //_GetBsplineSwingTrajectory();
+     //_GetSinusoidalSwingTrajectory();
+    _GetBsplineSwingTrajectory();
     
     double traj_time = state_machine_time_ - half_swing_time_;
     if(state_machine_time_ > half_swing_time_){
@@ -253,7 +253,7 @@ void ConfigBodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 
          // com_pos[i] = sp_->est_mocap_body_pos_[i] + body_pt_offset_[i];
         // com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
-        //com_vel[i] = sp_->est_mocap_body_vel_[i]; 
+        com_vel[i] = sp_->est_mocap_body_vel_[i]; 
     }
     printf("planning com state: %f, %f, %f, %f\n",
         com_pos[0], com_pos[1],

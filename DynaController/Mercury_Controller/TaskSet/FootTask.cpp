@@ -45,9 +45,9 @@ bool FootTask::_UpdateTaskJacobian(){
     dynacore::Matrix Jswing, Jstance;
     robot_sys_->getFullJacobian(swing_foot_, Jswing);
     robot_sys_->getFullJacobian(stance_foot_, Jstance);
-    Jt_ = Jswing.block(3,0,3, mercury::num_qdot) - Jstance.block(3, 0, 3, mercury::num_qdot);
-    //Jt_.block(0, 0, 3, mercury::num_qdot) = Jswing.block(3,0,3, mercury::num_qdot);
-    //(Jt_.block(0, 0, 3, mercury::num_virtual)).setZero();
+    //Jt_ = Jswing.block(3,0,3, mercury::num_qdot) - Jstance.block(3, 0, 3, mercury::num_qdot);
+    Jt_.block(0, 0, 3, mercury::num_qdot) = Jswing.block(3,0,3, mercury::num_qdot);
+    (Jt_.block(0, 0, 3, mercury::num_virtual)).setZero();
     
     // dynacore::pretty_print(Jswing, std::cout, "Jswing");
     // dynacore::pretty_print(Jfoot, std::cout, "Jfoot");
