@@ -40,12 +40,15 @@ namespace mercury_joint{
     constexpr int virtual_Rx = 3;
     constexpr int virtual_Ry = 4;
     constexpr int virtual_Rz = 5;
+
     constexpr int rightAbduction = 6;
     constexpr int rightHip = 7;
     constexpr int rightKnee = 8;
+    
     constexpr int leftAbduction = 9;
     constexpr int leftHip = 10;
     constexpr int leftKnee = 11;
+   
     constexpr int virtual_Rw = 12;
 };
 

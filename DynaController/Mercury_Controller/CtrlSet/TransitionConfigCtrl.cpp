@@ -32,15 +32,21 @@ TransitionConfigCtrl::TransitionConfigCtrl(RobotSystem* robot,
 
     kin_wbc_ = new KinWBC(act_list);
     wblc_ = new WBLC(act_list);
+    wblc_data_ = new WBLC_ExtraData();
     wblc_data_->W_qddot_ = dynacore::Vector::Constant(mercury::num_qdot, 100.0);
     wblc_data_->W_rf_ = dynacore::Vector::Constant(dim_contact_, 1.0);
     wblc_data_->W_xddot_ = dynacore::Vector::Constant(dim_contact_, 1000.0);
     wblc_data_->W_rf_[2] = 0.01;
     wblc_data_->W_rf_[5] = 0.01;
 
+    // torque limit default setting
+    wblc_data_->tau_min_ = dynacore::Vector::Constant(mercury::num_act_joint, -100.);
+    wblc_data_->tau_max_ = dynacore::Vector::Constant(mercury::num_act_joint, 100.);
+
+
     base_task_ = new BaseTask(robot_sys_);
     sp_ = Mercury_StateProvider::getStateProvider();
-    // printf("[Transition Controller] Constructed\n");
+    //printf("[Transition Controller] Constructed\n");
 }
 
 TransitionConfigCtrl::~TransitionConfigCtrl(){
@@ -56,8 +62,8 @@ TransitionConfigCtrl::~TransitionConfigCtrl(){
 void TransitionConfigCtrl::OneStep(void* _cmd){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
-    
     dynacore::Vector gamma;
+    
     _contact_setup();
     _task_setup();
     _compute_torque_wblc(gamma);
@@ -84,9 +90,16 @@ void TransitionConfigCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
                 sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint))
         + Kd_.cwiseProduct(des_jvel_ - sp_->Qdot_.tail(mercury::num_act_joint));
 
+    //dynacore::pretty_print(des_jpos_, std::cout, "des_jpos");
+    //dynacore::pretty_print(des_jvel_, std::cout, "des_jvel");
+    //dynacore::pretty_print(des_jacc_, std::cout, "des_jacc");
+    //dynacore::pretty_print(des_jacc_cmd, std::cout, "des_jacc");
+
     wblc_->MakeWBLC_Torque(
             des_jacc_cmd, contact_list_,
             gamma, wblc_data_);
+
+    //dynacore::pretty_print(gamma, std::cout, "gamma");
 
     sp_->qddot_cmd_ = wblc_data_->qddot_;
     sp_->reaction_forces_ = wblc_data_->Fr_;
@@ -104,7 +117,7 @@ void TransitionConfigCtrl::_task_setup(){
     rpy_des[1] = sp_->des_body_pitch_;
     dynacore::convert(rpy_des, des_quat);
    
-    dynacore::Vector pos_des(base_task_->getDim()); pos_des.setZero();
+    dynacore::Vector pos_des(5); pos_des.setZero();
     dynacore::Vector vel_des(base_task_->getDim()); vel_des.setZero();
     dynacore::Vector acc_des(base_task_->getDim()); acc_des.setZero();
 

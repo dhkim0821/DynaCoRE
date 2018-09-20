@@ -230,7 +230,7 @@ void Mercury_Kin_Model::getJacobian(int link_id, dynacore::Matrix &J){
     }
     // Virtual rotation joint axis must be always aligned with the global frame
     // Orientation
-    J.block(0,3,3,3) = dynacore::Matrix::Identity(3,3);
+    //J.block(0,3,3,3) = dynacore::Matrix::Identity(3,3);
     // Linear
     //dynacore::Vect3 p_link, p_body, dp;
     //getPos(link_id, p_link);

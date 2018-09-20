@@ -51,6 +51,12 @@ class Mercury_StateEstimator{
         BodyFootPosEstimator* body_foot_est_;
         SimpleAverageEstimator* vel_est_;
         SimpleAverageEstimator* mocap_vel_est_;
+
+        void _RBDL_TEST();
+        void _BasicTest();
+        void _ProjectionTest();
+        void _pseudoInv(const dynacore::Matrix & J, dynacore::Matrix & J_pinv);
+
 };
 
 #endif

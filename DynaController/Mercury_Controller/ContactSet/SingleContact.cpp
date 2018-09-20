@@ -34,7 +34,7 @@ bool SingleContact::_UpdateUf(){
   Uf_(3, 1) = 1.; Uf_(3, 2) = mu; // Fy >= - mu * Fz
   Uf_(4, 1) = -1.; Uf_(4, 2) = mu; // Fy <=  mu * Fz
   
-  Uf_(0, 2) = -1.; // -Fz >=  -z_max
+  Uf_(5, 2) = -1.; // -Fz >=  -z_max
   return true;
 }
 

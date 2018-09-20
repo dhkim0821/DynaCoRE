@@ -43,6 +43,7 @@ class ConfigBodyFootPlanningCtrl:public SwingPlanningCtrl{
         void _GetSinusoidalSwingTrajectory();
         void _GetBsplineSwingTrajectory();
         std::vector<ContactSpec*> kin_wbc_contact_list_;
+        Task* full_base_task_;
         Task* base_task_;
         Task* foot_task_;
         KinWBC* kin_wbc_;

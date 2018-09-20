@@ -29,19 +29,8 @@ bool DoubleTransitionContact::_UpdateJc(){
   return true;
 }
 bool DoubleTransitionContact::_UpdateJcDotQdot(){
-  dynacore::Matrix JcDot(dim_contact_, valkyrie::num_qdot);
-  dynacore::Matrix jcdot_tmp;
-  // Right
-  robot_sys_->getFullJacobianDot(valkyrie_link::rightFoot, jcdot_tmp);
-  JcDot.block(0, 0, 3, valkyrie::num_qdot) = jcdot_tmp.block(3, 0, 3, valkyrie::num_qdot);
-  // Left
-  robot_sys_->getFullJacobianDot(valkyrie_link::leftFoot, jcdot_tmp);
-  JcDot.block(3, 0, 3, valkyrie::num_qdot) = jcdot_tmp.block(3, 0, 3, valkyrie::num_qdot);
-
-   //dynacore::pretty_print(JcDot, std::cout,  "[double transition contact] JcDot");
-  // TEST
-  JcDot.setZero();
-  JcDotQdot_ = JcDot * sp_->Qdot_;
+ // TEST
+  JcDotQdot_ = dynacore::Vector::Zero(dim_contact_);
   return true;
 }
 

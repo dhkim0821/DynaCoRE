@@ -1,4 +1,4 @@
-#include "BaseTask.hpp"
+#include "FullBaseTask.hpp"
 #include <Configuration.h>
 #include <Mercury_Controller/Mercury_StateProvider.hpp>
 #include <Mercury/Mercury_Model.hpp>
@@ -6,16 +6,19 @@
 
 #include <Utils/utilities.hpp>
 
-BaseTask::BaseTask(const RobotSystem* robot):KinTask(3),
+FullBaseTask::FullBaseTask(const RobotSystem* robot):KinTask(6),
     robot_sys_(robot)
 {
   sp_ = Mercury_StateProvider::getStateProvider();
   Jt_ = dynacore::Matrix::Zero(dim_task_, mercury::num_qdot);
+    pos_err_.setZero();
+    vel_des_.setZero();
+    acc_des_.setZero();
 }
 
-BaseTask::~BaseTask(){}
+FullBaseTask::~FullBaseTask(){}
 
-bool BaseTask::_UpdateCommand(void* pos_des,
+bool FullBaseTask::_UpdateCommand(void* pos_des,
         const dynacore::Vector & vel_des,
         const dynacore::Vector & acc_des){
 
@@ -44,28 +47,20 @@ bool BaseTask::_UpdateCommand(void* pos_des,
     pos_err_[1] = ori_err[0];
     pos_err_[2] = ori_err[1];
 
-    for(int i(0); i<dim_task_; ++i){
-        vel_des_[i] = vel_des[i];
-        acc_des_[i] = acc_des[i];
-    }
-     //dynacore::pretty_print(pos_err_, std::cout, "pos_err");
+    //dynacore::pretty_print(pos_err_, std::cout, "pos_err");
      //dynacore::pretty_print(vel_des_, std::cout, "vel_des");
      //dynacore::pretty_print(acc_des_, std::cout, "acc_des");
      //dynacore::pretty_print(Jt_, std::cout, "Jt");
     return true;
 }
 
-bool BaseTask::_UpdateTaskJacobian(){
-    Jt_(0, mercury_joint::virtual_Z) = 1.;
-
-    dynacore::Matrix Jtmp;
-    robot_sys_->getFullJacobian(mercury_link::body, Jtmp);
-     //dynacore::pretty_print(Jtmp, std::cout, "Jt body");
-    Jt_.block(1, 0, 2, mercury::num_qdot) = Jtmp.block(0,0, 2, mercury::num_qdot);
+bool FullBaseTask::_UpdateTaskJacobian(){
+    robot_sys_->getFullJacobian(mercury_link::body, Jt_);
+    Jt_.block(0,3, 3,3) = dynacore::Matrix::Identity(3,3);
     return true;
 }
 
-bool BaseTask::_UpdateTaskJDotQdot(){
+bool FullBaseTask::_UpdateTaskJDotQdot(){
     JtDotQdot_ = dynacore::Vector::Zero(dim_task_);
     return true;
 }

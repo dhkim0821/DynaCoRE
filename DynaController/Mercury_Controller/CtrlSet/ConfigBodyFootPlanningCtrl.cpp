@@ -8,6 +8,7 @@
 #include <WBLC/WBLC.hpp>
 #include <Mercury_Controller/ContactSet/SingleContact.hpp>
 #include <Mercury_Controller/TaskSet/BaseTask.hpp>
+#include <Mercury_Controller/TaskSet/FullBaseTask.hpp>
 #include <Mercury_Controller/TaskSet/FootTask.hpp>
 
 ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
@@ -32,11 +33,16 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
 
     kin_wbc_ = new KinWBC(act_list);
     wblc_ = new WBLC(act_list);
+    wblc_data_ = new WBLC_ExtraData();
     wblc_data_->W_qddot_ = dynacore::Vector::Constant(mercury::num_qdot, 100.0);
     wblc_data_->W_rf_ = dynacore::Vector::Constant(dim_contact_, 1.0);
     wblc_data_->W_xddot_ = dynacore::Vector::Constant(dim_contact_, 1000.0);
     wblc_data_->W_rf_[2] = 0.01;
     wblc_data_->W_rf_[5] = 0.01;
+
+    // torque limit default setting
+    wblc_data_->tau_min_ = dynacore::Vector::Constant(mercury::num_act_joint, -100.);
+    wblc_data_->tau_max_ = dynacore::Vector::Constant(mercury::num_act_joint, 100.);
 
     kin_wbc_contact_list_.clear();
     if(swing_foot == mercury_link::leftFoot) {
@@ -66,6 +72,9 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
     }
     else printf("[Warnning] swing foot is not foot: %i\n", swing_foot);
 
+    foot_task_ = new FootTask(robot_sys_, swing_foot);
+    base_task_ = new BaseTask(robot_sys_);
+    full_base_task_ = new FullBaseTask(robot_sys_);
 
     // Create Minimum jerk objects
     for(size_t i = 0; i < 3; i++){
@@ -77,8 +86,8 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
 void ConfigBodyFootPlanningCtrl::OneStep(void* _cmd){   
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
-
     dynacore::Vector gamma;
+
     _contact_setup();
     _task_setup();
     _compute_torque_wblc(gamma);
@@ -112,6 +121,11 @@ void ConfigBodyFootPlanningCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
                 sp_->Q_.segment(mercury::num_virtual, mercury::num_act_joint))
         + Kd_.cwiseProduct(des_jvel_ - sp_->Qdot_.tail(mercury::num_act_joint));
 
+    //dynacore::pretty_print(des_jpos_, std::cout, "des_jpos");
+    //dynacore::pretty_print(des_jvel_, std::cout, "des_jvel");
+    //dynacore::pretty_print(des_jacc_, std::cout, "des_jacc");
+    //dynacore::pretty_print(des_jacc_cmd, std::cout, "des_jacc");
+
     wblc_->MakeWBLC_Torque(
             des_jacc_cmd, contact_list_,
             gamma, wblc_data_);
@@ -133,8 +147,8 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
     dynacore::convert(rpy_des, des_quat);
 
     _CheckPlanning();
-    // _GetSinusoidalSwingTrajectory();
-    _GetBsplineSwingTrajectory();
+     _GetSinusoidalSwingTrajectory();
+    //_GetBsplineSwingTrajectory();
     
     double traj_time = state_machine_time_ - half_swing_time_;
     if(state_machine_time_ > half_swing_time_){
@@ -158,7 +172,7 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
           -push_down_height_ - 0.1*(state_machine_time_ - end_time_);
     }
 
-    dynacore::Vector pos_des(base_task_->getDim()); pos_des.setZero();
+    dynacore::Vector pos_des(5); pos_des.setZero();
     dynacore::Vector vel_des(base_task_->getDim()); vel_des.setZero();
     dynacore::Vector acc_des(base_task_->getDim()); acc_des.setZero();
 
@@ -169,11 +183,26 @@ void ConfigBodyFootPlanningCtrl::_task_setup(){
     pos_des[4] = des_quat.w();
 
     base_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+    
+    dynacore::Vector foot_vel_des(3);
+    dynacore::Vector foot_acc_des(3);
+
+    for(int i(0); i<3; ++i){
+        foot_vel_des[i] = curr_foot_vel_des_[i];
+        foot_acc_des[i] = curr_foot_acc_des_[i];
+    }
+    //foot_task_->UpdateTask(
+    //&(curr_foot_pos_des_), 
+    //curr_foot_vel_des_, 
+    //curr_foot_acc_des_);
     foot_task_->UpdateTask(
             &(curr_foot_pos_des_), 
-            curr_foot_vel_des_, 
-            curr_foot_acc_des_);
+            foot_vel_des, 
+            foot_acc_des);
+
     task_list_.push_back(base_task_);
+    //full_base_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+    //task_list_.push_back(full_base_task_);
     task_list_.push_back(foot_task_);
 
     kin_wbc_->FindConfiguration(sp_->Q_, task_list_, kin_wbc_contact_list_, 

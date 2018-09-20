@@ -29,6 +29,12 @@ class Valkyrie_StateEstimator{
         dynacore::Vector curr_qdot_;
 
         OriEstimator* ori_est_;
+
+        void _RBDL_TEST();
+        void _BasicTest();
+        void _ProjectionTest();
+        void _pseudoInv(const dynacore::Matrix & J, dynacore::Matrix & J_pinv);
+
 };
 
 #endif

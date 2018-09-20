@@ -4,6 +4,10 @@
 #include <Utils/utilities.hpp>
 #include <Mercury/Mercury_Model.hpp>
 #include "Mercury_DynaControl_Definition.h"
+#include <Utils/pseudo_inverse.hpp>
+#include <Eigen/LU>
+#include <Eigen/SVD>
+
 
 // Mocap based Estimator
 #include <Mercury_Controller/StateEstimator/BodyFootPosEstimator.hpp>
@@ -39,7 +43,164 @@ Mercury_StateEstimator::~Mercury_StateEstimator(){
     delete mocap_vel_est_;
 }
 
+void Mercury_StateEstimator::_RBDL_TEST(){
+    // TEST
+    dynacore::Vector q(mercury::num_q); q.setZero();
+    dynacore::Vector qdot(mercury::num_qdot); qdot.setZero();
+
+    q[mercury_joint::virtual_Rw] = 1.0;
+    
+    q[mercury_joint::rightAbduction] = -0.2;
+    q[mercury_joint::rightHip] = -0.2;
+    q[mercury_joint::rightKnee] = 0.4;
+ 
+    q[mercury_joint::leftAbduction] = -0.2;
+    q[mercury_joint::leftHip] = -0.2;
+    q[mercury_joint::leftKnee] = 0.4;
+    
+    // Orientation
+    dynacore::Vect3 rpy; rpy.setZero();
+    dynacore::Quaternion quat_floating;
+    //rpy[1] = M_PI/4.;
+    rpy[1] = M_PI/10.;
+    dynacore::convert(rpy, quat_floating);
+
+    q[mercury_joint::virtual_Rx] = quat_floating.x();
+    q[mercury_joint::virtual_Ry] = quat_floating.y();
+    q[mercury_joint::virtual_Rz] = quat_floating.z();
+    q[mercury_joint::virtual_Rw] = quat_floating.w();
+    dynacore::pretty_print(q, std::cout, "q");
+    dynacore::pretty_print(qdot, std::cout, "qdot");
+
+    robot_sys_->UpdateSystem(q, qdot);
+    //_BasicTest();
+    _ProjectionTest();
+    exit(0);
+}
+void Mercury_StateEstimator::_pseudoInv(const dynacore::Matrix & J, 
+        dynacore::Matrix & J_pinv){
+
+    double threshold(0.00000000001);
+    dynacore::Matrix A, Ainv;
+    robot_sys_->getMassInertia(A);
+    robot_sys_->getInverseMassInertia(Ainv);
+
+    //dynacore::pseudoInverse(J, threshold, J_pinv);
+
+    //A(8,8) *= 100.0;
+    //A(11,11) *= 100.0;
+    dynacore::Matrix A_einv = A.inverse();
+    Ainv = A_einv;
+    dynacore::pretty_print(A, std::cout, "A");
+    dynacore::pretty_print(Ainv, std::cout, "Ainv");
+
+    //dynacore::pretty_print(A_einv,std::cout, "A inv test");
+    //dynacore::Matrix test = A*Ainv;
+    //dynacore::pretty_print(test,std::cout, "test");
+
+    Ainv.setIdentity();
+    //Ainv.block(0,0, 6,6) *= 0.01;
+    dynacore::Matrix lambda_inv = J * Ainv * J.transpose();
+    dynacore::Matrix lambda;
+    dynacore::pseudoInverse(lambda_inv, threshold, lambda);
+    J_pinv = Ainv * J.transpose() * lambda;
+}
+void Mercury_StateEstimator::_ProjectionTest(){
+
+    dynacore::Matrix Jbody, Jlfoot, Jrfoot, Jtmp;
+    robot_sys_->getFullJacobian(mercury_link::body, Jtmp);
+    Jbody = dynacore::Matrix::Zero(3,mercury::num_qdot);
+    Jbody(0, 2) = 1.;
+    Jbody.block(1,0, 2, mercury::num_qdot) = Jtmp.block(0,0, 2, mercury::num_qdot);
+    robot_sys_->getFullJacobian(mercury_link::leftFoot, Jtmp);
+    Jlfoot = Jtmp.block(3,0, 3, mercury::num_qdot);
+    robot_sys_->getFullJacobian(mercury_link::rightFoot, Jtmp);
+    Jrfoot = Jtmp.block(3,0, 3, mercury::num_qdot);
+
+    dynacore::pretty_print(Jbody, std::cout, "Jbody");
+    // 
+    Jbody -= Jlfoot;
+    //Jrfoot -= Jlfoot;
+    Jrfoot.block(0,0, 3, mercury::num_virtual).setZero();
+
+    dynacore::Matrix I_mtx(mercury::num_qdot, mercury::num_qdot);
+    I_mtx.setIdentity();
+
+    dynacore::Matrix Jbody_inv, Jlfoot_inv;
+    _pseudoInv(Jbody, Jbody_inv);
+    _pseudoInv(Jlfoot, Jlfoot_inv);
+
+    dynacore::pretty_print(Jlfoot_inv, std::cout, "Jlfoot inv");
+    dynacore::Matrix Nbody = I_mtx - Jbody_inv * Jbody;
+    dynacore::Matrix Nlfoot = I_mtx - Jlfoot_inv * Jlfoot;
+
+    dynacore::Matrix nullspace_check_left = Jlfoot_inv * Jlfoot;
+    dynacore::pretty_print(nullspace_check_left, std::cout, "null check lfoot");
+    dynacore::Matrix JcBody = Jbody * Nlfoot;
+    dynacore::Matrix JcBody_inv;
+    _pseudoInv(JcBody, JcBody_inv);
+    dynacore::Matrix NcBody = I_mtx - JcBody_inv * JcBody;
+
+
+    dynacore::Matrix JfootBody = Jrfoot * NcBody;
+
+    dynacore::Matrix A, Ainv;
+    robot_sys_->getInverseMassInertia(Ainv);
+    robot_sys_->getMassInertia(A);
+    dynacore::Matrix M_check = A;
+    Eigen::JacobiSVD<dynacore::Matrix> svd(M_check, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    dynacore::pretty_print(svd.singularValues(), std::cout, "svd singular value");
+
+
+    dynacore::Matrix lambda_inv = JcBody * Ainv * JcBody.transpose();
+    dynacore::Matrix lambda;
+    dynacore::pseudoInverse(lambda_inv, 0.00001, lambda);
+    dynacore::pretty_print(lambda, std::cout, "lambda");
+    //dynacore::pretty_print(Jbody, std::cout, "J body");
+    //dynacore::pretty_print(Nbody, std::cout, "N body");
+
+    //Nlfoot *= 100000.;
+    dynacore::pretty_print(Jlfoot, std::cout, "J lfoot");
+    dynacore::pretty_print(Jrfoot, std::cout, "J rfoot");
+    dynacore::pretty_print(Nlfoot, std::cout, "Nlfoot");
+    dynacore::pretty_print(JcBody, std::cout, "Jc body");
+    dynacore::pretty_print(NcBody, std::cout, "Nc body");
+
+    dynacore::pretty_print(JfootBody, std::cout, "Jfootbody");
+
+}
+void Mercury_StateEstimator::_BasicTest(){
+    dynacore::Matrix J;
+    dynacore::Vector JdotQdot;
+    dynacore::Vect3 pos, vel, ang_vel;
+    dynacore::Quaternion link_ori_quat;
+    int link_idx = mercury_link::body;
+    //int link_idx = mercury_link::rightFoot;
+
+    robot_sys_->getFullJacobian(link_idx, J);
+    robot_sys_->getFullJDotQdot(link_idx, JdotQdot);
+    robot_sys_->getOri(link_idx, link_ori_quat);
+    robot_sys_->getPos(link_idx, pos);
+    robot_sys_->getLinearVel(link_idx, vel);
+    robot_sys_->getAngularVel(link_idx, ang_vel);
+    
+    Eigen::Matrix3d ori_rot(link_ori_quat); 
+    dynacore::Matrix ori_rot_mt(6,6); ori_rot_mt.setZero();
+    ori_rot_mt.topLeftCorner(3,3) = ori_rot;
+    ori_rot_mt.bottomRightCorner(3,3) = ori_rot;
+
+    dynacore::Matrix J_rot = ori_rot_mt.transpose() * J;
+
+    dynacore::pretty_print(J, std::cout, "Jacobian");
+    dynacore::pretty_print(J_rot, std::cout, "Jacobian Local");
+    dynacore::pretty_print(link_ori_quat, std::cout, "ori");
+    dynacore::pretty_print(JdotQdot, std::cout, "JdotQdot");
+    dynacore::pretty_print(pos, std::cout, "pos");
+    dynacore::pretty_print(vel, std::cout, "vel");
+    dynacore::pretty_print(ang_vel, std::cout, "ang_vel");
+}
 void Mercury_StateEstimator::Initialization(Mercury_SensorData* data){
+    //_RBDL_TEST();
     _JointUpdate(data);
     std::vector<double> imu_acc(3);
     std::vector<double> imu_ang_vel(3);

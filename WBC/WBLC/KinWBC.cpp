@@ -63,6 +63,13 @@ bool KinWBC::FindConfiguration(
 
     _BuildProjectionMatrix(JtPre, N_pre);
 
+    //dynacore::pretty_print(Jt, std::cout, "1st task Jt");
+    //dynacore::pretty_print(Jc, std::cout, "Jc");
+    //dynacore::pretty_print(Nc, std::cout, "Nc");
+    //dynacore::pretty_print(JtPre, std::cout, "JtNc");
+    //dynacore::pretty_print(JtPre_pinv, std::cout, "JtNc_inv");
+    //dynacore::pretty_print(delta_q, std::cout, "delta q");
+
     for (int i(1); i<task_list.size(); ++i){
         task = ((KinTask*)task_list[i]);
 
@@ -75,31 +82,31 @@ bool KinWBC::FindConfiguration(
         qdot = prev_qdot + JtPre_pinv * (task->vel_des_ - Jt* prev_qdot);
         qddot = prev_qddot + JtPre_pinv * (task->acc_des_ - JtDotQdot - Jt*prev_qddot);
 
+        //dynacore::pretty_print(Jt, std::cout, "2nd Jt");
+        //dynacore::pretty_print(N_pre, std::cout, "N_pre");
+        //dynacore::pretty_print(JtPre, std::cout, "JtPre");
+        //dynacore::pretty_print(delta_q, std::cout, "delta q");
+
         // For the next task
         _BuildProjectionMatrix(JtPre, N_pre);
         prev_delta_q = delta_q;
         prev_qdot = qdot;
         prev_qddot = qddot;
     }
-    
+// TEST
+    qdot.setZero();
+    qddot.setZero();
     for(int i(0); i<num_act_joint_; ++i){
         jpos_cmd[i] = curr_config[act_jidx_[i]] + delta_q[act_jidx_[i]];
         jvel_cmd[i] = qdot[act_jidx_[i]];
         jacc_cmd[i] = qddot[act_jidx_[i]];
     }
-    //dynacore::pretty_print(Jt, std::cout, "Jt");
-    //dynacore::pretty_print(Jc, std::cout, "Jc");
-    //dynacore::pretty_print(Nc, std::cout, "Nc");
-    //dynacore::pretty_print(JtPre, std::cout, "JtNc");
-    //dynacore::pretty_print(JtPre_pinv, std::cout, "JtNc_inv");
-    //dynacore::pretty_print(delta_q, std::cout, "delta q");
-
     return true;
 }
 
 void KinWBC::_BuildProjectionMatrix(const dynacore::Matrix & J, 
                                     dynacore::Matrix & N){
     dynacore::Matrix J_pinv;
-    dynacore::pseudoInverse(J, 0.00001, J_pinv);
+    dynacore::pseudoInverse(J, 0.01, J_pinv);
     N = I_mtx  - J_pinv * J;
  }

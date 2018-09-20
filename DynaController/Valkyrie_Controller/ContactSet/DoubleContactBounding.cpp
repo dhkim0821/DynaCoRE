@@ -32,21 +32,14 @@ bool DoubleContactBounding::_UpdateJc(){
   return true;
 }
 bool DoubleContactBounding::_UpdateJcDotQdot(){
-  dynacore::Matrix JcDot(dim_contact_, valkyrie::num_qdot);
-  dynacore::Matrix jcdot_tmp;
+  dynacore::Vector jcdotqdot_tmp;
+  JcDotQdot_ = dynacore::Vector::Zero(dim_contact_);
   // Right
-  robot_sys_->getFullJacobianDot(valkyrie_link::rightFoot, jcdot_tmp);
-  JcDot.block(0, 0, 3, valkyrie::num_qdot) = jcdot_tmp.block(3, 0, 3, valkyrie::num_qdot);
+  robot_sys_->getFullJDotQdot(valkyrie_link::rightFoot, jcdotqdot_tmp);
+  JcDotQdot_.head(3) = jcdotqdot_tmp.tail(3);
   // Left
-  robot_sys_->getFullJacobianDot(valkyrie_link::leftFoot, jcdot_tmp);
-  JcDot.block(3, 0, 3, valkyrie::num_qdot) = jcdot_tmp.block(3, 0, 3, valkyrie::num_qdot);
-
-  //dynacore::pretty_print(JcDot, std::cout,  "[double contact bounding] JcDot");
-  // TEST
-  JcDot.setZero();
-  JcDotQdot_ = JcDot * sp_->Qdot_;
-
-  JcDotQdot_.setZero();
+  robot_sys_->getFullJDotQdot(valkyrie_link::leftFoot, jcdotqdot_tmp);
+  JcDotQdot_.tail(3) = jcdotqdot_tmp.tail(3);
   return true;
 }
 
