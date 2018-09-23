@@ -93,9 +93,6 @@ bool KinWBC::FindConfiguration(
         prev_qdot = qdot;
         prev_qddot = qddot;
     }
-// TEST
-    qdot.setZero();
-    qddot.setZero();
     for(int i(0); i<num_act_joint_; ++i){
         jpos_cmd[i] = curr_config[act_jidx_[i]] + delta_q[act_jidx_[i]];
         jvel_cmd[i] = qdot[act_jidx_[i]];
@@ -107,6 +104,6 @@ bool KinWBC::FindConfiguration(
 void KinWBC::_BuildProjectionMatrix(const dynacore::Matrix & J, 
                                     dynacore::Matrix & N){
     dynacore::Matrix J_pinv;
-    dynacore::pseudoInverse(J, 0.01, J_pinv);
+    dynacore::pseudoInverse(J, 0.00001, J_pinv);
     N = I_mtx  - J_pinv * J;
  }

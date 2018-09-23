@@ -1,6 +1,7 @@
 #ifndef MERCURY_DYNACORE_CONTROL_DEFINITION
 #define MERCURY_DYNACORE_CONTROL_DEFINITION
 
+#include <Configuration.h>
 #include <Mercury/Mercury_Definition.h>
 
 #define MercuryConfigPath THIS_COM"DynaController/Mercury_Controller/MercuryTestConfig/"

@@ -1,10 +1,17 @@
 #include "DracoBip.h"
+#include <DracoBip_Controller/DracoBip_DynaCtrl_Definition.h>
+#include <ParamHandler/ParamHandler.hpp>
 
 DracoBip::DracoBip():SystemGenerator(), 
     //hanging_height_( 1.084217  + 0.3 )
     hanging_height_( 1.084217 ),
-    collision_offset_(0.1)
+    collision_offset_(0.6),
+    initial_posture_(0)
 {
+  ParamHandler handler(DracoBipConfigPath"SIM_sr_sim_setting.yaml");
+  handler.getInteger("initial_posture", initial_posture_);
+  handler.getValue("hanging_height", hanging_height_);
+
   printf("[DracoBip] ASSEMBLED\n");
 }
 
@@ -60,7 +67,7 @@ void DracoBip::_SetCollision(){
   collision_[4]->GetGeomInfo().SetDimension(0.05, 0.1, 0.05);
   collision_[4]->SetLocalFrame(
           EulerZYX(Vec3(0.,0., 0.), 
-                   Vec3(0., 0., -hanging_height_ + 0.050 + collision_offset_) ) );
+                   Vec3(0., 0., 0.050 - hanging_height_) ) );
   link_[link_idx_map_.find("torso")->second]->AddCollision(collision_[4]);
   link_[link_idx_map_.find("torso")->second]->SetFriction(fric);
 
@@ -75,10 +82,10 @@ void DracoBip::_SetInitialConf(){
   vp_joint_[0]->m_State.m_rValue[0] = 0.0; // X
   vp_joint_[1]->m_State.m_rValue[0] = 0.0; // Y
 
-  int initial_config_type(0); // Stand up posture
+  // 0: Stand up posture
   //int initial_config_type(1);
 
-  switch(initial_config_type){
+  switch(initial_posture_){
     case 0:
         vp_joint_[2]->m_State.m_rValue[0] = 1.084217;
         vr_joint_[0]->m_State.m_rValue[0] = 0.0;
@@ -94,12 +101,30 @@ void DracoBip::_SetInitialConf(){
         r_joint_[r_joint_idx_map_.find("rAnkle")->second]->m_State.m_rValue[0] = 1.03;
         break;
     case 1:
-        vp_joint_[2]->m_State.m_rValue[0] = 2.0;
+        vp_joint_[2]->m_State.m_rValue[0] = hanging_height_;
 
         r_joint_[r_joint_idx_map_.find("lAnkle")->second]->
             m_State.m_rValue[0] = M_PI/2.;
         r_joint_[r_joint_idx_map_.find("rAnkle")->second]->
             m_State.m_rValue[0] = M_PI/2.;
+         break;
+    case 2:
+         vp_joint_[2]->m_State.m_rValue[0] = hanging_height_;
+
+        //r_joint_[r_joint_idx_map_.find("lHipRoll")->second]->m_State.m_rValue[0] = -0.5;
+        r_joint_[r_joint_idx_map_.find("lHipPitch")->second]->m_State.m_rValue[0] = -0.5;
+        r_joint_[r_joint_idx_map_.find("lKnee")->second]->m_State.m_rValue[0] = 1.4;
+        r_joint_[r_joint_idx_map_.find("lAnkle")->second]->m_State.m_rValue[0] = 1.03;
+
+        //r_joint_[r_joint_idx_map_.find("rHipRoll")->second]->m_State.m_rValue[0] = -0.5;
+        r_joint_[r_joint_idx_map_.find("rHipPitch")->second]->m_State.m_rValue[0] = -0.5;
+        r_joint_[r_joint_idx_map_.find("rKnee")->second]->m_State.m_rValue[0] = 1.4;
+        r_joint_[r_joint_idx_map_.find("rAnkle")->second]->m_State.m_rValue[0] = 1.03;
+
+        //r_joint_[r_joint_idx_map_.find("lAnkle")->second]->
+            //m_State.m_rValue[0] = M_PI/2.;
+        //r_joint_[r_joint_idx_map_.find("rAnkle")->second]->
+            //m_State.m_rValue[0] = M_PI/2.;
          break;
   }
   KIN_UpdateFrame_All_The_Entity();

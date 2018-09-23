@@ -54,6 +54,12 @@ class DracoBip_Dyn_environment
         void _CheckFootContact(bool & r_contact, bool & l_contact);
         void _hold_XY(int count);
         void _ZeroInput_VirtualJoint();
+
+        void _ParamterSetup();
+        int num_substep_rendering_;
+        double release_time_;
+        std::vector<double> imu_ang_vel_bias_;
+        std::vector<double> imu_ang_vel_var_;
 };
 
 #endif

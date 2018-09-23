@@ -2,11 +2,6 @@ start_phase: 0
 
 # swing ctrl type:
 swing_ctrl_type: ConfigBodyFootPlanningCtrl
-#swing_ctrl_type: ConfigBodyRetractingFootPlanningCtrl
-#swing_ctrl_type: BodyPriorFootPlanningCtrl
-#swing_ctrl_type: BodyJPosSwingPlanningCtrl
-# swing_ctrl_type: JPosTrajPlanningCtrl
-
 
 # Initialization
 initial_jpos: [0.07, -0.92, 1.55, -0.05029, -0.93, 1.59]

@@ -52,9 +52,9 @@ bool CoMTask::_UpdateCommand(void* pos_des,
     }
  
     //printf("[Stance Task]\n");
-     dynacore::pretty_print(com_pos, std::cout, "com_pos");
-     dynacore::pretty_print(pos_err_, std::cout, "pos_err_");
-     dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");
+     //dynacore::pretty_print(com_pos, std::cout, "com_pos");
+     //dynacore::pretty_print(pos_err_, std::cout, "pos_err_");
+     //dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");
      //dynacore::pretty_print(Jt_, std::cout, "Jt");
 
     return true;

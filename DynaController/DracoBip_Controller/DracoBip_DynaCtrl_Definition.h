@@ -1,6 +1,7 @@
 #ifndef DRACO_BIPED_DYNACORE_CONTROL_DEFINITION
 #define DRACO_BIPED_DYNACORE_CONTROL_DEFINITION
 
+#include <Configuration.h>
 #include <DracoBip/DracoBip_Definition.h>
 
 #define DracoBipConfigPath THIS_COM"DynaController/DracoBip_Controller/DracoBipTestConfig/"

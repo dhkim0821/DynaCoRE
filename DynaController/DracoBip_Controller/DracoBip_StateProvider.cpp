@@ -13,13 +13,14 @@ DracoBip_StateProvider::DracoBip_StateProvider():
                                 Qdot_(dracobip::num_qdot),
                                 rotor_inertia_(dracobip::num_act_joint),
                                 b_rfoot_contact_(0),
-                                b_lfoot_contact_(0)
+                                b_lfoot_contact_(0),
+                                reaction_forces_(10)
 {
     rotor_inertia_.setZero();
     Q_.setZero();
     Qdot_.setZero();
     global_pos_local_.setZero();
-
+    reaction_forces_.setZero();
     des_location_.setZero();
 
     DataManager* data_manager = DataManager::GetDataManager();
@@ -31,5 +32,7 @@ DracoBip_StateProvider::DracoBip_StateProvider():
 
     data_manager->RegisterData(&b_rfoot_contact_, INT, "rfoot_contact", 1);
     data_manager->RegisterData(&b_lfoot_contact_, INT, "lfoot_contact", 1);
+
+    data_manager->RegisterData(&reaction_forces_, DYN_VEC, "reaction_force", 10);
 }
 

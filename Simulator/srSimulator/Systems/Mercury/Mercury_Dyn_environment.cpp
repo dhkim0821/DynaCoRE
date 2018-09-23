@@ -45,8 +45,6 @@ Mercury_Dyn_environment::Mercury_Dyn_environment():
     prev_imu_vel.push_back(0.0); cur_imu_vel.push_back(0.0);
     cur_imu_acc.push_back(0.0);  
   }
-
-
 }
 
 void Mercury_Dyn_environment::ContolFunction( void* _data ) {

@@ -10,10 +10,12 @@
 
 #include <srTerrain/Ground.h>
 #include <srConfiguration.h>
+#include <ParamHandler/ParamHandler.hpp>
 
 DracoBip_Dyn_environment::DracoBip_Dyn_environment():
     ang_vel_(3)
 {
+    _ParamterSetup();
     /********** Space Setup **********/
     m_Space = new srSpace();
     m_ground = new Ground();
@@ -36,7 +38,7 @@ DracoBip_Dyn_environment::DracoBip_Dyn_environment():
     m_Space->SetTimestep(dracobip::servo_rate);
     m_Space->SetGravity(0.0,0.0,-9.81);
 
-    m_Space->SetNumberofSubstepForRendering(20);
+    m_Space->SetNumberofSubstepForRendering(num_substep_rendering_);
 
     printf("[DracoBip Dynamic Environment] Build Dynamic Environment\n");
 }
@@ -54,6 +56,7 @@ void DracoBip_Dyn_environment::ControlFunction( void* _data ) {
     for(int i(0); i<robot->num_act_joint_; ++i){
         p_data->jpos[i] = robot->r_joint_[i]->m_State.m_rValue[0];
         p_data->jvel[i] = robot->r_joint_[i]->m_State.m_rValue[1];
+        p_data->torque[i] = robot->r_joint_[i]->m_State.m_rValue[3];
     }
     pDyn_env->_CheckFootContact(p_data->rfoot_contact, p_data->lfoot_contact);
     for (int i(0); i<3; ++i){
@@ -107,11 +110,11 @@ void DracoBip_Dyn_environment::_CheckFootContact(bool & r_contact, bool & l_cont
     //std::cout<<rfoot_pos<<std::endl;
     //std::cout<<lfoot_pos<<std::endl;
 
-    if(  fabs(lfoot_pos[2]) < 0.028){
+    if(  fabs(lfoot_pos[2]) < 0.029){
         l_contact = true;
         //printf("left contact\n");
     }else { l_contact = false; }
-    if (fabs(rfoot_pos[2])<0.028  ){
+    if (fabs(rfoot_pos[2])<0.029  ){
         r_contact = true;
         //printf("right contact\n");
     } else { r_contact = false; }
@@ -124,7 +127,7 @@ void DracoBip_Dyn_environment::_hold_XY(int count){
     if(count == 1){
         initial_x = robot_->vp_joint_[0]->m_State.m_rValue[0];
     }
-    if( count < 1000 ){
+    if( ((double)count*dracobip::servo_rate) < release_time_ ){
         robot_->vp_joint_[0]->m_State.m_rCommand = 
             10000. * (initial_x - robot_->vp_joint_[0]->m_State.m_rValue[0])
             - 100. * robot_->vp_joint_[0]->m_State.m_rValue[1];
@@ -151,4 +154,13 @@ void DracoBip_Dyn_environment::_ZeroInput_VirtualJoint(){
 //printf("%f\n",robot->r_joint_[i]->m_State.m_rValue[0] );
 //}
 //printf("\n");
+
+void DracoBip_Dyn_environment::_ParamterSetup(){
+  ParamHandler handler(DracoBipConfigPath"SIM_sr_sim_setting.yaml");
+  handler.getInteger("num_substep_rendering", num_substep_rendering_);
+  handler.getValue("releasing_time", release_time_);
+  handler.getVector("imu_angular_velocity_bias", imu_ang_vel_bias_);
+  handler.getVector("imu_angular_velocity_noise_variance", imu_ang_vel_var_);
+}
+
 

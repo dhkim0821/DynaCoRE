@@ -12,11 +12,12 @@ target_link_libraries (simulation_dracobiped
   util
   ${OPENGL_LIBRARIES}
   dynacore_urdf
+  dynacore_param_handler
   DracoBip_Controller
-)
+  )
 
 if (APPLE)
-  target_link_libraries(simulation_dracobiped "-framework GLUT")
+    target_link_libraries(simulation_dracobiped "-framework GLUT")
 endif (APPLE)
 
 if (CMAKE_SYSTEM_NAME MATCHES Linux)

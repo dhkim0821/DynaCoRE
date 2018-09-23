@@ -11,6 +11,7 @@ public:
   ~DracoBip_StateProvider(){}
 
   dynacore::Vect3 imu_ang_vel_;
+  dynacore::Vector des_jpos_prev_;
   // Important!!!!!!!!
   int stance_foot_;
 

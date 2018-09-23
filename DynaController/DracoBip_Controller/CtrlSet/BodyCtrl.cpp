@@ -98,9 +98,6 @@ void BodyCtrl::_body_task_setup(){
     des_jvel_.setZero();
     des_jacc_.setZero();
     // Calculate IK for a desired height and orientation.
-    dynacore::Vector Q_cur = sp_->Q_;
-    dynacore::Vector config_sol;
-
     double body_height_cmd;
 
     // Set Desired Orientation
@@ -123,9 +120,12 @@ void BodyCtrl::_body_task_setup(){
     pos_des[2] = des_quat.z();
     pos_des[3] = des_quat.w();
     // Position
-    pos_des.tail(3) = ini_body_pos_;
+    //pos_des.tail(3) = ini_body_pos_;
+    pos_des[4] = 0.;
+    pos_des[5] = ini_body_pos_[1];
+    pos_des[6] = body_height_cmd;
 
-    double amp(0.05);
+    double amp(0.0);
     double omega(0.5 * 2. * M_PI);
 
     pos_des[6] += amp * sin(omega * state_machine_time_);
@@ -142,9 +142,9 @@ void BodyCtrl::_body_task_setup(){
     //dynacore::pretty_print(des_jvel_, std::cout, "des jvel");
     //dynacore::pretty_print(des_jacc_, std::cout, "des jacc");
     //
-    dynacore::Vect3 com_pos;
-    robot_sys_->getCoMPosition(com_pos);
-    dynacore::pretty_print(com_pos, std::cout, "com_pos");
+    //dynacore::Vect3 com_pos;
+    //robot_sys_->getCoMPosition(com_pos);
+    //dynacore::pretty_print(com_pos, std::cout, "com_pos");
 }
 
 void BodyCtrl::_double_contact_setup(){

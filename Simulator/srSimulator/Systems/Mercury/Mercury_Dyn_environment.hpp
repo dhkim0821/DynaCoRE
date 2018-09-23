@@ -65,7 +65,6 @@ private:
   void _ParamterSetup();
   int num_substep_rendering_;
   double release_time_;
-
   std::vector<double> imu_ang_vel_bias_;
   std::vector<double> imu_ang_vel_var_;
 };

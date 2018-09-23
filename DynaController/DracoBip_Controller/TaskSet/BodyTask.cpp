@@ -31,7 +31,7 @@ bool BodyTask::_UpdateCommand(void* pos_des,
     dynacore::Quaternion body_ori;
     robot_sys_->getOri(dracobip_link::torso, body_ori);
     dynacore::Quaternion ori_err = dynacore::QuatMultiply(des_ori, body_ori.inverse());
-    
+
     dynacore::Vect3 ori_err_so3;
     dynacore::convert(ori_err, ori_err_so3);
 
@@ -50,12 +50,12 @@ bool BodyTask::_UpdateCommand(void* pos_des,
         vel_des_[i+3] = vel_des[i+3];
         acc_des_[i+3] = acc_des[i+3];
     }
- 
+
     //printf("[Stance Task]\n");
-     //dynacore::pretty_print(acc_des, std::cout, "acc_des");
-     //dynacore::pretty_print(pos_err_, std::cout, "pos_err_");
-     //dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");
-     //dynacore::pretty_print(Jt_, std::cout, "Jt");
+    //dynacore::pretty_print(acc_des, std::cout, "acc_des");
+    //dynacore::pretty_print(pos_err_, std::cout, "pos_err_");
+    //dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");
+    //dynacore::pretty_print(Jt_, std::cout, "Jt");
 
     return true;
 }

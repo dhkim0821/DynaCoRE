@@ -11,6 +11,7 @@ class DracoBip: public SystemGenerator {
  protected:
   double hanging_height_;
   double collision_offset_;
+  int initial_posture_;
 
   virtual void _SetCollision();
   virtual void _SetInitialConf();

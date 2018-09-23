@@ -1,5 +1,7 @@
 #include "BodyCtrlTest.hpp"
 
+#include <DracoBip_Controller/CtrlSet/JPosTargetCtrl.hpp>
+#include <DracoBip_Controller/CtrlSet/DoubleContactTransCtrl.hpp>
 #include <DracoBip_Controller/CtrlSet/BodyCtrl.hpp>
 #include <DracoBip_Controller/CtrlSet/CoMCtrl.hpp>
 
@@ -8,11 +10,14 @@
 #include <DracoBip_Controller/DracoBip_DynaCtrl_Definition.h>
 
 BodyCtrlTest::BodyCtrlTest(RobotSystem* robot):Test(robot){
-  phase_ = BodyCtrlPhase::BC_body_ctrl;
+  //phase_ = BodyCtrlPhase::BC_body_ctrl;
+  phase_ = BodyCtrlPhase::BC_initial_jpos;
   state_list_.clear();
 
-  //body_ctrl_ = new BodyCtrl(robot);
-  body_ctrl_ = new CoMCtrl(robot);
+  jpos_ctrl_ = new JPosTargetCtrl(robot);
+  body_up_ctrl_ = new DoubleContactTransCtrl(robot);
+  body_ctrl_ = new BodyCtrl(robot);
+  //body_ctrl_ = new CoMCtrl(robot);
 
   state_list_.push_back(jpos_ctrl_);
   state_list_.push_back(body_up_ctrl_);
@@ -31,8 +36,8 @@ BodyCtrlTest::~BodyCtrlTest(){
 
 void BodyCtrlTest::TestInitialization(){
   // Yaml file name
-  //jpos_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
-  //body_up_ctrl_->CtrlInitialization("CTRL_move_to_target_height");
+  jpos_ctrl_->CtrlInitialization("CTRL_jpos_initialization");
+  body_up_ctrl_->CtrlInitialization("CTRL_move_to_target_height");
   body_ctrl_->CtrlInitialization("CTRL_stance");
 }
 
@@ -52,18 +57,18 @@ void BodyCtrlTest::_SettingParameter(){
   double tmp;
   std::vector<double> tmp_vec;
   handler.getVector("initial_jpos", tmp_vec);
-  //((JPosTargetCtrl*)jpos_ctrl_)->setTargetPosition(tmp_vec);
+  ((JPosTargetCtrl*)jpos_ctrl_)->setTargetPosition(tmp_vec);
 
   // Body Height
   handler.getValue("body_height", tmp);
-  //((ContactTransCtrlCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
+  ((DoubleContactTransCtrl*)body_up_ctrl_)->setStanceHeight(tmp);
   ((BodyCtrl*)body_ctrl_)->setStanceHeight(tmp);
 
   //// Timing Setup
-  //handler.getValue("jpos_initialization_time", tmp);
-  //((JPosTargetCtrl*)jpos_ctrl_)->setMovingTime(tmp);
-  //handler.getValue("body_lifting_time", tmp);
-  //((ContactTransCtrlCtrl*)body_up_ctrl_)->setStanceTime(tmp);
+  handler.getValue("jpos_initialization_time", tmp);
+  ((JPosTargetCtrl*)jpos_ctrl_)->setMovingTime(tmp);
+  handler.getValue("body_lifting_time", tmp);
+  ((DoubleContactTransCtrl*)body_up_ctrl_)->setStanceTime(tmp);
 
   // Stance Time
   handler.getValue("body_ctrl_time", tmp);

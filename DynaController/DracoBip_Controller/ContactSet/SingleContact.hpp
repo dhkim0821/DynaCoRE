@@ -1,27 +1,29 @@
-#ifndef DRACO_BIPED_DOUBLE_CONTACT
-#define DRACO_BIPED_DOUBLE_CONTACT
+#ifndef DRACO_BIPED_SINGLE_CONTACT
+#define DRACO_BIPED_SINGLE_CONTACT
 
 #include <WBDC/WBDC_ContactSpec.hpp>
-
 class RobotSystem;
 class DracoBip_StateProvider;
 
-class DoubleContact: public WBDC_ContactSpec{
+class SingleContact: public WBDC_ContactSpec{
 public:
-  DoubleContact(const RobotSystem*);
-  virtual ~DoubleContact();
+  SingleContact(const RobotSystem* robot, int contact_pt);
+  virtual ~SingleContact();
+
+  void setMaxFz(double max_fz){ max_Fz_ = max_fz; }
 
 protected:
+  double max_Fz_;
+
   virtual bool _UpdateJc();
   virtual bool _UpdateJcDotQdot();
   virtual bool _UpdateUf();
   virtual bool _UpdateInequalityVector();
 
-  void _setU(double toe, double heel, double mu, dynacore::Matrix & U);
-
   const RobotSystem* robot_sys_;
   DracoBip_StateProvider* sp_;
-};
 
+  int contact_pt_;
+};
 
 #endif
