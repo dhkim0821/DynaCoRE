@@ -61,8 +61,6 @@ class ConfigBodyFootPlanningCtrl:public SwingPlanningCtrl{
         
         dynacore::Vector ini_config_;
 
-        std::vector<double> foot_landing_offset_;
-
         std::vector<MinJerk_OneDimension*> min_jerk_offset_;
         BS_Basic<3, 3, 1, 2, 2> foot_traj_;
 };

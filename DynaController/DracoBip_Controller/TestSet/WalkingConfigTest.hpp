@@ -38,14 +38,14 @@ protected:
 
   Controller* jpos_ctrl_;
   Controller* body_up_ctrl_;
-  Controller* config_body_fix_ctrl_;
+  Controller* body_fix_ctrl_;
   // Right
   Controller* right_swing_start_trans_ctrl_;
-  Controller* config_right_swing_ctrl_;
+  Controller* right_swing_ctrl_;
   Controller* right_swing_end_trans_ctrl_;
   // Left
   Controller* left_swing_start_trans_ctrl_;
-  Controller* config_left_swing_ctrl_;
+  Controller* left_swing_ctrl_;
   Controller* left_swing_end_trans_ctrl_;
   const RobotSystem* robot_sys_;
 };

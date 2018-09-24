@@ -143,7 +143,7 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         sp_->global_pos_local_ += next_local_frame_location;
         sp_->global_jjpos_local_ += sp_->jjpos_rfoot_pos_; 
     }
-    // TEST
+    // TEST: Using MoCap to estimate Global Location
     if( ( (phase == WkConfigPhase::double_contact_1) ||
                 (phase == WkConfigPhase::double_contact_2) ) &&
             (num_step_>1) ){

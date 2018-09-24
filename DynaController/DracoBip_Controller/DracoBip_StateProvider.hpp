@@ -5,6 +5,8 @@
 #include <Utils/wrap_eigen.hpp>
 #include <Configuration.h>
 
+class RobotSystem;
+
 class DracoBip_StateProvider{
 public:
   static DracoBip_StateProvider* getStateProvider();
@@ -31,6 +33,13 @@ public:
   dynacore::Vector qddot_cmd_;
   dynacore::Vector reaction_forces_;
 
+  dynacore::Vect3 rfoot_pos_;
+  dynacore::Vect3 lfoot_pos_;
+  dynacore::Vect3 rfoot_vel_;
+  dynacore::Vect3 lfoot_vel_;
+
+
+  void SaveCurrentData(const RobotSystem* robot_sys);
 private:
   DracoBip_StateProvider();
 };

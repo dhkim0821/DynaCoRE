@@ -133,7 +133,6 @@ void TransitionConfigCtrl::_task_setup(){
     kin_wbc_->FindConfiguration(sp_->Q_, task_list_, contact_list_, 
             des_jpos_, des_jvel_, des_jacc_);
 
-    // TEST
     if(b_increase_){
         if(moving_foot_ == mercury_link::rightFoot){
             int swing_jidx = mercury_joint::rightAbduction - mercury::num_virtual;

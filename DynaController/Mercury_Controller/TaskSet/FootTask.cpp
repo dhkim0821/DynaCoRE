@@ -29,7 +29,7 @@ bool FootTask::_UpdateCommand(void* pos_des,
     robot_sys_->getPos(swing_foot_, foot_pos);
  
     for(int i(0); i<dim_task_; ++i){
-        pos_err_[i] = 10. * ((*pos_cmd)[i] - foot_pos[i] );
+        pos_err_[i] = ((*pos_cmd)[i] - foot_pos[i] );
         vel_des_[i] = vel_des[i];
         acc_des_[i] = acc_des[i];
     }

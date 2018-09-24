@@ -6,7 +6,7 @@
 class DracoBip_StateProvider;
 class RobotSystem;
 
-// CoM_{x, y, z}, BodyOri_{Rx, Ry, Rz}, Foot (x, y, z)
+// FootOri_{Rz}, Foot (x, y, z)
 class FootTask: public KinTask{
 public:
   FootTask(const RobotSystem*, int swing_foot);

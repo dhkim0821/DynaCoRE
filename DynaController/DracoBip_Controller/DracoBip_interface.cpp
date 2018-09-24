@@ -14,6 +14,7 @@
 // Test SET LIST
 #include <DracoBip_Controller/TestSet/JointCtrlTest.hpp>
 #include <DracoBip_Controller/TestSet/BodyCtrlTest.hpp>
+#include <DracoBip_Controller/TestSet/WalkingConfigTest.hpp>
 
 DracoBip_interface::DracoBip_interface():
     interface(),
@@ -134,8 +135,8 @@ void DracoBip_interface::_ParameterSetting(){
     if(tmp_string == "joint_ctrl_test"){
         test_ = new JointCtrlTest(robot_sys_);
     // Walking Test ***********************************
-    }else if(tmp_string == "walking_config_test"){
-        //test_ = new WalkingConfigTest(robot_sys_);
+    }else if(tmp_string == "walking_test"){
+        test_ = new WalkingConfigTest(robot_sys_);
     // Body Ctrl Test ***********************************
     }else if(tmp_string == "body_ctrl_test"){
         test_ = new BodyCtrlTest(robot_sys_);

@@ -1,5 +1,5 @@
-max_rf_z: 500
-min_rf_z: 500
+max_rf_z: 300
+min_rf_z: 10
 
 ## Feedback Gain
 # virtual (x,y,z, Rx,Ry,Rz) joint x6

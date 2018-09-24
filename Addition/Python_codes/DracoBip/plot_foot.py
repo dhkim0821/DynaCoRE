@@ -17,64 +17,33 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     row_index = starting_row_index
 
 
-    file_path = os.getcwd() + "/../../experiment_data_check/"
-
-
-    # data_minj_pos_des = \
-    # np.genfromtxt(file_path+'minj_pos.txt', delimiter=None, dtype=(float))
-    # data_minj_vel_des = \
-    # np.genfromtxt(file_path+'minj_vel.txt', delimiter=None, dtype=(float))
-    # data_minj_acc_des = \
-    # np.genfromtxt(file_path+'minj_acc.txt', delimiter=None, dtype=(float))
+    file_path = os.getcwd() + "/../../../experiment_data_check/"
 
     ## read files
     data_rfoot_pos_des = \
-    np.genfromtxt(file_path+'rfoot_pos_des.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'rfoot_pos_des.txt', delimiter=None, dtype=(float))
     data_rfoot_pos = \
-    np.genfromtxt(file_path+'rfoot_pos.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'rfoot_pos.txt', delimiter=None, dtype=(float))
     data_lfoot_pos_des = \
-    np.genfromtxt(file_path+'lfoot_pos_des.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'lfoot_pos_des.txt', delimiter=None, dtype=(float))
     data_lfoot_pos = \
-    np.genfromtxt(file_path+'lfoot_pos.txt', delimiter=None, dtype=(float))
-    data_jjpos_rfoot_pos = \
-    np.genfromtxt(file_path+'jjpos_rfoot_pos.txt', delimiter=None, dtype=(float))
-    data_jjpos_lfoot_pos = \
-    np.genfromtxt(file_path+'jjpos_lfoot_pos.txt', delimiter=None, dtype=(float))
- 
-    data_LED = \
-            np.genfromtxt(file_path+'LED_Pos.txt', delimiter=None, dtype=(float))
-    # data_LED_kin = \
-            # np.genfromtxt(file_path+'LED_Kin_Pos.txt', delimiter=None, dtype=(float))
-    data_foot_vel_des = \
-    np.genfromtxt(file_path+'rfoot_vel_des.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'lfoot_pos.txt', delimiter=None, dtype=(float))
+
+    data_rfoot_vel_des = \
+            np.genfromtxt(file_path+'rfoot_vel_des.txt', delimiter=None, dtype=(float))
     data_rfoot_vel = \
-    np.genfromtxt(file_path+'rfoot_vel.txt', delimiter=None, dtype=(float))
-    data_rfoot_acc_des = \
-    np.genfromtxt(file_path+'rfoot_acc_des.txt', delimiter=None, dtype=(float))
-    data_lfoot_acc_des = \
-    np.genfromtxt(file_path+'lfoot_acc_des.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'rfoot_vel.txt', delimiter=None, dtype=(float))
+    data_lfoot_vel_des = \
+            np.genfromtxt(file_path+'lfoot_vel_des.txt', delimiter=None, dtype=(float))
+    data_lfoot_vel = \
+            np.genfromtxt(file_path+'lfoot_vel.txt', delimiter=None, dtype=(float))
 
 
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
     st_idx = 5
-    # end_idx = len(data_x) - 1000
-    end_idx = st_idx + 2000
+    end_idx = len(data_x)
+    # end_idx = st_idx + 2000
     data_x = data_x[st_idx:end_idx]
-
-    rfoot_LED_idx = [6, 7];
-    lfoot_LED_idx = [11, 12];
-    # data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]) \
-            # + (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]))/2.;
-
-    # data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]) \
-            # + (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3]))/2.;
-
-    data_LED_rfoot_out = (data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]) 
-    data_LED_lfoot_out = (data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3])
-    # data_LED_rfoot_in = (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]) 
-    # data_LED_lfoot_in = (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3])
-
-
 
 
     # PHASE MARKER #
@@ -108,7 +77,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(2, len(data_x)):
         if data_rf_contact[i] != data_rf_contact[i-1]:
             rf_contact_index_change.append(i)            
-                  
 
 
     axes = plt.gca()
@@ -121,23 +89,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_rfoot_pos_des[st_idx:end_idx,i-1], \
                 "r-", linewidth = 3)
-        # plt.plot(data_x, data_minj_pos_des[st_idx:end_idx, i-1], color="black", linewidth=1.5)
-        plt.plot(data_x, data_jjpos_rfoot_pos[st_idx:end_idx, i-1], \
-                color="black", linewidth=1.5)
         plt.plot(data_x, data_rfoot_pos[st_idx:end_idx,i-1], "b-")
 
-        # plt.plot(data_x, data_LED_rfoot[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
-                # linewidth=2.0, color='orange')
-        plt.plot(data_x, data_LED_rfoot_out[st_idx:end_idx, i-1] - data_LED_lfoot_out[st_idx:end_idx, i-1], \
-                linewidth=1.0, color="indigo")
-        # plt.plot(data_x, data_LED_rfoot_in[st_idx:end_idx, i-1] - data_LED_lfoot[st_idx:end_idx, i-1], \
-                # linewidth=1.0, color="indigo")
-        ## TEST 
-        # plt.plot(data_x, data_LED_rfoot[st_idx:end_idx, i-1], linewidth=2.0, color='orange')
-        # plt.plot(data_x, data_LED_rfoot_out[st_idx:end_idx, i-1], linewidth=1.0, color="indigo")
-        # plt.plot(data_x, data_LED_rfoot_in[st_idx:end_idx, i-1], linewidth=1.0, color="indigo")
-       # plt.legend(('command', 'pos'), loc='upper left')
-        # phase marker #
+       # phase marker #
         for j in phseChange:
             # phase line
             plt.axvline(x=data_x[j],color='indigo',linestyle='-')
@@ -167,10 +121,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             # Plot Square Wave
             plt.plot([t_start, t_end, t_end], [y_start, y_start, y_end], color='magenta')
             plt.text((t_start+(t_end-t_start)/2.0), y_start,'R%d'%(data_rf_contact[rf_contact_index_change[j-1]]),color='magenta')
-
-
-
-
         plt.grid(True)
     plt.xlabel('time (sec)')
     ## increment figure number and index
@@ -188,21 +138,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_lfoot_pos_des[st_idx:end_idx,i-1],\
                 "r-", linewidth=3)
-        plt.plot(data_x, data_jjpos_lfoot_pos[st_idx:end_idx, i-1], color="black", linewidth=1.5)
         plt.plot(data_x, data_lfoot_pos[st_idx:end_idx,i-1], "b-")
 
-        # plt.plot(data_x, data_LED_lfoot[st_idx:end_idx, i-1] \
-                # - data_LED_rfoot[st_idx:end_idx, i-1], \
-                # linewidth=2.0, color='orange')
-
-        plt.plot(data_x, data_LED_lfoot_out[st_idx:end_idx, i-1] \
-                - data_LED_rfoot_out[st_idx:end_idx, i-1], \
-                linewidth=1.0, color="indigo")
-
-        # plt.plot(data_x, data_LED_lfoot_in[st_idx:end_idx, i-1] \
-                # - data_LED_rfoot[st_idx:end_idx, i-1], \
-                # linewidth=1.0, color="indigo")
-       # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:
             # phase line
@@ -233,8 +170,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             # Plot Square Wave
             plt.plot([t_start, t_end, t_end], [y_start, y_start, y_end], color='magenta')
             plt.text((t_start+(t_end-t_start)/2.0), y_start,'R%d'%(data_rf_contact[rf_contact_index_change[j-1]]),color='magenta')
-
-
 
 
         plt.grid(True)
@@ -253,9 +188,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('rfoot vel')
     for i in range(1,4,1):
         ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_foot_vel_des[st_idx:end_idx,i-1], "r-")
+        plt.plot(data_x, data_rfoot_vel_des[st_idx:end_idx,i-1], "r-")
         plt.plot(data_x, data_rfoot_vel[st_idx:end_idx,i-1], "b-")
-        # plt.plot(data_x, data_minj_vel_des[st_idx:end_idx, i-1], color="black", linewidth=1.5)
         
         # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
@@ -272,55 +206,6 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         col_index += 1
     elif plot_configuration == PLOT_VERTICALLY:
         row_index +=1    
-
-    ## plot foot acc
-    fig = plt.figure(figure_number)
-    plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
-    fig.canvas.set_window_title('rfoot acc')
-    for i in range(1,4,1):
-        ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_rfoot_acc_des[st_idx:end_idx,i-1], "r-")
-        # plt.plot(data_x, data_minj_acc_des[st_idx:end_idx, i-1], color="black", linewidth=1.5)
-
-        # phase marker #
-        for j in phseChange:
-            # phase line
-            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
-            # phase number
-            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
-        plt.grid(True)
-    plt.xlabel('time (sec)')
-    ## increment figure number and index
-    figure_number += 1
-    if plot_configuration == PLOT_HORIZONTALLY:
-        col_index += 1
-    elif plot_configuration == PLOT_VERTICALLY:
-        row_index +=1    
-
-    ## plot foot acc
-    fig = plt.figure(figure_number)
-    plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
-    fig.canvas.set_window_title('lfoot acc')
-    for i in range(1,4,1):
-        ax1 = plt.subplot(3, 1, i)
-        plt.plot(data_x, data_lfoot_acc_des[st_idx:end_idx,i-1], "r-")
-        # phase marker #
-        for j in phseChange:
-            # phase line
-            plt.axvline(x=data_x[j],color='indigo',linestyle='-')
-            # phase number
-            plt.text(data_x[j],ax1.get_ylim()[1],'%d'%(data_phse[j]),color='indigo')
-        plt.grid(True)
-    plt.xlabel('time (sec)')
-    ## increment figure number and index
-    figure_number += 1
-    if plot_configuration == PLOT_HORIZONTALLY:
-        col_index += 1
-    elif plot_configuration == PLOT_VERTICALLY:
-        row_index +=1    
-
-
-
 
 
 if __name__ == "__main__":

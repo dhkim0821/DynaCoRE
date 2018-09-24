@@ -43,7 +43,6 @@ SingleContactTransCtrl::SingleContactTransCtrl(RobotSystem* robot,
     wblc_data_->tau_min_ = dynacore::Vector::Constant(dracobip::num_act_joint, -100.);
     wblc_data_->tau_max_ = dynacore::Vector::Constant(dracobip::num_act_joint, 100.);
 
-
     base_task_ = new BodyTask(robot_sys_);
     sp_ = DracoBip_StateProvider::getStateProvider();
     //printf("[Transition Controller] Constructed\n");
@@ -63,7 +62,7 @@ void SingleContactTransCtrl::OneStep(void* _cmd){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
     dynacore::Vector gamma;
-    
+
     _contact_setup();
     _task_setup();
     _compute_torque_wblc(gamma);
@@ -90,15 +89,14 @@ void SingleContactTransCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
                 sp_->Q_.segment(dracobip::num_virtual, dracobip::num_act_joint))
         + Kd_.cwiseProduct(des_jvel_ - sp_->Qdot_.tail(dracobip::num_act_joint));
 
-    //dynacore::pretty_print(des_jpos_, std::cout, "des_jpos");
-    //dynacore::pretty_print(des_jvel_, std::cout, "des_jvel");
-    //dynacore::pretty_print(des_jacc_, std::cout, "des_jacc");
-    //dynacore::pretty_print(des_jacc_cmd, std::cout, "des_jacc");
-
     wblc_->MakeWBLC_Torque(
             des_jacc_cmd, contact_list_,
             gamma, wblc_data_);
 
+    //dynacore::pretty_print(des_jpos_, std::cout, "des_jpos");
+    //dynacore::pretty_print(des_jvel_, std::cout, "des_jvel");
+    //dynacore::pretty_print(des_jacc_, std::cout, "des_jacc");
+    //dynacore::pretty_print(des_jacc_cmd, std::cout, "des_jacc");
     //dynacore::pretty_print(gamma, std::cout, "gamma");
 
     sp_->qddot_cmd_ = wblc_data_->qddot_;
@@ -116,15 +114,19 @@ void SingleContactTransCtrl::_task_setup(){
     rpy_des.setZero();
     dynacore::convert(rpy_des, des_quat);
    
-    dynacore::Vector pos_des(5); pos_des.setZero();
+    dynacore::Vector pos_des(7); pos_des.setZero();
     dynacore::Vector vel_des(base_task_->getDim()); vel_des.setZero();
     dynacore::Vector acc_des(base_task_->getDim()); acc_des.setZero();
 
-    pos_des[0] = base_height_cmd;
-    pos_des[1] = des_quat.x();
-    pos_des[2] = des_quat.y();
-    pos_des[3] = des_quat.z();
-    pos_des[4] = des_quat.w();
+    pos_des[0] = des_quat.x();
+    pos_des[1] = des_quat.y();
+    pos_des[2] = des_quat.z();
+    pos_des[3] = des_quat.w();
+
+    pos_des[4] = 0.;
+    pos_des[5] = ini_base_pos_[1];
+    pos_des[6] = base_height_cmd;
+
 
     base_task_->UpdateTask(&(pos_des), vel_des, acc_des);
     task_list_.push_back(base_task_);
@@ -138,7 +140,7 @@ void SingleContactTransCtrl::_task_setup(){
             int swing_jidx = dracobip_joint::rHipYaw - dracobip::num_virtual;
             double h(state_machine_time_/end_time_);
 
-            for(int i(0); i<3; ++i){
+            for(int i(0); i < dracobip::num_leg_joint; ++i){
                 des_jpos_[i + swing_jidx] *= h; 
                 des_jpos_[i + swing_jidx] += 
                     (1. - h)*sp_->des_jpos_prev_[swing_jidx + i];
@@ -148,7 +150,7 @@ void SingleContactTransCtrl::_task_setup(){
             int swing_jidx = dracobip_joint::lHipYaw - dracobip::num_virtual;
             double h(state_machine_time_/end_time_);
 
-            for(int i(0); i<3; ++i){
+            for(int i(0); i < dracobip::num_leg_joint; ++i){
                 des_jpos_[i + swing_jidx] *= h;
                 des_jpos_[i + swing_jidx] += 
                     (1. - h)*sp_->des_jpos_prev_[swing_jidx + i];
@@ -181,25 +183,35 @@ void SingleContactTransCtrl::_contact_setup(){
     contact_list_.push_back(rfoot_contact_);
     contact_list_.push_back(lfoot_contact_);
 
+    int jidx_offset(0);
     if(moving_foot_ == dracobip_link::lAnkle) {
-        wblc_data_->W_rf_[3] = rf_weight;
-        wblc_data_->W_rf_[4] = rf_weight;
-        wblc_data_->W_rf_[5] = rf_weight_z;
+        jidx_offset = 5;
+        wblc_data_->W_rf_[0 + jidx_offset] = rf_weight;
+        wblc_data_->W_rf_[1 + jidx_offset] = rf_weight;
+        wblc_data_->W_rf_[2 + jidx_offset] = rf_weight;
+        wblc_data_->W_rf_[3 + jidx_offset] = rf_weight;
+        wblc_data_->W_rf_[4 + jidx_offset] = rf_weight_z;
 
-        wblc_data_->W_xddot_[3] = foot_weight;
-        wblc_data_->W_xddot_[4] = foot_weight;
-        wblc_data_->W_xddot_[5] = foot_weight;
+        wblc_data_->W_xddot_[0 + jidx_offset] = foot_weight;
+        wblc_data_->W_xddot_[1 + jidx_offset] = foot_weight;
+        wblc_data_->W_xddot_[2 + jidx_offset] = foot_weight;
+        wblc_data_->W_xddot_[3 + jidx_offset] = foot_weight;
+        wblc_data_->W_xddot_[4 + jidx_offset] = foot_weight;
 
         ((SingleContact*)lfoot_contact_)->setMaxFz(upper_lim); 
     }
     else if(moving_foot_ == dracobip_link::rAnkle) {
-        wblc_data_->W_rf_[0] = rf_weight;
-        wblc_data_->W_rf_[1] = rf_weight;
-        wblc_data_->W_rf_[2] = rf_weight_z;
+        wblc_data_->W_rf_[0 + jidx_offset] = rf_weight;
+        wblc_data_->W_rf_[1 + jidx_offset] = rf_weight;
+        wblc_data_->W_rf_[2 + jidx_offset] = rf_weight;
+        wblc_data_->W_rf_[3 + jidx_offset] = rf_weight;
+        wblc_data_->W_rf_[4 + jidx_offset] = rf_weight_z;
 
-        wblc_data_->W_xddot_[0] = foot_weight;
-        wblc_data_->W_xddot_[1] = foot_weight;
-        wblc_data_->W_xddot_[2] = foot_weight;
+        wblc_data_->W_xddot_[0 + jidx_offset] = foot_weight;
+        wblc_data_->W_xddot_[1 + jidx_offset] = foot_weight;
+        wblc_data_->W_xddot_[2 + jidx_offset] = foot_weight;
+        wblc_data_->W_xddot_[3 + jidx_offset] = foot_weight;
+        wblc_data_->W_xddot_[4 + jidx_offset] = foot_weight;
 
         ((SingleContact*)rfoot_contact_)->setMaxFz(upper_lim); 
     }
@@ -209,6 +221,8 @@ void SingleContactTransCtrl::FirstVisit(){
     // printf("[Transition] Start\n");
     ini_base_height_ = sp_->Q_[dracobip_joint::virtual_Z];
     ctrl_start_time_ = sp_->curr_time_;
+
+    robot_sys_->getPos(dracobip_link::torso, ini_base_pos_);
 }
 
 void SingleContactTransCtrl::LastVisit(){

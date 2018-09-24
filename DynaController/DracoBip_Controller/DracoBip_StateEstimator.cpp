@@ -78,6 +78,7 @@ void DracoBip_StateEstimator::Initialization(DracoBip_SensorData* data){
     else sp_->b_lfoot_contact_ = 0;
 
     //_RBDL_TEST();
+    sp_->SaveCurrentData(robot_sys_);
 }
 void DracoBip_StateEstimator::Update(DracoBip_SensorData* data){
     curr_config_.setZero();
@@ -137,6 +138,8 @@ void DracoBip_StateEstimator::Update(DracoBip_SensorData* data){
     // Left Contact 
     if(data->lfoot_contact) sp_->b_lfoot_contact_ = 1;
     else sp_->b_lfoot_contact_ = 0;
+    
+    sp_->SaveCurrentData(robot_sys_);
 }
 
 void DracoBip_StateEstimator::_RBDL_TEST(){

@@ -1,6 +1,7 @@
 #include "DracoBip_StateProvider.hpp"
 #include <Utils/DataManager.hpp>
 #include "DracoBip_DynaCtrl_Definition.h"
+#include <DracoBip/DracoBip_Model.hpp>
 
 DracoBip_StateProvider* DracoBip_StateProvider::getStateProvider(){
     static DracoBip_StateProvider state_provider_;
@@ -23,6 +24,11 @@ DracoBip_StateProvider::DracoBip_StateProvider():
     reaction_forces_.setZero();
     des_location_.setZero();
 
+    rfoot_pos_.setZero();
+    lfoot_pos_.setZero();
+    rfoot_vel_.setZero();
+    lfoot_vel_.setZero();
+
     DataManager* data_manager = DataManager::GetDataManager();
 
     data_manager->RegisterData(&curr_time_, DOUBLE, "time");
@@ -34,5 +40,16 @@ DracoBip_StateProvider::DracoBip_StateProvider():
     data_manager->RegisterData(&b_lfoot_contact_, INT, "lfoot_contact", 1);
 
     data_manager->RegisterData(&reaction_forces_, DYN_VEC, "reaction_force", 10);
+
+   data_manager->RegisterData(&rfoot_pos_, VECT3, "rfoot_pos", 3); 
+   data_manager->RegisterData(&lfoot_pos_, VECT3, "lfoot_pos", 3); 
+   data_manager->RegisterData(&rfoot_vel_, VECT3, "rfoot_vel", 3); 
+   data_manager->RegisterData(&lfoot_vel_, VECT3, "lfoot_vel", 3); 
 }
 
+void DracoBip_StateProvider::SaveCurrentData(const RobotSystem* robot_sys){
+    robot_sys->getPos(dracobip_link::rAnkle, rfoot_pos_);
+    robot_sys->getPos(dracobip_link::lAnkle, lfoot_pos_);
+    robot_sys->getPos(dracobip_link::rAnkle, rfoot_vel_);
+    robot_sys->getPos(dracobip_link::lAnkle, lfoot_vel_);
+}

@@ -17,7 +17,7 @@ class SwingPlanningCtrl:public Controller{
         SwingPlanningCtrl(const RobotSystem* robot, int swing_foot, Planner* planner):
             Controller(robot),
             swing_foot_(swing_foot),
-            num_planning_(0),
+            b_replanning_(false),
             planner_(planner),
             planning_frequency_(0.),
             replan_moment_(0.),
@@ -33,7 +33,7 @@ class SwingPlanningCtrl:public Controller{
         virtual ~SwingPlanningCtrl(){
         }
 
-        void setPlanningFrequency(double freq){  planning_frequency_ = freq; }
+        void setReplanning(bool replan){  b_replanning_ = replan; }
         void setSwingTime(double swing_time){ 
             end_time_ = swing_time; 
             half_swing_time_ = end_time_/2.;
@@ -70,7 +70,8 @@ class SwingPlanningCtrl:public Controller{
         dynacore::Vect3 default_target_loc_;
 
         double planning_frequency_;
-        int num_planning_;
+        bool b_replanning_;
+        bool b_replaned_;
         double t_prime_x_;
         double t_prime_y_;
 

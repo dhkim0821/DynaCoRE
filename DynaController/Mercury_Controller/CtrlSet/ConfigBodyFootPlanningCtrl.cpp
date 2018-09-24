@@ -242,10 +242,9 @@ void ConfigBodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
        sp_->average_vel_[i] = (sp_->Q_[i] - ini_config_[i])/state_machine_time_;
     }
 
-    // TEST 
+    // TEST: estimated com selection
     for(int i(0); i<2; ++i){
         //com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
-        // TEST jpos update must be true
         // com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
         // com_pos[i] += body_pt_offset_[i];
         // com_vel[i] = sp_->average_vel_[i]; 
@@ -288,11 +287,6 @@ void ConfigBodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
  
     target_loc[2] = initial_target_loc_[2];
     // target_loc[2] -= push_down_height_;
-
-    // TEST
-    for(int i(0); i<2; ++i){
-        target_loc[i] += foot_landing_offset_[i];
-    }
     dynacore::pretty_print(target_loc, std::cout, "next foot loc");
 }
 
@@ -400,8 +394,6 @@ void ConfigBodyFootPlanningCtrl::CtrlInitialization(
     for(int i(0); i<2; ++i){
         body_pt_offset_[i] = tmp_vec[i];
     }
-
-    handler.getVector("foot_landing_offset", foot_landing_offset_);
 
     static bool b_bodypute_eigenvalue(true);
     if(b_bodypute_eigenvalue){

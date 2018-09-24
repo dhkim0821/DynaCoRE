@@ -97,7 +97,6 @@ void ConfigBodyCtrl::_base_task_setup(){
     dynacore::Quaternion des_quat;
     rpy_des.setZero();
 
-    // TEST
     rpy_des[1] = sp_->des_body_pitch_;
     dynacore::convert(rpy_des, des_quat);    
 
