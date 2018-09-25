@@ -1,13 +1,18 @@
 #include "BodyCtrl.hpp"
 #include <DracoBip_Controller/DracoBip_StateProvider.hpp>
 #include <DracoBip_Controller/TaskSet/BodyTask.hpp>
-#include <DracoBip_Controller/ContactSet/DoubleContact.hpp>
+#include <DracoBip_Controller/TaskSet/SelectedJointTask.hpp>
 #include <DracoBip_Controller/DracoBip_StateProvider.hpp>
 #include <WBLC/KinWBC.hpp>
 #include <WBLC/WBLC.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Utils/DataManager.hpp>
 #include <DracoBip_Controller/DracoBip_DynaCtrl_Definition.h>
+
+#include <DracoBip_Controller/ContactSet/SingleContact.hpp>
+#include <DracoBip_Controller/ContactSet/FootNoYaw.hpp>
+#include <DracoBip_Controller/ContactSet/FootLinear.hpp>
+#include <DracoBip_Controller/ContactSet/FootLinear.hpp>
 
 BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
     end_time_(1000.0),
@@ -19,6 +24,13 @@ BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
     Kp_(dracobip::num_act_joint),
     Kd_(dracobip::num_act_joint)
 {
+    selected_jidx_.clear();
+    selected_jidx_.push_back(dracobip_joint::rHipYaw);
+    selected_jidx_.push_back(dracobip_joint::lHipYaw);
+
+    selected_joint_task_ = new SelectedJointTask(selected_jidx_);
+    body_task_ = new BodyTask(robot);
+
     std::vector<bool> act_list;
     act_list.resize(dracobip::num_qdot, true);
     for(int i(0); i<dracobip::num_virtual; ++i) act_list[i] = false;
@@ -26,14 +38,15 @@ BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
     kin_wbc_ = new KinWBC(act_list);
     wblc_ = new WBLC(act_list);
     wblc_data_ = new WBLC_ExtraData();
-    body_task_ = new BodyTask(robot);
-    double_contact_ = new DoubleContact(robot);
+    rfoot_contact_ = new ContactType(robot_sys_, dracobip_link::rAnkle);
+    lfoot_contact_ = new ContactType(robot_sys_, dracobip_link::lAnkle);
+    dim_contact_ = rfoot_contact_->getDim() + lfoot_contact_->getDim();
 
     wblc_data_->W_qddot_ = dynacore::Vector::Constant(dracobip::num_qdot, 100.0);
-    wblc_data_->W_rf_ = dynacore::Vector::Constant(double_contact_->getDim(), 0.1);
-    wblc_data_->W_xddot_ = dynacore::Vector::Constant(double_contact_->getDim(), 1000.0);
-    wblc_data_->W_rf_[4] = 0.01;
-    wblc_data_->W_rf_[9] = 0.01;
+    wblc_data_->W_rf_ = dynacore::Vector::Constant(dim_contact_, 0.1);
+    wblc_data_->W_xddot_ = dynacore::Vector::Constant(dim_contact_, 1000.0);
+    wblc_data_->W_rf_[rfoot_contact_->getFzIndex()] = 0.01;
+    wblc_data_->W_rf_[rfoot_contact_->getDim() + lfoot_contact_->getFzIndex()] = 0.01;
 
     // torque limit default setting
     wblc_data_->tau_min_ = dynacore::Vector::Constant(dracobip::num_act_joint, -100.);
@@ -46,9 +59,10 @@ BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
 
 BodyCtrl::~BodyCtrl(){
     delete body_task_;
-    delete double_contact_;
     delete wblc_;
     delete wblc_data_;
+    delete rfoot_contact_;
+    delete lfoot_contact_;
 }
 
 void BodyCtrl::OneStep(void* _cmd){
@@ -97,6 +111,13 @@ void BodyCtrl::_body_task_setup(){
     des_jpos_ = jpos_ini_;
     des_jvel_.setZero();
     des_jacc_.setZero();
+
+    dynacore::Vector jpos_des(2); jpos_des.setZero();
+    dynacore::Vector jvel_des(2); jvel_des.setZero();
+    dynacore::Vector jacc_des(2); jacc_des.setZero();
+
+    selected_joint_task_->UpdateTask(&(jpos_des), jvel_des, jacc_des);
+ 
     // Calculate IK for a desired height and orientation.
     double body_height_cmd;
 
@@ -132,11 +153,13 @@ void BodyCtrl::_body_task_setup(){
     vel_des[5] = amp * omega * cos(omega * state_machine_time_);
 
     body_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+    
+    task_list_.push_back(selected_joint_task_);
     task_list_.push_back(body_task_);
 
     kin_wbc_->FindConfiguration(sp_->Q_, task_list_, contact_list_, 
             des_jpos_, des_jvel_, des_jacc_);
-    
+
     //dynacore::pretty_print(jpos_ini_, std::cout, "jpos ini");
     //dynacore::pretty_print(des_jpos_, std::cout, "des jpos");
     //dynacore::pretty_print(des_jvel_, std::cout, "des jvel");
@@ -148,8 +171,11 @@ void BodyCtrl::_body_task_setup(){
 }
 
 void BodyCtrl::_double_contact_setup(){
-    double_contact_->UpdateContactSpec();
-    contact_list_.push_back(double_contact_);
+    rfoot_contact_->UpdateContactSpec();
+    lfoot_contact_->UpdateContactSpec();
+
+    contact_list_.push_back(rfoot_contact_);
+    contact_list_.push_back(lfoot_contact_);
 }
 
 void BodyCtrl::FirstVisit(){

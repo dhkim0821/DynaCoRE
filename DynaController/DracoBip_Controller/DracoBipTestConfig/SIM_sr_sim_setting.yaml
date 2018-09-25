@@ -1,9 +1,11 @@
 initial_posture: 2
 # hanging_height: 1.15
-hanging_height: 1.08
-num_substep_rendering: 120
-#releasing_time: 4.5
-releasing_time: 100
+hanging_height: 1.06
+num_substep_rendering: 1000
+
+releasing_time: 35
+#releasing_time: 1000
+
 imu_angular_velocity_bias: [0, 0, 0]
 #imu_angular_velocity_noise_variance: [0.01, 0.01, 0.01]
 imu_angular_velocity_noise_variance: [0.0, 0.0, 0.0]

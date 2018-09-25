@@ -7,7 +7,7 @@
 #include <Utils/utilities.hpp>
 
 FootTask::FootTask(const RobotSystem* robot, int swing_foot):
-    KinTask(4),
+    KinTask(3),
     robot_sys_(robot),
     swing_foot_(swing_foot)
 {
@@ -42,12 +42,13 @@ bool FootTask::_UpdateCommand(void* pos_des,
     pos_err_[0] = ori_err_so3[2];
 
     // TODO
+    int ori_task_dim(0);
     vel_des_[0] = 0.;
     acc_des_[0] = 0.;
-    for(int i(1); i<dim_task_; ++i){
-        pos_err_[i] = ((*pos_cmd)[i + 3] - foot_pos[i-1] );
-        vel_des_[i] = vel_des[i];
-        acc_des_[i] = acc_des[i];
+    for(int i(0); i<dim_task_; ++i){
+        pos_err_[i + ori_task_dim] = ((*pos_cmd)[i + 4] - foot_pos[i] );
+        vel_des_[i + ori_task_dim] = vel_des[i];
+        acc_des_[i + ori_task_dim] = acc_des[i];
     }
 
      //dynacore::pretty_print(pos_err_, std::cout, "pos err");
@@ -61,9 +62,10 @@ bool FootTask::_UpdateTaskJacobian(){
     dynacore::Matrix Jswing, Jstance;
     robot_sys_->getFullJacobian(swing_foot_, Jswing);
     robot_sys_->getFullJacobian(stance_foot_, Jstance);
-    //Jt_ = Jswing.block(3,0,3, dracobip::num_qdot) - Jstance.block(3, 0, 3, dracobip::num_qdot);
-    Jt_= Jswing.block(2,0,4, dracobip::num_qdot);
-    (Jt_.block(0, 0, 4, dracobip::num_virtual)).setZero();
+    //Jt_ = Jswing.block(2,0,dim_task_, dracobip::num_qdot) 
+        //- Jstance.block(2, 0, dim_task_, dracobip::num_qdot);
+    Jt_= Jswing.block(3,0,3, dracobip::num_qdot);
+    (Jt_.block(0, 0, 3, dracobip::num_virtual)).setZero();
     
     // dynacore::pretty_print(Jswing, std::cout, "Jswing");
     // dynacore::pretty_print(Jfoot, std::cout, "Jfoot");

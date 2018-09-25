@@ -500,7 +500,11 @@ void SystemGenerator::_SetLinkIdx(){
     for(int i(0);i<joint_names_.size();i++){
         link_names_.push_back(joint_map_[joint_names_[i]]->child_link_name);
         link_idx_map_.insert(make_pair(joint_map_[joint_names_[i]]->child_link_name,i+1));
+
+        //printf("joint name: %s\n", joint_names_[i].c_str());
+        //printf("child_link name: %s\n", joint_map_[joint_names_[i]]->child_link_name.c_str());
     }
+
 }
 
 //r_joint_idx_map_

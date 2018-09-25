@@ -168,8 +168,8 @@ void srSimpleViewer::CBKeyboardFunc(unsigned char key, int /*x*/, int /*y*/)
 		}
 		else
 		{
-			s_pRenderer->ShowCollision();
-			s_pRenderer->HideCollisionCoordinate();
+            s_pRenderer->ShowCollision();
+            s_pRenderer->HideCollisionCoordinate();
 		}
 		glutPostRedisplay();
 		break;

@@ -18,6 +18,7 @@ namespace dracobip_link{
 }
 
 namespace dracobip_joint{
+    constexpr int  virtual_X = 0;
     constexpr int  virtual_Y = 1;
     constexpr int  virtual_Z = 2;
     constexpr int  virtual_Rx = 3;

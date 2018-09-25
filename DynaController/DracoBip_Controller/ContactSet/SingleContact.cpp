@@ -6,6 +6,7 @@
 SingleContact::SingleContact(const RobotSystem* robot, int pt):WBDC_ContactSpec(5),
     contact_pt_(pt), max_Fz_(1000.)
 {
+    idx_Fz_ = 4;
     robot_sys_ = robot;
     sp_ = DracoBip_StateProvider::getStateProvider();
   // Foot (Local): Ry, Rz, X, Y, Z

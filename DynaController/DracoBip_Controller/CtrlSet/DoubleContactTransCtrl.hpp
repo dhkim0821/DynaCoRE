@@ -36,7 +36,10 @@ class DoubleContactTransCtrl: public Controller{
         double min_rf_z_;
         int dim_contact_;
 
+        std::vector<int> selected_jidx_;
         Task* base_task_;
+        Task* selected_joint_task_;
+
         WBDC_ContactSpec* rfoot_contact_;
         WBDC_ContactSpec* lfoot_contact_;
         WBDC_ContactSpec* double_contact_;

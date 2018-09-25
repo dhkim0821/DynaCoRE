@@ -27,21 +27,25 @@ void DracoBip::_SetCollision(){
     collision_[i] = new srCollision();
   }
 
-  collision_[0]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
-  collision_[0]->GetGeomInfo().SetDimension(0.055, 0.0, 0.0);
-  collision_[0]->SetLocalFrame(EulerZYX(Vec3(0,0,0), Vec3(0.07, 0, 0)));
+  //collision_[0]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
+  collision_[0]->GetGeomInfo().SetShape(srGeometryInfo::CAPSULE);
+  collision_[0]->GetGeomInfo().SetDimension(0.055, 0.03, 0.0);
+  collision_[0]->SetLocalFrame(EulerZYX(Vec3(0,0,M_PI/2.0), Vec3(0.07, 0, 0)));
  
-  collision_[1]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
-  collision_[1]->GetGeomInfo().SetDimension(0.055, 0.0, 0.0);
-  collision_[1]->SetLocalFrame(EulerZYX(Vec3(0,0,0), Vec3(-0.06, 0, 0)));
+  //collision_[1]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
+  collision_[1]->GetGeomInfo().SetShape(srGeometryInfo::CAPSULE);
+  collision_[1]->GetGeomInfo().SetDimension(0.055, 0.03, 0.0);
+  collision_[1]->SetLocalFrame(EulerZYX(Vec3(0,0,M_PI/2.0), Vec3(-0.06, 0, 0)));
   
-  collision_[2]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
-  collision_[2]->GetGeomInfo().SetDimension(0.055, 0.0, 0.0);
-  collision_[2]->SetLocalFrame(EulerZYX(Vec3(0,0,0), Vec3(0.07, 0.0, 0)));
+  //collision_[2]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
+  collision_[2]->GetGeomInfo().SetShape(srGeometryInfo::CAPSULE);
+  collision_[2]->GetGeomInfo().SetDimension(0.055, 0.03, 0.0);
+  collision_[2]->SetLocalFrame(EulerZYX(Vec3(0,0,M_PI/2.0), Vec3(0.07, 0.0, 0)));
 
-  collision_[3]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
-  collision_[3]->GetGeomInfo().SetDimension(0.055, 0.0, 0.0);
-  collision_[3]->SetLocalFrame(EulerZYX(Vec3(0,0,0), Vec3(-0.06, 0., 0)));
+  //collision_[3]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
+  collision_[3]->GetGeomInfo().SetShape(srGeometryInfo::CAPSULE);
+  collision_[3]->GetGeomInfo().SetDimension(0.055, 0.03, 0.0);
+  collision_[3]->SetLocalFrame(EulerZYX(Vec3(0,0,M_PI/2.), Vec3(-0.06, 0., 0)));
 
 
   link_[link_idx_map_.find("rAnkle")->second]->AddCollision(collision_[0]);
@@ -49,7 +53,7 @@ void DracoBip::_SetCollision(){
   link_[link_idx_map_.find("lAnkle")->second]->AddCollision(collision_[2]);
   link_[link_idx_map_.find("lAnkle")->second]->AddCollision(collision_[3]);
 
-  double fric(0.8);
+  double fric(2.8);
   link_[link_idx_map_.find("rAnkle")->second]->SetFriction(fric);
   link_[link_idx_map_.find("lAnkle")->second]->SetFriction(fric);
 

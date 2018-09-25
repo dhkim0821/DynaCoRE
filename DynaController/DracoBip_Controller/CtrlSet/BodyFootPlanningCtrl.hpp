@@ -43,9 +43,12 @@ class BodyFootPlanningCtrl:public SwingPlanningCtrl{
         void _GetSinusoidalSwingTrajectory();
         void _GetBsplineSwingTrajectory();
         std::vector<ContactSpec*> kin_wbc_contact_list_;
-        
+
+        std::vector<int> selected_jidx_;
         Task* base_task_;
+        Task* selected_joint_task_;
         Task* foot_task_;
+
         KinWBC* kin_wbc_;
         dynacore::Vector des_jpos_;
         dynacore::Vector des_jvel_;

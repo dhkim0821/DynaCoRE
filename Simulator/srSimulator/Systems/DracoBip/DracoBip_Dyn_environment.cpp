@@ -35,7 +35,8 @@ DracoBip_Dyn_environment::DracoBip_Dyn_environment():
 
     m_Space->DYN_MODE_PRESTEP();
     m_Space->SET_USER_CONTROL_FUNCTION_2(ControlFunction);
-    m_Space->SetTimestep(dracobip::servo_rate);
+    m_Space->SetTimestep(dracobip::servo_rate/10.);
+    //m_Space->SetTimestep(1./15000.);
     m_Space->SetGravity(0.0,0.0,-9.81);
 
     m_Space->SetNumberofSubstepForRendering(num_substep_rendering_);
@@ -63,13 +64,13 @@ void DracoBip_Dyn_environment::ControlFunction( void* _data ) {
         p_data->imu_ang_vel[i] = 
             robot->link_[robot->link_idx_map_.find("torso")->second]->GetVel()[i];
     }
-    pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
+    if (count%10 ==1) pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
 
     pDyn_env->_ZeroInput_VirtualJoint();
     pDyn_env->_hold_XY(count);
 
-    double Kp(10.);
-    double Kd(1.);
+    double Kp(150.);
+    double Kd(15.);
     for(int i(0); i<robot->num_act_joint_; ++i){
         robot->r_joint_[i]->m_State.m_rCommand = pDyn_env->cmd_->jtorque_cmd[i] + 
             Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->jpos[i]) + 
@@ -77,9 +78,7 @@ void DracoBip_Dyn_environment::ControlFunction( void* _data ) {
     }
 }
 
-
-void DracoBip_Dyn_environment::Rendering_Fnc(){
-}
+void DracoBip_Dyn_environment::Rendering_Fnc(){  }
 void DracoBip_Dyn_environment::_Get_Orientation(dynacore::Quaternion & rot){
     SO3 so3_body =  robot_->
         link_[robot_->link_idx_map_.find("pelvis")->second]->GetOrientation();
@@ -129,11 +128,11 @@ void DracoBip_Dyn_environment::_hold_XY(int count){
     }
     if( ((double)count*dracobip::servo_rate) < release_time_ ){
         robot_->vp_joint_[0]->m_State.m_rCommand = 
-            10000. * (initial_x - robot_->vp_joint_[0]->m_State.m_rValue[0])
-            - 100. * robot_->vp_joint_[0]->m_State.m_rValue[1];
+            1000. * (initial_x - robot_->vp_joint_[0]->m_State.m_rValue[0])
+            - 50. * robot_->vp_joint_[0]->m_State.m_rValue[1];
         robot_->vp_joint_[1]->m_State.m_rCommand = 
-            -10000. * robot_->vp_joint_[1]->m_State.m_rValue[0]
-            - 100. * robot_->vp_joint_[1]->m_State.m_rValue[1];
+            -1000. * robot_->vp_joint_[1]->m_State.m_rValue[0]
+            - 50. * robot_->vp_joint_[1]->m_State.m_rValue[1];
     }
 }
 

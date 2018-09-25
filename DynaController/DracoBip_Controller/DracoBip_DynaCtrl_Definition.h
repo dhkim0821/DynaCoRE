@@ -6,6 +6,10 @@
 
 #define DracoBipConfigPath THIS_COM"DynaController/DracoBip_Controller/DracoBipTestConfig/"
 
+//#define ContactType SingleContact
+//#define ContactType FootNoYaw 
+#define ContactType FootLinear
+
 class DracoBip_SensorData{
     public:
         double imu_ang_vel[3];

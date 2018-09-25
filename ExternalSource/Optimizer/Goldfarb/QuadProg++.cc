@@ -17,6 +17,7 @@ File $Id: QuadProg++.cc 232 2007-06-21 12:29:00Z digasper $
 #include <limits>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 #include "QuadProg++.hh"
 //#define TRACE_SOLVER
 
@@ -40,7 +41,7 @@ double scalar_product(const GVect<double>& x, const GVect<double>& y);
 double distance(double a, double b);
 
 // Utility functions for printing vectors and matrices
-void print_matrix(char* name, const GMatr<double>& A, int n = -1, int m = -1);
+void print_matrix(const std::string & name, const GMatr<double>& A, int n = -1, int m = -1);
 
 template<typename T>
 void print_vector(char* name, const GVect<T>& v, int n = -1);
@@ -800,7 +801,7 @@ inline void backward_elimination(const GMatr<double>& U, GVect<double>& x, const
   }
 }
 
-void print_matrix(char* name, const GMatr<double>& A, int n, int m)
+void print_matrix(const std::string & name, const GMatr<double>& A, int n, int m)
 {
   std::ostringstream s;
   std::string t;

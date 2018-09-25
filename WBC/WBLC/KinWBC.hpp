@@ -17,7 +17,10 @@ class KinWBC{
                 dynacore::Vector & jpos_cmd,
                 dynacore::Vector & jvel_cmd,
                 dynacore::Vector & jacc_cmd);
+
+        dynacore::Matrix Ainv_;
     private:
+        void _PseudoInverse(const dynacore::Matrix J, dynacore::Matrix & Jinv);
         void _BuildProjectionMatrix(
                 const dynacore::Matrix & J,
                 dynacore::Matrix & N);

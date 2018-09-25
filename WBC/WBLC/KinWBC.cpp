@@ -4,7 +4,7 @@
 
 KinWBC::KinWBC(const std::vector<bool> & act_joint):
     num_act_joint_(0),
-    threshold_(0.00001)
+    threshold_(0.001)
 {
     num_qdot_ = act_joint.size();
 
@@ -45,14 +45,15 @@ bool KinWBC::FindConfiguration(
     _BuildProjectionMatrix(Jc, Nc);
 
     dynacore::Vector delta_q, qdot, qddot, JtDotQdot;
-    dynacore::Matrix Jt, JtPre, JtPre_pinv, N_pre;
+    dynacore::Matrix Jt, JtPre, JtPre_pinv, N_nx, N_pre;
     
     // First Task
     KinTask* task = ((KinTask*)task_list[0]);
     task->getTaskJacobian(Jt);
     task->getTaskJacobianDotQdot(JtDotQdot);
     JtPre = Jt * Nc;
-    dynacore::pseudoInverse(JtPre, threshold_, JtPre_pinv);
+    _PseudoInverse(JtPre, JtPre_pinv);
+
     delta_q = JtPre_pinv * (task->pos_err_);
     qdot = JtPre_pinv * (task->vel_des_);
     qddot = JtPre_pinv * (task->acc_des_ - JtDotQdot);
@@ -61,14 +62,19 @@ bool KinWBC::FindConfiguration(
     dynacore::Vector prev_qdot = qdot;
     dynacore::Vector prev_qddot = qddot;
 
-    _BuildProjectionMatrix(JtPre, N_pre);
-
+    _BuildProjectionMatrix(JtPre, N_nx);
+    N_pre = Nc * N_nx;
+   
+    //dynacore::Vector xdot_c1 = Jc * delta_q;
+    //dynacore::pretty_print(xdot_c1, std::cout, "1st contact vel");
     //dynacore::pretty_print(Jt, std::cout, "1st task Jt");
     //dynacore::pretty_print(Jc, std::cout, "Jc");
     //dynacore::pretty_print(Nc, std::cout, "Nc");
     //dynacore::pretty_print(JtPre, std::cout, "JtNc");
     //dynacore::pretty_print(JtPre_pinv, std::cout, "JtNc_inv");
     //dynacore::pretty_print(delta_q, std::cout, "delta q");
+    //dynacore::Matrix test = Jt * N_pre;
+    //dynacore::pretty_print(test, std::cout, "Jt1N1");
 
     for (int i(1); i<task_list.size(); ++i){
         task = ((KinTask*)task_list[i]);
@@ -77,7 +83,7 @@ bool KinWBC::FindConfiguration(
         task->getTaskJacobianDotQdot(JtDotQdot);
         JtPre = Jt * N_pre;
 
-        dynacore::pseudoInverse(JtPre, threshold_, JtPre_pinv);
+        _PseudoInverse(JtPre, JtPre_pinv);
         delta_q = prev_delta_q + JtPre_pinv * (task->pos_err_ - Jt * prev_delta_q);
         qdot = prev_qdot + JtPre_pinv * (task->vel_des_ - Jt* prev_qdot);
         qddot = prev_qddot + JtPre_pinv * (task->acc_des_ - JtDotQdot - Jt*prev_qddot);
@@ -85,14 +91,18 @@ bool KinWBC::FindConfiguration(
         //dynacore::pretty_print(Jt, std::cout, "2nd Jt");
         //dynacore::pretty_print(N_pre, std::cout, "N_pre");
         //dynacore::pretty_print(JtPre, std::cout, "JtPre");
+        //dynacore::pretty_print(JtPre_pinv, std::cout, "JtPre_inv");
         //dynacore::pretty_print(delta_q, std::cout, "delta q");
 
         // For the next task
-        _BuildProjectionMatrix(JtPre, N_pre);
+        _BuildProjectionMatrix(JtPre, N_nx);
+        N_pre *= N_nx;
         prev_delta_q = delta_q;
         prev_qdot = qdot;
         prev_qddot = qddot;
     }
+    //dynacore::Vector xdot_c = Jc * delta_q;
+    //dynacore::pretty_print(xdot_c, std::cout, "contact vel");
     for(int i(0); i<num_act_joint_; ++i){
         jpos_cmd[i] = curr_config[act_jidx_[i]] + delta_q[act_jidx_[i]];
         jvel_cmd[i] = qdot[act_jidx_[i]];
@@ -104,6 +114,16 @@ bool KinWBC::FindConfiguration(
 void KinWBC::_BuildProjectionMatrix(const dynacore::Matrix & J, 
                                     dynacore::Matrix & N){
     dynacore::Matrix J_pinv;
-    dynacore::pseudoInverse(J, 0.00001, J_pinv);
+    _PseudoInverse(J, J_pinv);
     N = I_mtx  - J_pinv * J;
  }
+
+void KinWBC::_PseudoInverse(const dynacore::Matrix J, 
+        dynacore::Matrix & Jinv){
+    dynacore::pseudoInverse(J, threshold_, Jinv);
+    
+    //dynacore::Matrix Lambda_inv = J * Ainv_ * J.transpose();
+    //dynacore::Matrix Lambda;
+    //dynacore::pseudoInverse(Lambda_inv, threshold_, Lambda);
+    //Jinv = Ainv_ * J.transpose() * Lambda;
+}

@@ -115,11 +115,10 @@ int WalkingConfigTest::_NextPhase(const int & phase){
 #if (CONFIG_INITIAL_SWING_FOOT == 1)  
     if(phase == WkConfigPhase::lift_up) { next_phase = WkConfigPhase::double_contact_2; }
 #endif
-     printf("next phase: %i\n", next_phase);
+    printf("next phase: %i\n", next_phase);
     dynacore::Vect3 next_local_frame_location;
 
     if(phase == WkConfigPhase::double_contact_1) {
-        //if(phase == WkConfigPhase::right_swing_start_trans) {
         ++num_step_;
         printf("%i th step:\n", num_step_);
         // printf("One swing done: Next Right Leg Swing\n");
@@ -127,14 +126,9 @@ int WalkingConfigTest::_NextPhase(const int & phase){
 
         // Global Frame Update
         robot_sys_->getPos(dracobip_link::lAnkle, next_local_frame_location);
-        // when it start the left leg is already stance foot and 
-        // global set by 0.15
-        if(num_step_>1) { 
-            sp_->global_pos_local_ += next_local_frame_location; 
-        }
+        sp_->global_pos_local_ += next_local_frame_location;
     }
     if(phase == WkConfigPhase::double_contact_2){
-        //if(phase == WkConfigPhase::left_swing_start_trans){
         ++num_step_;
         printf("%i th step:\n", num_step_);
 
