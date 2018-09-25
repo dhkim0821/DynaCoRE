@@ -91,18 +91,19 @@ void DracoBip_interface::GetCommand( void* _data, void* _command){
     ++count_;
     // When there is sensed time
     sp_->curr_time_ = running_time_;
+
     // Stepping forward
-    double walking_start(3.);
-    double walking_duration(7.);
-    double walking_distance(2.5);
-    if(sp_->curr_time_ > walking_start){
-        double walking_time = sp_->curr_time_ - walking_start;
-        sp_->des_location_[0] = walking_distance * 
-            (1-cos(walking_time/walking_duration * M_PI))/2.;
-    }
-    if(sp_->curr_time_ > walking_start + walking_duration){
-        sp_->des_location_[0] = walking_distance;
-    }
+    //double walking_start(3.);
+    //double walking_duration(7.);
+    //double walking_distance(2.5);
+    //if(sp_->curr_time_ > walking_start){
+        //double walking_time = sp_->curr_time_ - walking_start;
+        //sp_->des_location_[0] = walking_distance * 
+            //(1-cos(walking_time/walking_duration * M_PI))/2.;
+    //}
+    //if(sp_->curr_time_ > walking_start + walking_duration){
+        //sp_->des_location_[0] = walking_distance;
+    //}
 }
 
 bool DracoBip_interface::_Initialization(DracoBip_SensorData* data){
