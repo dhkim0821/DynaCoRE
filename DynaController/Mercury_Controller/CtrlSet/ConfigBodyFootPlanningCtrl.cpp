@@ -88,6 +88,7 @@ void ConfigBodyFootPlanningCtrl::OneStep(void* _cmd){
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
     dynacore::Vector gamma;
 
+    kin_wbc_->Ainv_ = Ainv_;
     _contact_setup();
     _task_setup();
     _compute_torque_wblc(gamma);

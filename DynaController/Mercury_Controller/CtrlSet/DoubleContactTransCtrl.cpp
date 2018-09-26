@@ -57,6 +57,7 @@ void DoubleContactTransCtrl::OneStep(void* _cmd){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
+    kin_wbc_->Ainv_ = Ainv_;
     dynacore::Vector gamma;
     _contact_setup();
     _task_setup();

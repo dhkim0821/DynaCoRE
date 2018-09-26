@@ -4,7 +4,6 @@
 #include <DracoBip/DracoBip_Model.hpp>
 #include <DracoBip_Controller/DracoBip_DynaCtrl_Definition.h>
 
-// Orientation Estimators
 #include <DracoBip_Controller/StateEstimator/BasicAccumulation.hpp>
 
 DracoBip_StateEstimator::DracoBip_StateEstimator(RobotSystem* robot):
@@ -42,7 +41,7 @@ void DracoBip_StateEstimator::Initialization(DracoBip_SensorData* data){
     body_ori.w() = 1.; body_ori.x() = 0.; body_ori.y() = 0.; body_ori.z() = 0;
     dynacore::Vect3 body_ang_vel;
 
-    ori_est_->EstimatorInitialization(body_ori, imu_acc, imu_ang_vel);   
+    ori_est_->EstimatorInitialization(imu_acc, imu_ang_vel);   
     ori_est_->getEstimatedState(body_ori, body_ang_vel);
 
     curr_config_[3] = body_ori.x();

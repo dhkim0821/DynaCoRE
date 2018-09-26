@@ -50,6 +50,7 @@ void ConfigBodyCtrl::OneStep(void* _cmd){
     _PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
 
+    kin_wbc_->Ainv_ = Ainv_;
     dynacore::Vector gamma;
     _double_contact_setup();
     _base_task_setup();

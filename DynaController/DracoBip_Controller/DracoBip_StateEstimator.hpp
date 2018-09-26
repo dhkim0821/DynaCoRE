@@ -7,7 +7,7 @@
 
 class DracoBip_StateProvider;
 class RobotSystem;
-class OriEstimator;
+class BasicAccumulation;
 class DracoBip_SensorData;
 
 class DracoBip_StateEstimator{
@@ -28,7 +28,7 @@ class DracoBip_StateEstimator{
         dynacore::Vector curr_config_;
         dynacore::Vector curr_qdot_;
 
-        OriEstimator* ori_est_;
+        BasicAccumulation* ori_est_;
 
         void _RBDL_TEST();
 };

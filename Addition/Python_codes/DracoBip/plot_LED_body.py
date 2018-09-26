@@ -10,6 +10,7 @@ PLOT_HORIZONTALLY = 1
 
 # number of figures in this plot
 num_figures = 4
+num_leg_joint = 5
 
 def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no=1, \
         starting_col_index = 0, starting_row_index=0, plot_configuration=PLOT_HORIZONTALLY):
@@ -42,7 +43,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
     data_body_ori = np.zeros(shape = (len(data_x), 4))
     data_body_ori[:, 1:4] = np.copy(data_q[:, 3:6]);
-    data_body_ori[:, 0] = np.copy(data_q[:, 12]);
+    data_body_ori[:, 0] = np.copy(data_q[:, num_leg_joint*2+6]);
     
     st_idx = 1
     end_idx = len(data_x) - 10

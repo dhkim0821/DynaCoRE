@@ -36,6 +36,7 @@ class DracoBip_Dyn_environment
 
         void SetCurrentState_All();
         void saveLandingLocation();
+        void PushRobotBody();
     public:
         DracoBip_SensorData* data_;
         DracoBip_Command* cmd_;
@@ -48,14 +49,22 @@ class DracoBip_Dyn_environment
 
         double ori_mtx_[9];
         std::vector<double> ang_vel_  ;
+        int count_;
     protected:
-        void _Get_Orientation(dynacore::Quaternion & rot);
+        void getIMU_Data(std::vector<double> & imu_acc,
+                std::vector<double> & imu_ang_vel);
+         void _Get_Orientation(dynacore::Quaternion & rot);
         void _Copy_Array(double * , double *, int);
         void _CheckFootContact(bool & r_contact, bool & l_contact);
-        void _hold_XY(int count);
+        void _hold_XY();
         void _ZeroInput_VirtualJoint();
-
         void _ParamterSetup();
+
+        double simulation_freq_;
+        std::vector<double> push_time_;
+        std::vector<double> push_force_;
+        std::vector<double> push_direction_;
+
         int num_substep_rendering_;
         double release_time_;
         std::vector<double> imu_ang_vel_bias_;
