@@ -1,14 +1,14 @@
-#ifndef BODY_CTRL
-#define BODY_CTRL
+#ifndef BODY_CTRL_VALKYRIE
+#define BODY_CTRL_VALKYRIE
 
 #include <Controller.hpp>
 
-class DracoBip_StateProvider;
+class Valkyrie_StateProvider;
 class RobotSystem;
+class WBDC_ContactSpec;
 class WBLC;
 class WBLC_ExtraData;
 class KinWBC;
-class WBDC_ContactSpec;
 
 class BodyCtrl: public Controller{
     public:
@@ -36,12 +36,14 @@ class BodyCtrl: public Controller{
 
         dynacore::Vector jpos_ini_;
         bool b_set_height_target_;
-        int trj_type_;
         double end_time_;
         int dim_contact_;
 
         std::vector<int> selected_jidx_;
-        Task* body_task_;
+        Task* total_joint_task_;
+        Task* body_pos_task_; //pelvis
+        Task* body_ori_task_;
+        Task* torso_ori_task_;
         Task* selected_joint_task_;
         KinWBC* kin_wbc_;
         WBDC_ContactSpec* rfoot_contact_;
@@ -53,12 +55,12 @@ class BodyCtrl: public Controller{
         double ini_body_height_;
         dynacore::Vect3 ini_body_pos_;
 
-        void _body_task_setup();
-        void _double_contact_setup();
+        void _task_setup();
+        void _contact_setup();
         void _compute_torque_wblc(dynacore::Vector & gamma);
 
         double ctrl_start_time_;
-        DracoBip_StateProvider* sp_;
+        Valkyrie_StateProvider* sp_;
 };
 
 #endif

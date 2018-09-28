@@ -4,33 +4,37 @@
 #include <Utils/wrap_eigen.hpp>
 #include <Configuration.h>
 #include <interface.hpp>
-#include "Valkyrie_DynaControl_Definition.h"
-#include <Filter/filters.hpp>
+#include "Valkyrie_DynaCtrl_Definition.h"
 
 class Valkyrie_StateEstimator;
 class Valkyrie_StateProvider;
 
 class Valkyrie_interface: public interface{
-public:
-  Valkyrie_interface();
-  virtual ~Valkyrie_interface();
+    public:
+        Valkyrie_interface();
+        virtual ~Valkyrie_interface();
 
-  virtual void GetCommand(void * data, void * command);
+        virtual void GetCommand(void * data, void * command);
 
-private:
-  int waiting_count_;
-  
-  void _ParameterSetting();
-  bool _Initialization(Valkyrie_SensorData* );
+    private:
+        int waiting_count_;
 
-  Valkyrie_Command* test_cmd_;
-  dynacore::Vector initial_upper_body_config_;
+        void _ParameterSetting();
+        bool _Initialization(Valkyrie_SensorData* );
 
-  dynacore::Vector jjvel_;
-  dynacore::Vector jjpos_;
-  
-  Valkyrie_StateEstimator* state_estimator_;
-  Valkyrie_StateProvider* sp_;
+        Valkyrie_Command* test_cmd_;
+        dynacore::Vector initial_upper_body_config_;
+
+        dynacore::Vector jjvel_;
+        dynacore::Vector jjpos_;
+        dynacore::Vector jtorque_;
+
+        dynacore::Vector torque_command_;
+        dynacore::Vector jpos_command_;
+        dynacore::Vector jvel_command_;
+
+        Valkyrie_StateEstimator* state_estimator_;
+        Valkyrie_StateProvider* sp_;
 };
 
 #endif

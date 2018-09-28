@@ -151,13 +151,32 @@ void ModelMesh::recursive_render (const struct aiScene *sc, const struct aiNode*
     unsigned int n = 0, t;
     aiMatrix4x4 m = nd->mTransformation;
 
-    //double scale(0.5);
-    //aiMatrix4x4 m2;
-	//aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
-	//m = m * m2;
-
+    //printf("node coordinate\n");
+    //std::cout<<m[0][0]<<", "<< m[0][1]<<", "<< m[0][2]<<", "<< m[0][3] <<std::endl;
+    //std::cout<<m[1][0]<<", "<< m[1][1]<<", "<< m[1][2]<<", "<< m[1][3] <<std::endl;
+    //std::cout<<m[2][0]<<", "<< m[2][1]<<", "<< m[2][2]<<", "<< m[2][3] <<std::endl;
+    //std::cout<<m[3][0]<<", "<< m[3][1]<<", "<< m[3][2]<<", "<< m[3][3] <<std::endl;
+    //printf("\n");
+        //aiMatrix4x4 local_frame;
+    //double Array[16];
+    //(LocalFrame).ToArray(Array);
+    //for(int i(0); i<4; ++i){
+        //for(int j(0); j<4; ++j){
+            //local_frame[j][i] = Array[j + 4*i];
+        //}
+    //}
+    //printf("local coordinate\n");
+    //std::cout<<local_frame[0][0]<<", "<< local_frame[0][1]<<", "<< local_frame[0][2]<<", "<< local_frame[0][3] <<std::endl;
+    //std::cout<<local_frame[1][0]<<", "<< local_frame[1][1]<<", "<< local_frame[1][2]<<", "<< local_frame[1][3] <<std::endl;
+    //std::cout<<local_frame[2][0]<<", "<< local_frame[2][1]<<", "<< local_frame[2][2]<<", "<< local_frame[2][3] <<std::endl;
+    //std::cout<<local_frame[3][0]<<", "<< local_frame[3][1]<<", "<< local_frame[3][2]<<", "<< local_frame[3][3] <<std::endl;
+    //printf("\n");
+ 
+    //m = m* local_frame;
+    //m = local_frame*m;
     /* update transform */
     aiTransposeMatrix4(&m);
+    glPushMatrix();
     glPushMatrix();
     glMultMatrixf((float*)&m);
     /* draw all meshes assigned to this node */
@@ -187,21 +206,22 @@ void ModelMesh::recursive_render (const struct aiScene *sc, const struct aiNode*
             for(i = 0; i < face->mNumIndices; i++)		// go through all vertices in face
             {
                 int vertexIndex = face->mIndices[i];	// get group index for current index
-                if(mesh->mColors[0] != NULL)
-                    Color4f(&mesh->mColors[0][vertexIndex]);
-                if(mesh->mNormals != NULL)
+                if(mesh->HasTextureCoords(0))		//HasTextureCoords(texture_coordinates_set)
+                {
+                    //mTextureCoords[channel][vertex]
+                    //glTexCoord2f(mesh->mTextureCoords[0][vertexIndex].x, 
+                    //1 - mesh->mTextureCoords[0][vertexIndex].y); 
+                    glTexCoord2f(mesh->mTextureCoords[0][vertexIndex].x, 
+                            mesh->mTextureCoords[0][vertexIndex].y); 
+                }
 
-                    if(mesh->HasTextureCoords(0))		//HasTextureCoords(texture_coordinates_set)
-                    {
-                        //mTextureCoords[channel][vertex]
-                        //glTexCoord2f(mesh->mTextureCoords[0][vertexIndex].x, 
-                                //1 - mesh->mTextureCoords[0][vertexIndex].y); 
-                         glTexCoord2f(mesh->mTextureCoords[0][vertexIndex].x, 
-                                      mesh->mTextureCoords[0][vertexIndex].y); 
-                   }
-
-                glNormal3fv(&mesh->mNormals[vertexIndex].x);
+                if(mesh->mColors[0] != NULL)  Color4f(&mesh->mColors[0][vertexIndex]);
+                if(mesh->mNormals != NULL) {
+                    glNormal3fv(&mesh->mNormals[vertexIndex].x);
+                    //printf("normal exist\n");
+                }
                 glVertex3fv(&mesh->mVertices[vertexIndex].x);
+                
             }
 
             //for(i = 0; i < face->mNumIndices; i++) {

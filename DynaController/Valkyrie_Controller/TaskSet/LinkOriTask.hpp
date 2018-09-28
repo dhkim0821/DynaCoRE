@@ -1,14 +1,14 @@
-#ifndef JPOS_TASK_VALKYRIE
-#define JPOS_TASK_VALKYRIE
-
+#ifndef KINEMATICS_LINK_ORIENTATION_TASK
+#define KINEMATICS_LINK_ORIENTATION_TASK
+// (Rx, Ry, Rz)
 #include <WBLC/KinTask.hpp>
 
-class Valkyrie_StateProvider;
+class RobotSystem;
 
-class JPosTask: public KinTask{
+class LinkOriTask: public KinTask{
 public:
-  JPosTask();
-  virtual ~JPosTask();
+  LinkOriTask(const RobotSystem*, int link_idx);
+  virtual ~LinkOriTask();
 
 protected:
   // Update op_cmd_
@@ -21,7 +21,8 @@ protected:
   virtual bool _UpdateTaskJDotQdot();
   virtual bool _AdditionalUpdate(){ return true; }
 
-  Valkyrie_StateProvider* sp_;
+  int link_idx_;
+  const RobotSystem* robot_sys_;
 };
 
 #endif

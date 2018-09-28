@@ -4,25 +4,28 @@
 #include <Valkyrie_Controller/Valkyrie_StateProvider.hpp>
 
 // [ Tau_x, Tau_y, Tau_z, Rx, Ry, Rz ]
-SingleContact::SingleContact(const RobotSystem* robot, int pt):WBDC_ContactSpec(6),
-                                     contact_pt_(pt)
+SingleContact::SingleContact(const RobotSystem* robot, int pt):
+    WBDC_ContactSpec(6),
+    contact_pt_(pt),
+    max_Fz_(1000.),
+    dim_U_(18)
 {
+    idx_Fz_ = 5;
   robot_sys_ = robot;
   sp_ = Valkyrie_StateProvider::getStateProvider();
   Jc_ = dynacore::Matrix(dim_contact_, valkyrie::num_qdot);
 }
 
-SingleContact::~SingleContact(){
-}
+SingleContact::~SingleContact(){  }
+
 bool SingleContact::_UpdateJc(){
-  dynacore::Matrix Jtmp;
   robot_sys_->getFullJacobian(contact_pt_, Jc_);
   return true;
 }
+
 bool SingleContact::_UpdateJcDotQdot(){
   JcDotQdot_ = dynacore::Vector::Zero(dim_contact_);
   return true;
-
 }
 
 bool SingleContact::_UpdateUf(){
@@ -30,8 +33,7 @@ bool SingleContact::_UpdateUf(){
   double X(0.08);
   double Y(0.05);
 
-  int size_u(17);
-  Uf_ = dynacore::Matrix::Zero(size_u, dim_contact_);
+  Uf_ = dynacore::Matrix::Zero(dim_U_, dim_contact_);
 
   dynacore::Matrix U;
   _setU(X, Y, mu, U);
@@ -48,12 +50,13 @@ bool SingleContact::_UpdateUf(){
 }
 
 bool SingleContact::_UpdateInequalityVector(){
-  ieq_vec_ = dynacore::Vector::Zero(17);
+  ieq_vec_ = dynacore::Vector::Zero(dim_U_);
+  ieq_vec_[17] = -max_Fz_;
   return true;
 }
 
 void SingleContact::_setU(double x, double y, double mu, dynacore::Matrix & U){
-    U = dynacore::Matrix::Zero(17, 6);
+    U = dynacore::Matrix::Zero(dim_U_, 6);
 
   U(0, 5) = 1.;
 
@@ -94,4 +97,5 @@ void SingleContact::_setU(double x, double y, double mu, dynacore::Matrix & U){
   U(16, 0) = mu; U(16, 1) = mu; U(16, 2) = -1;
   U(16, 3) = y;  U(16, 4) = x;  U(16, 5) = (x + y)*mu;
   // ////////////////////////////////////////////////////
+  U(17,5) = -1.;
 }

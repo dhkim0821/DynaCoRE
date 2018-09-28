@@ -1,14 +1,15 @@
-#ifndef JPOS_TASK_VALKYRIE
-#define JPOS_TASK_VALKYRIE
+#ifndef SELECTED_JOINT_TASK_Valkyrie
+#define SELECTED_JOINT_TASK_Valkyrie
 
 #include <WBLC/KinTask.hpp>
 
 class Valkyrie_StateProvider;
+class RobotSystem;
 
-class JPosTask: public KinTask{
+class SelectedJPosTask: public KinTask{
 public:
-  JPosTask();
-  virtual ~JPosTask();
+  SelectedJPosTask(const std::vector<int> & selected_jidx);
+  virtual ~SelectedJPosTask();
 
 protected:
   // Update op_cmd_
@@ -21,6 +22,7 @@ protected:
   virtual bool _UpdateTaskJDotQdot();
   virtual bool _AdditionalUpdate(){ return true; }
 
+  std::vector<int> selected_jidx_;
   Valkyrie_StateProvider* sp_;
 };
 

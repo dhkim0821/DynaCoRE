@@ -1,6 +1,6 @@
 #include "Valkyrie_StateProvider.hpp"
 #include <Utils/DataManager.hpp>
-#include "Valkyrie_DynaControl_Definition.h"
+#include "Valkyrie_DynaCtrl_Definition.h"
 
 Valkyrie_StateProvider* Valkyrie_StateProvider::getStateProvider(){
     static Valkyrie_StateProvider state_provider_;

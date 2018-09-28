@@ -6,33 +6,40 @@
 #include <Utils/pseudo_inverse.hpp>
 #include <Utils/DataManager.hpp>
 #include <Utils/wrap_eigen.hpp>
+
 #include "Valkyrie_StateProvider.hpp"
 #include "Valkyrie_StateEstimator.hpp"
+
 #include <ParamHandler/ParamHandler.hpp>
 #include <Valkyrie/Valkyrie_Model.hpp>
 
-// Test SET LIST
-// Basic Test
-#include <Valkyrie_Controller/TestSet/JointCtrlTest.hpp>
-
 // Walking Test
-#include <Valkyrie_Controller/TestSet/WalkingConfigTest.hpp>
+#include <Valkyrie_Controller/TestSet/WalkingTest.hpp>
 
 // Body Ctrl Test
-#include <Valkyrie_Controller/TestSet/BodyConfigTest.hpp>
+#include <Valkyrie_Controller/TestSet/BodyCtrlTest.hpp>
 
 Valkyrie_interface::Valkyrie_interface():
     interface(),
     jjvel_(valkyrie::num_act_joint),
     jjpos_(valkyrie::num_act_joint),
+    jtorque_(valkyrie::num_act_joint),
     initial_upper_body_config_(valkyrie::num_upper_joint),
+    torque_command_(valkyrie::num_act_joint),
+    jpos_command_(valkyrie::num_act_joint),
+    jvel_command_(valkyrie::num_act_joint),
     waiting_count_(2)
 {
 
     robot_sys_ = new Valkyrie_Model();
     jjvel_.setZero();
     jjpos_.setZero();
+    jtorque_.setZero();
 
+    torque_command_.setZero();
+    jpos_command_.setZero();
+    jvel_command_.setZero();
+ 
     test_cmd_ = new Valkyrie_Command();
     sp_ = Valkyrie_StateProvider::getStateProvider();
     state_estimator_ = new Valkyrie_StateEstimator(robot_sys_);  
@@ -43,7 +50,17 @@ Valkyrie_interface::Valkyrie_interface():
             &jjpos_, DYN_VEC, "jjpos", valkyrie::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &jjvel_, DYN_VEC, "jjvel", valkyrie::num_act_joint);
-    
+    DataManager::GetDataManager()->RegisterData(
+            &jtorque_, DYN_VEC, "torque", valkyrie::num_act_joint);
+  
+    DataManager::GetDataManager()->RegisterData(
+            &jpos_command_, DYN_VEC, "jpos_des", valkyrie::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &jvel_command_, DYN_VEC, "jvel_des", valkyrie::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &torque_command_, DYN_VEC, "command", valkyrie::num_act_joint);
+
+
     _ParameterSetting();
     
     printf("[Valkyrie_interface] Contruct\n");
@@ -64,37 +81,39 @@ void Valkyrie_interface::GetCommand( void* _data, void* _command){
     
     // Update Command (and Data)
     for(int i(0); i<valkyrie::num_act_joint; ++i){
-        cmd->jtorque_cmd[i] = test_cmd_->jtorque_cmd[i];
-        cmd->jpos_cmd[i] = test_cmd_->jpos_cmd[i];
-        cmd->jvel_cmd[i] = test_cmd_->jvel_cmd[i];
+        torque_command_[i] = test_cmd_->jtorque_cmd[i];
+        jpos_command_[i] = test_cmd_->jpos_cmd[i];
+        jvel_command_[i] = test_cmd_->jvel_cmd[i];
 
         jjvel_[i] = data->jvel[i];
         jjpos_[i] = data->jpos[i];
+        jtorque_[i] = data->jtorque[i];
     }
 
-    // Fix Upper Body
-    for (int i(0); i<valkyrie::num_upper_joint; ++i){
-        cmd->jpos_cmd[valkyrie::upper_body_start_jidx - valkyrie::num_virtual + i] 
-            = initial_upper_body_config_[i];
-        cmd->jvel_cmd[valkyrie::upper_body_start_jidx - valkyrie::num_virtual +  i] = 0.;
+    for(int i(0); i< valkyrie::num_act_joint; ++i){
+        cmd->jtorque_cmd[i] = torque_command_[i];
+        cmd->jpos_cmd[i] = jpos_command_[i];
+        cmd->jvel_cmd[i] = jvel_command_[i];
     }
-    running_time_ = (double)(count_) * valkyrie::servo_rate;
+
+
+   running_time_ = (double)(count_) * valkyrie::servo_rate;
     ++count_;
     // When there is sensed time
     sp_->curr_time_ = running_time_;
 
     // Stepping forward
-    double walking_start(3.);
-    double walking_duration(7.);
-    double walking_distance(2.5);
-    if(sp_->curr_time_ > walking_start){
-        double walking_time = sp_->curr_time_ - walking_start;
-        sp_->des_location_[0] = walking_distance * 
-            (1-cos(walking_time/walking_duration * M_PI))/2.;
-    }
-    if(sp_->curr_time_ > walking_start + walking_duration){
-        sp_->des_location_[0] = walking_distance;
-    }
+    //double walking_start(3.);
+    //double walking_duration(7.);
+    //double walking_distance(2.5);
+    //if(sp_->curr_time_ > walking_start){
+        //double walking_time = sp_->curr_time_ - walking_start;
+        //sp_->des_location_[0] = walking_distance * 
+            //(1-cos(walking_time/walking_duration * M_PI))/2.;
+    //}
+    //if(sp_->curr_time_ > walking_start + walking_duration){
+        //sp_->des_location_[0] = walking_distance;
+    //}
 }
 
 bool Valkyrie_interface::_Initialization(Valkyrie_SensorData* data){
@@ -126,15 +145,12 @@ void Valkyrie_interface::_ParameterSetting(){
     bool b_tmp;
     // Test SETUP
     handler.getString("test_name", tmp_string);
-    // Basic Test ***********************************
-    if(tmp_string == "joint_ctrl_test"){
-        test_ = new JointCtrlTest(robot_sys_);
         // Walking Test ***********************************
-    }else if(tmp_string == "walking_config_test"){
-        test_ = new WalkingConfigTest(robot_sys_);
+    if(tmp_string == "walking_test"){
+        test_ = new WalkingTest(robot_sys_);
         // Body Ctrl Test ***********************************
     }else if(tmp_string == "body_ctrl_test"){
-        test_ = new BodyConfigTest(robot_sys_);    
+        test_ = new BodyCtrlTest(robot_sys_);    
         // Stance and Swing Test ***********************************
     }else {
         printf("[Interfacce] There is no test matching with the name\n");

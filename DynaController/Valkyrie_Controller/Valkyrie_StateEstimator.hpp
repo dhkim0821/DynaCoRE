@@ -4,10 +4,9 @@
 #include <Configuration.h>
 #include <Utils/wrap_eigen.hpp>
 
-
 class Valkyrie_StateProvider;
 class RobotSystem;
-class OriEstimator;
+class BasicAccumulation;
 class Valkyrie_SensorData;
 
 class Valkyrie_StateEstimator{
@@ -28,7 +27,7 @@ class Valkyrie_StateEstimator{
         dynacore::Vector curr_config_;
         dynacore::Vector curr_qdot_;
 
-        OriEstimator* ori_est_;
+        BasicAccumulation* ori_est_;
 
         void _RBDL_TEST();
         void _BasicTest();

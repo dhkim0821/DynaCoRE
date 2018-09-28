@@ -5,7 +5,7 @@
 #include "common/utils.h"
 
 #include <DynaController/Valkyrie_Controller/Valkyrie_interface.hpp>
-#include <DynaController/Valkyrie_Controller/Valkyrie_DynaControl_Definition.h>
+#include <DynaController/Valkyrie_Controller/Valkyrie_DynaCtrl_Definition.h>
 
 #include <srTerrain/Ground.h>
 #include <srConfiguration.h>
@@ -55,15 +55,17 @@ void Valkyrie_Dyn_environment::ControlFunction( void* _data ) {
     for(int i(0); i<robot->num_act_joint_; ++i){
         p_data->jpos[i] = robot->r_joint_[i]->m_State.m_rValue[0];
         p_data->jvel[i] = robot->r_joint_[i]->m_State.m_rValue[1];
+        p_data->jtorque[i] = robot->r_joint_[i]->m_State.m_rValue[3];
     }
-
-
     pDyn_env->_CheckFootContact(
             p_data->rfoot_contact, p_data->lfoot_contact);
 
+    std::vector<double> imu_acc(3);
+    std::vector<double> imu_ang_vel(3);
+    pDyn_env->getIMU_Data(imu_acc, imu_ang_vel);
     for (int i(0); i<3; ++i){
-        p_data->imu_ang_vel[i] = 
-            robot->link_[robot->link_idx_map_.find("pelvis")->second]->GetVel()[i];
+        p_data->imu_ang_vel[i] = imu_ang_vel[i];
+        p_data->imu_acc[i] = -imu_acc[i];
     }
     pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
 
@@ -75,11 +77,11 @@ void Valkyrie_Dyn_environment::ControlFunction( void* _data ) {
 
     if( count < 100 ){
         robot->vp_joint_[0]->m_State.m_rCommand = 
-            -5000. * robot->vp_joint_[0]->m_State.m_rValue[0]
-            - 10. * robot->vp_joint_[0]->m_State.m_rValue[1];
+            -15000. * robot->vp_joint_[0]->m_State.m_rValue[0]
+            - 500. * robot->vp_joint_[0]->m_State.m_rValue[1];
         robot->vp_joint_[1]->m_State.m_rCommand = 
-            -5000. * robot->vp_joint_[1]->m_State.m_rValue[0]
-            - 10. * robot->vp_joint_[1]->m_State.m_rValue[1];
+            -15000. * robot->vp_joint_[1]->m_State.m_rValue[0]
+            - 500. * robot->vp_joint_[1]->m_State.m_rValue[1];
     }
 
     double Kp(200.);
@@ -156,4 +158,32 @@ void Valkyrie_Dyn_environment::_CheckFootContact(bool & r_contact, bool & l_cont
     } else { r_contact = false; }
 
     //printf("\n");
+}
+
+void Valkyrie_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
+                                          std::vector<double> & imu_ang_vel){
+  // IMU data
+  se3 imu_se3_vel = 
+      robot_->link_[robot_->link_idx_map_.find("pelvis")->second]->GetVel();
+  se3 imu_se3_acc = 
+      robot_->link_[robot_->link_idx_map_.find("pelvis")->second]->GetAcc();
+  SE3 imu_frame = 
+      robot_->link_[robot_->link_idx_map_.find("pelvis")->second]->GetFrame();
+  SO3 imu_ori = 
+      robot_->link_[robot_->link_idx_map_.find("pelvis")->second]->GetOrientation();
+
+  Eigen::Matrix3d Rot;
+  Rot<<
+    imu_frame(0,0), imu_frame(0,1), imu_frame(0,2),
+    imu_frame(1,0), imu_frame(1,1), imu_frame(1,2),
+    imu_frame(2,0), imu_frame(2,1), imu_frame(2,2);
+
+  dynacore::Vect3 grav; grav.setZero();
+  grav[2] = 9.81;
+  dynacore::Vect3 local_grav = Rot.transpose() * grav;
+
+  for(int i(0); i<3; ++i){
+    imu_ang_vel[i] = imu_se3_vel[i];
+    imu_acc[i] = local_grav[i];
+  }
 }

@@ -293,7 +293,8 @@ void SystemGenerator::_SetLinkParam(int idx){
         link_visual_xyz[1]=Linkidxiter->second->visual->origin.position.y;
         link_visual_xyz[2]=Linkidxiter->second->visual->origin.position.z;
         Linkidxiter->second->visual->
-            origin.rotation.getRPY (link_visual_rpy[2], link_visual_rpy[1], link_visual_rpy[0]);
+            origin.rotation.getRPY (link_visual_rpy[2], link_visual_rpy[1], 
+                    link_visual_rpy[0]);
 
         if((Linkidxiter->second->visual_array[0]->geometry->type)
                 == dynacore::urdf::Geometry::MESH){
@@ -351,10 +352,14 @@ void SystemGenerator::_SetLinkParam(int idx){
     }
 
     if(Linkidxiter->second->inertial!=0){
-        link_[idx]->GetGeomInfo().SetLocalFrame(EulerZYX(link_visual_rpy+Vec3(0.0, 0.0, SR_PI_HALF),link_visual_xyz-Inertiaoffset_ ));
+        link_[idx]->GetGeomInfo().SetLocalFrame(EulerZYX(
+                    link_visual_rpy+Vec3(0.0, 0.0, SR_PI_HALF),
+                    //link_visual_rpy,
+                    link_visual_xyz-Inertiaoffset_ ));
     }
     else {
-        link_[idx]->GetGeomInfo().SetLocalFrame(EulerZYX(link_visual_rpy+Vec3(0.0, 0.0, SR_PI_HALF),link_visual_xyz));
+        link_[idx]->GetGeomInfo().SetLocalFrame(EulerZYX(
+                    link_visual_rpy+Vec3(0.0, 0.0, SR_PI_HALF),link_visual_xyz));
     }
 }
 

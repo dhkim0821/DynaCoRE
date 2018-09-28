@@ -51,6 +51,8 @@ public:
 protected:
   double slope_;
   double loc_x_;
+  void getIMU_Data(std::vector<double> & imu_acc,
+          std::vector<double> & imu_ang_vel);
   void _SaveStanceFoot();
   void _ExternalDisturbance(int count);
 

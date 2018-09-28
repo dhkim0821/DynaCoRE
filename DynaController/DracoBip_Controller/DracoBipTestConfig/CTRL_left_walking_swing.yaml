@@ -13,6 +13,4 @@ Kd: [ 8, 8, 8, 8, 8, 8, 8, 8, 8, 8 ]
 
 
 body_pt_offset: [0.0, 0.0]
-swing_time_reduction: 0.0
 foot_landing_offset: [-0.0, 0.]
-

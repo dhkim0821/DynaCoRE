@@ -58,6 +58,7 @@ class srgEntity
         };
         ModelMesh* LoadMeshModel(char* name, Vec3 mesh_scale, SE3 T = SE3(0.0)) {
             m_Mesh_Model = new ModelMesh;
+            m_Mesh_Model->LocalFrame = T;
             T.ToArray(m_Mesh_Model->_T);
             m_Mesh_Model->mesh_scale_ = mesh_scale;
             m_Mesh_Model->Load(name);

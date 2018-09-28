@@ -1,85 +1,84 @@
 #include "BodyFootPlanningCtrl.hpp"
 #include <Configuration.h>
-#include <DracoBip_Controller/DracoBip_StateProvider.hpp>
+#include <Valkyrie_Controller/Valkyrie_StateProvider.hpp>
 #include <ParamHandler/ParamHandler.hpp>
 #include <Planner/PIPM_FootPlacementPlanner/Reversal_LIPM_Planner.hpp>
 #include <Utils/utilities.hpp>
+
 #include <WBLC/KinWBC.hpp>
 #include <WBLC/WBLC.hpp>
-#include <DracoBip_Controller/TaskSet/BodyTask.hpp>
-#include <DracoBip_Controller/TaskSet/FootTask.hpp>
-#include <DracoBip_Controller/TaskSet/SelectedJointTask.hpp>
 
-#include <DracoBip_Controller/ContactSet/SingleContact.hpp>
-#include <DracoBip_Controller/ContactSet/FootNoYaw.hpp>
-#include <DracoBip_Controller/ContactSet/FootLinear.hpp>
+#include <Valkyrie_Controller/TaskSet/LinkPosTask.hpp>
+#include <Valkyrie_Controller/TaskSet/LinkOriTask.hpp>
+#include <Valkyrie_Controller/TaskSet/JPosTask.hpp>
+#include <Valkyrie_Controller/ContactSet/SingleContact.hpp>
 
 BodyFootPlanningCtrl::BodyFootPlanningCtrl(
         const RobotSystem* robot, int swing_foot, Planner* planner):
     SwingPlanningCtrl(robot, swing_foot, planner),
     push_down_height_(0.),
-    des_jpos_(dracobip::num_act_joint),
-    des_jvel_(dracobip::num_act_joint),
-    des_jacc_(dracobip::num_act_joint),
+    des_jpos_(valkyrie::num_act_joint),
+    des_jvel_(valkyrie::num_act_joint),
+    des_jacc_(valkyrie::num_act_joint),
     waiting_time_limit_(0.02),
-    Kp_(dracobip::num_act_joint),
-    Kd_(dracobip::num_act_joint)
+    Kp_(valkyrie::num_act_joint),
+    Kd_(valkyrie::num_act_joint)
 {
     des_jacc_.setZero();
-    rfoot_contact_ = new ContactType(robot_sys_, dracobip_link::rAnkle);
-    lfoot_contact_ = new ContactType(robot_sys_, dracobip_link::lAnkle);
+    rfoot_contact_ = new SingleContact(robot_sys_, valkyrie_link::rightFoot);
+    lfoot_contact_ = new SingleContact(robot_sys_, valkyrie_link::leftFoot);
     dim_contact_ = rfoot_contact_->getDim() + lfoot_contact_->getDim();
 
-    selected_jidx_.clear();
-    selected_jidx_.push_back(dracobip_joint::rHipYaw);
-    selected_jidx_.push_back(dracobip_joint::lHipYaw);
+    body_pos_task_ = new LinkPosTask(robot_sys_, valkyrie_link::pelvis);
+    body_ori_task_ = new LinkOriTask(robot_sys_, valkyrie_link::pelvis);
+    torso_ori_task_ = new LinkOriTask(robot_sys_, valkyrie_link::torso);
 
-    selected_joint_task_ = new SelectedJointTask(selected_jidx_);
+    foot_pos_task_ = new LinkPosTask(robot_sys_, swing_foot);
+    foot_ori_task_ = new LinkOriTask(robot_sys_, swing_foot);
+    total_joint_task_ = new JPosTask();
 
     std::vector<bool> act_list;
-    act_list.resize(dracobip::num_qdot, true);
-    for(int i(0); i<dracobip::num_virtual; ++i) act_list[i] = false;
+    act_list.resize(valkyrie::num_qdot, true);
+    for(int i(0); i<valkyrie::num_virtual; ++i) act_list[i] = false;
 
     kin_wbc_ = new KinWBC(act_list);
     wblc_ = new WBLC(act_list);
     wblc_data_ = new WBLC_ExtraData();
-    wblc_data_->W_qddot_ = dynacore::Vector::Constant(dracobip::num_qdot, 100.0);
+    wblc_data_->W_qddot_ = dynacore::Vector::Constant(valkyrie::num_qdot, 100.0);
     wblc_data_->W_rf_ = dynacore::Vector::Constant(dim_contact_, 1.0);
     wblc_data_->W_xddot_ = dynacore::Vector::Constant(dim_contact_, 1000.0);
     wblc_data_->W_rf_[rfoot_contact_->getFzIndex()] = 0.01;
     wblc_data_->W_rf_[rfoot_contact_->getDim() + lfoot_contact_->getFzIndex()] = 0.01;
 
     // torque limit default setting
-    wblc_data_->tau_min_ = dynacore::Vector::Constant(dracobip::num_act_joint, -100.);
-    wblc_data_->tau_max_ = dynacore::Vector::Constant(dracobip::num_act_joint, 100.);
+    wblc_data_->tau_min_ = dynacore::Vector::Constant(valkyrie::num_act_joint, -500.);
+    wblc_data_->tau_max_ = dynacore::Vector::Constant(valkyrie::num_act_joint, 500.);
 
     kin_wbc_contact_list_.clear();
-    int jidx_offset(0);
-    if(swing_foot == dracobip_link::lAnkle) {
-        jidx_offset = rfoot_contact_->getDim();
+    int rf_idx_offset(0);
+    if(swing_foot == valkyrie_link::leftFoot) {
+        rf_idx_offset = rfoot_contact_->getDim();
         for(int i(0); i<lfoot_contact_->getDim(); ++i){
-            wblc_data_->W_rf_[i + jidx_offset] = 5.0;
-            wblc_data_->W_xddot_[i + jidx_offset] = 0.001;
+            wblc_data_->W_rf_[i + rf_idx_offset] = 5.0;
+            wblc_data_->W_xddot_[i + rf_idx_offset] = 0.001;
         }
-        wblc_data_->W_rf_[lfoot_contact_->getFzIndex() + jidx_offset] = 0.5;
+        wblc_data_->W_rf_[lfoot_contact_->getFzIndex() + rf_idx_offset] = 0.5;
 
-        ((ContactType*)lfoot_contact_)->setMaxFz(0.0001); 
+        ((SingleContact*)lfoot_contact_)->setMaxFz(0.0001); 
         kin_wbc_contact_list_.push_back(rfoot_contact_);
     }
-    else if(swing_foot == dracobip_link::rAnkle) {
+    else if(swing_foot == valkyrie_link::rightFoot) {
         for(int i(0); i<rfoot_contact_->getDim(); ++i){
-            wblc_data_->W_rf_[i + jidx_offset] = 5.0;
-            wblc_data_->W_xddot_[i + jidx_offset] = 0.0001;
+            wblc_data_->W_rf_[i + rf_idx_offset] = 5.0;
+            wblc_data_->W_xddot_[i + rf_idx_offset] = 0.0001;
         }
-        wblc_data_->W_rf_[rfoot_contact_->getFzIndex() + jidx_offset] = 0.5;
+        wblc_data_->W_rf_[rfoot_contact_->getFzIndex() + rf_idx_offset] = 0.5;
 
-        ((ContactType*)rfoot_contact_)->setMaxFz(0.0001); 
+        ((SingleContact*)rfoot_contact_)->setMaxFz(0.0001); 
         kin_wbc_contact_list_.push_back(lfoot_contact_);
     }
     else printf("[Warnning] swing foot is not foot: %i\n", swing_foot);
 
-    foot_task_ = new FootTask(robot_sys_, swing_foot);
-    base_task_ = new BodyTask(robot_sys_);
 
     // Create Minimum jerk objects
     for(size_t i = 0; i < 3; i++){
@@ -97,10 +96,10 @@ void BodyFootPlanningCtrl::OneStep(void* _cmd){
     _task_setup();
     _compute_torque_wblc(gamma);
 
-    for(int i(0); i<dracobip::num_act_joint; ++i){
-        ((DracoBip_Command*)_cmd)->jtorque_cmd[i] = gamma[i];
-        ((DracoBip_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
-        ((DracoBip_Command*)_cmd)->jvel_cmd[i] = des_jvel_[i];
+    for(int i(0); i<valkyrie::num_act_joint; ++i){
+        ((Valkyrie_Command*)_cmd)->jtorque_cmd[i] = gamma[i];
+        ((Valkyrie_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
+        ((Valkyrie_Command*)_cmd)->jvel_cmd[i] = des_jvel_[i];
     }
     _PostProcessing_Command();
 }
@@ -113,67 +112,69 @@ void BodyFootPlanningCtrl::_contact_setup(){
 }
 
 void BodyFootPlanningCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
-    dynacore::Matrix A_rotor = A_;
-    for (int i(0); i<dracobip::num_act_joint; ++i){
-        A_rotor(i + dracobip::num_virtual, i + dracobip::num_virtual)
-            += sp_->rotor_inertia_[i];
-    }
-    dynacore::Matrix A_rotor_inv = A_rotor.inverse();
-
-    wblc_->UpdateSetting(A_rotor, A_rotor_inv, coriolis_, grav_);
+    wblc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
     dynacore::Vector des_jacc_cmd = des_jacc_ 
         + Kp_.cwiseProduct(des_jpos_ - 
-                sp_->Q_.segment(dracobip::num_virtual, dracobip::num_act_joint))
-        + Kd_.cwiseProduct(des_jvel_ - sp_->Qdot_.tail(dracobip::num_act_joint));
-
-    //dynacore::pretty_print(des_jpos_, std::cout, "des_jpos");
-    //dynacore::pretty_print(des_jvel_, std::cout, "des_jvel");
-    //dynacore::pretty_print(des_jacc_, std::cout, "des_jacc");
-    //dynacore::pretty_print(des_jacc_cmd, std::cout, "des_jacc");
+                sp_->Q_.segment(valkyrie::num_virtual, valkyrie::num_act_joint))
+        + Kd_.cwiseProduct(des_jvel_ - sp_->Qdot_.tail(valkyrie::num_act_joint));
 
     wblc_->MakeWBLC_Torque(
             des_jacc_cmd, contact_list_,
             gamma, wblc_data_);
 
-    sp_->qddot_cmd_ = wblc_data_->qddot_;
-    sp_->reaction_forces_ = wblc_data_->Fr_;
+    //dynacore::pretty_print(des_jpos_, std::cout, "des_jpos");
+    //dynacore::pretty_print(des_jvel_, std::cout, "des_jvel");
+    //dynacore::pretty_print(des_jacc_, std::cout, "des_jacc");
+    //dynacore::pretty_print(des_jacc_cmd, std::cout, "des_jacc");
+    //dynacore::pretty_print(gamma, std::cout, "gamma");
 }
 
 void BodyFootPlanningCtrl::_task_setup(){
-    // Body height
-    double base_height_cmd = ini_base_height_;
-    if(b_set_height_target_) base_height_cmd = des_body_height_;
+    // Body Pos
+    double body_height_cmd;
+    if(b_set_height_target_) body_height_cmd = target_body_height_;
+    else body_height_cmd = ini_body_pos_[2];
 
-    dynacore::Vector jpos_des(2); jpos_des.setZero();
-    dynacore::Vector jvel_des(2); jvel_des.setZero();
-    dynacore::Vector jacc_des(2); jacc_des.setZero();
-
-    selected_joint_task_->UpdateTask(&(jpos_des), jvel_des, jacc_des);
-
-    // Orientation
+    dynacore::Vector vel_des(body_pos_task_->getDim()); vel_des.setZero();
+    dynacore::Vector acc_des(body_pos_task_->getDim()); acc_des.setZero();
+    dynacore::Vect3 des_pos = ini_body_pos_;
+    des_pos[2] = body_height_cmd;
+    body_pos_task_->UpdateTask(&(des_pos), vel_des, acc_des);
+    
+    // Body & Foot Orientation
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
     rpy_des.setZero();
-
-    /////// Body Posture Task Setup 
     dynacore::convert(rpy_des, des_quat);
-    dynacore::Vector pos_des(7); pos_des.setZero();
-    dynacore::Vector vel_des(6); vel_des.setZero();
-    dynacore::Vector acc_des(6); acc_des.setZero();
+    dynacore::Vector ang_vel_des(3); ang_vel_des.setZero();
+    dynacore::Vector ang_acc_des(3); ang_acc_des.setZero();
 
-    pos_des[0] = des_quat.x();
-    pos_des[1] = des_quat.y();
-    pos_des[2] = des_quat.z();
-    pos_des[3] = des_quat.w();
+    body_ori_task_->UpdateTask(&(des_quat), ang_vel_des, ang_acc_des);
+    torso_ori_task_->UpdateTask(&(des_quat), ang_vel_des, ang_acc_des);
+    foot_ori_task_->UpdateTask(&(des_quat), ang_vel_des, ang_acc_des);
 
-    pos_des[4] = 0.;
-    pos_des[5] = ini_body_pos_[1];
-    pos_des[6] = base_height_cmd;
-
-    base_task_->UpdateTask(&(pos_des), vel_des, acc_des);
-
-    /////// Foot Pos Task Setup 
     _CheckPlanning();
+    // Foot Pos Task Setup 
+    _foot_pos_task_setup();
+
+    // Full joint task
+    dynacore::Vector jpos_des = sp_->jpos_ini_;
+    dynacore::Vector zero(valkyrie::num_act_joint); zero.setZero();
+    total_joint_task_->UpdateTask(&(jpos_des), zero, zero);
+
+    // Task Update
+    task_list_.push_back(foot_pos_task_);
+    task_list_.push_back(body_pos_task_);
+    task_list_.push_back(body_ori_task_);
+    task_list_.push_back(torso_ori_task_);
+    task_list_.push_back(foot_ori_task_);
+    task_list_.push_back(total_joint_task_);
+
+    kin_wbc_->FindConfiguration(sp_->Q_, task_list_, kin_wbc_contact_list_, 
+            des_jpos_, des_jvel_, des_jacc_);
+}
+
+void BodyFootPlanningCtrl::_foot_pos_task_setup(){
     //_GetSinusoidalSwingTrajectory();
     _GetBsplineSwingTrajectory();
 
@@ -191,7 +192,7 @@ void BodyFootPlanningCtrl::_task_setup(){
         }
     }
     if(state_machine_time_> end_time_){
-        for(int i(0); i<foot_task_->getDim(); ++i){
+        for(int i(0); i<foot_pos_task_->getDim(); ++i){
             curr_foot_vel_des_[i] = 0;
             curr_foot_acc_des_[i] = 0;
         }
@@ -199,33 +200,15 @@ void BodyFootPlanningCtrl::_task_setup(){
             -push_down_height_ - 0.1*(state_machine_time_ - end_time_);
     }
 
-    dynacore::Vector foot_pos_des(7);
-    dynacore::Vector foot_vel_des(foot_task_->getDim()); foot_vel_des.setZero();
-    dynacore::Vector foot_acc_des(foot_task_->getDim()); foot_acc_des.setZero();
-    rpy_des.setZero();
-    rpy_des[2] = 0.;
-    dynacore::convert(rpy_des, des_quat);
+    dynacore::Vector foot_vel_des(foot_pos_task_->getDim()); foot_vel_des.setZero();
+    dynacore::Vector foot_acc_des(foot_pos_task_->getDim()); foot_acc_des.setZero();
+    foot_vel_des = curr_foot_vel_des_;
+    foot_acc_des = curr_foot_acc_des_;
 
-    foot_pos_des[0] = des_quat.x();
-    foot_pos_des[1] = des_quat.y();
-    foot_pos_des[2] = des_quat.z();
-    foot_pos_des[3] = des_quat.w();
-
-    foot_pos_des.tail(3) = curr_foot_pos_des_;
-    foot_vel_des.tail(3) = curr_foot_vel_des_;
-    foot_acc_des.tail(3) = curr_foot_acc_des_;
-
-    foot_task_->UpdateTask(
-            &(foot_pos_des), 
+    foot_pos_task_->UpdateTask(
+            &(curr_foot_pos_des_), 
             foot_vel_des, 
             foot_acc_des);
-
-    task_list_.push_back(selected_joint_task_);
-    task_list_.push_back(base_task_);
-    task_list_.push_back(foot_task_);
-
-    kin_wbc_->FindConfiguration(sp_->Q_, task_list_, kin_wbc_contact_list_, 
-            des_jpos_, des_jvel_, des_jacc_);
 }
 
 void BodyFootPlanningCtrl::_CheckPlanning(){
@@ -254,11 +237,11 @@ void BodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 
     // TEST 
     for(int i(0); i<2; ++i){
-        com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
+        //com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
         // TEST jpos update must be true
         // com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
         // com_pos[i] += body_pt_offset_[i];
-        com_vel[i] = sp_->Qdot_[i];
+        //com_vel[i] = sp_->Qdot_[i];
 
         // com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
     }
@@ -276,7 +259,7 @@ void BodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     pl_param.des_loc = sp_->des_location_;
     pl_param.stance_foot_loc = sp_->global_pos_local_;
 
-    if(swing_foot_ == dracobip_link::lAnkle)
+    if(swing_foot_ == valkyrie_link::leftFoot)
         pl_param.b_positive_sidestep = true;
     else
         pl_param.b_positive_sidestep = false;
@@ -305,7 +288,7 @@ void BodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 void BodyFootPlanningCtrl::FirstVisit(){
     b_replaned_ = false;
     ini_config_ = sp_->Q_;
-    robot_sys_->getPos(dracobip_link::torso, ini_body_pos_);
+    robot_sys_->getPos(valkyrie_link::pelvis, ini_body_pos_);
     robot_sys_->getPos(swing_foot_, ini_foot_pos_);
     ctrl_start_time_ = sp_->curr_time_;
     state_machine_time_ = 0.;
@@ -359,10 +342,10 @@ bool BodyFootPlanningCtrl::EndOfPhase(){
     // Swing foot contact = END
     if(b_contact_switch_check_){
         bool contact_happen(false);
-        if(swing_foot_ == dracobip_link::lAnkle && sp_->b_lfoot_contact_){
+        if(swing_foot_ == valkyrie_link::leftFoot && sp_->b_lfoot_contact_){
             contact_happen = true;
         }
-        if(swing_foot_ == dracobip_link::rAnkle && sp_->b_rfoot_contact_){
+        if(swing_foot_ == valkyrie_link::rightFoot && sp_->b_rfoot_contact_){
             contact_happen = true;
         }
         if(state_machine_time_ > end_time_ * 0.5 && contact_happen){
@@ -376,11 +359,11 @@ bool BodyFootPlanningCtrl::EndOfPhase(){
 
 void BodyFootPlanningCtrl::CtrlInitialization(
         const std::string & setting_file_name){
-    ini_base_height_ = sp_->Q_[dracobip_joint::virtual_Z];
+    ini_base_height_ = sp_->Q_[valkyrie_joint::virtual_Z];
     std::vector<double> tmp_vec;
 
     // Setting Parameters
-    ParamHandler handler(DracoBipConfigPath + setting_file_name + ".yaml");
+    ParamHandler handler(ValkyrieConfigPath + setting_file_name + ".yaml");
     handler.getValue("swing_height", swing_height_);
     handler.getValue("push_down_height", push_down_height_);
 
@@ -391,11 +374,11 @@ void BodyFootPlanningCtrl::CtrlInitialization(
 
     // Feedback Gain
     handler.getVector("Kp", tmp_vec);
-    for(int i(0); i<dracobip::num_act_joint; ++i){
+    for(int i(0); i<valkyrie::num_act_joint; ++i){
         Kp_[i] = tmp_vec[i];
     }
     handler.getVector("Kd", tmp_vec);
-    for(int i(0); i<dracobip::num_act_joint; ++i){
+    for(int i(0); i<valkyrie::num_act_joint; ++i){
         Kd_[i] = tmp_vec[i];
     }
 

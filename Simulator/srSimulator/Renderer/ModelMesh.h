@@ -35,6 +35,7 @@ class ModelMesh
         GLuint scene_list;
    
     public:
+        SE3 LocalFrame;
         // Transformation
         float _T[16];
         bool	visible;			// True: the model gets rendered

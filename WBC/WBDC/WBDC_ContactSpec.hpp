@@ -5,7 +5,7 @@
 
 class WBDC_ContactSpec:public ContactSpec{
     public:
-        WBDC_ContactSpec(int dim):ContactSpec(dim) {  }
+        WBDC_ContactSpec(int dim):ContactSpec(dim) { idx_Fz_ = dim -1; }
         virtual ~WBDC_ContactSpec(){}
 
         virtual int getDimRFConstratint() { return Uf_.rows(); }
