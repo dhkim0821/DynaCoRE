@@ -1,6 +1,6 @@
 #include "Atlas_StateProvider.hpp"
 #include <Utils/DataManager.hpp>
-#include "Atlas_DynaControl_Definition.h"
+#include "Atlas_DynaCtrl_Definition.h"
 
 Atlas_StateProvider* Atlas_StateProvider::getStateProvider(){
     static Atlas_StateProvider state_provider_;

@@ -24,7 +24,6 @@ Valkyrie_interface::Valkyrie_interface():
     jjvel_(valkyrie::num_act_joint),
     jjpos_(valkyrie::num_act_joint),
     jtorque_(valkyrie::num_act_joint),
-    initial_upper_body_config_(valkyrie::num_upper_joint),
     torque_command_(valkyrie::num_act_joint),
     jpos_command_(valkyrie::num_act_joint),
     jvel_command_(valkyrie::num_act_joint),
@@ -131,8 +130,8 @@ bool Valkyrie_interface::_Initialization(Valkyrie_SensorData* data){
         }
         state_estimator_->Initialization(data);
 
-        initial_upper_body_config_ = 
-            sp_->Q_.segment(valkyrie::upper_body_start_jidx, valkyrie::num_upper_joint);
+        //dynacore::pretty_print(sp_->Q_, std::cout, "configu");
+        //dynacore::pretty_print(sp_->jpos_ini_, std::cout, "jpos ini");
         DataManager::GetDataManager()->start();
         return true;
     }

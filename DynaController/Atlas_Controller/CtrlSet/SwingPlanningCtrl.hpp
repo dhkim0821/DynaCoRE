@@ -1,24 +1,24 @@
-#ifndef ABSTRACT_CLASS_SWING_LEG_CONTROL_ATLAS
-#define ABSTRACT_CLASS_SWING_LEG_CONTROL_ATLAS
+#ifndef ABSTRACT_CLASS_SWING_LEG_CONTROL_Atlas
+#define ABSTRACT_CLASS_SWING_LEG_CONTROL_Atlas
 
 #include <Controller.hpp>
-#include <Atlas_Controller/Atlas_DynaControl_Definition.h>
+#include <Atlas_Controller/Atlas_DynaCtrl_Definition.h>
 #include <Atlas/Atlas_Model.hpp>
 #include <Atlas_Controller/Atlas_StateProvider.hpp>
 
 class Atlas_StateProvider;
 class Planner;
 class WBDC_ContactSpec;
-class WBDC;
-class WBDC_ExtraData;
-
+class KinWBC;
+class WBLC;
+class WBLC_ExtraData;
 
 class SwingPlanningCtrl:public Controller{
     public:
         SwingPlanningCtrl(const RobotSystem* robot, int swing_foot, Planner* planner):
             Controller(robot),
             swing_foot_(swing_foot),
-            num_planning_(0),
+            b_replanning_(false),
             planner_(planner),
             planning_frequency_(0.),
             replan_moment_(0.),
@@ -34,7 +34,7 @@ class SwingPlanningCtrl:public Controller{
         virtual ~SwingPlanningCtrl(){
         }
 
-        void setPlanningFrequency(double freq){  planning_frequency_ = freq; }
+        void setReplanning(bool replan){  b_replanning_ = replan; }
         void setSwingTime(double swing_time){ 
             end_time_ = swing_time; 
             half_swing_time_ = end_time_/2.;
@@ -48,7 +48,7 @@ class SwingPlanningCtrl:public Controller{
         void setPrimeTimeX(double t_p_x){ t_prime_x_ = t_p_x; }
         void setPrimeTimeY(double t_p_y){ t_prime_y_ = t_p_y; }
         void setStanceHeight(double height) {
-            des_body_height_ = height;
+            target_body_height_ = height;
             b_set_height_target_ = true;
         }
         void setContactSwitchCheck(bool switch_check){ b_contact_switch_check_ = switch_check; }
@@ -60,7 +60,7 @@ class SwingPlanningCtrl:public Controller{
     protected:
         bool b_contact_switch_check_;
         bool b_set_height_target_;
-        double des_body_height_;
+        double target_body_height_;
 
         double double_stance_ratio_;
         double transition_phase_ratio_;
@@ -71,13 +71,15 @@ class SwingPlanningCtrl:public Controller{
         dynacore::Vect3 default_target_loc_;
 
         double planning_frequency_;
-        int num_planning_;
+        bool b_replanning_;
+        bool b_replaned_;
         double t_prime_x_;
         double t_prime_y_;
 
+        KinWBC* kin_wbc_;
         WBDC_ContactSpec* single_contact_;
-        WBDC* wbdc_;
-        WBDC_ExtraData* wbdc_data_;
+        WBLC* wblc_;
+        WBLC_ExtraData* wblc_data_;
         Planner* planner_;
 
         Atlas_StateProvider* sp_;
@@ -91,3 +93,4 @@ class SwingPlanningCtrl:public Controller{
 };
 
 #endif
+

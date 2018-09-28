@@ -1,5 +1,5 @@
-#ifndef JPOS_TASK_VALKYRIE
-#define JPOS_TASK_VALKYRIE
+#ifndef JPOS_TASK_Valkyrie
+#define JPOS_TASK_Valkyrie
 
 #include <WBLC/KinTask.hpp>
 

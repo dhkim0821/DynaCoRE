@@ -22,7 +22,9 @@ public:
 
   Vector Q_;
   Vector Qdot_;
-  
+  Vector jpos_ini_;
+  Vector des_jpos_prev_;
+   
   dynacore::Vect3 global_pos_local_;
   dynacore::Vect2 des_location_;
 

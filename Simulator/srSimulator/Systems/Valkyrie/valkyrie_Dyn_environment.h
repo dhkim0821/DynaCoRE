@@ -47,13 +47,11 @@ public:
 
   double ori_mtx_[9];
   std::vector<double> ang_vel_  ;
-
-protected:
-  double slope_;
-  double loc_x_;
   void getIMU_Data(std::vector<double> & imu_acc,
           std::vector<double> & imu_ang_vel);
-  void _SaveStanceFoot();
+ 
+protected:
+ void _SaveStanceFoot();
   void _ExternalDisturbance(int count);
 
   void _Save_Orientation_Matrix();

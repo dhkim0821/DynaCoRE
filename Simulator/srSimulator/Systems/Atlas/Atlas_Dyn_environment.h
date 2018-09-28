@@ -50,7 +50,9 @@ public:
 
   double ori_mtx_[9];
   std::vector<double> ang_vel_  ;
-protected:
+  void getIMU_Data(std::vector<double> & imu_acc,
+          std::vector<double> & imu_ang_vel);
+ protected:
   void _Get_Orientation(dynacore::Quaternion & rot);
   void _Copy_Array(double * , double *, int);
   void _CheckFootContact(bool & r_contact, bool & l_contact);

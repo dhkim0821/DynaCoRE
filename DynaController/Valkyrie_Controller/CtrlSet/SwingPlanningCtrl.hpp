@@ -1,5 +1,5 @@
-#ifndef ABSTRACT_CLASS_SWING_LEG_CONTROL_VALKYRIE
-#define ABSTRACT_CLASS_SWING_LEG_CONTROL_VALKYRIE
+#ifndef ABSTRACT_CLASS_SWING_LEG_CONTROL_Valkyrie
+#define ABSTRACT_CLASS_SWING_LEG_CONTROL_Valkyrie
 
 #include <Controller.hpp>
 #include <Valkyrie_Controller/Valkyrie_DynaCtrl_Definition.h>

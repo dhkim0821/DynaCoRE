@@ -1,21 +1,36 @@
 #ifndef ANGULAR_VELOCITY_ACCUMULATION_ATLAS
 #define ANGULAR_VELOCITY_ACCUMULATION_ATLAS
 
-#include "OriEstimator.hpp"
+#include <Utils/wrap_eigen.hpp>
 #include <Filter/filters.hpp>
 
-class BasicAccumulation:public OriEstimator{
-public:
-  BasicAccumulation();
-  virtual ~BasicAccumulation();
+class BasicAccumulation{
+    public:
+        BasicAccumulation();
+        ~BasicAccumulation(){}
 
-  virtual void EstimatorInitialization(const dynacore::Quaternion & ini_quat,
-                                       const std::vector<double> & acc,
-                                       const std::vector<double> & ang_vel);
+        void EstimatorInitialization(
+                const std::vector<double> & acc,
+                const std::vector<double> & ang_vel);
 
-  virtual void setSensorData(const std::vector<double> & acc,
-                             const std::vector<double> & ang_vel);
-protected:
+        void setSensorData(
+                const std::vector<double> & acc,
+                const std::vector<double> & ang_vel);
+
+        void getEstimatedState(
+                dynacore::Quaternion & ori,
+                dynacore::Vect3 & global_ang_vel){
+            ori = global_ori_;
+            global_ang_vel = global_ang_vel_;
+        }
+
+    protected:
+        double cutoff_freq_;
+        std::vector<filter*> filtered_acc_;
+
+        void _InitIMUOrientationEstimateFromGravity();
+        dynacore::Quaternion global_ori_;
+        dynacore::Vect3 global_ang_vel_;
 };
 
 #endif

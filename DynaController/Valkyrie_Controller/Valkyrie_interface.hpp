@@ -23,7 +23,6 @@ class Valkyrie_interface: public interface{
         bool _Initialization(Valkyrie_SensorData* );
 
         Valkyrie_Command* test_cmd_;
-        dynacore::Vector initial_upper_body_config_;
 
         dynacore::Vector jjvel_;
         dynacore::Vector jjpos_;

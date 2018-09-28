@@ -11,28 +11,31 @@
 #include <ParamHandler/ParamHandler.hpp>
 #include <Atlas/Atlas_Model.hpp>
 
-// Test SET LIST
-// Basic Test
-#include <Atlas_Controller/TestSet/JointCtrlTest.hpp>
-
 // Walking Test
-#include <Atlas_Controller/TestSet/WalkingConfigTest.hpp>
+#include <Atlas_Controller/TestSet/WalkingTest.hpp>
 
 // Body Ctrl Test
-#include <Atlas_Controller/TestSet/BodyConfigTest.hpp>
+#include <Atlas_Controller/TestSet/BodyCtrlTest.hpp>
 
 Atlas_interface::Atlas_interface():
     interface(),
     jjvel_(atlas::num_act_joint),
     jjpos_(atlas::num_act_joint),
-    initial_upper_body_config_(atlas::num_upper_joint),
+    jtorque_(atlas::num_act_joint),
+    torque_command_(atlas::num_act_joint),
+    jpos_command_(atlas::num_act_joint),
+    jvel_command_(atlas::num_act_joint),
     waiting_count_(2)
 {
-
     robot_sys_ = new Atlas_Model();
     jjvel_.setZero();
     jjpos_.setZero();
+    jtorque_.setZero();
 
+    torque_command_.setZero();
+    jpos_command_.setZero();
+    jvel_command_.setZero();
+ 
     test_cmd_ = new Atlas_Command();
     sp_ = Atlas_StateProvider::getStateProvider();
     state_estimator_ = new Atlas_StateEstimator(robot_sys_);  
@@ -43,7 +46,16 @@ Atlas_interface::Atlas_interface():
             &jjpos_, DYN_VEC, "jjpos", atlas::num_act_joint);
     DataManager::GetDataManager()->RegisterData(
             &jjvel_, DYN_VEC, "jjvel", atlas::num_act_joint);
-    
+     DataManager::GetDataManager()->RegisterData(
+            &jtorque_, DYN_VEC, "torque", atlas::num_act_joint);
+  
+    DataManager::GetDataManager()->RegisterData(
+            &jpos_command_, DYN_VEC, "jpos_des", atlas::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &jvel_command_, DYN_VEC, "jvel_des", atlas::num_act_joint);
+    DataManager::GetDataManager()->RegisterData(
+            &torque_command_, DYN_VEC, "command", atlas::num_act_joint);
+
     _ParameterSetting();
     
     printf("[Atlas_interface] Contruct\n");
@@ -64,27 +76,29 @@ void Atlas_interface::GetCommand( void* _data, void* _command){
     
     // Update Command (and Data)
     for(int i(0); i<atlas::num_act_joint; ++i){
-        cmd->jtorque_cmd[i] = test_cmd_->jtorque_cmd[i];
-        cmd->jpos_cmd[i] = test_cmd_->jpos_cmd[i];
-        cmd->jvel_cmd[i] = test_cmd_->jvel_cmd[i];
+        torque_command_[i] = test_cmd_->jtorque_cmd[i];
+        jpos_command_[i] = test_cmd_->jpos_cmd[i];
+        jvel_command_[i] = test_cmd_->jvel_cmd[i];
 
         jjvel_[i] = data->jvel[i];
         jjpos_[i] = data->jpos[i];
+        jtorque_[i] = data->jtorque[i];
     }
 
-    // Fix Upper Body
-    for (int i(0); i<atlas::num_upper_joint; ++i){
-        cmd->jpos_cmd[atlas::upper_body_start_jidx - atlas::num_virtual + i] 
-            = initial_upper_body_config_[i];
-        cmd->jvel_cmd[atlas::upper_body_start_jidx - atlas::num_virtual +  i] = 0.;
+    for(int i(0); i< atlas::num_act_joint; ++i){
+        cmd->jtorque_cmd[i] = torque_command_[i];
+        cmd->jpos_cmd[i] = jpos_command_[i];
+        cmd->jvel_cmd[i] = jvel_command_[i];
     }
+
     running_time_ = (double)(count_) * atlas::servo_rate;
     ++count_;
     // When there is sensed time
     sp_->curr_time_ = running_time_;
-    // Stepping forward
+    
+    ////// Stepping forward
     double walking_start(3.);
-    double walking_duration(7.);
+    double walking_duration(15.);
     double walking_distance(2.5);
     if(sp_->curr_time_ > walking_start){
         double walking_time = sp_->curr_time_ - walking_start;
@@ -111,8 +125,6 @@ bool Atlas_interface::_Initialization(Atlas_SensorData* data){
         }
         state_estimator_->Initialization(data);
 
-        initial_upper_body_config_ = 
-            sp_->Q_.segment(atlas::upper_body_start_jidx, atlas::num_upper_joint);
         DataManager::GetDataManager()->start();
         return true;
     }
@@ -125,15 +137,12 @@ void Atlas_interface::_ParameterSetting(){
     bool b_tmp;
     // Test SETUP
     handler.getString("test_name", tmp_string);
-    // Basic Test ***********************************
-    if(tmp_string == "joint_ctrl_test"){
-        test_ = new JointCtrlTest(robot_sys_);
-        // Walking Test ***********************************
-    }else if(tmp_string == "walking_config_test"){
-        test_ = new WalkingConfigTest(robot_sys_);
+    // Walking Test ***********************************
+    if(tmp_string == "walking_config_test"){
+        test_ = new WalkingTest(robot_sys_);
         // Body Ctrl Test ***********************************
     }else if(tmp_string == "body_ctrl_test"){
-        test_ = new BodyConfigTest(robot_sys_);    
+        test_ = new BodyCtrlTest(robot_sys_);    
         // Stance and Swing Test ***********************************
     }else {
         printf("[Interfacce] There is no test matching with the name\n");

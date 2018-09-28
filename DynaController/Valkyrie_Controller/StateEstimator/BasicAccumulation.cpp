@@ -2,7 +2,7 @@
 #include <Configuration.h>
 #include <Utils/utilities.hpp>
 #include <Utils/DataManager.hpp>
-#include <DracoBip/DracoBip_Definition.h>
+#include <Valkyrie/Valkyrie_Definition.h>
 
 BasicAccumulation::BasicAccumulation():filtered_acc_(3){
     global_ori_.w() = 1.;
@@ -12,7 +12,7 @@ BasicAccumulation::BasicAccumulation():filtered_acc_(3){
 
     cutoff_freq_ = 2.0* M_PI *1.0; // 1Hz // (2*pi*frequency) rads/s 
     for(int i(0); i<3; ++i){
-        filtered_acc_[i] = new digital_lp_filter(cutoff_freq_, dracobip::servo_rate);
+        filtered_acc_[i] = new digital_lp_filter(cutoff_freq_, valkyrie::servo_rate);
     }
     global_ang_vel_.setZero();
 }
@@ -36,7 +36,7 @@ void BasicAccumulation::setSensorData(const std::vector<double> & acc,
         body_omega[i] = ang_vel[i];
     }
     dynacore::Quaternion delta_quat_body;
-    dynacore::convert(body_omega*dracobip::servo_rate, delta_quat_body);
+    dynacore::convert(body_omega*valkyrie::servo_rate, delta_quat_body);
 
     dynacore::Matrix R_global_to_imu = global_ori_.normalized().toRotationMatrix();
     global_ang_vel_ = R_global_to_imu * body_omega;

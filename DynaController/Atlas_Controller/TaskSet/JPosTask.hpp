@@ -1,17 +1,14 @@
-#ifndef WBDC_JPOS_TASK_ATLAS
-#define WBDC_JPOS_TASK_ATLAS
+#ifndef JPOS_TASK_Atlas
+#define JPOS_TASK_Atlas
 
-#include <Task.hpp>
+#include <WBLC/KinTask.hpp>
 
 class Atlas_StateProvider;
 
-class JPosTask: public Task{
+class JPosTask: public KinTask{
 public:
   JPosTask();
   virtual ~JPosTask();
-
-  dynacore::Vector Kp_vec_;
-  dynacore::Vector Kd_vec_;
 
 protected:
   // Update op_cmd_

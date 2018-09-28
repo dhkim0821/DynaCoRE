@@ -1,5 +1,5 @@
-#ifndef ATLAS_SINGLE_CONTACT
-#define ATLAS_SINGLE_CONTACT
+#ifndef Atlas_SINGLE_CONTACT
+#define Atlas_SINGLE_CONTACT
 
 #include <WBDC/WBDC_ContactSpec.hpp>
 class RobotSystem;
@@ -10,7 +10,11 @@ public:
   SingleContact(const RobotSystem* robot, int contact_pt);
   virtual ~SingleContact();
 
+  void setMaxFz(double max_fz){ max_Fz_ = max_fz; }
 protected:
+  double max_Fz_;
+  int dim_U_;
+
   virtual bool _UpdateJc();
   virtual bool _UpdateJcDotQdot();
   virtual bool _UpdateUf();

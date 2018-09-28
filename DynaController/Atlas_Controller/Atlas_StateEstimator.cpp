@@ -2,7 +2,7 @@
 #include "Atlas_StateProvider.hpp"
 #include <Utils/utilities.hpp>
 #include <Atlas/Atlas_Model.hpp>
-#include <Atlas_Controller/Atlas_DynaControl_Definition.h>
+#include <Atlas_Controller/Atlas_DynaCtrl_Definition.h>
 
 // Orientation Estimators
 #include <Atlas_Controller/StateEstimator/BasicAccumulation.hpp>
@@ -42,7 +42,7 @@ void Atlas_StateEstimator::Initialization(Atlas_SensorData* data){
     body_ori.w() = 1.; body_ori.x() = 0.; body_ori.y() = 0.; body_ori.z() = 0;
     dynacore::Vect3 body_ang_vel;
 
-    ori_est_->EstimatorInitialization(body_ori, imu_acc, imu_ang_vel);   
+    ori_est_->EstimatorInitialization(imu_acc, imu_ang_vel);   
     ori_est_->getEstimatedState(body_ori, body_ang_vel);
 
     curr_config_[3] = body_ori.x();
@@ -68,6 +68,9 @@ void Atlas_StateEstimator::Initialization(Atlas_SensorData* data){
 
     sp_->Q_ = curr_config_;
     sp_->Qdot_ = curr_qdot_;
+    sp_->jpos_ini_ = 
+        curr_config_.segment(atlas::num_virtual, atlas::num_act_joint);
+
 
     // Right Contact 
     if(data->rfoot_contact) sp_->b_rfoot_contact_ = 1;

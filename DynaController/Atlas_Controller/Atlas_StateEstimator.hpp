@@ -7,7 +7,7 @@
 
 class Atlas_StateProvider;
 class RobotSystem;
-class OriEstimator;
+class BasicAccumulation;
 class Atlas_SensorData;
 
 class Atlas_StateEstimator{
@@ -28,7 +28,7 @@ class Atlas_StateEstimator{
         dynacore::Vector curr_config_;
         dynacore::Vector curr_qdot_;
 
-        OriEstimator* ori_est_;
+        BasicAccumulation* ori_est_;
 };
 
 #endif

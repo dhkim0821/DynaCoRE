@@ -1,5 +1,5 @@
-#ifndef ATLAS_FIXED_BODY_CONTACT
-#define ATLAS_FIXED_BODY_CONTACT
+#ifndef Atlas_FIXED_BODY_CONTACT
+#define Atlas_FIXED_BODY_CONTACT
 
 #include <WBDC/WBDC_ContactSpec.hpp>
 class RobotSystem;
