@@ -12,8 +12,8 @@ target_link_libraries (simulation_NAO
   Renderer
   util
   SR_SysGenerator
-  NAO_Controller
-  SR_Terrain
+  #NAO_Controller
+  #SR_Terrain
 )
 
 target_link_libraries(simulation_NAO ${OPENGL_LIBRARIES})

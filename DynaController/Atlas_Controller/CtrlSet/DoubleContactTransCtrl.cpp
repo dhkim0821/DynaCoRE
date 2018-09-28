@@ -106,8 +106,8 @@ void DoubleContactTransCtrl::_task_setup(){
     double body_height_cmd = 
             dynacore::smooth_changing(ini_body_pos_[2], target_body_height_, 
                     end_time_, state_machine_time_);
-    dynacore::Vector vel_des(body_pos_task_->getDim()); vel_des.setZero();
-    dynacore::Vector acc_des(body_pos_task_->getDim()); acc_des.setZero();
+    dynacore::Vector vel_des(3); vel_des.setZero();
+    dynacore::Vector acc_des(3); acc_des.setZero();
     dynacore::Vect3 des_pos = ini_body_pos_;
     des_pos[2] = body_height_cmd;
     body_pos_task_->UpdateTask(&(des_pos), vel_des, acc_des);

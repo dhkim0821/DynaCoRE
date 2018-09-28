@@ -7,7 +7,7 @@
 #include "Ground.h"
 #include "LieGroup/LieGroup.h"
 #include <vector>
-#include "utils/utilities.h"
+#include <Utils/utilities.hpp>
 
 ////////////////////////////////////////////////
 #ifdef __APPLE__
@@ -61,18 +61,18 @@ class NAO_Dyn_environment
         std::vector<double> ang_vel_  ;
 
         std::vector<state> history_state_;
-        std::vector<sejong::Vect3> contact_pt_list_;
-        std::vector<sejong::Vect3> contact_force_list_;
+        std::vector<dynacore::Vect3> contact_pt_list_;
+        std::vector<dynacore::Vect3> contact_force_list_;
 
-        std::vector<sejong::Vect3> indicated_contact_pt_list_;
-        std::vector<sejong::Vect3> commanded_contact_force_list_;
+        std::vector<dynacore::Vect3> indicated_contact_pt_list_;
+        std::vector<dynacore::Vect3> commanded_contact_force_list_;
 
     protected:
-        void _Get_Orientation(sejong::Quaternion & rot);
+        void _Get_Orientation(dynacore::Quaternion & rot);
 
         void _Copy_Array(double * , double *, int);
 
-        void _ListCommandedReactionForce(const sejong::Vector & Fr);
+        void _ListCommandedReactionForce(const dynacore::Vector & Fr);
         void _Draw_Commanded_Force();
         void _Draw_Contact_Point();
         void _Draw_StatEqConvexHull_Point();

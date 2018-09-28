@@ -2,6 +2,7 @@
 #include <Atlas_Controller/Atlas_StateProvider.hpp>
 
 #include <Atlas_Controller/TaskSet/LinkPosTask.hpp>
+#include <Atlas_Controller/TaskSet/LinkHeightTask.hpp>
 #include <Atlas_Controller/TaskSet/LinkOriTask.hpp>
 #include <Atlas_Controller/TaskSet/JPosTask.hpp>
 
@@ -30,6 +31,7 @@ SingleContactTransCtrl::SingleContactTransCtrl(RobotSystem* robot,
 
     total_joint_task_ = new JPosTask();
     body_pos_task_ = new LinkPosTask(robot, atlas_link::pelvis);
+    //body_pos_task_ = new LinkHeightTask(robot, atlas_link::pelvis);
     body_ori_task_ = new LinkOriTask(robot, atlas_link::pelvis);
     torso_ori_task_ = new LinkOriTask(robot, atlas_link::torso);
 
@@ -114,8 +116,8 @@ void SingleContactTransCtrl::_task_setup(){
     if(b_set_height_target_) body_height_cmd = target_body_height_;
     else body_height_cmd = ini_body_pos_[2];
 
-    dynacore::Vector vel_des(body_pos_task_->getDim()); vel_des.setZero();
-    dynacore::Vector acc_des(body_pos_task_->getDim()); acc_des.setZero();
+    dynacore::Vector vel_des(3); vel_des.setZero();
+    dynacore::Vector acc_des(3); acc_des.setZero();
     dynacore::Vect3 des_pos = ini_body_pos_;
     des_pos[2] = body_height_cmd;
     body_pos_task_->UpdateTask(&(des_pos), vel_des, acc_des);

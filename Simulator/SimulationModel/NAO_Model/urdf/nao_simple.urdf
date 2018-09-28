@@ -25,13 +25,13 @@
       <geometry>
         <mesh filename="../meshes/HeadYaw.3ds" scale="0.1 0.1 0.1"/>
       </geometry>
-      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
     </visual>
     <!--<collision>-->
       <!--<geometry>-->
         <!--<mesh filename="../meshes/HeadYaw.3ds" scale="0.1 0.1 0.1"/>-->
       <!--</geometry>-->
-      <!--<origin rpy="1.5708 0 0" xyz="0 0 0"/>-->
+      <!--<origin rpy="0 0 0" xyz="0 0 0"/>-->
     <!--</collision>-->
   </link>
   <!--<joint name="HeadPitch" type="revolute">-->
@@ -52,13 +52,13 @@
       <geometry>
         <mesh filename="../meshes/HeadPitch.3ds" scale="0.1 0.1 0.1"/>
       </geometry>
-      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
     </visual>
     <!--<collision>-->
       <!--<geometry>-->
         <!--<mesh filename="../meshes/HeadPitch.3ds" scale="0.1 0.1 0.1"/>-->
       <!--</geometry>-->
-      <!--<origin rpy="1.5708 0 0" xyz="0 0 0"/>-->
+      <!--<origin rpy="0 0 0" xyz="0 0 0"/>-->
     <!--</collision>-->
   </link>
  <joint name="LHipYawPitch" type="revolute">
@@ -78,13 +78,13 @@
       <geometry>
         <mesh filename="../meshes/LHipYawPitch.3ds" scale="0.1 0.1 0.1"/>
       </geometry>
-      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
     </visual>
     <!--<collision>-->
       <!--<geometry>-->
         <!--<mesh filename="../meshes/LHipYawPitch.3ds" scale="0.1 0.1 0.1"/>-->
       <!--</geometry>-->
-      <!--<origin rpy="1.5708 0 0" xyz="0 0 0"/>-->
+      <!--<origin rpy="0 0 0" xyz="0 0 0"/>-->
     <!--</collision>-->
   </link>
   <joint name="LHipRoll" type="revolute">
@@ -104,13 +104,13 @@
       <geometry>
         <mesh filename="../meshes/LHipRoll.3ds" scale="0.1 0.1 0.1"/>
       </geometry>
-      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
     </visual>
     <!--<collision>-->
       <!--<geometry>-->
         <!--<mesh filename="../meshes/LHipRoll.3ds" scale="0.1 0.1 0.1"/>-->
       <!--</geometry>-->
-      <!--<origin rpy="1.5708 0 0" xyz="0 0 0"/>-->
+      <!--<origin rpy="0 0 0" xyz="0 0 0"/>-->
     <!--</collision>-->
   </link>
   <joint name="LHipPitch" type="revolute">
@@ -393,7 +393,7 @@
       <geometry>
           <mesh filename="../meshes/Torso.3ds" scale="0.1 0.1 0.1"/>
       </geometry>
-      <origin rpy="1.5708 0 0" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
     </visual>
     <!--<collision>-->
       <!--<geometry>-->
