@@ -50,6 +50,8 @@ class DracoBip_Dyn_environment
         double ori_mtx_[9];
         std::vector<double> ang_vel_  ;
         int count_;
+        double simulation_freq_;
+
     protected:
         void getIMU_Data(std::vector<double> & imu_acc,
                 std::vector<double> & imu_ang_vel);
@@ -60,7 +62,6 @@ class DracoBip_Dyn_environment
         void _ZeroInput_VirtualJoint();
         void _ParamterSetup();
 
-        double simulation_freq_;
         std::vector<double> push_time_;
         std::vector<double> push_force_;
         std::vector<double> push_direction_;

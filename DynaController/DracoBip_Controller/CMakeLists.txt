@@ -1,4 +1,5 @@
 FILE(GLOB_RECURSE headers *.hpp)
+FILE(GLOB_RECURSE cheaders *.h)
 FILE(GLOB_RECURSE sources *.cpp)
 
 set(CTRL_SYS DracoBip)
@@ -13,4 +14,7 @@ target_link_libraries (${CTRL_SYS}_Controller dynacore_param_handler PIPM_planne
 
 install(TARGETS ${CTRL_SYS}_Controller DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ${headers} DESTINATION
+    "${INSTALL_INCLUDE_DIR}/${CTRL_SYS}_Controller")
+
+install(FILES ${cheaders} DESTINATION
     "${INSTALL_INCLUDE_DIR}/${CTRL_SYS}_Controller")

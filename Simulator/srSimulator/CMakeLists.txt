@@ -34,4 +34,4 @@ add_subdirectory(Systems/SagitP3)
 add_subdirectory(Systems/DracoBip)
 add_subdirectory(Systems/Cassie)
 
-add_subdirectory(Systems/NAO)
+#add_subdirectory(Systems/NAO)

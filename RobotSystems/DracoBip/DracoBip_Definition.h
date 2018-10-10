@@ -47,7 +47,7 @@ namespace dracobip{
     constexpr int num_act_joint = 10;
 
     constexpr int num_virtual = 6;
-    constexpr double servo_rate = 1./1500.;
+    constexpr double servo_rate = 1./1000.;
     constexpr int num_leg_joint = 5; // How many joint in each leg
 };
 #endif

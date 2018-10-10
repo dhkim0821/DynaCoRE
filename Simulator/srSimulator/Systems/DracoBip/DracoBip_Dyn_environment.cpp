@@ -68,7 +68,7 @@ void DracoBip_Dyn_environment::ControlFunction( void* _data ) {
         p_data->imu_ang_vel[i] = imu_ang_vel[i];
         p_data->imu_acc[i] = -imu_acc[i];
     }
-    if (pDyn_env->count_%10 ==1) pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
+    if (pDyn_env->count_%((int)pDyn_env->simulation_freq_) ==1) pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
 
     pDyn_env->_ZeroInput_VirtualJoint();
     pDyn_env->_hold_XY();
