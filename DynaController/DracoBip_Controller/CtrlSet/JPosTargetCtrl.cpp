@@ -29,7 +29,7 @@ JPosTargetCtrl::JPosTargetCtrl(RobotSystem* robot):Controller(robot),
                 jpos_task_->getDim(), 100.0);
 
     wbdc_data_->cost_weight.tail(fixed_body_contact_->getDim()) = 
-        dynacore::Vector::Constant(fixed_body_contact_->getDim(), 1.0);
+        dynacore::Vector::Constant(fixed_body_contact_->getDim(), 0.1);
 
     sp_ = DracoBip_StateProvider::getStateProvider();
 
@@ -51,8 +51,12 @@ void JPosTargetCtrl::OneStep(void* _cmd){
     _jpos_task_setup();
     _jpos_ctrl_wbdc(gamma);
 
+    double ramp_period(0.5);
+    double ramp(1.0);
+    if(state_machine_time_ < ramp_period) ramp = state_machine_time_/ramp_period;
+
     for(int i(0); i<dracobip::num_act_joint; ++i){
-        ((DracoBip_Command*)_cmd)->jtorque_cmd[i] = gamma[i];
+        ((DracoBip_Command*)_cmd)->jtorque_cmd[i] = ramp * gamma[i];
         ((DracoBip_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
         ((DracoBip_Command*)_cmd)->jvel_cmd[i] = des_jvel_[i];
     }

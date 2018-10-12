@@ -23,8 +23,8 @@ JointCtrlTest::~JointCtrlTest(){
 }
 
 void JointCtrlTest::TestInitialization(){
-  //jpos_ctrl_ini_->CtrlInitialization("CTRL_jpos_initialization");
-  //jpos_ctrl_->CtrlInitialization("CTRL_jpos_swing");
+  jpos_ctrl_ini_->CtrlInitialization("CTRL_jpos_initialization");
+  jpos_ctrl_->CtrlInitialization("CTRL_jpos_swing");
 }
 
 int JointCtrlTest::_NextPhase(const int & phase){
@@ -44,7 +44,7 @@ void JointCtrlTest::_ParameterSetting(){
   // JPos initialization
   handle.getVector("initial_jpos", tmp_vec);
   ((JPosTargetCtrl*)jpos_ctrl_ini_)->setTargetPosition(tmp_vec);
-  //((JPosCtrl*)jpos_ctrl_)->setPosture(tmp_vec); // swing test initial posture set
+  ((JPosCtrl*)jpos_ctrl_)->setPosture(tmp_vec); // swing test initial posture set
 
   handle.getValue("initialization_time", tmp_value);
   ((JPosTargetCtrl*)jpos_ctrl_ini_)->setMovingTime(tmp_value);

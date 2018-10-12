@@ -101,7 +101,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
 
-    fig.canvas.set_window_title('jtorque (right_leg)')
+    fig.canvas.set_window_title('jtorque (left_leg)')
     for i in range(1,num_leg_joint + 1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
         # plt.plot(data_x, data_filter_cmd[st_idx:end_idx,i-1], "c-", linewidth=2.7)
@@ -152,7 +152,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
-    fig.canvas.set_window_title('jtorque (left_leg)')
+    fig.canvas.set_window_title('jtorque (right_leg)')
     for i in range(1,num_leg_joint+1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
         # plt.plot(data_x, data_filter_cmd[st_idx:end_idx,i-1+3], "c-", linewidth=2.7)
@@ -220,7 +220,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
-    fig.canvas.set_window_title('qddot (right)')
+    fig.canvas.set_window_title('qddot (left)')
     for i in range(1,num_leg_joint + 1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
         # plt.plot(data_x, data_qddot_cmd[xMinIndex:xMaxIndex, i-1 + 6], "r-")
@@ -240,7 +240,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
 
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
-    fig.canvas.set_window_title('qddot (left)')
+    fig.canvas.set_window_title('qddot (right)')
     for i in range(1, num_leg_joint + 1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
         # plt.plot(data_x, data_qddot_cmd[xMinIndex:xMaxIndex, i-1 + 9], "r-")

@@ -72,7 +72,8 @@ function(add_sources)
   set_property(GLOBAL APPEND PROPERTY SRCS_LIST "${SRCS}")
 endfunction(add_sources)
 
-set(header_directory "include/dyancore_yaml-cpp/")
+set(header_directory "${CMAKE_CURRENT_SOURCE_DIR}/include/dynacore_yaml-cpp/")
+message(${header_directory})
 
 file(GLOB sources "src/[a-zA-Z]*.cpp")
 file(GLOB_RECURSE public_headers "include/dynacore_yaml-cpp/[a-zA-Z]*.h")
@@ -298,12 +299,9 @@ install(TARGETS dynacore_yaml-cpp EXPORT dynacore_yaml-cpp-targets ${_INSTALL_DE
 install(TARGETS dynacore_param_handler DESTINATION "${INSTALL_LIB_DIR}")
 install(FILES ParamHandler.hpp DESTINATION
     "${INSTALL_INCLUDE_DIR}/ParamHandler")
-install(
-	DIRECTORY ${header_directory}
-	# DESTINATION ${INCLUDE_INSTALL_DIR}
-  DESTINATION "${INSTALL_INCLUDE_DIR}/dynacore_yaml_cpp"
-	FILES_MATCHING PATTERN "*.h"
-)
+
+install( DIRECTORY ${header_directory} 
+  DESTINATION "${INSTALL_INCLUDE_DIR}/dynacore_yaml-cpp" FILES_MATCHING PATTERN "*.h")
 
 export(
     TARGETS dynacore_yaml-cpp

@@ -51,7 +51,7 @@ void BasicAccumulation::_InitIMUOrientationEstimateFromGravity(){
     for(int i(0); i<3; ++i){
         // We expect a negative number if gravity is pointing opposite of 
         // the IMU direction
-        g_B[i] = -filtered_acc_[i]->output();
+        g_B[i] = filtered_acc_[i]->output();
     }
     // Test Vector  ////////////////////////
     //g_B[0] = 0.1; g_B[1] = 0.4; g_B[2] = 0.5;

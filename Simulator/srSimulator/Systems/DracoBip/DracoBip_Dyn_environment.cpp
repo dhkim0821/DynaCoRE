@@ -66,7 +66,7 @@ void DracoBip_Dyn_environment::ControlFunction( void* _data ) {
     pDyn_env->getIMU_Data(imu_acc, imu_ang_vel);
     for (int i(0); i<3; ++i){
         p_data->imu_ang_vel[i] = imu_ang_vel[i];
-        p_data->imu_acc[i] = -imu_acc[i];
+        p_data->imu_acc[i] = imu_acc[i];
     }
     if (pDyn_env->count_%((int)pDyn_env->simulation_freq_) ==1) pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
 

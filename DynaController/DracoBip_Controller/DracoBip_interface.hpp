@@ -25,8 +25,6 @@ private:
   DracoBip_Command* test_cmd_;
 
   dynacore::Vector torque_;
-  dynacore::Vector jjvel_;
-  dynacore::Vector jjpos_;
  
   dynacore::Vector torque_command_;
   dynacore::Vector jpos_command_;
@@ -34,6 +32,10 @@ private:
   
   DracoBip_StateEstimator* state_estimator_;
   DracoBip_StateProvider* sp_;
+
+  // For save
+  dynacore::Vector temperature_;
+  dynacore::Vector motor_current_;
 };
 
 #endif

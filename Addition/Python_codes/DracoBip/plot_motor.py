@@ -19,17 +19,13 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     ## read files --------------------------------------------------------------------
     file_path = os.getcwd() + "/../../../experiment_data_check/"
 
-    data_jpos_des = \
-            np.genfromtxt(file_path+'jpos_des.txt', delimiter=None, dtype=(float))
-    data_config = \
-            np.genfromtxt(file_path+'config.txt', delimiter=None, dtype=(float))
-    data_jvel_des = \
-            np.genfromtxt(file_path+'jvel_des.txt', delimiter=None, dtype=(float))
-    data_qdot = \
-            np.genfromtxt(file_path+'qdot.txt', delimiter=None, dtype=(float))
+    data_motor_current = \
+            np.genfromtxt(file_path+'motor_current.txt', delimiter=None, dtype=(float))
+    data_temperature = \
+           np.genfromtxt(file_path+'temperature.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
     num_leg_joint = 5
-    
+
     st_idx = 1;
     end_idx = len(data_x) - 1
     data_x = data_x[st_idx:end_idx]
@@ -48,13 +44,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     ## plot command/jpos
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))
-    fig.canvas.set_window_title('jpos (left leg)')
+    fig.canvas.set_window_title('motor current (left leg)')
     for i in range(1,num_leg_joint+1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
-        plt.plot(data_x, data_config[st_idx:end_idx, 6 + i-1], "b-")
-        plt.plot(data_x, data_jpos_des[st_idx:end_idx,i-1], "r-")
+        plt.plot(data_x, data_motor_current[st_idx:end_idx,i-1], "b-")
 
-        # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:
             # phase line
@@ -72,11 +66,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     # Plot Figure --------------------------------------------------------------------
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))    
-    fig.canvas.set_window_title('jpos (right leg)')
+    fig.canvas.set_window_title('motor current (right leg)')
     for i in range(1,num_leg_joint + 1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
-        plt.plot(data_x, data_config[st_idx:end_idx, 6 + i-1 + num_leg_joint], "b-")
-        plt.plot(data_x, data_jpos_des[st_idx:end_idx,i-1 + num_leg_joint], "r-")
+        plt.plot(data_x, data_motor_current[st_idx:end_idx,i-1 + num_leg_joint], "b-")
         
         # phase marker #
         for j in phseChange:
@@ -97,14 +90,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     ## plot jvel
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))    
-    fig.canvas.set_window_title('jvel (left_leg)')
+    fig.canvas.set_window_title('motor temperature (left_leg)')
     for i in range(1,num_leg_joint + 1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
-        plt.plot(data_x, data_qdot[st_idx:end_idx,i-1 + 6], "b-", \
-                 data_x, data_jvel_des[st_idx:end_idx, i-1], "r-")
+        plt.plot(data_x, data_temperature[st_idx:end_idx, i-1], "b-")
 
-
-        # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
         for j in phseChange:
             # phase line
@@ -122,14 +112,11 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     # Plot Figure --------------------------------------------------------------------
     fig = plt.figure(figure_number)
     plt.get_current_fig_manager().window.wm_geometry(str(subfigure_width) + "x" + str(subfigure_height) +  "+" + str(subfigure_width*col_index) + "+" + str(subfigure_height*row_index))        
-    #plt.get_current_fig_manager().window.wm_geometry("480x600+1440+0")
-    fig.canvas.set_window_title('jvel (right_leg)')
+    fig.canvas.set_window_title('motor temperature (right_leg)')
     for i in range(1,num_leg_joint + 1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
-        plt.plot(data_x, data_qdot[st_idx:end_idx,i-1 + 6 + num_leg_joint], "b-", \
-                 data_x, data_jvel_des[st_idx:end_idx, i-1 + num_leg_joint], "r-");
+        plt.plot(data_x, data_temperature[st_idx:end_idx, i-1 + num_leg_joint], "b-");
        
-        # plt.legend(('command', 'pos'), loc='upper left')
          # phase marker #
         for j in phseChange:
             # phase line

@@ -9,7 +9,6 @@ elif [[ "$OSTYPE" == "linux"*  ]]; then
 else
     echo "Unsupported OS. Cannot run script"
 fi
-echo $PATH_PREFIX
 PATH_PACKAGE="$PATH_PREFIX/$USER/Repository/dynacore"
 echo $PATH_PACKAGE
 #PATH_PACKAGE=$(dirname "$(pwd)")

@@ -122,7 +122,7 @@ void DataManager::run(){
         // _ShowSendingMessage(data_setup, data);
         COMM::send_data(socket2_, PORT_DATA_RECEIVE, data, data_setup.tot_num_array_data * sizeof(double), IP_ADDR);
 
-        usleep(1000);
+        usleep(5000);
     }
 
     delete [] data;
