@@ -134,16 +134,23 @@ void SystemGenerator::_SetLinkJoint(){
 void SystemGenerator::_SetJointParam(int idx){
     URDFJointMap::iterator Jointidxiter = joint_map_.find(joint_names_[idx]);
 
-    URDFLinkMap::iterator p_Linkidxiter = link_map_.find(Jointidxiter->second->parent_link_name);
-    URDFLinkMap::iterator c_Linkidxiter = link_map_.find(Jointidxiter->second->child_link_name);
+    URDFLinkMap::iterator p_Linkidxiter = 
+        link_map_.find(Jointidxiter->second->parent_link_name);
+    URDFLinkMap::iterator c_Linkidxiter = 
+        link_map_.find(Jointidxiter->second->child_link_name);
 
     Vec3 p_Link_offset;
     Vec3 c_Link_offset;
 
     if(p_Linkidxiter->second->inertial)
-        p_Link_offset=Vec3(p_Linkidxiter->second->inertial->origin.position.x,p_Linkidxiter->second->inertial->origin.position.y,p_Linkidxiter->second->inertial->origin.position.z);
+        p_Link_offset=
+            Vec3( p_Linkidxiter->second->inertial->origin.position.x,
+                  p_Linkidxiter->second->inertial->origin.position.y,
+                  p_Linkidxiter->second->inertial->origin.position.z);
     if(c_Linkidxiter->second->inertial)
-        c_Link_offset=Vec3(c_Linkidxiter->second->inertial->origin.position.x,c_Linkidxiter->second->inertial->origin.position.y,c_Linkidxiter->second->inertial->origin.position.z);
+        c_Link_offset = Vec3(c_Linkidxiter->second->inertial->origin.position.x,
+                             c_Linkidxiter->second->inertial->origin.position.y,
+                             c_Linkidxiter->second->inertial->origin.position.z);
     Vec3 joint_rpy;
     Jointidxiter->second->parent_to_joint_origin_transform.rotation.getRPY (joint_rpy[0], joint_rpy[1], joint_rpy[2]);
 
@@ -283,12 +290,12 @@ void SystemGenerator::_SetLinkParam(int idx){
     Vec3 link_visual_xyz;
 
     if(Linkidxiter->second->inertial){
-        Inertiaoffset_=Vec3(Linkidxiter->second->inertial->origin.position.x,Linkidxiter->second->inertial->origin.position.y,Linkidxiter->second->inertial->origin.position.z);
+        Inertiaoffset_=Vec3(Linkidxiter->second->inertial->origin.position.x,
+                            Linkidxiter->second->inertial->origin.position.y,
+                            Linkidxiter->second->inertial->origin.position.z);
     }
     
-    //TEST
     if(Linkidxiter->second->visual!=0){
-    //if(false){
         link_visual_xyz[0]=Linkidxiter->second->visual->origin.position.x;
         link_visual_xyz[1]=Linkidxiter->second->visual->origin.position.y;
         link_visual_xyz[2]=Linkidxiter->second->visual->origin.position.z;
@@ -389,6 +396,7 @@ void SystemGenerator::_SetPassiveJoint(srJoint::ACTTYPE joint_type){
         v_link_[i]->GetGeomInfo().SetDimension(0.001, 0.001, 0);
     }
 
+        //v_link_[5]->GetGeomInfo().SetDimension(10.001, 0.001, 0);
     //Passive Joint (PRISMATIC)
     vp_joint_[0]->SetParentLink(v_link_[0]);
     vp_joint_[0]->SetChildLink(v_link_[1]);
@@ -438,7 +446,15 @@ void SystemGenerator::_SetPassiveJoint(srJoint::ACTTYPE joint_type){
     vr_joint_[2]->GetGeomInfo().SetShape(srGeometryInfo::CAPSULE);
     vr_joint_[2]->GetGeomInfo().SetDimension(passive_radius, passive_length, 0.0);
     vr_joint_[2]->SetParentLinkFrame(EulerZYX(Vec3(0.0, 0.0, 0.0), Vec3(0., 0., 0.)));
-    vr_joint_[2]->SetChildLinkFrame(EulerZYX(Vec3(0.0,-SR_PI_HALF,SR_PI), -Vec3(0., 0., 0.)));
+
+
+    URDFLinkMap::iterator Linkidxiter = link_map_.find(link_names_[0]);
+    Vec3 c_Link_offset = Vec3(
+            Linkidxiter->second->inertial->origin.position.x,
+            Linkidxiter->second->inertial->origin.position.y,
+            Linkidxiter->second->inertial->origin.position.z);
+    vr_joint_[2]->SetChildLinkFrame(EulerZYX(Vec3(0.0,-SR_PI_HALF,SR_PI), 
+                -c_Link_offset));
 }
 
 //joint_name_
