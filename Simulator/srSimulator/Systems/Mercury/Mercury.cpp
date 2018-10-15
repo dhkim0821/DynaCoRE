@@ -50,9 +50,15 @@ void Mercury::_SetCollision(){
   collision_[2] = new srCollision();
   collision_[2]->GetGeomInfo().SetShape(srGeometryInfo::CYLINDER);
   collision_[2]->GetGeomInfo().SetDimension(0.05, 0.1, 0.05);
-  collision_[2]->SetLocalFrame(EulerZYX(Vec3(0.,0., 0.), Vec3(0., 0., -hanging_height_ + 0.050)));
-  link_[link_idx_map_.find("body")->second]->AddCollision(collision_[2]);
-  link_[link_idx_map_.find("body")->second]->SetFriction(fric);
+  collision_[2]->SetLocalFrame(
+          EulerZYX(Vec3(0., -SR_PI_HALF, SR_PI), 
+                   //Vec3( 0., 0. , -0.050 + hanging_height_  ) ) );
+                   Vec3( -hanging_height_ + 0.05, 0. , 0.  ) ) );
+  v_link_[5]->AddCollision(collision_[2]);
+  v_link_[5]->SetFriction(10.);
+   //collision_[2]->SetLocalFrame(EulerZYX(Vec3(0.,0., 0.), Vec3(0., 0., -hanging_height_ + 0.050)));
+  //link_[link_idx_map_.find("body")->second]->AddCollision(collision_[2]);
+  //link_[link_idx_map_.find("body")->second]->SetFriction(fric);
 
 }
 

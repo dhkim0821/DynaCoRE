@@ -82,7 +82,7 @@ void Atlas::_SetInitialConf(){
 
   case 2:
     vp_joint_[0]->m_State.m_rValue[0] =  -0.0183;
-    vp_joint_[2]->m_State.m_rValue[0] =  1.079 - 0.182 + 0.015;
+    vp_joint_[2]->m_State.m_rValue[0] =  1.079 - 0.182 + 0.015 - 0.0271;
     break;
 
   case 3:

@@ -142,15 +142,17 @@ void SystemGenerator::_SetJointParam(int idx){
     Vec3 p_Link_offset;
     Vec3 c_Link_offset;
 
-    if(p_Linkidxiter->second->inertial)
+    if(p_Linkidxiter->second->inertial){
         p_Link_offset=
             Vec3( p_Linkidxiter->second->inertial->origin.position.x,
                   p_Linkidxiter->second->inertial->origin.position.y,
                   p_Linkidxiter->second->inertial->origin.position.z);
-    if(c_Linkidxiter->second->inertial)
+    }
+    if(c_Linkidxiter->second->inertial){
         c_Link_offset = Vec3(c_Linkidxiter->second->inertial->origin.position.x,
                              c_Linkidxiter->second->inertial->origin.position.y,
                              c_Linkidxiter->second->inertial->origin.position.z);
+    }
     Vec3 joint_rpy;
     Jointidxiter->second->parent_to_joint_origin_transform.rotation.getRPY (joint_rpy[0], joint_rpy[1], joint_rpy[2]);
 
@@ -167,7 +169,8 @@ void SystemGenerator::_SetJointParam(int idx){
         JointOff_pos[i]= (JointOff_pos[i] - p_Link_offset[i]);
 
     Vec3 JointOff_ori(joint_rpy[2],joint_rpy[1],joint_rpy[0]);
-    SE3 JointOffFrame(EulerZYX(Vec3(joint_rpy[2], joint_rpy[1], joint_rpy[0]), JointOff_pos ));
+    SE3 JointOffFrame(EulerZYX(Vec3(joint_rpy[2], joint_rpy[1], joint_rpy[0]), 
+                JointOff_pos ));
     SE3 Axis010Frame(EulerZYX(Vec3(0, 0, -SR_PI_HALF), Vec3(0., 0., 0.)));
     SE3 Axis100Frame(EulerZYX(Vec3(0, SR_PI_HALF, 0), Vec3(0,0,0)));
 
