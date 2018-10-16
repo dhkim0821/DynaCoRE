@@ -140,6 +140,41 @@ bool parseBox(Box &b, TiXmlElement *c)
   }
   return true;
 }
+bool parseCapsule(Capsule &y, TiXmlElement *c)
+{
+  y.clear();
+
+  y.type = Geometry::CAPSULE;
+  if (!c->Attribute("length") ||
+      !c->Attribute("radius"))
+  {
+    return false;
+  }
+
+  try
+  {
+    y.length = boost::lexical_cast<double>(c->Attribute("length"));
+  }
+  catch (boost::bad_lexical_cast &/*e*/)
+  {
+    std::stringstream stm;
+    stm << "length [" << c->Attribute("length") << "] is not a valid float";
+    return false;
+  }
+
+  try
+  {
+    y.radius = boost::lexical_cast<double>(c->Attribute("radius"));
+  }
+  catch (boost::bad_lexical_cast &/*e*/)
+  {
+    std::stringstream stm;
+    stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
+    return false;
+  }
+  return true;
+}
+
 
 bool parseCylinder(Cylinder &y, TiXmlElement *c)
 {
@@ -244,7 +279,14 @@ boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
     if (parseMesh(*m, shape))
       return geom;    
   }
-  else
+  else if (type_name == "capsule")
+  {
+    Capsule *c = new Capsule();
+    geom.reset(c);
+    if (parseCapsule(*c, shape))
+      return geom;    
+  }
+   else
   {
     return geom;
   }
@@ -501,6 +543,16 @@ bool exportCylinder(Cylinder &y, TiXmlElement *xml)
   xml->LinkEndChild(cylinder_xml);
   return true;
 }
+bool exportCapsule(Capsule &y, TiXmlElement *xml)
+{
+  // e.g. add <cylinder radius="1"/>
+  TiXmlElement *capsule_xml = new TiXmlElement("capsule");
+  capsule_xml->SetAttribute("radius", urdf_export_helpers::values2str(y.radius));
+  capsule_xml->SetAttribute("length", urdf_export_helpers::values2str(y.length));
+  xml->LinkEndChild(capsule_xml);
+  return true;
+}
+
 
 bool exportMesh(Mesh &m, TiXmlElement *xml)
 {
@@ -530,14 +582,18 @@ bool exportGeometry(boost::shared_ptr<Geometry> &geom, TiXmlElement *xml)
   }
   else if (boost::dynamic_pointer_cast<Mesh>(geom))
   {
-    exportMesh((*(boost::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
+      exportMesh((*(boost::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
+  }
+  else if (boost::dynamic_pointer_cast<Capsule>(geom))
+  {
+      exportCapsule((*(boost::dynamic_pointer_cast<Capsule>(geom).get())), geometry_xml);
   }
   else
   {
-    Sphere *s = new Sphere();
-    s->radius = 0.03;
-    geom.reset(s);
-    exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
+      Sphere *s = new Sphere();
+      s->radius = 0.03;
+      geom.reset(s);
+      exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
   }
 
   xml->LinkEndChild(geometry_xml);
