@@ -8,8 +8,9 @@ initialization_time: 5.0
 # Timing Parameters (sec)
 test_duration: 100.32
 
-amplitude: [ 0.5, 0.5, 0.3, 0.15, 0.0, # Left Leg
-             0, 0, -0.35, 0.3, 0 ]
+#amplitude: [ 0.5, 0.5, 0.3, 0.15, 0.0, # Left Leg
+amplitude: [ 0, 0, 0, 0, 0, # Left Leg
+             0, 0, 0, 0, 0 ]
 
 frequency: [ 0, 0, 0, 0, 0, # Left Leg
              0, 0, 0.3, 0.3, 0 ]

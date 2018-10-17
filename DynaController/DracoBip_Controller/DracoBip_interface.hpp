@@ -20,7 +20,7 @@ private:
   int waiting_count_;
   
   void _ParameterSetting();
-  bool _Initialization(DracoBip_SensorData* );
+  bool _Initialization(DracoBip_SensorData*, DracoBip_Command* );
 
   DracoBip_Command* test_cmd_;
 
@@ -33,7 +33,21 @@ private:
   DracoBip_StateEstimator* state_estimator_;
   DracoBip_StateProvider* sp_;
 
-  // For save
+  bool stop_test_;
+
+  std::vector<double> jpos_max_;
+  std::vector<double> jpos_min_;
+ 
+  std::vector<double> jvel_max_;
+  std::vector<double> jvel_min_;
+
+  std::vector<double> trq_max_;
+  std::vector<double> trq_min_;
+
+  bool _UpdateTestCommand(DracoBip_Command* test_cmd);
+  void _SetStopCommand( DracoBip_SensorData* data, DracoBip_Command* cmd);
+  void _CopyCommand(DracoBip_Command* cmd );
+
   dynacore::Vector temperature_;
   dynacore::Vector motor_current_;
 };
