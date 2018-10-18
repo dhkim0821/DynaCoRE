@@ -2,15 +2,15 @@
 #  Title: Dynamic Control for Robotics (Expedition)  #
 ######################################################
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 2.8)
 project(DynaCoRE)
 
 # Use MACOSX_RPATH by default on OS X. This was added in CMake 2.8.12 and
 # became default in CMake 3.0. Explicitly setting this policy is necessary to
 # suppress a warning in CMake 3.0 and above.
-if(POLICY CMP0042)
-  cmake_policy(SET CMP0042 NEW)
-endif()
+#if(POLICY CMP0042)
+  #cmake_policy(SET CMP0042 NEW)
+#endif()
 
 # Simplify variable reference and escape sequence evaluation. This was added in
 # CMake 3.1. Explicitly setting this policy is necessary to suppress a warning
@@ -18,13 +18,7 @@ endif()
 if(POLICY CMP0053)
   cmake_policy(SET CMP0053 NEW)
 endif()
-#if( APPLE ) 
-    #set(CMAKE_OSX_ARCHITECTURES "x86_64") 
-    #if(CMAKE_GENERATOR STREQUAL Xcode) 
-        #set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8") 
-        #set(CMAKE_OSX_DEPLOYMENT_TARGET "10.8" CACHE STRING "OS X Deployment target" FORCE)
-    #endif() 
-#endif()
+
 add_definitions(-O3)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 

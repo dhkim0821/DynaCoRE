@@ -1,9 +1,9 @@
-#ifndef MOTION_CAPTURE_DATA_MANAGER
-#define MOTION_CAPTURE_DATA_MANAGER
+#ifndef MOTION_CAPTURE_DATA_MANAGER_DRACO_BIPED
+#define MOTION_CAPTURE_DATA_MANAGER_DRACO_BIPED
 
 #include <Utils/dynacore_pThread.hpp>
 #include <Utils/wrap_eigen.hpp>
-#include <DracoBip_Controller/StateEstimator/BodyFootPosEstimator.hpp>
+#include <DracoBip_Controller/StateEstimator/BodyEstimator.hpp>
 #include <Filter/filters.hpp>
 class DracoBip_StateProvider;
 class RobotSystem;
@@ -16,61 +16,61 @@ class RobotSystem;
 #define NUM_MARKERS 13
 
 typedef struct{
-  // float condition[NUM_MARKERS];
-  double data[NUM_MARKERS * 3];
+    // float condition[NUM_MARKERS];
+    double data[NUM_MARKERS * 3];
 }message;
 ////////////////////////////////////////////
 typedef struct{
-  int visible[NUM_MARKERS];
-  double data[NUM_MARKERS*3];
+    int visible[NUM_MARKERS];
+    double data[NUM_MARKERS*3];
 }dracobip_message;
 
 
 class MoCapManager: public dynacore_pThread{
-public:
-    friend class BodyFootPosEstimator;
+    public:
+        friend class BodyEstimator;
 
-  MoCapManager(const RobotSystem* );
-  virtual ~MoCapManager(){}
+        MoCapManager(const RobotSystem* );
+        virtual ~MoCapManager(){}
 
-  virtual void run(void);
+        virtual void run(void);
 
-  dynacore::Quaternion body_quat_;
-  void CoordinateUpdateCall(){ b_update_call_ = true; }
+        dynacore::Quaternion body_quat_;
+        void CoordinateUpdateCall(){ b_update_call_ = true; }
 
-protected:
-  std::vector<dynacore::Vect3> healthy_led_list_;
+    protected:
+        std::vector<dynacore::Vect3> healthy_led_list_;
 
-  std::vector<filter*> body_led0_filter_;
-  std::vector<filter*> body_led1_filter_;
-  std::vector<filter*> body_led2_filter_;
+        std::vector<filter*> body_led0_filter_;
+        std::vector<filter*> body_led1_filter_;
+        std::vector<filter*> body_led2_filter_;
 
-  double initialization_duration_;
-  dynacore::Vect3 offset_;
-  dynacore::Quaternion imu_body_ori_;
+        double initialization_duration_;
+        dynacore::Vect3 offset_;
+        dynacore::Quaternion imu_body_ori_;
 
-  DracoBip_StateProvider * sp_;
-  dynacore::Matrix R_coord_;
-  bool b_update_call_;
+        DracoBip_StateProvider * sp_;
+        dynacore::Matrix R_coord_;
+        bool b_update_call_;
 
-  void _print_message(const dracobip_message & msg);
-  void _UpdateLEDPosData(const dracobip_message & msg);
-  void _CoordinateUpdate(dracobip_message & msg);
-  void _CoordinateChange(dracobip_message & msg);
-  dynacore::Matrix _GetOrientation(const dynacore::Vect3 &, 
-          const dynacore::Vect3 &, const dynacore::Vect3 &);
+        void _print_message(const dracobip_message & msg);
+        void _UpdateLEDPosData(const dracobip_message & msg);
+        void _CoordinateUpdate(dracobip_message & msg);
+        void _CoordinateChange(dracobip_message & msg);
+        dynacore::Matrix _GetOrientation(const dynacore::Vect3 &, 
+                const dynacore::Vect3 &, const dynacore::Vect3 &);
 
-  int socket_;
-  std::vector<int> marker_cond_;
+        int socket_;
+        std::vector<int> marker_cond_;
 
-  dynacore::Vector led_pos_data_;
-  dynacore::Vector led_kin_data_;
-  dynacore::Vector led_pos_raw_data_;
+        dynacore::Vector led_pos_data_;
+        dynacore::Vector led_kin_data_;
+        dynacore::Vector led_pos_raw_data_;
 
-  int lfoot_idx;
-  int rfoot_idx;
+        int lfoot_idx;
+        int rfoot_idx;
 
-  const RobotSystem* robot_sys_;
+        const RobotSystem* robot_sys_;
 };
 
 #endif
