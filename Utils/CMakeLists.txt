@@ -16,7 +16,7 @@ FILE(GLOB_RECURSE cppheaders *.hpp)
 FILE(GLOB_RECURSE sources *.cpp)
 add_library(dynacore_utils SHARED ${sources} ${headers} ${cppheaders})
 
-find_package(Threads REQUIRED)
+find_package(threads REQUIRED)
 if(THREADS_HAVE_PTHREAD_ARG)
   target_compile_options(dynacore_utils PUBLIC "-pthread")
 endif()
