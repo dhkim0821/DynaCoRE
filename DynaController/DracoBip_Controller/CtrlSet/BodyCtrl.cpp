@@ -12,6 +12,7 @@
 #include <DracoBip_Controller/ContactSet/SingleContact.hpp>
 #include <DracoBip_Controller/ContactSet/FootNoYaw.hpp>
 #include <DracoBip_Controller/ContactSet/FootLinear.hpp>
+#include <DracoBip_Controller/ContactSet/FootLinear.hpp>
 
 BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
     end_time_(1000.0),

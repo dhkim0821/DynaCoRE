@@ -3,7 +3,7 @@ start_phase: 0
 # Initialization
 #initial_jpos: [0., -0.06, -0.75, 1.32, 0.93,
                #0., 0.06, -0.75, 1.32, 0.93]
-initial_jpos: [0., -0.06, -1.1, 1.55, 0.85, 0., 0.06, -1.1, 1.55, 0.85]
+initial_jpos: [0., -0.08, -1.05, 1.51, 0.85, 0., 0.08, -1.05, 1.51, 0.85]
 body_height: 1.0
 
 # Timing Parameters (sec)
@@ -22,8 +22,8 @@ stance_time: 0.01
 #end_transition_time: 0.13
 #stance_time: 0.11
 
-replanning: false
-#replanning: true
+#replanning: false
+replanning: true
 transition_phase_mix_ratio: 0.2
 double_stance_mix_ratio: 0.0
 # contact_switch_check: false

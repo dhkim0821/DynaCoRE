@@ -4,13 +4,12 @@
 #include <Configuration.h>
 #include <Utils/wrap_eigen.hpp>
 
-
 class DracoBip_StateProvider;
 class RobotSystem;
 class BasicAccumulation;
 class DracoBip_SensorData;
 class filter;
-class BodyFootPosEstimator;
+class BodyEstimator;
 
 class DracoBip_StateEstimator{
     public:
@@ -31,7 +30,7 @@ class DracoBip_StateEstimator{
         dynacore::Vector curr_qdot_;
 
         BasicAccumulation* ori_est_;
-        BodyFootPosEstimator* body_foot_est_;
+        BodyEstimator* body_est_;
         filter* mocap_x_vel_est_;
         filter* mocap_y_vel_est_;
 

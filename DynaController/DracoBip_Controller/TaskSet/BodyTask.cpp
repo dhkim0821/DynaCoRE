@@ -85,7 +85,6 @@ bool BodyTask::_UpdateCommand(void* pos_des,
 }
 
 bool BodyTask::_UpdateTaskJacobian(){
-printf("ddd\n");
     dynacore::Matrix Jtmp;
     robot_sys_->getFullJacobian(dracobip_link::torso, Jtmp);
     // Rx, Ry, Rz

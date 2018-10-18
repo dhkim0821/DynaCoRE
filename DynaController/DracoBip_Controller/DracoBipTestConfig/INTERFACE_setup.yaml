@@ -2,10 +2,10 @@
 #test_name: joint_ctrl_test
 
 ## Walking Test ********************************* 
-#test_name: walking_test
+test_name: walking_test
 
 ## Body Ctrl Test ********************************* 
-test_name: body_ctrl_test
+#test_name: body_ctrl_test
 
 home_position: [0., 0., 0.3927, 0.7854, 1.1781, 0., 0., -0.3927, 0.7854, 1.1781]
 

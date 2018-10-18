@@ -1,17 +1,19 @@
-#ifndef BODY_FOOT_POSITON_ESTIMATOR_DRACO_BIPED
-#define BODY_FOOT_POSITON_ESTIMATOR_DRACO_BIPED
+#ifndef BODY_ESTIMATOR_DRACO_BIPED
+#define BODY_ESTIMATOR_DRACO_BIPED
 
 #include <Utils/wrap_eigen.hpp>
 #include <Filter/filters.hpp>
 
-class MoCapManager;
+class DracoBip_MoCapManager;
 class RobotSystem;
 class DracoBip_StateProvider;
 
-class BodyFootPosEstimator{
+class BodyEstimator{
     public:
-        BodyFootPosEstimator(const RobotSystem*);
-        ~BodyFootPosEstimator();
+        friend class DracoBip_MoCapManager;
+
+        BodyEstimator(const RobotSystem*);
+        ~BodyEstimator();
 
         void Initialization(const dynacore::Quaternion & body_ori);
         void Update();
@@ -22,7 +24,7 @@ class BodyFootPosEstimator{
                 dynacore::Vect3 & local_body_pos);
 
     protected:
-        MoCapManager* mocap_manager_;
+        DracoBip_MoCapManager* mocap_manager_;
         DracoBip_StateProvider* sp_;
 
         std::vector<filter*> vel_filter_;

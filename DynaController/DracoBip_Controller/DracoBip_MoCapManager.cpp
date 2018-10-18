@@ -1,4 +1,4 @@
-#include "MoCapManager.hpp"
+#include "DracoBip_MoCapManager.hpp"
 #include <Utils/comm_udp.hpp>
 #include "DracoBip_StateProvider.hpp"
 #include <Utils/utilities.hpp>
@@ -6,7 +6,7 @@
 #include <DracoBip/DracoBip_Definition.h>
 #include <Utils/DataManager.hpp>
 
-MoCapManager::MoCapManager(const RobotSystem* robot):dynacore_pThread(),
+DracoBip_MoCapManager::DracoBip_MoCapManager(const RobotSystem* robot):dynacore_pThread(),
     socket_(0),
     led_pos_data_(3*NUM_MARKERS),
     led_kin_data_(3*NUM_MARKERS),
@@ -42,7 +42,7 @@ MoCapManager::MoCapManager(const RobotSystem* robot):dynacore_pThread(),
     //printf("[Mo Cap Manager] Constructed\n");
 }
 
-void MoCapManager::run(){
+void DracoBip_MoCapManager::run(){
     dracobip_message dracobip_msg;
     int count(0);
 
@@ -69,7 +69,7 @@ void MoCapManager::run(){
         //if(count% 500 == 0){ _print_message(dracobip_msg); }
     }
 }
-void MoCapManager::_CoordinateUpdate(dracobip_message & msg) {
+void DracoBip_MoCapManager::_CoordinateUpdate(dracobip_message & msg) {
     double start_idx = dracobip_link::LED_BODY_0;
     double len_to_virtual = 77;
     
@@ -100,7 +100,7 @@ void MoCapManager::_CoordinateUpdate(dracobip_message & msg) {
     }
 }
 
-void MoCapManager::_CoordinateChange(dracobip_message & msg) {
+void DracoBip_MoCapManager::_CoordinateChange(dracobip_message & msg) {
     double start_idx = dracobip_link::LED_BODY_0;
     std::vector<dynacore::Vect3> led_list;
     led_list.resize(NUM_MARKERS);
@@ -120,7 +120,7 @@ void MoCapManager::_CoordinateChange(dracobip_message & msg) {
     }
 }
 
-dynacore::Matrix MoCapManager::_GetOrientation(const dynacore::Vect3 &b0_raw,
+dynacore::Matrix DracoBip_MoCapManager::_GetOrientation(const dynacore::Vect3 &b0_raw,
         const dynacore::Vect3 &b1_raw,
         const dynacore::Vect3 &b2_raw) {
 
@@ -165,7 +165,7 @@ dynacore::Matrix MoCapManager::_GetOrientation(const dynacore::Vect3 &b0_raw,
     return R.transpose();
 }
 
-void MoCapManager::_print_message(const dracobip_message & msg){
+void DracoBip_MoCapManager::_print_message(const dracobip_message & msg){
     for(int i(0); i < NUM_MARKERS; ++i){
         printf("%d th LED data (cond, x, y, z): %d, (%f, %f, %f) \n", i,
                 msg.visible[i],
@@ -179,7 +179,7 @@ void MoCapManager::_print_message(const dracobip_message & msg){
     }
 }
 
-void MoCapManager::_UpdateLEDPosData(const dracobip_message & msg){
+void DracoBip_MoCapManager::_UpdateLEDPosData(const dracobip_message & msg){
     dynacore::Vect3 pos;
 
     int led_idx = dracobip_link::LED_BODY_0;
