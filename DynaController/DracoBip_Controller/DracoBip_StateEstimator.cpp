@@ -5,6 +5,8 @@
 #include <DracoBip_Controller/DracoBip_DynaCtrl_Definition.h>
 
 #include <DracoBip_Controller/StateEstimator/BasicAccumulation.hpp>
+#include <DracoBip_Controller/StateEstimator/BodyFootPosEstimator.hpp>
+#include <Filter/filters.hpp>
 
 DracoBip_StateEstimator::DracoBip_StateEstimator(RobotSystem* robot):
     curr_config_(dracobip::num_q),
@@ -13,10 +15,14 @@ DracoBip_StateEstimator::DracoBip_StateEstimator(RobotSystem* robot):
     sp_ = DracoBip_StateProvider::getStateProvider();
     robot_sys_ = robot;
     ori_est_ = new BasicAccumulation();
+    body_foot_est_ = new BodyFootPosEstimator(robot);
+    mocap_vel_est_ = new SimpleAverageEstimator();
 }
 
 DracoBip_StateEstimator::~DracoBip_StateEstimator(){
     delete ori_est_;
+    delete body_foot_est_;
+    delete mocap_vel_est_;
 }
 
 void DracoBip_StateEstimator::Initialization(DracoBip_SensorData* data){
@@ -43,6 +49,7 @@ void DracoBip_StateEstimator::Initialization(DracoBip_SensorData* data){
 
     ori_est_->EstimatorInitialization(imu_acc, imu_ang_vel);   
     ori_est_->getEstimatedState(body_ori, body_ang_vel);
+    body_foot_est_->Initialization(body_ori_);
 
     curr_config_[3] = body_ori.x();
     curr_config_[4] = body_ori.y();
@@ -78,6 +85,11 @@ void DracoBip_StateEstimator::Initialization(DracoBip_SensorData* data){
 
     //_RBDL_TEST();
     sp_->SaveCurrentData(robot_sys_);
+
+    dynacore::Vect3 com_pos, com_vel;
+    robot_sys_->getCoMPosition(com_pos);
+    robot_sys_->getCoMVelocity(com_vel);
+    mocap_vel_est_->Initialization(com_pos, com_vel);
 }
 void DracoBip_StateEstimator::Update(DracoBip_SensorData* data){
     curr_config_.setZero();
@@ -139,6 +151,16 @@ void DracoBip_StateEstimator::Update(DracoBip_SensorData* data){
     else sp_->b_lfoot_contact_ = 0;
     
     sp_->SaveCurrentData(robot_sys_);
+
+    // Mocap sed body velocity 
+    dynacore::Vect3 mocap_body_vel;
+    body_foot_est_->Update();
+    body_foot_est_->getMoCapBodyVel(mocap_body_vel);
+    body_foot_est_->getMoCapBodyPos(body_ori_, sp_->est_mocap_body_pos_);
+    mocap_vel_est_->Update(mocap_body_vel[0], mocap_body_vel[1]);
+    mocap_vel_est_->Output(
+            sp_->est_mocap_body_vel_[0], 
+            sp_->est_mocap_body_vel_[1]);
 }
 
 void DracoBip_StateEstimator::_RBDL_TEST(){

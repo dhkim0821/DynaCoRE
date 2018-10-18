@@ -1,12 +1,13 @@
 <robot name="Draco">
  <link name="torso">
     <inertial>
-      <origin xyz="-0.0133907728940907 0.000753510365864796 -0.187273411666051" rpy="0 0 0" />
+        <origin xyz="-0.0133907728940907 0.000753510365864796 0.10783" rpy="0 0 0" />
+        <!--<origin xyz="-0.0133907728940907 0.000753510365864796 0." rpy="0 0 0" />-->
       <mass value="9.67" />
       <inertia ixx="0.0585154591166426" ixy="-9.46724624145663E-05" ixz="-0.00614431919973963" iyy="0.0651574953784801" iyz="-0.000230611945696951" izz="0.0178352105631859" />
     </inertial>
     <visual>
-      <origin xyz="-0.05 0 -0.35" rpy="1.5708 0 1.5708" />
+      <origin xyz="-0.05 0 -0.0549" rpy="1.5708 0 1.5708" />
       <geometry>
         <mesh filename="meshes/torso_draco.dae" />
       </geometry>
@@ -32,7 +33,8 @@
     </visual>
   </link>
   <joint name="lHipYaw" type="revolute">
-    <origin xyz="-0.0222 0.0870 -0.2951" rpy="0 0 0" />
+    <!--<origin xyz="-0.0222 0.0870 -0.2951" rpy="0 0 0" />-->
+    <origin xyz="-0.0222 0.0870 0.0" rpy="0 0 0" />
     <dynamics damping="0.5" />
     <parent link="torso" />
     <child link="lHipYaw" />
@@ -188,7 +190,8 @@
     </visual>
   </link>
   <joint name="rHipYaw" type="revolute">
-    <origin xyz="-0.0222 -0.0870 -0.2951" rpy="0 0 0" />
+    <!--<origin xyz="-0.0222 -0.0870 -0.2951" rpy="0 0 0" />-->
+    <origin xyz="-0.0222 -0.0870 0.0" rpy="0 0 0" />
     <dynamics damping="0.5" />
     <parent link="torso" />
     <child link="rHipYaw" />
@@ -326,4 +329,4 @@
     <joint name="rAnkle"/>
     <mechanicalReduction>1</mechanicalReduction>
   </transmission>
-</robot>
+  </robot>

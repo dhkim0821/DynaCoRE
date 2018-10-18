@@ -121,4 +121,19 @@ private:
     float min_cutoff, max_cutoff;
 };
 
+
+class AverageFilter: filter
+{
+    public:
+        AverageFilter(double dt, double t_const, double limit);
+        virtual ~AverageFilter();
+        virtual void input(double input_value);
+        virtual double output(void);
+        virtual void clear(void);
+    private:
+        double est_value_;
+        double dt_;
+        double t_const_;
+        double limit_;
+};
 #endif

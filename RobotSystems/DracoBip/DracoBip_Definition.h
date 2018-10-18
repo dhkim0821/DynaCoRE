@@ -15,6 +15,10 @@ namespace dracobip_link{
     constexpr int rHipPitch = 8;
     constexpr int rKnee = 9;
     constexpr int rAnkle = 10;
+
+    constexpr int LED_BODY_0 = 20;
+    constexpr int LED_BODY_1 = 21;
+    constexpr int LED_BODY_2 = 22;
 }
 
 namespace dracobip_joint{

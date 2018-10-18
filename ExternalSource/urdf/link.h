@@ -52,18 +52,29 @@ namespace urdf{
 class Geometry
 {
 public:
-  enum {SPHERE, BOX, CYLINDER, MESH} type;
+  enum {SPHERE, BOX, CYLINDER, MESH, CAPSULE} type;
 
   virtual ~Geometry(void)
   {
   }  
 };
-
+class Capsule : public Geometry
+{
+    public:
+        Capsule() { this->clear(); }
+        double radius;
+        double length;
+  
+        void clear(){
+            radius = 0;
+            length = 0;
+        };
+};
 class Sphere : public Geometry
 {
-public:
-  Sphere() { this->clear(); };
-  double radius;
+    public:
+        Sphere() { this->clear(); };
+        double radius;
 
   void clear()
   {

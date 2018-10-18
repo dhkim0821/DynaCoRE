@@ -9,6 +9,8 @@ class DracoBip_StateProvider;
 class RobotSystem;
 class BasicAccumulation;
 class DracoBip_SensorData;
+class filter;
+class BodyFootPosEstimator;
 
 class DracoBip_StateEstimator{
     public:
@@ -29,6 +31,8 @@ class DracoBip_StateEstimator{
         dynacore::Vector curr_qdot_;
 
         BasicAccumulation* ori_est_;
+        BodyFootPosEstimator* body_foot_est_;
+        filters* mocap_vel_est_;
 
         void _RBDL_TEST();
 };
