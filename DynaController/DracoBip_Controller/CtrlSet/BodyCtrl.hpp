@@ -1,5 +1,5 @@
-#ifndef BODY_CTRL
-#define BODY_CTRL
+#ifndef BODY_CTRL_DRACO_BIPED
+#define BODY_CTRL_DRACO_BIPED
 
 #include <Controller.hpp>
 

@@ -1,15 +1,12 @@
-#ifndef BODY_FOOT_POSITON_ESTIMATOR
-#define BODY_FOOT_POSITON_ESTIMATOR
+#ifndef BODY_FOOT_POSITON_ESTIMATOR_DRACO_BIPED
+#define BODY_FOOT_POSITON_ESTIMATOR_DRACO_BIPED
 
 #include <Utils/wrap_eigen.hpp>
 #include <Filter/filters.hpp>
 
 class MoCapManager;
 class RobotSystem;
-class Mercury_StateProvider;
-class BodyFootKalmanFilter;
-class BodyFootObs;
-class BodyFootInput;
+class DracoBip_StateProvider;
 
 class BodyFootPosEstimator{
     public:
@@ -26,19 +23,7 @@ class BodyFootPosEstimator{
 
     protected:
         MoCapManager* mocap_manager_;
-        Mercury_StateProvider* sp_;
-
-        static constexpr int idx_rfoot_out = 6;
-        static constexpr int idx_rfoot_in = 7;
-        static constexpr int idx_lfoot_out = 11;
-        static constexpr int idx_lfoot_in = 12;
-
-        BodyFootKalmanFilter* body_foot_kalman_filter_;
-        BodyFootObs* kalman_obs_;
-        BodyFootInput* kalman_input_;
-
-        void _KalmanFilterOberservationSetup();
-        void _KalmanFilterPredictionInputSetup();
+        DracoBip_StateProvider* sp_;
 
         std::vector<filter*> vel_filter_;
         dynacore::Vect3 body_led_vel_;

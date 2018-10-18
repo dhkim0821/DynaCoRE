@@ -118,13 +118,17 @@ void DracoBip::_SetInitialConf(){
          vp_joint_[2]->m_State.m_rValue[0] = hanging_height_;
 
         //r_joint_[r_joint_idx_map_.find("lHipRoll")->second]->m_State.m_rValue[0] = -0.5;
-        r_joint_[r_joint_idx_map_.find("lHipPitch")->second]->m_State.m_rValue[0] = -0.5;
-        r_joint_[r_joint_idx_map_.find("lKnee")->second]->m_State.m_rValue[0] = 1.4;
+        r_joint_[r_joint_idx_map_.find("lHipPitch")->second]->
+            m_State.m_rValue[0] = -0.5;
+        r_joint_[r_joint_idx_map_.find("lKnee")->second]->
+            m_State.m_rValue[0] = 1.8;
         r_joint_[r_joint_idx_map_.find("lAnkle")->second]->m_State.m_rValue[0] = 1.03;
 
         //r_joint_[r_joint_idx_map_.find("rHipRoll")->second]->m_State.m_rValue[0] = -0.5;
-        r_joint_[r_joint_idx_map_.find("rHipPitch")->second]->m_State.m_rValue[0] = -0.5;
-        r_joint_[r_joint_idx_map_.find("rKnee")->second]->m_State.m_rValue[0] = 1.4;
+        r_joint_[r_joint_idx_map_.find("rHipPitch")->second]->
+            m_State.m_rValue[0] = -0.5;
+        r_joint_[r_joint_idx_map_.find("rKnee")->second]->
+            m_State.m_rValue[0] = 1.8;
         r_joint_[r_joint_idx_map_.find("rAnkle")->second]->m_State.m_rValue[0] = 1.03;
 
         //r_joint_[r_joint_idx_map_.find("lAnkle")->second]->

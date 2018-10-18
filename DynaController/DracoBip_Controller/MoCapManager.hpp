@@ -1,10 +1,11 @@
-#ifndef MOTION_CAPTURE_DATA_MANAGER
-#define MOTION_CAPTURE_DATA_MANAGER
+#ifndef MOTION_CAPTURE_DATA_MANAGER_DRACO_BIPED
+#define MOTION_CAPTURE_DATA_MANAGER_DRACO_BIPED
 
 #include <Utils/dynacore_pThread.hpp>
 #include <Utils/wrap_eigen.hpp>
 #include <DracoBip_Controller/StateEstimator/BodyFootPosEstimator.hpp>
 #include <Filter/filters.hpp>
+
 class DracoBip_StateProvider;
 class RobotSystem;
 

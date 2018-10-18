@@ -37,19 +37,17 @@ class DoubleContactTransCtrl: public Controller{
         int dim_contact_;
 
         std::vector<int> selected_jidx_;
-        Task* base_task_;
+        Task* body_task_;
         Task* selected_joint_task_;
 
         WBDC_ContactSpec* rfoot_contact_;
         WBDC_ContactSpec* lfoot_contact_;
-        WBDC_ContactSpec* double_contact_;
         KinWBC* kin_wbc_;
         WBLC* wblc_;
         WBLC_ExtraData* wblc_data_;
 
         dynacore::Vector base_pos_ini_;
         dynacore::Quaternion base_ori_ini_;
-        dynacore::Vect3 ini_base_pos_;
 
         dynacore::Vector ini_jpos_;
         dynacore::Vector des_jpos_;

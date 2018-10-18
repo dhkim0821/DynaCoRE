@@ -29,6 +29,7 @@ DracoBip_StateProvider::DracoBip_StateProvider():
     rfoot_vel_.setZero();
     lfoot_vel_.setZero();
 
+    est_mocap_body_vel_.setZero();
     DataManager* data_manager = DataManager::GetDataManager();
 
     data_manager->RegisterData(&curr_time_, DOUBLE, "time");
@@ -45,6 +46,8 @@ DracoBip_StateProvider::DracoBip_StateProvider():
    data_manager->RegisterData(&lfoot_pos_, VECT3, "lfoot_pos", 3); 
    data_manager->RegisterData(&rfoot_vel_, VECT3, "rfoot_vel", 3); 
    data_manager->RegisterData(&lfoot_vel_, VECT3, "lfoot_vel", 3); 
+
+   data_manager->RegisterData(&est_mocap_body_vel_, VECT2, "est_mocap_body_vel",2);
 }
 
 void DracoBip_StateProvider::SaveCurrentData(const RobotSystem* robot_sys){

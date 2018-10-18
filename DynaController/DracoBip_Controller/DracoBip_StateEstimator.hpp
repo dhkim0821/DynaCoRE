@@ -32,7 +32,8 @@ class DracoBip_StateEstimator{
 
         BasicAccumulation* ori_est_;
         BodyFootPosEstimator* body_foot_est_;
-        filters* mocap_vel_est_;
+        filter* mocap_x_vel_est_;
+        filter* mocap_y_vel_est_;
 
         void _RBDL_TEST();
 };

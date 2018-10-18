@@ -25,6 +25,7 @@ public:
 
   dynacore::Vect3 global_pos_local_;
   dynacore::Vect2 des_location_;
+  dynacore::Vect2 est_mocap_body_vel_;
 
   int b_rfoot_contact_;
   int b_lfoot_contact_;

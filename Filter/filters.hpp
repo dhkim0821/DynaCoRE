@@ -73,7 +73,7 @@ private:
 	double lpf_out;
 };
 
-class ff01_filter : filter
+class ff01_filter : public filter
 {
 public:
 	ff01_filter(float t_s, float w_c);
@@ -88,7 +88,7 @@ private:
 	double lpf_out;
 };
 
-class ff02_filter : filter
+class ff02_filter : public filter
 {
 public:
 	ff02_filter(float t_s, float w_c);
@@ -122,7 +122,7 @@ private:
 };
 
 
-class AverageFilter: filter
+class AverageFilter: public filter
 {
     public:
         AverageFilter(double dt, double t_const, double limit);

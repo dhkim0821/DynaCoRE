@@ -1,5 +1,5 @@
-#ifndef KINEMATICS_BODY_TASK
-#define KINEMATICS_BODY_TASK
+#ifndef KINEMATICS_BODY_TASK_DRACO_BIPED
+#define KINEMATICS_BODY_TASK_DRACO_BIPED
 // Task consist of virtual joint (6)
 // (X, Y, Z), (Rx, Ry, Rz)
 #include <WBLC/KinTask.hpp>

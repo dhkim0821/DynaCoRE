@@ -1,8 +1,7 @@
 #include "DoubleContactTransCtrl.hpp"
-#include <DracoBip_Controller/DracoBip_StateProvider.hpp>
 #include <DracoBip_Controller/TaskSet/BodyTask.hpp>
+#include <DracoBip_Controller/DracoBip_StateProvider.hpp>
 #include <DracoBip_Controller/TaskSet/SelectedJointTask.hpp>
-#include <DracoBip_Controller/ContactSet/DoubleContact.hpp>
 #include <DracoBip/DracoBip_Model.hpp>
 #include <WBLC/KinWBC.hpp>
 #include <WBLC/WBLC.hpp>
@@ -24,7 +23,6 @@ DoubleContactTransCtrl::DoubleContactTransCtrl(RobotSystem* robot):
     Kp_(dracobip::num_act_joint),
     Kd_(dracobip::num_act_joint)
 {
-    base_task_ = new BodyTask(robot);
 
     selected_jidx_.clear();
     selected_jidx_.push_back(dracobip_joint::rHipYaw);
@@ -34,6 +32,8 @@ DoubleContactTransCtrl::DoubleContactTransCtrl(RobotSystem* robot):
     rfoot_contact_ = new ContactType(robot_sys_, dracobip_link::rAnkle);
     lfoot_contact_ = new ContactType(robot_sys_, dracobip_link::lAnkle);
     dim_contact_ = rfoot_contact_->getDim() + lfoot_contact_->getDim();
+
+    body_task_ = new BodyTask(robot);
 
     std::vector<bool> act_list;
     act_list.resize(dracobip::num_qdot, true);
@@ -57,7 +57,7 @@ DoubleContactTransCtrl::DoubleContactTransCtrl(RobotSystem* robot):
 }
 
 DoubleContactTransCtrl::~DoubleContactTransCtrl(){
-    delete base_task_;
+    delete body_task_;
     delete rfoot_contact_;
     delete lfoot_contact_;
     delete wblc_;
@@ -66,19 +66,24 @@ DoubleContactTransCtrl::~DoubleContactTransCtrl(){
 }
 
 void DoubleContactTransCtrl::OneStep(void* _cmd){
-    _PreProcessing_Command();
+_PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
     dynacore::Vector gamma;
     _contact_setup();
+printf("ad\n");
     _task_setup();
+printf("1\n");
     _compute_torque_wblc(gamma);
+printf("1\n");
 
     for(int i(0); i<dracobip::num_act_joint; ++i){
         ((DracoBip_Command*)_cmd)->jtorque_cmd[i] = gamma[i];
         ((DracoBip_Command*)_cmd)->jpos_cmd[i] = des_jpos_[i];
         ((DracoBip_Command*)_cmd)->jvel_cmd[i] = des_jvel_[i];
     }
+printf("1\n");
     _PostProcessing_Command();
+printf("1\n");
 }
 
 void DoubleContactTransCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
@@ -107,16 +112,11 @@ void DoubleContactTransCtrl::_task_setup(){
     des_jpos_ = ini_jpos_;
     des_jvel_.setZero();
     des_jacc_.setZero();
+
+    // Set Desired Orientation
      // Calculate IK for a desired height and orientation.
     double base_height_cmd;
 
-    dynacore::Vector jpos_des(2); jpos_des.setZero();
-    dynacore::Vector jvel_des(2); jvel_des.setZero();
-    dynacore::Vector jacc_des(2); jacc_des.setZero();
-
-    selected_joint_task_->UpdateTask(&(jpos_des), jvel_des, jacc_des);
-
-    // Set Desired Orientation
     dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
     rpy_des.setZero();
@@ -126,7 +126,7 @@ void DoubleContactTransCtrl::_task_setup(){
     dynacore::Vector vel_des(6); vel_des.setZero();
     dynacore::Vector acc_des(6); acc_des.setZero();
     if(b_set_height_target_) base_height_cmd = des_base_height_;
-    else base_height_cmd = ini_base_pos_[2];
+    else base_height_cmd = base_pos_ini_[2];
 
     if(b_set_height_target_){
         base_height_cmd = 
@@ -141,19 +141,26 @@ void DoubleContactTransCtrl::_task_setup(){
     pos_des[2] = des_quat.z();
     pos_des[3] = des_quat.w();
 
-    //pos_des[0] = base_ori_ini_.x();
-    //pos_des[1] = base_ori_ini_.y();
-    //pos_des[2] = base_ori_ini_.z();
-    //pos_des[3] = base_ori_ini_.w();
-
-    pos_des[4] = ini_base_pos_[0];
-    pos_des[5] = ini_base_pos_[1];
+    pos_des[4] = base_pos_ini_[0];
+    pos_des[5] = base_pos_ini_[1];
     pos_des[6] = base_height_cmd;
 
-    base_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+    dynacore::pretty_print(pos_des, std::cout, "pos des");
+    dynacore::pretty_print(vel_des, std::cout, "vel des");
+    dynacore::pretty_print(acc_des, std::cout, "acc des");
+
+printf("2cccc\n");
+    body_task_->UpdateTask(&(pos_des), vel_des, acc_des);
+
+    // Seletec joint task
+    dynacore::Vector jpos_des(2); jpos_des.setZero();
+    dynacore::Vector jvel_des(2); jvel_des.setZero();
+    dynacore::Vector jacc_des(2); jacc_des.setZero();
+
+    selected_joint_task_->UpdateTask(&(jpos_des), jvel_des, jacc_des);
 
     task_list_.push_back(selected_joint_task_);
-    task_list_.push_back(base_task_);
+    task_list_.push_back(body_task_);
 
     kin_wbc_->Ainv_ = Ainv_;
     kin_wbc_->FindConfiguration(sp_->Q_, task_list_, contact_list_, 
@@ -186,8 +193,8 @@ void DoubleContactTransCtrl::_contact_setup(){
 void DoubleContactTransCtrl::FirstVisit(){
     ini_base_height_ = sp_->Q_[dracobip_joint::virtual_Z];
     ctrl_start_time_ = sp_->curr_time_;
-    //robot_sys_->getPos(dracobip_link::torso, ini_base_pos_);
-    ini_base_pos_ = sp_->Q_.segment(3,3);
+    //robot_sys_->getPos(dracobip_link::torso, base_pos_ini_);
+    base_pos_ini_ = sp_->Q_.head(3);
     robot_sys_->getOri(dracobip_link::torso, base_ori_ini_);
 }
 
