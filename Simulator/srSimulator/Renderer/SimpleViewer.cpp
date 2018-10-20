@@ -45,7 +45,7 @@ srSimpleViewer::~srSimpleViewer()
 void srSimpleViewer::Init( int *argc, char **argv, const char* title)
 {
 	glutInit(argc, argv);
-	glutInitDisplayMode( GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB | GLUT_ALPHA );
+    glutInitDisplayMode( GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGB | GLUT_ALPHA );
 	glutInitWindowSize(s_WinSizeX, s_WinSizeY);
 	glutCreateWindow(title);
 
@@ -80,7 +80,7 @@ void srSimpleViewer::Init( int *argc, char **argv, const char* title)
 	glCullFace(GL_BACK);
 
 	// Renderer setting
-	s_pRenderer->Init();
+    s_pRenderer->Init();
 	s_pRenderer->SetCamera(&s_Camera);
 
 	s_pRenderer->UpdateWindowSize(500, 500);
