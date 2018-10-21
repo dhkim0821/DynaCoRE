@@ -1,4 +1,5 @@
 build
+xcode_build
 ./experiment_data
 Configuration.h
 SIM_Configuration.h

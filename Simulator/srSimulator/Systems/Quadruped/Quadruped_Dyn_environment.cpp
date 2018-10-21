@@ -34,10 +34,10 @@ Quadruped_Dyn_environment::Quadruped_Dyn_environment():
 
     m_Space->DYN_MODE_PRESTEP();
     m_Space->SET_USER_CONTROL_FUNCTION_2(ControlFunction);
-    m_Space->SetTimestep(0.001);
+    m_Space->SetTimestep(0.0001);
     m_Space->SetGravity(0.0,0.0,-9.81);
 
-    m_Space->SetNumberofSubstepForRendering(10);
+    m_Space->SetNumberofSubstepForRendering(20);
     printf("[Quadruped Dynamic Environment] Build Dynamic Environment\n");
 }
 

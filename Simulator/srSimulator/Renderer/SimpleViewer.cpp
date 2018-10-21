@@ -32,6 +32,8 @@ srSimpleViewer::SRSV_PFNDELEGATE srSimpleViewer::s_pfnLoopFunc = NULL;
 srSimpleViewer::SRSV_PFNUSERKEYFUNC srSimpleViewer::s_pfnUserKeyFunc = NULL;
 void* srSimpleViewer::s_pvUserKeyData = NULL;
 
+bool MojaveWorkAround = true;
+
 
 srSimpleViewer::srSimpleViewer(void)
 {
@@ -83,8 +85,8 @@ void srSimpleViewer::Init( int *argc, char **argv, const char* title)
     s_pRenderer->Init();
 	s_pRenderer->SetCamera(&s_Camera);
 
-	s_pRenderer->UpdateWindowSize(500, 500);
-	// s_pRenderer->UpdateWindowSize(1280, 720);
+	//s_pRenderer->UpdateWindowSize(500, 500);
+     //s_pRenderer->UpdateWindowSize(1280, 820);
 
 	// Camera setting
 	s_Camera.Reset();
@@ -92,13 +94,15 @@ void srSimpleViewer::Init( int *argc, char **argv, const char* title)
 
 void srSimpleViewer::CBDisplayFunc(void)
 {
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//glLoadIdentity();
-	//camera.multInverseTransform();
+    if(MojaveWorkAround)
+    {
+        //Necessary for Mojave. Has to be different dimensions than in 
+        // glutInitWindowSize();
+        glutReshapeWindow(s_WinSizeX-1, s_WinSizeY-1);
+        MojaveWorkAround = false;
+    }
+    glutPostRedisplay();//Necessary for Mojave.
 	s_pRenderer->RenderSceneOnce();
-
-	//glFlush();
 	glutSwapBuffers();
 }
 
@@ -213,12 +217,9 @@ void srSimpleViewer::CBKeyboardFunc(unsigned char key, int /*x*/, int /*y*/)
 	DoUserKeyFunc(key);
 }
 
-
-
 void srSimpleViewer::Run( void )
 {
-	glutMainLoop();
-
+    glutMainLoop();
 }
 
 void srSimpleViewer::_Render( void )
