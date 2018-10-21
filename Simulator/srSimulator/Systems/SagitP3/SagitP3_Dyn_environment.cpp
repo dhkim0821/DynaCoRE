@@ -24,7 +24,8 @@ SagitP3_Dyn_environment::SagitP3_Dyn_environment():
     /********** Robot Set  **********/
     robot_ = new SagitP3();
     robot_->BuildRobot(Vec3 (0., 0., 0.), 
-            srSystem::FIXED, srJoint::TORQUE, ModelPath"SagitP3/SagitP3.urdf");
+            //srSystem::FIXED, srJoint::TORQUE, ModelPath"SagitP3/SagitP3.urdf");
+            srSystem::FIXED, srJoint::TORQUE, ModelPath"SagitP3/p3_model.urdf");
     m_Space->AddSystem((srSystem*)robot_);
 
     /******** Interface set ********/
@@ -58,23 +59,24 @@ void SagitP3_Dyn_environment::ControlFunction( void* _data ) {
         p_data->jvel[i] = robot->r_joint_[i]->m_State.m_rValue[1];
         p_data->torque[i] = robot->r_joint_[i]->m_State.m_rValue[3];
     }
-    pDyn_env->_CheckFootContact(p_data->rfoot_contact, p_data->lfoot_contact);
-    for (int i(0); i<3; ++i){
-        p_data->imu_ang_vel[i] = 
-            robot->link_[robot->link_idx_map_.find("torso")->second]->GetVel()[i];
-    }
-    pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
+    
+//pDyn_env->_CheckFootContact(p_data->rfoot_contact, p_data->lfoot_contact);
+    //for (int i(0); i<3; ++i){
+        //p_data->imu_ang_vel[i] = 
+            //robot->link_[robot->link_idx_map_.find("torso")->second]->GetVel()[i];
+    //}
+    //pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
 
-    pDyn_env->_ZeroInput_VirtualJoint();
-    pDyn_env->_hold_XY(count);
+    //pDyn_env->_ZeroInput_VirtualJoint();
+    //pDyn_env->_hold_XY(count);
 
-    double Kp(10.);
-    double Kd(1.);
-    for(int i(0); i<robot->num_act_joint_; ++i){
-        robot->r_joint_[i]->m_State.m_rCommand = pDyn_env->cmd_->jtorque_cmd[i] + 
-            Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->jpos[i]) + 
-            Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->jvel[i]);
-    }
+    //double Kp(10.);
+    //double Kd(1.);
+    //for(int i(0); i<robot->num_act_joint_; ++i){
+        //robot->r_joint_[i]->m_State.m_rCommand = pDyn_env->cmd_->jtorque_cmd[i] + 
+            //Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->jpos[i]) + 
+            //Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->jvel[i]);
+    //}
 }
 
 
@@ -163,4 +165,14 @@ void SagitP3_Dyn_environment::_ParamterSetup(){
   handler.getVector("imu_angular_velocity_noise_variance", imu_ang_vel_var_);
 }
 
+    //for(int i(0); i<robot->num_act_joint_; ++i){
+        //printf("%d joint: %f\n", i, p_data->jpos[i]);
+    //}
+    //for(int i(0); i<3; ++i){
+        //printf("virtual prismatic %d joint: %f\n", i, 
+                //robot->vp_joint_[i]->m_State.m_rValue[0]);
+        //printf("virtual rotary %d joint: %f\n", i, 
+                //robot->vr_joint_[i]->m_State.m_rValue[0]);
+    //}
+    //printf("\n");
 

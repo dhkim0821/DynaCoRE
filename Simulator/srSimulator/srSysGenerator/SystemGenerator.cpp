@@ -163,6 +163,7 @@ void SystemGenerator::_SetJointParam(int idx){
 
     Vec3 axis010=Vec3(0,0,-SR_PI_HALF);
     Vec3 axis100=Vec3(0,SR_PI_HALF,0);
+    Vec3 neg_axis100=Vec3(0,-SR_PI_HALF,0);
 
     // Set Parent (link CoM) to joint positon
     for(int i(0);i<3;i++)
@@ -173,6 +174,7 @@ void SystemGenerator::_SetJointParam(int idx){
                 JointOff_pos ));
     SE3 Axis010Frame(EulerZYX(Vec3(0, 0, -SR_PI_HALF), Vec3(0., 0., 0.)));
     SE3 Axis100Frame(EulerZYX(Vec3(0, SR_PI_HALF, 0), Vec3(0,0,0)));
+    SE3 negAxis100Frame(EulerZYX(Vec3(0, -SR_PI_HALF, 0), Vec3(0,0,0)));
 
     if(Jointidxiter->second->type == dynacore::urdf::Joint::FIXED){
         fixed_joint_[WJidx_]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
@@ -189,17 +191,24 @@ void SystemGenerator::_SetJointParam(int idx){
         double axis_x(Jointidxiter->second->axis.x);
         double axis_y(Jointidxiter->second->axis.y);
         double axis_z(Jointidxiter->second->axis.z);
-        if(axis_x == 1){ // Rotation Axis: X
+        if(fabs(axis_x) == 1){ // Rotation Axis: X
             r_joint_[RJidx_]->GetGeomInfo().SetShape(srGeometryInfo::CYLINDER);
-            map<string,int>::iterator Linkidxiter=link_idx_map_.find(p_Linkidxiter->first);
+            map<string,int>::iterator Linkidxiter=
+                link_idx_map_.find(p_Linkidxiter->first);
             r_joint_[RJidx_]->SetParentLink(link_[Linkidxiter->second]);
             Linkidxiter=link_idx_map_.find(c_Linkidxiter->second->name);
             r_joint_[RJidx_]->SetChildLink(link_[Linkidxiter->second]);
-
-            SE3 ParentLinkFrame= JointOffFrame * Axis100Frame;
-            // r_joint_[RJidx_]->SetParentLinkFrame(EulerZYX(axis100,JointOff_pos));
-            r_joint_[RJidx_]->SetParentLinkFrame(ParentLinkFrame);
-            r_joint_[RJidx_]->SetChildLinkFrame(EulerZYX(axis100,-c_Link_offset));
+            SE3 ParentLinkFrame;
+            if(axis_x>0){
+                ParentLinkFrame = JointOffFrame * Axis100Frame;
+                r_joint_[RJidx_]->SetParentLinkFrame(ParentLinkFrame);
+                r_joint_[RJidx_]->SetChildLinkFrame(EulerZYX(axis100,-c_Link_offset));
+            } else{
+                ParentLinkFrame = JointOffFrame * 
+                    SE3(EulerZYX(Vec3(0, -SR_PI_HALF, 0), Vec3(0,0,0)));
+                r_joint_[RJidx_]->SetParentLinkFrame(ParentLinkFrame);
+                r_joint_[RJidx_]->SetChildLinkFrame(EulerZYX(neg_axis100,-c_Link_offset));
+            }
             RJidx_++;
         }
 
@@ -260,7 +269,8 @@ void SystemGenerator::_SetJointParam(int idx){
               r_joint_[RJidx_]->SetParentLinkFrame(EulerZYX(axisxy0, JointOff_pos) );
               r_joint_[RJidx_]->SetChildLinkFrame(EulerZYX(axisxy0, -c_Link_offset));
               RJidx_++;
-              std::cout << "Doublecheck :srSysGenerator/SystemGenerator(joint param - rotation axis_z)" << std::endl;
+              std::cout << "Doublecheck :srSysGenerator/SystemGenerator"
+                  <<"(joint param(" <<joint_names_[idx]<< "): rotation axis_z)" << std::endl;
             }
             else{
                 std::cout << "todo : srSysGenerator/SystemGenerator(joint param - rotation axis part)" << std::endl;
