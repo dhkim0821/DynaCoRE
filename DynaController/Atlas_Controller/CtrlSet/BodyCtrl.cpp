@@ -114,10 +114,8 @@ void BodyCtrl::_task_setup(){
     body_pos_task_->UpdateTask(&(des_pos), vel_des, acc_des);
 
     // Set Desired Orientation
-    dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
-    rpy_des.setZero();
-    dynacore::convert(rpy_des, des_quat);    
+    dynacore::convert(0., 0., 0., des_quat);
 
     dynacore::Vector ang_vel_des(body_ori_task_->getDim()); ang_vel_des.setZero();
     dynacore::Vector ang_acc_des(body_ori_task_->getDim()); ang_acc_des.setZero();

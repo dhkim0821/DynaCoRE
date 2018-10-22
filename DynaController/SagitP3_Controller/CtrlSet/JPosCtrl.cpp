@@ -67,6 +67,8 @@ void JPosCtrl::OneStep(void* _cmd){
 void JPosCtrl::_jpos_ctrl_wbdc_rotor(dynacore::Vector & gamma){
     wbdc_->UpdateSetting(A_, Ainv_, coriolis_, grav_);
     wbdc_->MakeTorque(task_list_, contact_list_, gamma, wbdc_data_);
+    //dynacore::pretty_print(grav_, std::cout, "gravity");
+    //dynacore::pretty_print(gamma, std::cout, "gamma");
 }
 
 void JPosCtrl::_jpos_task_setup(){

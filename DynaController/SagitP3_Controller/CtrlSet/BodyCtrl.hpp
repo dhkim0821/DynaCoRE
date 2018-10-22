@@ -38,10 +38,14 @@ class BodyCtrl: public Controller{
         bool b_set_height_target_;
         int trj_type_;
         double end_time_;
+        int dim_contact_;
 
         Task* body_task_;
         KinWBC* kin_wbc_;
-        WBDC_ContactSpec* double_contact_;
+        
+        WBDC_ContactSpec* rfoot_contact_;
+        WBDC_ContactSpec* lfoot_contact_;
+
         WBLC* wblc_;
         WBLC_ExtraData* wblc_data_;
 

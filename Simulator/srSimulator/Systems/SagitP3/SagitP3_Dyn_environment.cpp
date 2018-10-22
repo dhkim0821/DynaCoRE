@@ -7,6 +7,7 @@
 
 #include <DynaController/SagitP3_Controller/SagitP3_interface.hpp>
 #include <DynaController/SagitP3_Controller/SagitP3_DynaCtrl_Definition.h>
+#include <Utils/utilities.hpp>
 
 #include <srTerrain/Ground.h>
 #include <srConfiguration.h>
@@ -25,11 +26,11 @@ SagitP3_Dyn_environment::SagitP3_Dyn_environment():
     robot_ = new SagitP3();
     robot_->BuildRobot(Vec3 (0., 0., 0.), 
             //srSystem::FIXED, srJoint::TORQUE, ModelPath"SagitP3/SagitP3.urdf");
-            srSystem::FIXED, srJoint::TORQUE, ModelPath"SagitP3/p3_model.urdf");
+            srSystem::FIXED, srJoint::TORQUE, ModelPath"SagitP3/p3_model_srlib.urdf");
     m_Space->AddSystem((srSystem*)robot_);
 
     /******** Interface set ********/
-    //interface_ = new SagitP3_interface();
+    interface_ = new SagitP3_interface();
     data_ = new SagitP3_SensorData();
     cmd_ = new SagitP3_Command();
 
@@ -60,23 +61,28 @@ void SagitP3_Dyn_environment::ControlFunction( void* _data ) {
         p_data->torque[i] = robot->r_joint_[i]->m_State.m_rValue[3];
     }
     
-//pDyn_env->_CheckFootContact(p_data->rfoot_contact, p_data->lfoot_contact);
-    //for (int i(0); i<3; ++i){
-        //p_data->imu_ang_vel[i] = 
-            //robot->link_[robot->link_idx_map_.find("torso")->second]->GetVel()[i];
-    //}
-    //pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
+    pDyn_env->_CheckFootContact(p_data->rfoot_contact, p_data->lfoot_contact);
 
-    //pDyn_env->_ZeroInput_VirtualJoint();
-    //pDyn_env->_hold_XY(count);
+    std::vector<double> imu_acc(3);
+    std::vector<double> imu_ang_vel(3);
+    pDyn_env->getIMU_Data(imu_acc, imu_ang_vel);
+    for (int i(0); i<3; ++i){
+        p_data->imu_ang_vel[i] = imu_ang_vel[i];
+        p_data->imu_acc[i] = imu_acc[i];
+    }
+    pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
 
-    //double Kp(10.);
-    //double Kd(1.);
-    //for(int i(0); i<robot->num_act_joint_; ++i){
-        //robot->r_joint_[i]->m_State.m_rCommand = pDyn_env->cmd_->jtorque_cmd[i] + 
-            //Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->jpos[i]) + 
-            //Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->jvel[i]);
-    //}
+    pDyn_env->_ZeroInput_VirtualJoint();
+    pDyn_env->_hold_XY(count);
+    pDyn_env->_hold_Ori(count);
+
+    double Kp(10.0);
+    double Kd(1.0);
+    for(int i(0); i<robot->num_act_joint_; ++i){
+        robot->r_joint_[i]->m_State.m_rCommand = pDyn_env->cmd_->jtorque_cmd[i] + 
+            Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->jpos[i]) + 
+            Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->jvel[i]);
+    }
 }
 
 
@@ -105,9 +111,9 @@ SagitP3_Dyn_environment::~SagitP3_Dyn_environment()
 
 void SagitP3_Dyn_environment::_CheckFootContact(bool & r_contact, bool & l_contact){
     Vec3 lfoot_pos = robot_->
-        link_[robot_->link_idx_map_.find("lAnkle")->second]->GetPosition();
+        link_[robot_->link_idx_map_.find("left_foot_link")->second]->GetPosition();
     Vec3 rfoot_pos = robot_->
-        link_[robot_->link_idx_map_.find("rAnkle")->second]->GetPosition();
+        link_[robot_->link_idx_map_.find("right_foot_link")->second]->GetPosition();
 
     //std::cout<<rfoot_pos<<std::endl;
     //std::cout<<lfoot_pos<<std::endl;
@@ -138,6 +144,21 @@ void SagitP3_Dyn_environment::_hold_XY(int count){
             - 100. * robot_->vp_joint_[1]->m_State.m_rValue[1];
     }
 }
+void SagitP3_Dyn_environment::_hold_Ori(int count){
+        robot_->vr_joint_[0]->m_State.m_rCommand = 
+            10000. * ( 0. - robot_->vr_joint_[0]->m_State.m_rValue[0])
+            - 100. * robot_->vr_joint_[0]->m_State.m_rValue[1];
+
+        robot_->vr_joint_[1]->m_State.m_rCommand = 
+            10000. * ( 0. - robot_->vr_joint_[1]->m_State.m_rValue[0])
+            - 100. * robot_->vr_joint_[1]->m_State.m_rValue[1];
+
+        robot_->vr_joint_[2]->m_State.m_rCommand = 
+            10000. * ( SR_PI_HALF - robot_->vr_joint_[2]->m_State.m_rValue[0])
+            - 100. * robot_->vr_joint_[2]->m_State.m_rValue[1];
+
+}
+
 
 void SagitP3_Dyn_environment::_ZeroInput_VirtualJoint(){
     for(int i(0); i<3; ++i){
@@ -156,7 +177,62 @@ void SagitP3_Dyn_environment::_ZeroInput_VirtualJoint(){
 //printf("%f\n",robot->r_joint_[i]->m_State.m_rValue[0] );
 //}
 //printf("\n");
+void SagitP3_Dyn_environment::getIMU_Data(std::vector<double> & imu_acc,
+                                          std::vector<double> & imu_ang_vel){
+  // IMU data
+  se3 imu_se3_vel = robot_->link_[robot_->link_idx_map_.find("P3_IMU")->second]->GetVel();
+  se3 imu_se3_acc = robot_->link_[robot_->link_idx_map_.find("P3_IMU")->second]->GetAcc();
+  SE3 imu_frame = robot_->link_[robot_->link_idx_map_.find("P3_IMU")->second]->GetFrame();
+  SO3 imu_ori = robot_->link_[robot_->link_idx_map_.find("P3_IMU")->second]->GetOrientation();
 
+  Eigen::Matrix3d Rot;
+  Rot<<
+    imu_frame(0,0), imu_frame(0,1), imu_frame(0,2),
+    imu_frame(1,0), imu_frame(1,1), imu_frame(1,2),
+    imu_frame(2,0), imu_frame(2,1), imu_frame(2,2);
+
+  dynacore::Vect3 grav; grav.setZero();
+  grav[2] = 9.81;
+  dynacore::Vect3 local_grav = Rot.transpose() * grav;
+
+  for(int i(0); i<3; ++i){
+    imu_ang_vel[i] = imu_se3_vel[i] + imu_ang_vel_bias_[i] +
+      dynacore::generator_white_noise(0., imu_ang_vel_var_[i]);
+    //imu_acc[i] = imu_se3_acc[i+3] - local_grav[i];
+    imu_acc[i] = local_grav[i];
+  }
+
+  Eigen::Matrix<double, 3, 1> ang_vel;
+  ang_vel<<imu_se3_vel[0], imu_se3_vel[1], imu_se3_vel[2];
+  dynacore::Vect3 global_ang_vel = Rot * ang_vel;
+  Eigen::Quaterniond quat(Rot);
+
+  static int count = 0;
+
+  //bool b_printout(true);
+  bool b_printout(false);
+  if (count % 100 == 0){
+    if(b_printout){
+      printf("imu info: \n");
+      std::cout<<imu_se3_vel<<std::endl;
+      std::cout<<imu_se3_acc<<std::endl;
+      std::cout<<imu_frame<<std::endl;
+
+      dynacore::pretty_print(imu_ang_vel, "imu ang vel");
+      dynacore::pretty_print(imu_acc, "imu_acc");
+
+
+      printf("global ang vel\n");
+      std::cout<<global_ang_vel<<std::endl;
+
+      printf("quat global:\n");
+      std::cout<<quat.w()<<std::endl;
+      std::cout<<quat.vec()<<std::endl;
+    }
+    count = 0;
+  }
+  count++;
+}
 void SagitP3_Dyn_environment::_ParamterSetup(){
   ParamHandler handler(SagitP3ConfigPath"SIM_sr_sim_setting.yaml");
   handler.getInteger("num_substep_rendering", num_substep_rendering_);

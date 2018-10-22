@@ -42,7 +42,7 @@ void SagitP3_Kin_Model::_UpdateCentroidFrame(const dynacore::Vector & q,
     dynacore::Matrix I = dynacore::Matrix::Zero(6, 6);
     dynacore::Matrix Jsp = dynacore::Matrix::Zero(6, model_->qdot_size);
 
-    int start_idx = _find_body_idx(sagitP3_link::torso);
+    int start_idx = _find_body_idx(sagitP3_link::hip_ground);
     Matrix3d p;
     Matrix3d cmm;
     Matrix3d R;
@@ -106,7 +106,7 @@ void SagitP3_Kin_Model::getCoMJacobian(dynacore::Matrix & Jcom) {
 
     double mass;
     double tot_mass(0.0);
-    int start_idx = _find_body_idx(sagitP3_link::torso);
+    int start_idx = _find_body_idx(sagitP3_link::hip_ground);
 
     for (int i(start_idx); i< model_->mBodies.size() ; ++i){
         mass = model_->mBodies[i].mMass;
@@ -126,7 +126,7 @@ void SagitP3_Kin_Model::getCoMPos(dynacore::Vect3 & CoM_pos) {
     CoM_pos.setZero();
     Vector3d link_pos;
 
-    int start_idx = _find_body_idx(sagitP3_link::torso);
+    int start_idx = _find_body_idx(sagitP3_link::hip_ground);
 
     double mass;
     double tot_mass(0.0);
@@ -154,7 +154,7 @@ void SagitP3_Kin_Model::getCoMPos(dynacore::Vect3 & CoM_pos) {
 
 void SagitP3_Kin_Model::getCoMVel(dynacore::Vect3 & CoM_vel) {
     dynacore::Vector q, qdot;
-    int start_idx = _find_body_idx(sagitP3_link::torso);
+    int start_idx = _find_body_idx(sagitP3_link::hip_ground);
     CoM_vel = dynacore::Vector::Zero(3);
     Vector3d link_vel;
 
@@ -273,17 +273,21 @@ void SagitP3_Kin_Model::getJDotQdot(int link_id, dynacore::Vector & JdotQdot){
 }
 
 unsigned int SagitP3_Kin_Model::_find_body_idx(int id) const {
-    //std::cout<<"torso id: "<<model_->GetBodyId("torso")<<std::endl;
+    //std::cout<<"hip_ground id: "<<model_->GetBodyId("hip_ground")<<std::endl;
     //std::cout<<"body name: "<<model_->GetBodyName(0)<<std::endl;
     //std::cout<<"body name: "<<model_->GetBodyName(1)<<std::endl;
     //std::cout<<"body name: "<<model_->GetBodyName(2)<<std::endl;
     switch(id){
-        case sagitP3_link::torso:
-            return model_->GetBodyId("torso");
-        case sagitP3_link::rAnkle:
-            return model_->GetBodyId("rAnkle");
-        case sagitP3_link::lAnkle:
-            return model_->GetBodyId("lAnkle");
+        case sagitP3_link::hip_ground:
+            return model_->GetBodyId("hip_ground_link");
+        case sagitP3_link::l_ankle:
+            return model_->GetBodyId("left_ankle_link");
+        case sagitP3_link::r_ankle:
+            return model_->GetBodyId("right_ankle_link");
+        case sagitP3_link::l_foot:
+            return model_->GetBodyId("left_foot_link");
+        case sagitP3_link::r_foot:
+            return model_->GetBodyId("right_foot_link");
     }
     return (unsigned int)(id+2);
 }

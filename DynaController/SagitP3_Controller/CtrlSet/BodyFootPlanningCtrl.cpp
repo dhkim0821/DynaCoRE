@@ -6,7 +6,9 @@
 #include <Utils/utilities.hpp>
 #include <WBLC/KinWBC.hpp>
 #include <WBLC/WBLC.hpp>
+
 #include <SagitP3_Controller/ContactSet/SingleContact.hpp>
+#include <SagitP3_Controller/ContactSet/SingleFullContact.hpp>
 
 #include <SagitP3_Controller/TaskSet/BodyTask.hpp>
 #include <SagitP3_Controller/TaskSet/FootTask.hpp>
@@ -23,8 +25,8 @@ BodyFootPlanningCtrl::BodyFootPlanningCtrl(
     Kd_(sagitP3::num_act_joint)
 {
     des_jacc_.setZero();
-    rfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::rAnkle);
-    lfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::lAnkle);
+    rfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::r_ankle);
+    lfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::l_ankle);
     dim_contact_ = rfoot_contact_->getDim() + lfoot_contact_->getDim();
 
     std::vector<bool> act_list;
@@ -45,7 +47,7 @@ BodyFootPlanningCtrl::BodyFootPlanningCtrl(
     wblc_data_->tau_max_ = dynacore::Vector::Constant(sagitP3::num_act_joint, 100.);
 
     kin_wbc_contact_list_.clear();
-    if(swing_foot == sagitP3_link::lAnkle) {
+    if(swing_foot == sagitP3_link::l_ankle) {
         int jidx_offset(5);
         wblc_data_->W_rf_[0 + jidx_offset] = 5.0;
         wblc_data_->W_rf_[1 + jidx_offset] = 5.0;
@@ -63,7 +65,7 @@ BodyFootPlanningCtrl::BodyFootPlanningCtrl(
 
         kin_wbc_contact_list_.push_back(rfoot_contact_);
     }
-    else if(swing_foot == sagitP3_link::rAnkle) {
+    else if(swing_foot == sagitP3_link::r_ankle) {
         wblc_data_->W_rf_[0] = 5.0;
         wblc_data_->W_rf_[1] = 5.0;
         wblc_data_->W_rf_[2] = 5.0;
@@ -272,7 +274,7 @@ void BodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     pl_param.des_loc = sp_->des_location_;
     pl_param.stance_foot_loc = sp_->global_pos_local_;
 
-    if(swing_foot_ == sagitP3_link::lAnkle)
+    if(swing_foot_ == sagitP3_link::l_ankle)
         pl_param.b_positive_sidestep = true;
     else
         pl_param.b_positive_sidestep = false;
@@ -301,7 +303,7 @@ void BodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 void BodyFootPlanningCtrl::FirstVisit(){
     b_replaned_ = false;
     ini_config_ = sp_->Q_;
-    robot_sys_->getPos(sagitP3_link::torso, ini_body_pos_);
+    robot_sys_->getPos(sagitP3_link::hip_ground, ini_body_pos_);
     robot_sys_->getPos(swing_foot_, ini_foot_pos_);
     ctrl_start_time_ = sp_->curr_time_;
     state_machine_time_ = 0.;
@@ -355,10 +357,10 @@ bool BodyFootPlanningCtrl::EndOfPhase(){
     // Swing foot contact = END
     if(b_contact_switch_check_){
         bool contact_happen(false);
-        if(swing_foot_ == sagitP3_link::lAnkle && sp_->b_lfoot_contact_){
+        if(swing_foot_ == sagitP3_link::l_ankle && sp_->b_lfoot_contact_){
             contact_happen = true;
         }
-        if(swing_foot_ == sagitP3_link::rAnkle && sp_->b_rfoot_contact_){
+        if(swing_foot_ == sagitP3_link::r_ankle && sp_->b_rfoot_contact_){
             contact_happen = true;
         }
         if(state_machine_time_ > end_time_ * 0.5 && contact_happen){

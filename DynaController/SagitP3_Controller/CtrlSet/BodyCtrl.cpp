@@ -1,7 +1,10 @@
 #include "BodyCtrl.hpp"
 #include <SagitP3_Controller/SagitP3_StateProvider.hpp>
 #include <SagitP3_Controller/TaskSet/BodyTask.hpp>
-#include <SagitP3_Controller/ContactSet/DoubleContact.hpp>
+
+#include <SagitP3_Controller/ContactSet/SingleContact.hpp>
+#include <SagitP3_Controller/ContactSet/SingleFullContact.hpp>
+
 #include <SagitP3_Controller/SagitP3_StateProvider.hpp>
 #include <WBLC/KinWBC.hpp>
 #include <WBLC/WBLC.hpp>
@@ -27,13 +30,20 @@ BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
     wblc_ = new WBLC(act_list);
     wblc_data_ = new WBLC_ExtraData();
     body_task_ = new BodyTask(robot);
-    double_contact_ = new DoubleContact(robot);
+    
+    //rfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::l_ankle);
+    //lfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::r_ankle);
+
+    rfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::l_foot);
+    lfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::r_foot);
+    
+    dim_contact_ = rfoot_contact_->getDim() + lfoot_contact_->getDim();
 
     wblc_data_->W_qddot_ = dynacore::Vector::Constant(sagitP3::num_qdot, 100.0);
-    wblc_data_->W_rf_ = dynacore::Vector::Constant(double_contact_->getDim(), 0.1);
-    wblc_data_->W_xddot_ = dynacore::Vector::Constant(double_contact_->getDim(), 1000.0);
-    wblc_data_->W_rf_[4] = 0.01;
-    wblc_data_->W_rf_[9] = 0.01;
+    wblc_data_->W_rf_ = dynacore::Vector::Constant(dim_contact_, 0.1);
+    wblc_data_->W_xddot_ = dynacore::Vector::Constant(dim_contact_, 1000.0);
+    wblc_data_->W_rf_[rfoot_contact_->getDim()-1] = 0.01;
+    wblc_data_->W_rf_[dim_contact_-1] = 0.01;
 
     // torque limit default setting
     wblc_data_->tau_min_ = dynacore::Vector::Constant(sagitP3::num_act_joint, -100.);
@@ -46,9 +56,11 @@ BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
 
 BodyCtrl::~BodyCtrl(){
     delete body_task_;
-    delete double_contact_;
     delete wblc_;
     delete wblc_data_;
+
+    delete rfoot_contact_;
+    delete lfoot_contact_;
 }
 
 void BodyCtrl::OneStep(void* _cmd){
@@ -91,6 +103,11 @@ void BodyCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
 
     sp_->qddot_cmd_ = wblc_data_->qddot_;
     sp_->reaction_forces_ = wblc_data_->Fr_;
+
+    //printf("Body Ctrl\n");
+    //dynacore::pretty_print(des_jacc_cmd, std::cout, "jacc cmd");
+    //dynacore::pretty_print(gamma, std::cout, "gamma");
+    //dynacore::pretty_print(sp_->reaction_forces_, std::cout, "rforce");
 }
 
 void BodyCtrl::_body_task_setup(){
@@ -101,11 +118,8 @@ void BodyCtrl::_body_task_setup(){
     double body_height_cmd;
 
     // Set Desired Orientation
-    dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
-    rpy_des.setZero();
-
-    dynacore::convert(rpy_des, des_quat);    
+    dynacore::convert(0., 0., M_PI/2., des_quat);    
 
     dynacore::Vector pos_des(7); pos_des.setZero();
     dynacore::Vector vel_des(6); vel_des.setZero();
@@ -121,7 +135,7 @@ void BodyCtrl::_body_task_setup(){
     pos_des[3] = des_quat.w();
     // Position
     //pos_des.tail(3) = ini_body_pos_;
-    pos_des[4] = 0.;
+    pos_des[4] = ini_body_pos_[0];
     pos_des[5] = ini_body_pos_[1];
     pos_des[6] = body_height_cmd;
 
@@ -148,15 +162,18 @@ void BodyCtrl::_body_task_setup(){
 }
 
 void BodyCtrl::_double_contact_setup(){
-    double_contact_->UpdateContactSpec();
-    contact_list_.push_back(double_contact_);
+    rfoot_contact_->UpdateContactSpec();
+    lfoot_contact_->UpdateContactSpec();
+
+    contact_list_.push_back(rfoot_contact_);
+    contact_list_.push_back(lfoot_contact_);
 }
 
 void BodyCtrl::FirstVisit(){
     jpos_ini_ = sp_->Q_.segment(sagitP3::num_virtual, sagitP3::num_act_joint);
     ctrl_start_time_ = sp_->curr_time_;
 
-    robot_sys_->getPos(sagitP3_link::torso, ini_body_pos_);
+    robot_sys_->getPos(sagitP3_link::hip_ground, ini_body_pos_);
 }
 
 void BodyCtrl::LastVisit(){  }

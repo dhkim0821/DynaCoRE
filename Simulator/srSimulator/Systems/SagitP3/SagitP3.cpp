@@ -73,10 +73,11 @@ void SagitP3::_SetInitialConf(){
     vp_joint_[1]->m_State.m_rValue[0] = 0.0; // Y
     vp_joint_[2]->m_State.m_rValue[0] = hanging_height_;
 
-    vr_joint_[0]->m_State.m_rValue[0] = SR_PI_HALF; // X
+    vr_joint_[0]->m_State.m_rValue[0] = 0.;// SR_PI_HALF; // Z
     vr_joint_[1]->m_State.m_rValue[0] = 0.; // Y
     vr_joint_[2]->m_State.m_rValue[0] = SR_PI_HALF;
-
+//printf("left flexion idx: %d\n", r_joint_idx_map_.find("Sagit_P3_Flexion_Left")->second);
+//printf("right flexion idx: %d\n", r_joint_idx_map_.find("Sagit_P3_Flexion_Right")->second);
     r_joint_[r_joint_idx_map_.find("Sagit_P3_Flexion_Left")->second]->
         m_State.m_rValue[0] = -0.31;
     r_joint_[r_joint_idx_map_.find("Sagit_P3_Flexion_Right")->second]->

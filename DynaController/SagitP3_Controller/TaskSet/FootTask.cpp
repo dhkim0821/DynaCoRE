@@ -13,8 +13,8 @@ FootTask::FootTask(const RobotSystem* robot, int swing_foot):
 {
     sp_ = SagitP3_StateProvider::getStateProvider();
     Jt_ = dynacore::Matrix::Zero(dim_task_, sagitP3::num_qdot);
-    if(swing_foot_ == sagitP3_link::lAnkle) stance_foot_ = sagitP3_link::rAnkle;
-    if(swing_foot_ == sagitP3_link::rAnkle) stance_foot_ = sagitP3_link::lAnkle;
+    if(swing_foot_ == sagitP3_link::l_ankle) stance_foot_ = sagitP3_link::r_ankle;
+    if(swing_foot_ == sagitP3_link::r_ankle) stance_foot_ = sagitP3_link::l_ankle;
     // printf("[BodyFoot Task] Constructed\n");
 }
 

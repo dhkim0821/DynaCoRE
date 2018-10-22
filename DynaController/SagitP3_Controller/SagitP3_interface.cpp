@@ -24,7 +24,7 @@ SagitP3_interface::SagitP3_interface():
     torque_command_(sagitP3::num_act_joint),
     jpos_command_(sagitP3::num_act_joint),
     jvel_command_(sagitP3::num_act_joint),
-     waiting_count_(10)
+     waiting_count_(5)
 {
 
     robot_sys_ = new SagitP3_Model();

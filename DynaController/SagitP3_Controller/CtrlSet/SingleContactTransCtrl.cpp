@@ -22,8 +22,8 @@ SingleContactTransCtrl::SingleContactTransCtrl(RobotSystem* robot,
     Kp_(sagitP3::num_act_joint),
     Kd_(sagitP3::num_act_joint)
 {
-    rfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::rAnkle);
-    lfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::lAnkle);
+    rfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::r_ankle);
+    lfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::l_ankle);
     dim_contact_ = rfoot_contact_->getDim() + lfoot_contact_->getDim();
 
     std::vector<bool> act_list;
@@ -136,8 +136,8 @@ void SingleContactTransCtrl::_task_setup(){
 
     // TEST
     if(b_increase_){
-        if(moving_foot_ == sagitP3_link::rAnkle){
-            int swing_jidx = sagitP3_joint::rHipYaw - sagitP3::num_virtual;
+        if(moving_foot_ == sagitP3_link::r_ankle){
+            int swing_jidx = sagitP3_joint::Abduction_Right - sagitP3::num_virtual;
             double h(state_machine_time_/end_time_);
 
             for(int i(0); i < sagitP3::num_leg_joint; ++i){
@@ -146,8 +146,8 @@ void SingleContactTransCtrl::_task_setup(){
                     (1. - h)*sp_->des_jpos_prev_[swing_jidx + i];
              }
         }
-        else if(moving_foot_ == sagitP3_link::lAnkle){
-            int swing_jidx = sagitP3_joint::lHipYaw - sagitP3::num_virtual;
+        else if(moving_foot_ == sagitP3_link::l_ankle){
+            int swing_jidx = sagitP3_joint::Abduction_Left - sagitP3::num_virtual;
             double h(state_machine_time_/end_time_);
 
             for(int i(0); i < sagitP3::num_leg_joint; ++i){
@@ -184,7 +184,7 @@ void SingleContactTransCtrl::_contact_setup(){
     contact_list_.push_back(lfoot_contact_);
 
     int jidx_offset(0);
-    if(moving_foot_ == sagitP3_link::lAnkle) {
+    if(moving_foot_ == sagitP3_link::l_ankle) {
         jidx_offset = 5;
         wblc_data_->W_rf_[0 + jidx_offset] = rf_weight;
         wblc_data_->W_rf_[1 + jidx_offset] = rf_weight;
@@ -200,7 +200,7 @@ void SingleContactTransCtrl::_contact_setup(){
 
         ((SingleContact*)lfoot_contact_)->setMaxFz(upper_lim); 
     }
-    else if(moving_foot_ == sagitP3_link::rAnkle) {
+    else if(moving_foot_ == sagitP3_link::r_ankle) {
         wblc_data_->W_rf_[0 + jidx_offset] = rf_weight;
         wblc_data_->W_rf_[1 + jidx_offset] = rf_weight;
         wblc_data_->W_rf_[2 + jidx_offset] = rf_weight;
@@ -222,7 +222,7 @@ void SingleContactTransCtrl::FirstVisit(){
     ini_base_height_ = sp_->Q_[sagitP3_joint::virtual_Z];
     ctrl_start_time_ = sp_->curr_time_;
 
-    robot_sys_->getPos(sagitP3_link::torso, ini_base_pos_);
+    robot_sys_->getPos(sagitP3_link::hip_ground, ini_base_pos_);
 }
 
 void SingleContactTransCtrl::LastVisit(){

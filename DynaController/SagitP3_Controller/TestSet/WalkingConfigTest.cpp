@@ -18,9 +18,9 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
 {
     sp_ = SagitP3_StateProvider::getStateProvider();
 #if (CONFIG_INITIAL_SWING_FOOT == 0)
-    sp_->stance_foot_ = sagitP3_link::lAnkle;
+    sp_->stance_foot_ = sagitP3_link::l_ankle;
 #else
-    sp_->stance_foot_ = sagitP3_link::rAnkle;
+    sp_->stance_foot_ = sagitP3_link::r_ankle;
 #endif
     sp_->global_pos_local_[1] = 0.15;
     robot_sys_ = robot;
@@ -34,20 +34,20 @@ WalkingConfigTest::WalkingConfigTest(RobotSystem* robot):Test(robot),
     body_fix_ctrl_ = new BodyCtrl(robot);
     // Swing Controller Selection
     right_swing_ctrl_ = 
-        new BodyFootPlanningCtrl(robot_sys_, sagitP3_link::rAnkle, reversal_planner_);
+        new BodyFootPlanningCtrl(robot_sys_, sagitP3_link::r_ankle, reversal_planner_);
     left_swing_ctrl_ = 
-        new BodyFootPlanningCtrl(robot_sys_, sagitP3_link::lAnkle, reversal_planner_);
+        new BodyFootPlanningCtrl(robot_sys_, sagitP3_link::l_ankle, reversal_planner_);
 
     // Right
     right_swing_start_trans_ctrl_ = 
-        new SingleContactTransCtrl(robot, sagitP3_link::rAnkle, false);
+        new SingleContactTransCtrl(robot, sagitP3_link::r_ankle, false);
     right_swing_end_trans_ctrl_ = 
-        new SingleContactTransCtrl(robot, sagitP3_link::rAnkle, true);
+        new SingleContactTransCtrl(robot, sagitP3_link::r_ankle, true);
     // Left
     left_swing_start_trans_ctrl_ = 
-        new SingleContactTransCtrl(robot, sagitP3_link::lAnkle, false);
+        new SingleContactTransCtrl(robot, sagitP3_link::l_ankle, false);
     left_swing_end_trans_ctrl_ = 
-        new SingleContactTransCtrl(robot, sagitP3_link::lAnkle, true);
+        new SingleContactTransCtrl(robot, sagitP3_link::l_ankle, true);
 
 
     _SettingParameter();
@@ -123,10 +123,10 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         ++num_step_;
         printf("%i th step:\n", num_step_);
         // printf("One swing done: Next Right Leg Swing\n");
-        sp_->stance_foot_ = sagitP3_link::lAnkle;
+        sp_->stance_foot_ = sagitP3_link::l_ankle;
 
         // Global Frame Update
-        robot_sys_->getPos(sagitP3_link::lAnkle, next_local_frame_location);
+        robot_sys_->getPos(sagitP3_link::l_ankle, next_local_frame_location);
         // when it start the left leg is already stance foot and 
         // global set by 0.15
         if(num_step_>1) { 
@@ -138,10 +138,10 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         ++num_step_;
         printf("%i th step:\n", num_step_);
 
-        sp_->stance_foot_ = sagitP3_link::rAnkle;
+        sp_->stance_foot_ = sagitP3_link::r_ankle;
 
         // Global Frame Update
-        robot_sys_->getPos(sagitP3_link::rAnkle, next_local_frame_location);
+        robot_sys_->getPos(sagitP3_link::r_ankle, next_local_frame_location);
         sp_->global_pos_local_ += next_local_frame_location;
     }
     sp_->num_step_copy_ = num_step_;

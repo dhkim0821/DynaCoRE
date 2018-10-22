@@ -1,6 +1,8 @@
 # Initialization
-initial_jpos: [0., 0., -0.59, 1.1, 1.03, 0., 0., -0.59, 1.1, 1.03]
-body_height: 1.1
+initial_jpos: [0., -0.4, 0., 1.2, -0.7, 0.0,
+               0., -0.4, 0., 1.2, -0.7, 0.0 ]
+
+body_height: 0.84
 
 # Timing Parameters (sec)
 jpos_initialization_time: 2.5

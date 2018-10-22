@@ -1,8 +1,10 @@
 #include "DoubleContactTransCtrl.hpp"
 #include <SagitP3_Controller/SagitP3_StateProvider.hpp>
 #include <SagitP3_Controller/TaskSet/BodyTask.hpp>
+
 #include <SagitP3_Controller/ContactSet/SingleContact.hpp>
-#include <SagitP3_Controller/ContactSet/DoubleContact.hpp>
+#include <SagitP3_Controller/ContactSet/SingleFullContact.hpp>
+
 #include <SagitP3/SagitP3_Model.hpp>
 #include <WBLC/KinWBC.hpp>
 #include <WBLC/WBLC.hpp>
@@ -20,9 +22,10 @@ DoubleContactTransCtrl::DoubleContactTransCtrl(RobotSystem* robot):
     Kd_(sagitP3::num_act_joint)
 {
     base_task_ = new BodyTask(robot);
-    rfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::rAnkle);
-    lfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::lAnkle);
-    double_contact_ = new DoubleContact(robot_sys_);
+    //rfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::r_ankle);
+    //lfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::l_ankle);
+    rfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::r_foot);
+    lfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::l_foot);
     dim_contact_ = rfoot_contact_->getDim() + lfoot_contact_->getDim();
 
     std::vector<bool> act_list;
@@ -36,8 +39,8 @@ DoubleContactTransCtrl::DoubleContactTransCtrl(RobotSystem* robot):
     wblc_data_->W_qddot_ = dynacore::Vector::Constant(sagitP3::num_qdot, 100.0);
     wblc_data_->W_rf_ = dynacore::Vector::Constant(dim_contact_, 1.0);
     wblc_data_->W_xddot_ = dynacore::Vector::Constant(dim_contact_, 1000.0);
-    wblc_data_->W_rf_[4] = 0.01;
-    wblc_data_->W_rf_[9] = 0.01;
+    wblc_data_->W_rf_[rfoot_contact_->getDim()-1] = 0.01;
+    wblc_data_->W_rf_[dim_contact_-1] = 0.01;
 
     wblc_data_->tau_min_ = dynacore::Vector::Constant(sagitP3::num_act_joint, -100.);
     wblc_data_->tau_max_ = dynacore::Vector::Constant(sagitP3::num_act_joint, 100.);
@@ -91,6 +94,10 @@ void DoubleContactTransCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
 
     sp_->qddot_cmd_ = wblc_data_->qddot_;
     sp_->reaction_forces_ = wblc_data_->Fr_;
+
+    //dynacore::pretty_print(des_jacc_cmd, std::cout, "jacc cmd");
+    //dynacore::pretty_print(gamma, std::cout, "gamma");
+    //dynacore::pretty_print(sp_->reaction_forces_, std::cout, "rforce");
 }
 
 void DoubleContactTransCtrl::_task_setup(){
@@ -101,10 +108,8 @@ void DoubleContactTransCtrl::_task_setup(){
     double base_height_cmd;
 
     // Set Desired Orientation
-    dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
-    rpy_des.setZero();
-    dynacore::convert(rpy_des, des_quat);
+    dynacore::convert(0.,0., M_PI/2., des_quat);
 
     dynacore::Vector pos_des(7); pos_des.setZero();
     dynacore::Vector vel_des(base_task_->getDim()); vel_des.setZero();
@@ -131,7 +136,7 @@ void DoubleContactTransCtrl::_task_setup(){
     //pos_des[3] = base_ori_ini_.w();
 
 
-    pos_des[4] = 0.;
+    pos_des[4] = ini_base_pos_[0];
     pos_des[5] = ini_base_pos_[1];
     pos_des[6] = base_height_cmd;
 
@@ -146,25 +151,23 @@ void DoubleContactTransCtrl::_task_setup(){
 }
 
 void DoubleContactTransCtrl::_contact_setup(){
-    ((SingleContact*)rfoot_contact_)->setMaxFz( 
-        min_rf_z_ + state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_) );
-    ((SingleContact*)lfoot_contact_)->setMaxFz( 
-        min_rf_z_ + state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_) );
+    //((SingleFullContact*)rfoot_contact_)->setMaxFz( 
+        //min_rf_z_ + state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_) );
+    //((SingleFullContact*)lfoot_contact_)->setMaxFz( 
+        //min_rf_z_ + state_machine_time_/end_time_ * (max_rf_z_ - min_rf_z_) );
 
     rfoot_contact_->UpdateContactSpec();
     lfoot_contact_->UpdateContactSpec();
     
     contact_list_.push_back(rfoot_contact_);
     contact_list_.push_back(lfoot_contact_);
-    //double_contact_->UpdateContactSpec();
-    //contact_list_.push_back(double_contact_);
 }
 
 void DoubleContactTransCtrl::FirstVisit(){
     ini_base_height_ = sp_->Q_[sagitP3_joint::virtual_Z];
     ctrl_start_time_ = sp_->curr_time_;
-    robot_sys_->getPos(sagitP3_link::torso, ini_base_pos_);
-    robot_sys_->getOri(sagitP3_link::torso, base_ori_ini_);
+    robot_sys_->getPos(sagitP3_link::hip_ground, ini_base_pos_);
+    robot_sys_->getOri(sagitP3_link::hip_ground, base_ori_ini_);
 }
 
 void DoubleContactTransCtrl::LastVisit(){

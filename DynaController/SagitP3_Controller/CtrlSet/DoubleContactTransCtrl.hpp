@@ -39,7 +39,7 @@ class DoubleContactTransCtrl: public Controller{
         Task* base_task_;
         WBDC_ContactSpec* rfoot_contact_;
         WBDC_ContactSpec* lfoot_contact_;
-        WBDC_ContactSpec* double_contact_;
+        
         KinWBC* kin_wbc_;
         WBLC* wblc_;
         WBLC_ExtraData* wblc_data_;
