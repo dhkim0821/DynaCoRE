@@ -11,7 +11,7 @@ test_duration: 100.32
 amplitude: [ 0.5, 0.5, 0.5, 0.5, 0.5, 0, # Left Leg
              0.5, 0.5, -0.5,  0,   0, 0 ]
 
-frequency: [ 0, 0., 0, 0, 0, 0, # Left Leg
+frequency: [ 0, 1., 0, 0, 0, 0, # Left Leg
              0, 0, 0, 0, 0, 0 ]
 
 phase: [ 0, 0, 0, 0, 0, 0, # Left Leg

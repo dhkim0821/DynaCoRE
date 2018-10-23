@@ -23,6 +23,7 @@ class srSpace;
 class Ground;
 class SagitP3_Command;
 class SagitP3_SensorData;
+class SagitP3_StateData;
 
 class SagitP3_Dyn_environment
 {
@@ -37,9 +38,11 @@ class SagitP3_Dyn_environment
         void saveLandingLocation();
     public:
         SagitP3_SensorData* data_;
+        SagitP3_StateData* state_data_;
         SagitP3_Command* cmd_;
 
         interface* interface_;
+        interface* state_interface_;
         SagitP3* robot_;
 
         srSpace*	m_Space;
@@ -50,7 +53,7 @@ class SagitP3_Dyn_environment
     protected:
         void getIMU_Data(std::vector<double> & imu_acc,
                 std::vector<double> & imu_ang_vel);
-        void _Get_Orientation(dynacore::Quaternion & rot);
+        void _Get_Orientation(dynacore::Quaternion & rot, dynacore::Vect3 &ang_vel);
         void _Copy_Array(double * , double *, int);
         void _CheckFootContact(bool & r_contact, bool & l_contact);
         void _hold_Ori(int count);

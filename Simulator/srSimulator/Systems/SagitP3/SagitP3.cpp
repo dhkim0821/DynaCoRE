@@ -11,8 +11,6 @@ SagitP3::SagitP3():SystemGenerator(),
   ParamHandler handler(SagitP3ConfigPath"SIM_sr_sim_setting.yaml");
   handler.getInteger("initial_posture", initial_posture_);
   handler.getValue("hanging_height", hanging_height_);
-
-  printf("[SagitP3] ASSEMBLED\n");
 }
 
 SagitP3::~SagitP3(){
@@ -76,12 +74,15 @@ void SagitP3::_SetInitialConf(){
     vr_joint_[0]->m_State.m_rValue[0] = 0.;// SR_PI_HALF; // Z
     vr_joint_[1]->m_State.m_rValue[0] = 0.; // Y
     vr_joint_[2]->m_State.m_rValue[0] = SR_PI_HALF;
+    
 //printf("left flexion idx: %d\n", r_joint_idx_map_.find("Sagit_P3_Flexion_Left")->second);
 //printf("right flexion idx: %d\n", r_joint_idx_map_.find("Sagit_P3_Flexion_Right")->second);
     r_joint_[r_joint_idx_map_.find("Sagit_P3_Flexion_Left")->second]->
         m_State.m_rValue[0] = -0.31;
+        //m_State.m_rValue[0] = 0.;
     r_joint_[r_joint_idx_map_.find("Sagit_P3_Flexion_Right")->second]->
         m_State.m_rValue[0] = -0.31;
+        //m_State.m_rValue[0] = 0.;
 
     r_joint_[r_joint_idx_map_.find("Sagit_P3_Knee_Left")->second]->
         m_State.m_rValue[0] = 1.08;

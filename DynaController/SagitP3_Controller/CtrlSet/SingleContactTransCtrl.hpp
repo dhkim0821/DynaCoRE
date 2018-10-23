@@ -12,7 +12,7 @@ class WBLC_ExtraData;
 
 class SingleContactTransCtrl: public Controller{
     public:
-        SingleContactTransCtrl(RobotSystem* robot, int moving_foot, bool b_increase);
+        SingleContactTransCtrl(const RobotSystem* robot, int moving_foot, bool b_increase);
         virtual ~SingleContactTransCtrl();
 
         virtual void OneStep(void* _cmd);

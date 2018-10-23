@@ -1,14 +1,17 @@
 #include "SingleContactTransCtrl.hpp"
 #include <SagitP3_Controller/SagitP3_StateProvider.hpp>
 #include <SagitP3_Controller/TaskSet/BodyTask.hpp>
+
 #include <SagitP3_Controller/ContactSet/SingleContact.hpp>
+#include <SagitP3_Controller/ContactSet/SingleFullContact.hpp>
+
 #include <WBLC/KinWBC.hpp>
 #include <WBLC/WBLC.hpp>
 #include <SagitP3/SagitP3_Model.hpp>
 #include <SagitP3_Controller/SagitP3_DynaCtrl_Definition.h>
 #include <ParamHandler/ParamHandler.hpp>
 
-SingleContactTransCtrl::SingleContactTransCtrl(RobotSystem* robot, 
+SingleContactTransCtrl::SingleContactTransCtrl(const RobotSystem* robot, 
         int moving_foot, bool b_increase):
     Controller(robot),
     b_set_height_target_(false),
@@ -22,8 +25,8 @@ SingleContactTransCtrl::SingleContactTransCtrl(RobotSystem* robot,
     Kp_(sagitP3::num_act_joint),
     Kd_(sagitP3::num_act_joint)
 {
-    rfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::r_ankle);
-    lfoot_contact_ = new SingleContact(robot_sys_, sagitP3_link::l_ankle);
+    rfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::r_foot);
+    lfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::l_foot);
     dim_contact_ = rfoot_contact_->getDim() + lfoot_contact_->getDim();
 
     std::vector<bool> act_list;
@@ -36,8 +39,8 @@ SingleContactTransCtrl::SingleContactTransCtrl(RobotSystem* robot,
     wblc_data_->W_qddot_ = dynacore::Vector::Constant(sagitP3::num_qdot, 100.0);
     wblc_data_->W_rf_ = dynacore::Vector::Constant(dim_contact_, 1.0);
     wblc_data_->W_xddot_ = dynacore::Vector::Constant(dim_contact_, 1000.0);
-    wblc_data_->W_rf_[4] = 0.01;
-    wblc_data_->W_rf_[9] = 0.01;
+    wblc_data_->W_rf_[rfoot_contact_->getDim()-1] = 0.01;
+    wblc_data_->W_rf_[dim_contact_-1] = 0.01;
 
     // torque limit default setting
     wblc_data_->tau_min_ = dynacore::Vector::Constant(sagitP3::num_act_joint, -100.);
@@ -45,7 +48,7 @@ SingleContactTransCtrl::SingleContactTransCtrl(RobotSystem* robot,
 
     base_task_ = new BodyTask(robot_sys_);
     sp_ = SagitP3_StateProvider::getStateProvider();
-    //printf("[Transition Controller] Constructed\n");
+    printf("[Transition Controller] Constructed\n");
 }
 
 SingleContactTransCtrl::~SingleContactTransCtrl(){
@@ -109,10 +112,8 @@ void SingleContactTransCtrl::_task_setup(){
     if(b_set_height_target_) base_height_cmd = des_base_height_;
  
     // Orientation
-    dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
-    rpy_des.setZero();
-    dynacore::convert(rpy_des, des_quat);
+    dynacore::convert(0., 0., M_PI/2., des_quat);
    
     dynacore::Vector pos_des(7); pos_des.setZero();
     dynacore::Vector vel_des(base_task_->getDim()); vel_des.setZero();
@@ -123,7 +124,7 @@ void SingleContactTransCtrl::_task_setup(){
     pos_des[2] = des_quat.z();
     pos_des[3] = des_quat.w();
 
-    pos_des[4] = 0.;
+    pos_des[4] = ini_base_pos_[0];
     pos_des[5] = ini_base_pos_[1];
     pos_des[6] = base_height_cmd;
 
@@ -136,7 +137,7 @@ void SingleContactTransCtrl::_task_setup(){
 
     // TEST
     if(b_increase_){
-        if(moving_foot_ == sagitP3_link::r_ankle){
+        if(moving_foot_ == sagitP3_link::r_foot){
             int swing_jidx = sagitP3_joint::Abduction_Right - sagitP3::num_virtual;
             double h(state_machine_time_/end_time_);
 
@@ -146,7 +147,7 @@ void SingleContactTransCtrl::_task_setup(){
                     (1. - h)*sp_->des_jpos_prev_[swing_jidx + i];
              }
         }
-        else if(moving_foot_ == sagitP3_link::l_ankle){
+        else if(moving_foot_ == sagitP3_link::l_foot){
             int swing_jidx = sagitP3_joint::Abduction_Left - sagitP3::num_virtual;
             double h(state_machine_time_/end_time_);
 
@@ -183,35 +184,23 @@ void SingleContactTransCtrl::_contact_setup(){
     contact_list_.push_back(rfoot_contact_);
     contact_list_.push_back(lfoot_contact_);
 
-    int jidx_offset(0);
-    if(moving_foot_ == sagitP3_link::l_ankle) {
-        jidx_offset = 5;
-        wblc_data_->W_rf_[0 + jidx_offset] = rf_weight;
-        wblc_data_->W_rf_[1 + jidx_offset] = rf_weight;
-        wblc_data_->W_rf_[2 + jidx_offset] = rf_weight;
-        wblc_data_->W_rf_[3 + jidx_offset] = rf_weight;
-        wblc_data_->W_rf_[4 + jidx_offset] = rf_weight_z;
+    int idx_offset(0);
+    if(moving_foot_ == sagitP3_link::l_foot) {
+        idx_offset = rfoot_contact_->getDim();
+        for(int i(0); i<lfoot_contact_->getDim(); ++i){
+            wblc_data_->W_rf_[i + idx_offset] = rf_weight;
+            wblc_data_->W_xddot_[i + idx_offset] = foot_weight;
+        }
 
-        wblc_data_->W_xddot_[0 + jidx_offset] = foot_weight;
-        wblc_data_->W_xddot_[1 + jidx_offset] = foot_weight;
-        wblc_data_->W_xddot_[2 + jidx_offset] = foot_weight;
-        wblc_data_->W_xddot_[3 + jidx_offset] = foot_weight;
-        wblc_data_->W_xddot_[4 + jidx_offset] = foot_weight;
-
+        wblc_data_->W_rf_[lfoot_contact_->getDim() -1 + idx_offset] = rf_weight_z;
         ((SingleContact*)lfoot_contact_)->setMaxFz(upper_lim); 
     }
-    else if(moving_foot_ == sagitP3_link::r_ankle) {
-        wblc_data_->W_rf_[0 + jidx_offset] = rf_weight;
-        wblc_data_->W_rf_[1 + jidx_offset] = rf_weight;
-        wblc_data_->W_rf_[2 + jidx_offset] = rf_weight;
-        wblc_data_->W_rf_[3 + jidx_offset] = rf_weight;
-        wblc_data_->W_rf_[4 + jidx_offset] = rf_weight_z;
-
-        wblc_data_->W_xddot_[0 + jidx_offset] = foot_weight;
-        wblc_data_->W_xddot_[1 + jidx_offset] = foot_weight;
-        wblc_data_->W_xddot_[2 + jidx_offset] = foot_weight;
-        wblc_data_->W_xddot_[3 + jidx_offset] = foot_weight;
-        wblc_data_->W_xddot_[4 + jidx_offset] = foot_weight;
+    else if(moving_foot_ == sagitP3_link::r_foot) {
+        for(int i(0); i<lfoot_contact_->getDim(); ++i){
+            wblc_data_->W_rf_[i + idx_offset] = rf_weight;
+            wblc_data_->W_xddot_[i + idx_offset] = foot_weight;
+        }
+        wblc_data_->W_rf_[rfoot_contact_->getDim() -1 + idx_offset] = rf_weight_z;
 
         ((SingleContact*)rfoot_contact_)->setMaxFz(upper_lim); 
     }

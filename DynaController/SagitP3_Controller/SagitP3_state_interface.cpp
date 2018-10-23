@@ -1,13 +1,11 @@
-#include "SagitP3_interface.hpp"
+#include "SagitP3_state_interface.hpp"
 #include <stdio.h>
 #include <math.h>
 #include <string>
 #include <Utils/utilities.hpp>
-#include <Utils/pseudo_inverse.hpp>
 #include <Utils/DataManager.hpp>
 #include <Utils/wrap_eigen.hpp>
 #include "SagitP3_StateProvider.hpp"
-#include "SagitP3_StateEstimator.hpp"
 #include <ParamHandler/ParamHandler.hpp>
 #include <SagitP3/SagitP3_Model.hpp>
 
@@ -17,34 +15,21 @@
 #include <SagitP3_Controller/TestSet/WalkingConfigTest.hpp>
 #include <SagitP3_Controller/TestSet/SingleSteppingTest.hpp>
 
-SagitP3_interface::SagitP3_interface():
+SagitP3_state_interface::SagitP3_state_interface():
     interface(),
-    torque_(sagitP3::num_act_joint),
-    jjvel_(sagitP3::num_act_joint),
-    jjpos_(sagitP3::num_act_joint),
     torque_command_(sagitP3::num_act_joint),
     jpos_command_(sagitP3::num_act_joint),
-    jvel_command_(sagitP3::num_act_joint),
-     waiting_count_(5)
+    jvel_command_(sagitP3::num_act_joint)
 {
-
     robot_sys_ = new SagitP3_Model();
-    jjvel_.setZero();
-    jjpos_.setZero();
+    jpos_command_.setZero();
     jvel_command_.setZero();
 
     test_cmd_ = new SagitP3_Command();
     sp_ = SagitP3_StateProvider::getStateProvider();
-    state_estimator_ = new SagitP3_StateEstimator(robot_sys_);  
     
     DataManager::GetDataManager()->RegisterData(
             &running_time_, DOUBLE, "running_time");
-    DataManager::GetDataManager()->RegisterData(
-            &jjpos_, DYN_VEC, "jjpos", sagitP3::num_act_joint);
-    DataManager::GetDataManager()->RegisterData(
-            &jjvel_, DYN_VEC, "jjvel", sagitP3::num_act_joint);
-     DataManager::GetDataManager()->RegisterData(
-            &torque_, DYN_VEC, "torque", sagitP3::num_act_joint);
     
     DataManager::GetDataManager()->RegisterData(
             &jpos_command_, DYN_VEC, "jpos_des", sagitP3::num_act_joint);
@@ -55,31 +40,36 @@ SagitP3_interface::SagitP3_interface():
 
     _ParameterSetting();
     
-    printf("[SagitP3_interface] Contruct\n");
+    printf("[SagitP3_state_interface] Contruct\n");
 }
 
-SagitP3_interface::~SagitP3_interface(){
+SagitP3_state_interface::~SagitP3_state_interface(){
+    delete robot_sys_;
     delete test_;
 }
 
-void SagitP3_interface::GetCommand( void* _data, void* _command){
+void SagitP3_state_interface::GetCommand( void* _data, void* _command){
     SagitP3_Command* cmd = ((SagitP3_Command*)_command);
-    SagitP3_SensorData* data = ((SagitP3_SensorData*)_data);
+    SagitP3_StateData* data = ((SagitP3_StateData*)_data);
 
-    if(!_Initialization(data)){
-        state_estimator_->Update(data);
-        test_->getCommand(test_cmd_);
+    for(int i(0); i<sagitP3::num_qdot; ++i){
+        sp_->Q_[i] = data->q[i];
+        sp_->Qdot_[i] = data->qdot[i];
     }
-    
+    sp_->Q_[sagitP3_joint::virtual_Rw] = data->q[sagitP3_joint::virtual_Rw];
+    robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
+   sp_->SaveCurrentData(robot_sys_);
+    //dynacore::pretty_print(sp_->Q_, std::cout, "config");
+    //dynacore::pretty_print(sp_->Qdot_, std::cout, "qdot");
+ 
+    test_->getCommand(test_cmd_);
+
+    //dynacore::pretty_print(test_cmd_->jtorque_cmd, "jtorque", sagitP3::num_act_joint);
     // Update Command (and Data)
     for(int i(0); i<sagitP3::num_act_joint; ++i){
         torque_command_[i] = test_cmd_->jtorque_cmd[i];
         jpos_command_[i] = test_cmd_->jpos_cmd[i];
         jvel_command_[i] = test_cmd_->jvel_cmd[i];
-
-        jjvel_[i] = data->jvel[i];
-        torque_[i] = data->torque[i];
-        jjpos_[i] = data->jpos[i];
     }
 
     for(int i(0); i< sagitP3::num_act_joint; ++i){
@@ -92,41 +82,9 @@ void SagitP3_interface::GetCommand( void* _data, void* _command){
     ++count_;
     // When there is sensed time
     sp_->curr_time_ = running_time_;
-    // Stepping forward
-    double walking_start(3.);
-    double walking_duration(7.);
-    double walking_distance(2.5);
-    if(sp_->curr_time_ > walking_start){
-        double walking_time = sp_->curr_time_ - walking_start;
-        sp_->des_location_[0] = walking_distance * 
-            (1-cos(walking_time/walking_duration * M_PI))/2.;
-    }
-    if(sp_->curr_time_ > walking_start + walking_duration){
-        sp_->des_location_[0] = walking_distance;
-    }
 }
 
-bool SagitP3_interface::_Initialization(SagitP3_SensorData* data){
-   if(count_ < waiting_count_){
-        for(int i(0); i<sagitP3::num_act_joint; ++i){
-            test_cmd_->jtorque_cmd[i] = 0.;
-            test_cmd_->jpos_cmd[i] = data->jpos[i];
-            test_cmd_->jvel_cmd[i] = 0.;
-        }
-        state_estimator_->Initialization(data);
-        DataManager::GetDataManager()->start();
-        return true;
-    }
-    static bool test_initialized(false);
-    if(!test_initialized) {
-        test_->TestInitialization();
-        test_initialized = true;
-        printf("[SagitP3 Interface] Test initialization is done\n");
-    }
-     return false;
-}
-
-void SagitP3_interface::_ParameterSetting(){
+void SagitP3_state_interface::_ParameterSetting(){
     ParamHandler handler(SagitP3ConfigPath"INTERFACE_setup.yaml");
     std::string tmp_string;
     bool b_tmp;
@@ -148,5 +106,5 @@ void SagitP3_interface::_ParameterSetting(){
         printf("[Interfacce] There is no test matching with the name\n");
         exit(0);
     }
-    printf("[SagitP3_interface] Parameter setup is done\n");
+    printf("[SagitP3_state_interface] Parameter setup is done\n");
 }

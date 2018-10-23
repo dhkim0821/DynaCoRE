@@ -7,14 +7,12 @@
 #include <Utils/utilities.hpp>
 
 FootTask::FootTask(const RobotSystem* robot, int swing_foot):
-    KinTask(4),
+    KinTask(6),
     robot_sys_(robot),
     swing_foot_(swing_foot)
 {
     sp_ = SagitP3_StateProvider::getStateProvider();
     Jt_ = dynacore::Matrix::Zero(dim_task_, sagitP3::num_qdot);
-    if(swing_foot_ == sagitP3_link::l_ankle) stance_foot_ = sagitP3_link::r_ankle;
-    if(swing_foot_ == sagitP3_link::r_ankle) stance_foot_ = sagitP3_link::l_ankle;
     // printf("[BodyFoot Task] Constructed\n");
 }
 
@@ -39,13 +37,13 @@ bool FootTask::_UpdateCommand(void* pos_des,
        dynacore::QuatMultiply(foot_ori_des, foot_ori.inverse());
    dynacore::Vect3 ori_err_so3;
    dynacore::convert(ori_err, ori_err_so3);
-    pos_err_[0] = ori_err_so3[2];
 
-    // TODO
-    vel_des_[0] = 0.;
-    acc_des_[0] = 0.;
-    for(int i(1); i<dim_task_; ++i){
-        pos_err_[i] = ((*pos_cmd)[i + 3] - foot_pos[i-1] );
+   for(int i(0); i<3; ++i) {
+       pos_err_[i] = ori_err_so3[i];
+       pos_err_[i + 3] = ((*pos_cmd)[i + 4] - foot_pos[i] );
+   }
+
+    for(int i(0); i<dim_task_; ++i){
         vel_des_[i] = vel_des[i];
         acc_des_[i] = acc_des[i];
     }
@@ -58,12 +56,7 @@ bool FootTask::_UpdateCommand(void* pos_des,
 }
 
 bool FootTask::_UpdateTaskJacobian(){
-    dynacore::Matrix Jswing, Jstance;
-    robot_sys_->getFullJacobian(swing_foot_, Jswing);
-    robot_sys_->getFullJacobian(stance_foot_, Jstance);
-    //Jt_ = Jswing.block(3,0,3, sagitP3::num_qdot) - Jstance.block(3, 0, 3, sagitP3::num_qdot);
-    Jt_= Jswing.block(2,0,4, sagitP3::num_qdot);
-    (Jt_.block(0, 0, 4, sagitP3::num_virtual)).setZero();
+    robot_sys_->getFullJacobian(swing_foot_, Jt_);
     
     // dynacore::pretty_print(Jswing, std::cout, "Jswing");
     // dynacore::pretty_print(Jfoot, std::cout, "Jfoot");

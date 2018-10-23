@@ -6,6 +6,7 @@
 #include "common/utils.h"
 
 #include <DynaController/SagitP3_Controller/SagitP3_interface.hpp>
+#include <DynaController/SagitP3_Controller/SagitP3_state_interface.hpp>
 #include <DynaController/SagitP3_Controller/SagitP3_DynaCtrl_Definition.h>
 #include <Utils/utilities.hpp>
 
@@ -27,11 +28,14 @@ SagitP3_Dyn_environment::SagitP3_Dyn_environment():
     robot_->BuildRobot(Vec3 (0., 0., 0.), 
             //srSystem::FIXED, srJoint::TORQUE, ModelPath"SagitP3/SagitP3.urdf");
             srSystem::FIXED, srJoint::TORQUE, ModelPath"SagitP3/p3_model_srlib.urdf");
+            //srSystem::FIXED, srJoint::TORQUE, ModelPath"SagitP3/p3_model_coord.urdf");
     m_Space->AddSystem((srSystem*)robot_);
 
     /******** Interface set ********/
     interface_ = new SagitP3_interface();
+    state_interface_ = new SagitP3_state_interface();
     data_ = new SagitP3_SensorData();
+    state_data_ = new SagitP3_StateData();
     cmd_ = new SagitP3_Command();
 
 
@@ -52,6 +56,7 @@ void SagitP3_Dyn_environment::ControlFunction( void* _data ) {
     SagitP3_Dyn_environment* pDyn_env = (SagitP3_Dyn_environment*)_data;
     SagitP3* robot = (SagitP3*)(pDyn_env->robot_);
     SagitP3_SensorData* p_data = pDyn_env->data_;
+    SagitP3_StateData* p_state_data = pDyn_env->state_data_;
 
     std::vector<double> torque_command(robot->num_act_joint_);
 
@@ -70,7 +75,32 @@ void SagitP3_Dyn_environment::ControlFunction( void* _data ) {
         p_data->imu_ang_vel[i] = imu_ang_vel[i];
         p_data->imu_acc[i] = imu_acc[i];
     }
-    pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
+    //pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
+
+    // State Interfacenterface
+    dynacore::Quaternion ori_quat;
+    dynacore::Vect3 ang_vel;
+    pDyn_env->_Get_Orientation(ori_quat, ang_vel);
+    //dynacore::pretty_print(ori_quat, std::cout, "ori quat");
+    //dynacore::pretty_print(ang_vel, std::cout, "ang vel");
+    for(int i(0); i<3; ++i){
+        p_state_data->q[i] = robot->vp_joint_[i]->m_State.m_rValue[0];
+        p_state_data->qdot[i] = robot->vp_joint_[i]->m_State.m_rValue[1];
+
+        p_state_data->qdot[i+3] = ang_vel[i];
+    } 
+    p_state_data->q[sagitP3_joint::virtual_Rx] = ori_quat.x();
+    p_state_data->q[sagitP3_joint::virtual_Ry] = ori_quat.y();
+    p_state_data->q[sagitP3_joint::virtual_Rz] = ori_quat.z();
+    p_state_data->q[sagitP3_joint::virtual_Rw] = ori_quat.w();
+
+    for(int i(0); i<sagitP3::num_act_joint; ++i){
+        p_state_data->q[i + sagitP3::num_virtual] = p_data->jpos[i];
+        p_state_data->qdot[i + sagitP3::num_virtual] = p_data->jvel[i];
+    }
+    //dynacore::pretty_print(p_state_data->q, "q", sagitP3::num_q );
+    //dynacore::pretty_print(p_state_data->qdot, "qdot", sagitP3::num_qdot );
+    pDyn_env->state_interface_->GetCommand(p_state_data, pDyn_env->cmd_); 
 
     pDyn_env->_ZeroInput_VirtualJoint();
     pDyn_env->_hold_XY(count);
@@ -88,15 +118,22 @@ void SagitP3_Dyn_environment::ControlFunction( void* _data ) {
 
 void SagitP3_Dyn_environment::Rendering_Fnc(){
 }
-void SagitP3_Dyn_environment::_Get_Orientation(dynacore::Quaternion & rot){
+void SagitP3_Dyn_environment::_Get_Orientation(dynacore::Quaternion & rot, 
+        dynacore::Vect3 & ang_vel){
     SO3 so3_body =  robot_->
-        link_[robot_->link_idx_map_.find("pelvis")->second]->GetOrientation();
+        link_[robot_->link_idx_map_.find("hip_ground_link")->second]->GetOrientation();
+
+    se3 body_vel =  robot_->
+        link_[robot_->link_idx_map_.find("hip_ground_link")->second]->GetVel();
+
 
     Eigen::Matrix3d ori_mtx;
     for (int i(0); i<3; ++i){
         ori_mtx(i, 0) = so3_body[0+i];
         ori_mtx(i, 1) = so3_body[3+i];
         ori_mtx(i, 2) = so3_body[6+i];
+        //
+        ang_vel[i] = body_vel[i];
     }
     dynacore::Quaternion ori_quat(ori_mtx);
     rot = ori_quat;

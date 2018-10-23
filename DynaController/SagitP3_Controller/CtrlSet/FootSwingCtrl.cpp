@@ -1,8 +1,9 @@
-#include "BodyFootPlanningCtrl.hpp"
+#include "FootSwingCtrl.hpp"
 #include <Configuration.h>
+
 #include <SagitP3_Controller/SagitP3_StateProvider.hpp>
 #include <ParamHandler/ParamHandler.hpp>
-#include <Planner/PIPM_FootPlacementPlanner/Reversal_LIPM_Planner.hpp>
+
 #include <Utils/utilities.hpp>
 #include <WBLC/KinWBC.hpp>
 #include <WBLC/WBLC.hpp>
@@ -13,17 +14,22 @@
 #include <SagitP3_Controller/TaskSet/BodyTask.hpp>
 #include <SagitP3_Controller/TaskSet/FootTask.hpp>
 
-BodyFootPlanningCtrl::BodyFootPlanningCtrl(
-        const RobotSystem* robot, int swing_foot, Planner* planner):
-    SwingPlanningCtrl(robot, swing_foot, planner),
+FootSwingCtrl::FootSwingCtrl(const RobotSystem* robot, int swing_foot):
+    Controller(robot),
     push_down_height_(0.),
     des_jpos_(sagitP3::num_act_joint),
     des_jvel_(sagitP3::num_act_joint),
     des_jacc_(sagitP3::num_act_joint),
-    waiting_time_limit_(0.0),
+    ctrl_start_time_(0.),
+    swing_foot_(swing_foot),
     Kp_(sagitP3::num_act_joint),
     Kd_(sagitP3::num_act_joint)
 {
+    curr_foot_pos_des_.setZero();
+    curr_foot_vel_des_.setZero();
+    curr_foot_acc_des_.setZero();
+    sp_ = SagitP3_StateProvider::getStateProvider();
+
     des_jacc_.setZero();
     rfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::r_foot);
     lfoot_contact_ = new SingleFullContact(robot_sys_, sagitP3_link::l_foot);
@@ -77,11 +83,11 @@ BodyFootPlanningCtrl::BodyFootPlanningCtrl(
     for(size_t i = 0; i < 3; i++){
         min_jerk_offset_.push_back(new MinJerk_OneDimension());
     }
-    printf("[Configuration BodyFootPlanning Controller] Constructed\n");
+    printf("[Configuration FootSwing Controller] Constructed\n");
 }
 
-void BodyFootPlanningCtrl::OneStep(void* _cmd){   
-    _PreProcessing_Command();
+void FootSwingCtrl::OneStep(void* _cmd){   
+_PreProcessing_Command();
     state_machine_time_ = sp_->curr_time_ - ctrl_start_time_;
     dynacore::Vector gamma;
     _contact_setup();
@@ -96,14 +102,14 @@ void BodyFootPlanningCtrl::OneStep(void* _cmd){
     _PostProcessing_Command();
 }
 
-void BodyFootPlanningCtrl::_contact_setup(){
+void FootSwingCtrl::_contact_setup(){
     rfoot_contact_->UpdateContactSpec();
     lfoot_contact_->UpdateContactSpec();
     contact_list_.push_back(rfoot_contact_);
     contact_list_.push_back(lfoot_contact_);
 }
 
-void BodyFootPlanningCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
+void FootSwingCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
     dynacore::Matrix A_rotor = A_;
     for (int i(0); i<sagitP3::num_act_joint; ++i){
         A_rotor(i + sagitP3::num_virtual, i + sagitP3::num_virtual)
@@ -130,7 +136,7 @@ void BodyFootPlanningCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
     sp_->reaction_forces_ = wblc_data_->Fr_;
 }
 
-void BodyFootPlanningCtrl::_task_setup(){
+void FootSwingCtrl::_task_setup(){
     // Body height
     double base_height_cmd = ini_base_height_;
     if(b_set_height_target_) base_height_cmd = des_body_height_;
@@ -154,14 +160,10 @@ void BodyFootPlanningCtrl::_task_setup(){
     pos_des[6] = base_height_cmd;
 
     base_task_->UpdateTask(&(pos_des), vel_des, acc_des);
-    dynacore::pretty_print(pos_des, std::cout, "pos_des");
-    printf("%i, height: %f, %f\n", b_set_height_target_, base_height_cmd, 
-            des_body_height_);
 
     /////// Foot Pos Task Setup 
-    _CheckPlanning();
-    _GetSinusoidalSwingTrajectory();
-    //_GetBsplineSwingTrajectory();
+    //_GetSinusoidalSwingTrajectory();
+    _GetBsplineSwingTrajectory();
 
     double traj_time = state_machine_time_ - half_swing_time_;
     if(state_machine_time_ > half_swing_time_){
@@ -176,15 +178,6 @@ void BodyFootPlanningCtrl::_task_setup(){
             curr_foot_acc_des_[i] += acc;
         }
     }
-    if(state_machine_time_> end_time_){
-        for(int i(0); i<foot_task_->getDim(); ++i){
-            curr_foot_vel_des_[i] = 0;
-            curr_foot_acc_des_[i] = 0;
-        }
-        curr_foot_pos_des_[2] = 
-          -push_down_height_ - 0.1*(state_machine_time_ - end_time_);
-    }
-
     dynacore::Vector foot_pos_des(7);
     dynacore::Vector foot_vel_des(foot_task_->getDim()); foot_vel_des.setZero();
     dynacore::Vector foot_acc_des(foot_task_->getDim()); foot_acc_des.setZero();
@@ -207,49 +200,33 @@ void BodyFootPlanningCtrl::_task_setup(){
     task_list_.push_back(foot_task_);
     kin_wbc_->FindConfiguration(sp_->Q_, task_list_, kin_wbc_contact_list_, 
             des_jpos_, des_jvel_, des_jacc_);
+
+    //dynacore::pretty_print(des_jpos_, std::cout, "des jpos");
+    //dynacore::pretty_print(des_jvel_, std::cout, "des jvel");
 }
 
-void BodyFootPlanningCtrl::_CheckPlanning(){
-    if( (state_machine_time_ > 0.5 * end_time_) && b_replanning_ && !b_replaned_) {
-            dynacore::Vect3 target_loc;
-            _Replanning(target_loc);
-
-            dynacore::Vect3 target_offset;
-            // X, Y target is originally set by intial_traget_loc
-            for(int i(0); i<2; ++i)
-                target_offset[i] = target_loc[i] - initial_target_loc_[i];
-
-            // Foot height (z) is set by the initial height
-            target_offset[2] = 0.; //target_loc[2] - ini_foot_pos_[2];
-
-            _SetMinJerkOffset(target_offset);
-            b_replaned_ = true;
-    }
-}
-
-void BodyFootPlanningCtrl::FirstVisit(){
-    b_replaned_ = false;
+void FootSwingCtrl::FirstVisit(){
     
     robot_sys_->getPos(sagitP3_link::hip_ground, ini_body_pos_);
     robot_sys_->getPos(swing_foot_, ini_foot_pos_);
     robot_sys_->getOri(swing_foot_, ini_foot_ori_);
-    
+   
     ctrl_start_time_ = sp_->curr_time_;
     state_machine_time_ = 0.;
-    replan_moment_ = 0.;
 
-    initial_target_loc_[0] = default_target_loc_[0];
+    //initial_target_loc_[0] = default_target_loc_[0];
+    initial_target_loc_[0] = ini_foot_pos_[0];
     initial_target_loc_[1] = default_target_loc_[1];
     initial_target_loc_[2] = ini_foot_pos_[2];// -push_down_height_;
 
+    dynacore::pretty_print(initial_target_loc_, std::cout, "ini target");
     _SetBspline(ini_foot_pos_, initial_target_loc_);
 
     dynacore::Vect3 foot_pos_offset; foot_pos_offset.setZero();
-    foot_pos_offset[2] = 0.;
     _SetMinJerkOffset(foot_pos_offset);
 }
 
-void BodyFootPlanningCtrl::_SetMinJerkOffset(const dynacore::Vect3 & offset){
+void FootSwingCtrl::_SetMinJerkOffset(const dynacore::Vect3 & offset){
     // Initialize Minimum Jerk Parameter Containers
     dynacore::Vect3 init_params; 
     dynacore::Vect3 final_params;
@@ -268,31 +245,16 @@ void BodyFootPlanningCtrl::_SetMinJerkOffset(const dynacore::Vect3 & offset){
     }
 }
 
-bool BodyFootPlanningCtrl::EndOfPhase(){
-    if(state_machine_time_ > (end_time_ + waiting_time_limit_)){
+bool FootSwingCtrl::EndOfPhase(){
+    if(state_machine_time_ > (end_time_)){
         printf("[Body Foot Ctrl] End, state_machine time/ end time: (%f, %f)\n", 
             state_machine_time_, end_time_);
         return true;
     }
-    // Swing foot contact = END
-    if(b_contact_switch_check_){
-        bool contact_happen(false);
-        if(swing_foot_ == sagitP3_link::l_foot && sp_->b_lfoot_contact_){
-            contact_happen = true;
-        }
-        if(swing_foot_ == sagitP3_link::r_foot && sp_->b_rfoot_contact_){
-            contact_happen = true;
-        }
-        if(state_machine_time_ > end_time_ * 0.5 && contact_happen){
-            printf("[Config Body Foot Ctrl] contact happen, state_machine_time/ end time: (%f, %f)\n",
-                    state_machine_time_, end_time_);
-            return true;
-        }
-    }
     return false;
 }
 
-void BodyFootPlanningCtrl::CtrlInitialization(
+void FootSwingCtrl::CtrlInitialization(
         const std::string & setting_file_name){
     ini_base_height_ = sp_->Q_[sagitP3_joint::virtual_Z];
     std::vector<double> tmp_vec;
@@ -317,34 +279,16 @@ void BodyFootPlanningCtrl::CtrlInitialization(
         Kd_[i] = tmp_vec[i];
     }
 
-    // Body Point offset
-    handler.getVector("body_pt_offset", tmp_vec);
-    for(int i(0); i<2; ++i){
-        body_pt_offset_[i] = tmp_vec[i];
-    }
-
-    handler.getVector("foot_landing_offset", foot_landing_offset_);
-
-    if(b_replanning_){
-    static bool b_bodypute_eigenvalue(true);
-    if(b_bodypute_eigenvalue){
-        ((Reversal_LIPM_Planner*)planner_)->
-            CheckEigenValues(double_stance_ratio_*stance_time_ + 
-                    transition_phase_ratio_*transition_time_ + 
-                    end_time_);
-        b_bodypute_eigenvalue = false;
-    }
-    }
-    //printf("[Body Foot JPos Planning Ctrl] Parameter Setup Completed\n");
+   //printf("[Body Foot JPos Planning Ctrl] Parameter Setup Completed\n");
 }
 
-BodyFootPlanningCtrl::~BodyFootPlanningCtrl(){
+FootSwingCtrl::~FootSwingCtrl(){
     delete wblc_;
     delete lfoot_contact_;
     delete rfoot_contact_;
 }
 
-void BodyFootPlanningCtrl::_GetBsplineSwingTrajectory(){
+void FootSwingCtrl::_GetBsplineSwingTrajectory(){
     double pos[3];
     double vel[3];
     double acc[3];
@@ -359,7 +303,8 @@ void BodyFootPlanningCtrl::_GetBsplineSwingTrajectory(){
         curr_foot_acc_des_[i] = acc[i];
     }
 }
-void BodyFootPlanningCtrl::_GetSinusoidalSwingTrajectory(){
+
+void FootSwingCtrl::_GetSinusoidalSwingTrajectory(){
     curr_foot_acc_des_.setZero();
     for (int i(0); i<2; ++i){
         curr_foot_pos_des_[i] = 
@@ -384,7 +329,7 @@ void BodyFootPlanningCtrl::_GetSinusoidalSwingTrajectory(){
         amp * omega * omega * cos(omega * state_machine_time_);
 }
 
-void BodyFootPlanningCtrl::_SetBspline(
+void FootSwingCtrl::_SetBspline(
             const dynacore::Vect3 & st_pos, 
             const dynacore::Vect3 & des_pos){
     // Trajectory Setup
@@ -411,68 +356,12 @@ void BodyFootPlanningCtrl::_SetBspline(
         middle_pt[0][i] = middle_pos[i];
     }
     // TEST
-    fin[5] = -0.5;
-    fin[8] = 5.;
+    //fin[5] = -0.5;
+    //fin[8] = 5.;
     foot_traj_.SetParam(init, fin, middle_pt, end_time_);
 
     delete [] *middle_pt;
     delete [] middle_pt;    
-}
-
-void BodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
-    dynacore::Vect3 com_pos, com_vel;
-    // Direct value used
-    robot_sys_->getCoMPosition(com_pos);
-    robot_sys_->getCoMVelocity(com_vel);
-
-    // TEST 
-    for(int i(0); i<2; ++i){
-        //com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
-        // TEST jpos update must be true
-        // com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
-        // com_pos[i] += body_pt_offset_[i];
-        // com_vel[i] = sp_->est_CoM_vel_[i]; 
-
-        // com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
-    }
-    printf("planning com state: %f, %f, %f, %f\n",
-        com_pos[0], com_pos[1],
-        com_vel[0], com_vel[1]);
-
-    OutputReversalPL pl_output;
-    ParamReversalPL pl_param;
-    pl_param.swing_time = end_time_ - state_machine_time_
-        + transition_time_ * transition_phase_ratio_
-        + stance_time_ * double_stance_ratio_;
-
-      
-    pl_param.des_loc = sp_->des_location_;
-    pl_param.stance_foot_loc = sp_->global_pos_local_;
-
-    if(swing_foot_ == sagitP3_link::l_foot)
-        pl_param.b_positive_sidestep = true;
-    else
-        pl_param.b_positive_sidestep = false;
-
-    
-    dynacore::Vect3 tmp_global_pos_local = sp_->global_pos_local_;
-
-    planner_->getNextFootLocation(com_pos + tmp_global_pos_local,
-            com_vel,
-            target_loc,
-            &pl_param, &pl_output);
-    // Time Modification
-    replan_moment_ = state_machine_time_;
-    end_time_ += pl_output.time_modification;
-    target_loc -= sp_->global_pos_local_;
- 
-    target_loc[2] = initial_target_loc_[2];
-
-    // TEST
-    for(int i(0); i<2; ++i){
-        target_loc[i] += foot_landing_offset_[i];
-    }
-    dynacore::pretty_print(target_loc, std::cout, "next foot loc");
 }
 
 

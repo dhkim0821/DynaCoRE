@@ -49,8 +49,8 @@ SagitP3_StateProvider::SagitP3_StateProvider():
 }
 
 void SagitP3_StateProvider::SaveCurrentData(const RobotSystem* robot_sys){
-    robot_sys->getPos(sagitP3_link::r_ankle, rfoot_pos_);
-    robot_sys->getPos(sagitP3_link::l_ankle, lfoot_pos_);
-    robot_sys->getPos(sagitP3_link::r_ankle, rfoot_vel_);
-    robot_sys->getPos(sagitP3_link::l_ankle, lfoot_vel_);
+    robot_sys->getPos(sagitP3_link::r_foot, rfoot_pos_);
+    robot_sys->getPos(sagitP3_link::l_foot, lfoot_pos_);
+    robot_sys->getPos(sagitP3_link::r_foot, rfoot_vel_);
+    robot_sys->getPos(sagitP3_link::l_foot, lfoot_vel_);
 }
