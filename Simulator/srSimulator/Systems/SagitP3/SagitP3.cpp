@@ -26,11 +26,11 @@ void SagitP3::_SetCollision(){
   }
 
   collision_[0]->GetGeomInfo().SetShape(srGeometryInfo::BOX);
-  collision_[0]->GetGeomInfo().SetDimension(0.15, 0.02, 0.2);
+  collision_[0]->GetGeomInfo().SetDimension(0.25, 0.02, 0.25);
   collision_[0]->SetLocalFrame(EulerZYX(Vec3(0,0,0), Vec3(-0.0, -0.03, 0)));
  
   collision_[1]->GetGeomInfo().SetShape(srGeometryInfo::BOX);
-  collision_[1]->GetGeomInfo().SetDimension(0.15, 0.02, 0.2);
+  collision_[1]->GetGeomInfo().SetDimension(0.25, 0.02, 0.25);
   collision_[1]->SetLocalFrame(EulerZYX(Vec3(0,0,0), Vec3(-0.0, -0.03, 0)));
   
   link_[link_idx_map_.find("right_foot_link")->second]->AddCollision(collision_[0]);

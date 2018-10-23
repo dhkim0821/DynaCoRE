@@ -32,7 +32,7 @@ SagitP3_Dyn_environment::SagitP3_Dyn_environment():
     m_Space->AddSystem((srSystem*)robot_);
 
     /******** Interface set ********/
-    interface_ = new SagitP3_interface();
+    //interface_ = new SagitP3_interface();
     state_interface_ = new SagitP3_state_interface();
     data_ = new SagitP3_SensorData();
     state_data_ = new SagitP3_StateData();
@@ -104,7 +104,7 @@ void SagitP3_Dyn_environment::ControlFunction( void* _data ) {
 
     pDyn_env->_ZeroInput_VirtualJoint();
     pDyn_env->_hold_XY(count);
-    pDyn_env->_hold_Ori(count);
+    //pDyn_env->_hold_Ori(count);
 
     double Kp(10.0);
     double Kd(1.0);

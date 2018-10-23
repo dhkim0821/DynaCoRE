@@ -40,6 +40,8 @@ SagitP3_state_interface::SagitP3_state_interface():
 
     _ParameterSetting();
     
+    test_->TestInitialization();
+        DataManager::GetDataManager()->start();
     printf("[SagitP3_state_interface] Contruct\n");
 }
 
@@ -58,7 +60,7 @@ void SagitP3_state_interface::GetCommand( void* _data, void* _command){
     }
     sp_->Q_[sagitP3_joint::virtual_Rw] = data->q[sagitP3_joint::virtual_Rw];
     robot_sys_->UpdateSystem(sp_->Q_, sp_->Qdot_);
-   sp_->SaveCurrentData(robot_sys_);
+    sp_->SaveCurrentData(robot_sys_);
     //dynacore::pretty_print(sp_->Q_, std::cout, "config");
     //dynacore::pretty_print(sp_->Qdot_, std::cout, "qdot");
  
