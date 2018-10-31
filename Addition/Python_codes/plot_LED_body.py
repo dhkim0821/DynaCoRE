@@ -73,9 +73,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_est_com_global = data_estimated_com[:,0:2] + \
                                     data_global_pos_offset[:, 0:2]
 
-    st_idx = 8000
-    # end_idx = len(data_x) - 10
-    end_idx = st_idx + 3000
+    st_idx = 80
+    end_idx = len(data_x) - 10
+    # end_idx = st_idx + 3000
     data_x = data_x[st_idx:end_idx]
 
     # PHASE MARKER #

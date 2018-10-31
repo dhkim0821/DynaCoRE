@@ -44,7 +44,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     num_leg_joint = 3
     # st_idx = 1;
     # end_idx = len(data_x) - 1
-    st_idx = 2000
+    st_idx = 0
     end_idx = 4000
     data_x = data_x[st_idx:end_idx]
 
