@@ -10,6 +10,7 @@
 #include "Mercury_StateEstimator.hpp"
 #include <ParamHandler/ParamHandler.hpp>
 #include <Mercury/Mercury_Model.hpp>
+#include "ExtCtrlReceiver.hpp"
 
 // Test SET LIST
 // Basic Test
@@ -86,6 +87,8 @@ Mercury_interface::Mercury_interface():
             &bus_voltage_, DYN_VEC, "bus_voltage", mercury::num_act_joint);
     
     _ParameterSetting();
+
+    ext_ctrl_receiver_ = new ExtCtrlReceiver();
     //printf("[Mercury_interface] Contruct\n");
 }
 
@@ -224,6 +227,7 @@ bool Mercury_interface::_Initialization(Mercury_SensorData* data){
         }
 
         DataManager::GetDataManager()->start();
+        ext_ctrl_receiver_->start();
         //printf("[Mercury Interface] Data logging starts\n");
         return true;
     }

@@ -6,19 +6,17 @@ default_target_foot_location: [-0.08, -0.1, 0.0]
 swing_jpos_delta: [ 0.0, -0.145, 0.4]
 
 ## Feedback Gain
-# virtual (x, y, z, Rx, Ry, Rz) config x6
-Kp: [ 50, 50, 50, 50, 50, 50]
-Kd: [ 5, 5, 5, 5, 5, 5]
+# config x6
+# Kp: [ 50, 50, 50, 50, 50, 50]
+# Kd: [ 5, 5, 5, 5, 5, 5]
 
+Kp: [ 100, 100, 100, 100, 100, 100]
+Kd: [ 10, 10, 10, 10, 10, 10]
+
+#body_pt_offset: [0.01, 0.01]
 body_pt_offset: [0.0, 0.0]
-#body_pt_offset: [-0.01, 0.016]
-# body_pt_offset: [-0.042, -0.035]
+foot_landing_offset: [0.0, 0.0]
 swing_time_reduction: 0.0
-foot_landing_offset: [-0.0, 0.]
 
-#body_pt_offset: [-0.077, 0.0]
-#foot_landing_offset: [0.0, 0.]
-#swing_time_reduction: 0.0
 
 initial_planning: false
-#initial_planning: true

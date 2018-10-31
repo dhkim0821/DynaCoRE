@@ -144,16 +144,16 @@ int WalkingConfigTest::_NextPhase(const int & phase){
         sp_->global_jjpos_local_ += sp_->jjpos_rfoot_pos_; 
     }
     // TEST: Using MoCap to estimate Global Location
-    if( ( (phase == WkConfigPhase::double_contact_1) ||
-                (phase == WkConfigPhase::double_contact_2) ) &&
-            (num_step_>1) ){
-        sp_->global_pos_local_[0] = 
-            sp_->first_LED_x_;
-        //+  (next_local_frame_location[0] - sp_->Q_[0]);
-        sp_->global_pos_local_[1] = 
-            sp_->first_LED_y_ + 
-            (next_local_frame_location[1] - sp_->Q_[1]);
-    }
+    // if( ( (phase == WkConfigPhase::double_contact_1) ||
+    //             (phase == WkConfigPhase::double_contact_2) ) &&
+    //         (num_step_>1) ){
+    //     sp_->global_pos_local_[0] = 
+    //         sp_->first_LED_x_;
+    //     //+  (next_local_frame_location[0] - sp_->Q_[0]);
+    //     sp_->global_pos_local_[1] = 
+    //         sp_->first_LED_y_ + 
+    //         (next_local_frame_location[1] - sp_->Q_[1]);
+    // }
 
     sp_->num_step_copy_ = num_step_;
 

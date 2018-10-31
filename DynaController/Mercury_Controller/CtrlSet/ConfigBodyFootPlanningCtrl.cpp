@@ -18,7 +18,7 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
     des_jacc_(mercury::num_act_joint),
-    waiting_time_limit_(0.02),
+    waiting_time_limit_(0.0),
     Kp_(mercury::num_act_joint),
     Kd_(mercury::num_act_joint)
 {
@@ -245,7 +245,7 @@ void ConfigBodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 
     // TEST: estimated com selection
     for(int i(0); i<2; ++i){
-        //com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
+        com_pos[i] = sp_->Q_[i] +    body_pt_offset_[i];
         // com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
         // com_pos[i] += body_pt_offset_[i];
         // com_vel[i] = sp_->average_vel_[i]; 

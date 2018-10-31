@@ -9,6 +9,7 @@
 
 class Mercury_StateEstimator;
 class Mercury_StateProvider;
+class ExtCtrlReceiver;
 
 class Mercury_interface: public interface{
 public:
@@ -22,6 +23,7 @@ public:
   dynacore::Quaternion global_ori_;
 
 private:
+  ExtCtrlReceiver* ext_ctrl_receiver_;
   int waiting_count_;
   double ramp_time_;
   

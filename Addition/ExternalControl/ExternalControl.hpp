@@ -1,9 +1,10 @@
 #ifndef ExternalControl_HPP
-#define EXternalControl_HPP
+#define ExternalControl_HPP
 
-typedef struct{
-    double x;
-    double y;
-}Location;
-
+namespace ExtCtrl{
+    typedef struct{
+        double x;
+        double y;
+    }Location;
+};
 #endif
