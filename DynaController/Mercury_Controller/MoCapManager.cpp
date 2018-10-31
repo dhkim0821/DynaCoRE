@@ -49,9 +49,11 @@ void MoCapManager::run(){
 
     while(true){
         ++count;
+        // printf("in mocap\n");
         COMM::receive_data(socket_, MOCAP_DATA_PORT, 
                 &mercury_msg, sizeof(mercury_message), IP_ADDRESS);
 
+// printf("in mocap get data\n");
         for(int i(0); i<NUM_MARKERS; ++i){
             for(int j(0); j<3; ++j){
                 led_pos_raw_data_[3*i + j] = mercury_msg.data[3*i+j];
@@ -66,7 +68,7 @@ void MoCapManager::run(){
         }
         _UpdateLEDPosData(mercury_msg);
 
-        //if(count% 500 == 0){ _print_message(mercury_msg); }
+        // if(count% 500 == 0){ _print_message(mercury_msg); }
     }
 }
 void MoCapManager::_CoordinateUpdate(mercury_message & msg) {

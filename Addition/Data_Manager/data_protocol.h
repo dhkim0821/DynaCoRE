@@ -6,13 +6,13 @@
 #define PORT_DATA_SETUP        61124
 #define PORT_DATA_RECEIVE      61125
 
-#define IP_ADDR_MOCAP "192.168.1.149"
+#define IP_ADDR_MOCAP "192.168.50.20"
 #define IP_ADDR_MYSELF "127.0.0.1"
 #define IP_ADDR_MAC    "192.168.1.131"
 #define IP_ADDR_DH    "192.168.50.159"
 
-//#define IP_ADDR IP_ADDR_DH
-#define IP_ADDR IP_ADDR_MYSELF
+#define IP_ADDR IP_ADDR_DH
+// #define IP_ADDR IP_ADDR_MYSELF
 
 #define LEG_PORT 51129
 #define NUM_JOINT_Q 13
