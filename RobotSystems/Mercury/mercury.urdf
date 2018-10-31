@@ -75,7 +75,7 @@
   <joint name="ankle_r" type="fixed">
     <axis xyz="0 1 0"/>
     <!-- <origin rpy="0 0 0" xyz="0.0 0.0 -0.47"/> -->
-    <origin rpy="0 0 0" xyz="0.0 0.0 -0.47"/> 
+    <origin rpy="0 0 0" xyz="0.035 0.0 -0.47"/> 
     <parent link="shank_r"/>
     <child link="rfoot" />
   </joint>
@@ -138,7 +138,7 @@
   <joint name="ankle_l" type="fixed">
     <axis xyz="0 1 0"/>
     <!-- <origin rpy="0 0 0" xyz="0.0 -0.038 -0.47"/> -->
-    <origin rpy="0 0 0" xyz="0.0 -0.002 -0.47"/>
+    <origin rpy="0 0 0" xyz="0.035 -0.002 -0.47"/>
     <parent link="shank_l"/>
     <child link="lfoot" />
   </joint>

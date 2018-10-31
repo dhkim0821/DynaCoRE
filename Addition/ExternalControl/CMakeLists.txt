@@ -27,15 +27,11 @@ include_directories(${EIGEN3_INCLUDE_DIRS})
 
 set (headers 
     ExternalControl.hpp
-    ../../Utils/dynacore_pThread.hpp
-    ../../Utils/wrap_eigen.hpp
     ../../Utils/comm_udp.hpp
     ../../Utils/utilities.hpp )
 
 set (sources
     ExternalControl.cpp
-    ../../Utils/dynacore_pThread.cpp
-    ../../Utils/wrap_eigen.cpp
     ../../Utils/comm_udp.cpp
     ../../Utils/utilities.cpp
     )

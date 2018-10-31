@@ -2,6 +2,7 @@
 #include <Configuration.h>
 #include <string>
 #include <Utils/comm_udp.hpp>
+#include <stdio.h>
 
 int main(int argc, char ** argv){
 
