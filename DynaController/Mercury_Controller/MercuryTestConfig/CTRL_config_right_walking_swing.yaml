@@ -13,8 +13,8 @@ Kp: [ 150, 150, 150, 250, 250, 250]
 Kd: [ 10, 10, 10, 10, 10, 10]
 
 
-body_pt_offset: [0.01, 0.005]
-# body_pt_offset: [0.0, 0.0]
+#body_pt_offset: [0.01, 0.005]
+body_pt_offset: [0.0, 0.0]
 foot_landing_offset: [0.0, 0.0]
 swing_time_reduction: 0.0
 

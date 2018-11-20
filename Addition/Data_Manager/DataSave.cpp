@@ -15,14 +15,16 @@ DataSave::~DataSave(){}
 void DataSave::run(void ) {
   DATA_Protocol::DATA_SETUP data_setup;
 
-   COMM::receive_data(socket1_, PORT_DATA_SETUP, &data_setup, sizeof(DATA_Protocol::DATA_SETUP), IP_ADDR);
+   COMM::receive_data(socket1_, PORT_DATA_SETUP, &data_setup, 
+           sizeof(DATA_Protocol::DATA_SETUP), IP_ADDR_MYSELF);
    _ShowDataSetup(data_setup);
  
   double* data = new double[data_setup.tot_num_array_data];
   long long iter(0);
   bool b_printed(false);
   while (true){
-    COMM::receive_data(socket2_, PORT_DATA_RECEIVE, data, data_setup.tot_num_array_data*sizeof(double), IP_ADDR);
+    COMM::receive_data(socket2_, PORT_DATA_RECEIVE, 
+            data, data_setup.tot_num_array_data*sizeof(double), IP_ADDR_MYSELF);
 
     int st_idx(0);
     int display_freq(30);

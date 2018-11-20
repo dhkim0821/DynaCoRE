@@ -1,7 +1,8 @@
 #include "LED_Position_Announcer.hpp"
 #include "Mercury_Dyn_environment.hpp"
-#include <Addition/Data_Manager/data_protocol.h>
+//#include <Addition/Data_Manager/data_protocol.h>
 #include <Utils/comm_udp.hpp>
+#include <Mercury_Controller/MoCapManager.hpp>
 
 LED_Position_Announcer::LED_Position_Announcer(Mercury_Dyn_environment* dyn_env):
     socket_(0), count_(0){
@@ -74,7 +75,7 @@ void LED_Position_Announcer::run(){
              }
           }
          }
-         COMM::send_data(socket_, 51128, 
+         COMM::send_data(socket_, MOCAP_DATA_PORT, 
                  &mercury_msg, sizeof(mercury_message), IP_ADDR_MYSELF);
          usleep(2000);
          ++count_;
