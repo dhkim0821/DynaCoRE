@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 
-#define IP_ADDR_MOCAP "192.168.50.20"
-#define IP_ADDR_MYSELF "127.0.0.1"
+#define IP_ADDR_MOCAP "192.168.1.149"
 #define IP_ADDR_MAC    "192.168.1.131"
 #define IP_ADDR_DH    "192.168.50.159"
 
@@ -17,7 +16,7 @@ namespace DATA_Protocol{
     typedef struct{
         int num_data;
         int tot_num_array_data;
-        char data_name[MAX_NUM_DATA][20];
+        char data_name[MAX_NUM_DATA][30];
         int num_array_data[MAX_NUM_DATA];
     }DATA_SETUP;
 };

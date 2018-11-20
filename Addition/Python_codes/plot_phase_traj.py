@@ -88,7 +88,7 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
     stance_foot_loc = []
     for i in range(len(data_global_pos_offset)-1):
         if (data_global_pos_offset[i,1] != data_global_pos_offset[i+1,1]):
-            stance_foot_loc.append(data_global_pos_offset[i+1,:])
+            stance_foot_loc.append(data_global_pos_offset[i,:])
 
     np_stancefoot = np.array(stance_foot_loc)
 

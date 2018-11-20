@@ -87,7 +87,7 @@ Mercury_interface::Mercury_interface():
             &bus_voltage_, DYN_VEC, "bus_voltage", mercury::num_act_joint);
     
     _ParameterSetting();
-    ext_ctrl_receiver_ = new ExtCtrlReceiver();
+   ext_ctrl_receiver_ = new ExtCtrlReceiver();
     //printf("[Mercury_interface] Contruct\n");
 }
 
@@ -222,7 +222,7 @@ bool Mercury_interface::_Initialization(Mercury_SensorData* data){
         if(fabs(data->imu_acc[2]) < 0.00001){
             waiting_count_ = 10000000;
             if(count_%1000 ==1)
-                dynacore::pretty_print(data->imu_acc, "data->imu_acc", 3);            
+                dynacore::pretty_print(data->imu_acc, "data->imu_acc", 3);
         }
 
         DataManager::GetDataManager()->start();

@@ -7,10 +7,10 @@
 #define NUM_MARKERS 13
 //#define MOCAP_DATA_PORT 51128
 
-typedef struct{
-  int visible[NUM_MARKERS];
-  double data[NUM_MARKERS*3];
-}mercury_message;
+//typedef struct{
+  //int visible[NUM_MARKERS];
+  //double data[NUM_MARKERS*3];
+//}mercury_message;
 
 
 class Mercury_Dyn_environment;

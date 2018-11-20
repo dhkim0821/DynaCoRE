@@ -1,10 +1,10 @@
 #add_subdirectory(NAO)
-add_subdirectory(Valkyrie)
+#add_subdirectory(Valkyrie)
 add_subdirectory(Mercury)
-add_subdirectory(Atlas)
-add_subdirectory(DracoBip)
-add_subdirectory(SagitP3)
-add_subdirectory(Quadruped)
+#add_subdirectory(Atlas)
+#add_subdirectory(DracoBip)
+#add_subdirectory(SagitP3)
+#add_subdirectory(Quadruped)
 
 install(FILES RobotSystem.hpp RobotSystem2D.hpp DESTINATION
     "${INSTALL_INCLUDE_DIR}")

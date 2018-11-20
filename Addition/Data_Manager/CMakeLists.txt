@@ -21,9 +21,6 @@ include_directories ("${PROJECT_SOURCE_DIR}/../../utils")
 include_directories ("${PROJECT_SOURCE_DIR}/../../ExternalSource")
 include_directories ("${PROJECT_SOURCE_DIR}/../../")
 
-# system dependent (TODO)
-include_directories ("${PROJECT_SOURCE_DIR}/../../ControlSystem/Mercury/")
-
 find_package(PkgConfig)
 pkg_check_modules(EIGEN3 REQUIRED eigen3)
 include_directories(${EIGEN3_INCLUDE_DIRS})
