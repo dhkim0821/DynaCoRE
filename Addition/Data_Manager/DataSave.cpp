@@ -3,7 +3,7 @@
 #include <iostream>
 #include <Utils/comm_udp.hpp>
 #include <Utils/utilities.hpp>
-#include <Utils/DataManager.hpp>
+#include <Configuration.h>
 
 DataSave::DataSave(bool b_verbose):dynacore_pThread(), socket1_(0), socket2_(0){
   b_verbose_= b_verbose;

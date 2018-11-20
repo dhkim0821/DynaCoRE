@@ -1,6 +1,7 @@
 #include "DataManager.hpp"
 #include <iostream>
 #include <Utils/comm_udp.hpp>
+#include <Configuration.h>
 
 DataManager::~DataManager(){
 }

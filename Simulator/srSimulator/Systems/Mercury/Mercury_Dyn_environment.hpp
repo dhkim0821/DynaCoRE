@@ -62,6 +62,7 @@ private:
 
 
   
+  void _DrawDesiredLocation();
   void _ParamterSetup();
   int num_substep_rendering_;
   double release_time_;

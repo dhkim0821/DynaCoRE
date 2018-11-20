@@ -1,4 +1,4 @@
-project (Supervisor)
+project (ExternalControl)
 cmake_minimum_required (VERSION 2.6 FATAL_ERROR)
 
 set (${PROJECT_NAME}_VERSION_NAME "star")
@@ -18,11 +18,7 @@ message ("----------------------------------------------------------------------
 message ("")
 
 include_directories ("${PROJECT_SOURCE_DIR}/../../utils")
-include_directories ("${PROJECT_SOURCE_DIR}/../../ExternalSource")
 include_directories ("${PROJECT_SOURCE_DIR}/../../")
-
-# system dependent (TODO)
-include_directories ("${PROJECT_SOURCE_DIR}/../../ControlSystem/Mercury/")
 
 find_package(PkgConfig)
 pkg_check_modules(EIGEN3 REQUIRED eigen3)
@@ -30,26 +26,17 @@ include_directories(${EIGEN3_INCLUDE_DIRS})
 
 
 set (headers 
-DataSave.h
-data_protocol.h
-../../Utils/dynacore_pThread.hpp
-../../Utils/wrap_eigen.hpp
-../../Utils/comm_udp.hpp
-../../Utils/utilities.hpp
-)
+    ExternalControl.hpp
+    ../../Utils/comm_udp.hpp
+    ../../Utils/utilities.hpp )
 
 set (sources
-DataSave.cpp
-Status_Display.cpp
-../../Utils/dynacore_pThread.cpp
-../../Utils/wrap_eigen.cpp
-../../Utils/comm_udp.cpp
-../../Utils/utilities.cpp
-)
+    ExternalControl.cpp
+    ../../Utils/comm_udp.cpp
+    ../../Utils/utilities.cpp
+    )
 
 link_directories("/usr/local/lib/")
 link_directories("/usr/lib/")
 
-add_executable(Status_Display ${sources} ${headers})
-# add_dependencies(Status_Display comm_comm)
-target_link_libraries(Status_Display pthread)
+add_executable(external_ctrl ${sources} ${headers})
