@@ -1218,7 +1218,8 @@
     </collision>
   </link>
   <joint name="leftThumbRoll" type="fixed">
-    <origin rpy="-0.3491 0.0 0.0" xyz="0.0049 0.0351 0.0228"/>
+    <!--<origin rpy="-0.3491 0.0 0.0" xyz="0.0049 0.0351 0.0228"/>-->
+    <origin rpy="-0.3491 1.3 0.0" xyz="0.0049 0.0351 0.0228"/>
     <axis xyz="0 1 0"/>
     <parent link="leftPalm"/>
     <child link="leftThumbRollLink"/>
@@ -1226,7 +1227,8 @@
     <dynamics damping="1.0" friction="0.0"/>
   </joint>
   <joint name="leftThumbPitch1" type="fixed">
-    <origin rpy="0.3491 0.0 0.0" xyz="0.0 0.0 0.0229"/>
+    <!--<origin rpy="0.3491 0.0 0.0" xyz="0.0 0.0 0.0229"/>-->
+    <origin rpy="0.1491 0.0 0.0" xyz="0.0 0.0 0.0229"/>
     <axis xyz="1 0 0"/>
     <parent link="leftThumbRollLink"/>
     <child link="leftThumbPitch1Link"/>
@@ -1234,7 +1236,8 @@
     <dynamics damping="1.0" friction="0.0"/>
   </joint>
   <joint name="leftThumbPitch2" type="fixed">
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0066 0.0375"/>
+    <!--<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0066 0.0375"/>-->
+    <origin rpy="0. 0.0 0.0" xyz="0.0 0.0066 0.0375"/>
     <axis xyz="1 0 0"/>
     <parent link="leftThumbPitch1Link"/>
     <child link="leftThumbPitch2Link"/>
@@ -1242,7 +1245,8 @@
     <dynamics damping="1.0" friction="0.0"/>
   </joint>
   <joint name="leftThumbPitch3" type="fixed">
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0049 0.0275"/>
+    <!--<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0049 0.0275"/>-->
+    <origin rpy="-0.5 0.0 0.0" xyz="0.0 0.0049 0.0275"/>
     <axis xyz="1 0 0"/>
     <parent link="leftThumbPitch2Link"/>
     <child link="leftThumbPitch3Link"/>
@@ -1307,7 +1311,8 @@
     </collision>
   </link>
   <joint name="leftIndexFingerPitch1" type="fixed">
-    <origin rpy="0.1745 0.0 0.0" xyz="0.0022 0.0976 0.0235"/>
+    <!--<origin rpy="0.1745 0.0 0.0" xyz="0.0022 0.0976 0.0235"/>-->
+    <origin rpy="0.1745 0.0 -0.1" xyz="0.0022 0.0976 0.0235"/>
     <axis xyz="0 0 1"/>
     <parent link="leftPalm"/>
     <child link="leftIndexFingerPitch1Link"/>
@@ -1315,7 +1320,8 @@
     <dynamics damping="1.0" friction="0.0"/>
   </joint>
   <joint name="leftIndexFingerPitch2" type="fixed">
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0381 0.0"/>
+    <!--<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0381 0.0"/>-->
+    <origin rpy="0.0 0.0 -0.5" xyz="0.0 0.0381 0.0"/>
     <axis xyz="0 0 1"/>
     <parent link="leftIndexFingerPitch1Link"/>
     <child link="leftIndexFingerPitch2Link"/>

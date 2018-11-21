@@ -1,5 +1,5 @@
 #add_subdirectory(NAO)
-#add_subdirectory(Valkyrie)
+add_subdirectory(Valkyrie)
 add_subdirectory(Mercury)
 #add_subdirectory(Atlas)
 #add_subdirectory(DracoBip)

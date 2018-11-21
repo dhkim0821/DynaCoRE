@@ -86,10 +86,15 @@ void New_Valkyrie::_SetInitialConf(){
   r_joint_[r_joint_idx_map_.find("rightShoulderRoll" )->second]->m_State.m_rValue[0] = 1.1;
   r_joint_[r_joint_idx_map_.find("rightElbowPitch"   )->second]->m_State.m_rValue[0] = 0.4;
   r_joint_[r_joint_idx_map_.find("rightForearmYaw" )->second]->m_State.m_rValue[0] = 1.5;
-  r_joint_[r_joint_idx_map_.find("leftShoulderPitch" )->second]->m_State.m_rValue[0] = -0.2;
-  r_joint_[r_joint_idx_map_.find("leftShoulderRoll"  )->second]->m_State.m_rValue[0] = -1.1;
-  r_joint_[r_joint_idx_map_.find("leftElbowPitch"    )->second]->m_State.m_rValue[0] = -0.4;
-  r_joint_[r_joint_idx_map_.find("leftForearmYaw" )->second]->m_State.m_rValue[0] = 1.5;
+
+  r_joint_[r_joint_idx_map_.find("leftShoulderPitch" )->second]->
+      m_State.m_rValue[0] = 0.1;
+  r_joint_[r_joint_idx_map_.find("leftShoulderRoll"  )->second]->
+      m_State.m_rValue[0] = -1.0;
+  r_joint_[r_joint_idx_map_.find("leftElbowPitch"    )->second]->
+      m_State.m_rValue[0] = -1.5;
+  r_joint_[r_joint_idx_map_.find("leftForearmYaw" )->second]->
+      m_State.m_rValue[0] = 0.8;
 
   switch(pose){
   case 0:
