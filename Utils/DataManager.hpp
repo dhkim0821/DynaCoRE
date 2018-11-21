@@ -1,8 +1,8 @@
 #ifndef DATA_MANAGER
 #define DATA_MANAGER
 
-#include <Addition/Data_Manager/data_protocol.h>
 #include <Utils/dynacore_pThread.hpp>
+#include <Addition/Data_Manager/data_protocol.h>
 #include <vector>
 #include <Utils/wrap_eigen.hpp>
 #include <string>

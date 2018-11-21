@@ -1,6 +1,7 @@
 #include "DataManager.hpp"
 #include <iostream>
 #include <Utils/comm_udp.hpp>
+#include <Configuration.h>
 
 DataManager::~DataManager(){
 }
@@ -105,10 +106,12 @@ void DataManager::run(){
     data_setup.tot_num_array_data = tot_num_array_data_;
     
     for (int i(0); i < num_data_; ++i){
-        memcpy(data_setup.data_name[i], data_name_vec_[i].c_str(), data_name_vec_[i].size());
+        memcpy(data_setup.data_name[i], data_name_vec_[i].c_str(), 
+                data_name_vec_[i].size());
         data_setup.num_array_data[i] = data_array_size_[i];
     }
-    COMM::send_data(socket1_, PORT_DATA_SETUP, &data_setup, sizeof(DATA_Protocol::DATA_SETUP), IP_ADDR);
+    COMM::send_data(socket1_, PORT_DATA_SETUP, &data_setup, 
+            sizeof(DATA_Protocol::DATA_SETUP), IP_ADDR);
 
     double* data = new double[tot_num_array_data_];
 
@@ -119,8 +122,9 @@ void DataManager::run(){
             SaveDataFromValues(data, st_idx, i);
             st_idx += data_array_size_[i];
         }
-        // _ShowSendingMessage(data_setup, data);
-        COMM::send_data(socket2_, PORT_DATA_RECEIVE, data, data_setup.tot_num_array_data * sizeof(double), IP_ADDR);
+         //_ShowSendingMessage(data_setup, data);
+        COMM::send_data(socket2_, PORT_DATA_RECEIVE, data, 
+                data_setup.tot_num_array_data * sizeof(double), IP_ADDR);
 
         usleep(5000);
     }
