@@ -74,10 +74,13 @@ void Reversal_LIPM_Planner::getNextFootLocation(
   _output->time_modification = new_swing_time - _input->swing_time;
 
   for(int i(0); i<2; ++i){
-    double exp_weight = (exp(omega_ * t_prime_[i]) + exp(-omega_ * t_prime_[i]))/(exp(omega_ * t_prime_[i]) - exp(-omega_ * t_prime_[i]));
+    double exp_weight = (exp(omega_ * t_prime_[i]) + exp(-omega_ * t_prime_[i]))
+        /(exp(omega_ * t_prime_[i]) - exp(-omega_ * t_prime_[i]));
 
     target_loc[i] = switch_state[i][0] + (switch_state[i][1]/omega_) * exp_weight 
-        + kappa_[i] * (_input->des_loc[i] - switch_state[i][0]);
+        + kappa_[i] * (_input->des_loc[i] - switch_state[i][0])
+        - 2./(omega_*(exp(omega_*t_prime_[i]) - exp(-omega_*t_prime_[i]) ) )
+        *_input->des_vel[i];
   }
   target_loc[2] = 0.;
 

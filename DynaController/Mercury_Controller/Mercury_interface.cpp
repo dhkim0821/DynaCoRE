@@ -192,6 +192,26 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
     // When there is sensed time
     sp_->curr_time_ = running_time_;
     sp_->phase_copy_ = test_->getPhase();
+
+
+    ////// Stepping forward
+    if(false){
+    //if(true){
+        double walking_start(7.);
+        double walking_duration(5.);
+        double walking_distance(3.0);
+
+        if(sp_->curr_time_ > walking_start){
+            double walking_time = sp_->curr_time_ - walking_start;
+            sp_->des_location_[0] = walking_distance * 
+                walking_time/walking_duration;
+            //(1-cos(walking_time/walking_duration * M_PI))/2.;
+        }
+        if(sp_->curr_time_ > walking_start + walking_duration){
+            sp_->des_location_[0] = walking_distance;
+        }
+    }
+
 }
 void Mercury_interface::GetReactionForce(std::vector<dynacore::Vect3> & reaction_force ){
     reaction_force.resize(2);

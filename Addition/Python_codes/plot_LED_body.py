@@ -46,8 +46,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     np.genfromtxt(file_path+'Body_LED_vel.txt', delimiter=None, dtype=(float))
     # data_jjpos_body_pos = \
         # np.genfromtxt(file_path+'jjpos_body_pos.txt', delimiter=None, dtype=(float))
-    # data_jjvel_body_vel = \
-        # np.genfromtxt(file_path+'jjvel_body_vel.txt', delimiter=None, dtype=(float))
+    data_jjvel_qdot = \
+        np.genfromtxt(file_path+'jjvel_qdot.txt', delimiter=None, dtype=(float))
+    data_jjvel_body_vel = np.copy(data_jjvel_qdot[:, 3:6]);
    # data_ekf_body_pos = \
     # np.genfromtxt(file_path+'ekf_o_r.txt', delimiter=None, dtype=(float))
     # data_ekf_body_vel = \
@@ -188,7 +189,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_com_vel[st_idx:end_idx,i-1], "c-", linewidth=2)
         plt.plot(data_x, data_qdot[st_idx:end_idx,i-1], "b-")
-        # plt.plot(data_x, data_jjvel_body_vel[st_idx:end_idx, i-1], color="black", linewidth=1.5)
+        plt.plot(data_x, data_jjvel_body_vel[st_idx:end_idx, i-1], color="black", linewidth=1.5)
         # plt.plot(data_x, data_ekf_body_vel[st_idx:end_idx, i-1], "g-")
         # plt.plot(data_x, data_com_kin_vel[st_idx:end_idx, i-1], linewidth=1.5, color = "crimson")
         plt.plot(data_x, data_led_body_vel[st_idx:end_idx, i-1], color="orange", linewidth=4)
