@@ -44,10 +44,10 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             np.genfromtxt(file_path+'LED_Pos.txt', delimiter=None, dtype=(float))
     data_led_body_vel = \
     np.genfromtxt(file_path+'Body_LED_vel.txt', delimiter=None, dtype=(float))
-    data_jjpos_body_pos = \
-        np.genfromtxt(file_path+'jjpos_body_pos.txt', delimiter=None, dtype=(float))
-    data_jjvel_body_vel = \
-        np.genfromtxt(file_path+'jjvel_body_vel.txt', delimiter=None, dtype=(float))
+    # data_jjpos_body_pos = \
+        # np.genfromtxt(file_path+'jjpos_body_pos.txt', delimiter=None, dtype=(float))
+    # data_jjvel_body_vel = \
+        # np.genfromtxt(file_path+'jjvel_body_vel.txt', delimiter=None, dtype=(float))
    # data_ekf_body_pos = \
     # np.genfromtxt(file_path+'ekf_o_r.txt', delimiter=None, dtype=(float))
     # data_ekf_body_vel = \
@@ -73,9 +73,9 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     data_est_com_global = data_estimated_com[:,0:2] + \
                                     data_global_pos_offset[:, 0:2]
 
-    st_idx = 4000
-    # end_idx = len(data_x) - 10
-    end_idx = st_idx + 3000
+    st_idx = 1000
+    end_idx = len(data_x) - 10
+    # end_idx = st_idx + 3000
     data_x = data_x[st_idx:end_idx]
 
     # PHASE MARKER #
@@ -90,41 +90,23 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
                 pass
     axes = plt.gca()
 
-    ## TEST
-    # stand_up_idx = phseChange[3]
-    stand_up_idx = 1
-    stand_up_idx += st_idx  
-    # stand_up_idx = phseChange[1]
-
-    ### Local body position computation
     # foot position
-    body_pos_offset = [-0.077, 0, 0]
     rfoot_LED_idx = [6, 7];
     lfoot_LED_idx = [11, 12];
-   
-    # data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]) \
-            # + (data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]))/2.;
-    # data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]) \
-            # + (data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3]))/2.;
-
-    # TEST
+  
+  # TEST
     data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[0]:3*rfoot_LED_idx[0]+3]))
     data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[0]:3*lfoot_LED_idx[0]+3]))
 
-    data_LED_body = data_LED[:, 0:3] \
-              - data_LED[stand_up_idx, 0:3] + data_body_global[stand_up_idx,:]
-    data_LED_local_body_from_rfoot = data_LED[:, 0:3] - data_LED_rfoot \
-            + body_pos_offset
-    data_LED_local_body_from_lfoot = data_LED[:, 0:3] - data_LED_lfoot \
-            + body_pos_offset
+    data_LED_body = data_LED[:, 0:3] 
+    data_LED_local_body_from_rfoot = data_LED[:, 0:3] - data_LED_rfoot
+    data_LED_local_body_from_lfoot = data_LED[:, 0:3] - data_LED_lfoot
 
     data_LED_rfoot = ((data_LED[:, 3*rfoot_LED_idx[1]:3*rfoot_LED_idx[1]+3]))
     data_LED_lfoot = ((data_LED[:, 3*lfoot_LED_idx[1]:3*lfoot_LED_idx[1]+3]))
 
-    data_LED_local_body_from_rfoot2 = data_LED[:, 0:3] - data_LED_rfoot \
-            + body_pos_offset
-    data_LED_local_body_from_lfoot2 = data_LED[:, 0:3] - data_LED_lfoot \
-            + body_pos_offset
+    data_LED_local_body_from_rfoot2 = data_LED[:, 0:3] - data_LED_rfoot
+    data_LED_local_body_from_lfoot2 = data_LED[:, 0:3] - data_LED_lfoot
 
 
     ## plot global
@@ -165,8 +147,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         plt.plot(data_x, data_com[st_idx:end_idx,i-1], "c-", \
                 # data_x, data_body_des[st_idx:end_idx,i-1], "r-", \
                 data_x, data_q[st_idx:end_idx,i-1], "b-")
-        plt.plot(data_x, data_jjpos_body_pos[st_idx:end_idx, i-1], \
-                color="black", linewidth=1.5)
+        # plt.plot(data_x, data_jjpos_body_pos[st_idx:end_idx, i-1], \
+                # color="black", linewidth=1.5)
         # if i != 3:
             # plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1], "k-")
 
@@ -206,14 +188,14 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
         ax1 = plt.subplot(3, 1, i)
         plt.plot(data_x, data_com_vel[st_idx:end_idx,i-1], "c-", linewidth=2)
         plt.plot(data_x, data_qdot[st_idx:end_idx,i-1], "b-")
-        plt.plot(data_x, data_jjvel_body_vel[st_idx:end_idx, i-1], color="black", linewidth=1.5)
+        # plt.plot(data_x, data_jjvel_body_vel[st_idx:end_idx, i-1], color="black", linewidth=1.5)
         # plt.plot(data_x, data_ekf_body_vel[st_idx:end_idx, i-1], "g-")
         # plt.plot(data_x, data_com_kin_vel[st_idx:end_idx, i-1], linewidth=1.5, color = "crimson")
-        plt.plot(data_x, data_led_body_vel[st_idx:end_idx, i-1], color="orange", linewidth=2)
+        plt.plot(data_x, data_led_body_vel[st_idx:end_idx, i-1], color="orange", linewidth=4)
  
         if i != 3:
             # plt.plot(data_x, data_estimated_com[st_idx:end_idx,i-1+2], "k-")
-            plt.plot(data_x, data_est_com_vel[st_idx:end_idx, i-1], "g-", linewidth=2)
+            # plt.plot(data_x, data_est_com_vel[st_idx:end_idx, i-1], "g-", linewidth=2)
             plt.plot(data_x, data_est_mocap_body_vel[st_idx:end_idx, i-1], color="crimson", linewidth=2)
             plt.plot(data_x, data_ave_vel[st_idx:end_idx,i-1], linewidth=2, color="olive")
 
