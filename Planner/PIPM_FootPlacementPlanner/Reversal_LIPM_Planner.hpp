@@ -10,6 +10,7 @@ public:
   dynacore::Vect2 des_loc;
   dynacore::Vect3 stance_foot_loc;
   bool b_positive_sidestep;
+  dynacore::Vect2 des_vel;
 };
 
 class OutputReversalPL{

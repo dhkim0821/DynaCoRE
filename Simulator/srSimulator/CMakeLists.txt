@@ -29,7 +29,7 @@ add_subdirectory(srSysGenerator)
 
 add_subdirectory(Systems/Mercury)
 #add_subdirectory(Systems/Atlas)
-#add_subdirectory(Systems/Valkyrie)
+add_subdirectory(Systems/Valkyrie)
 #add_subdirectory(Systems/SagitP3)
 #add_subdirectory(Systems/DracoBip)
 #add_subdirectory(Systems/Cassie)

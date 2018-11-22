@@ -28,6 +28,8 @@ BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
     total_joint_task_ = new JPosTask();
     //body_pos_task_ = new LinkHeightTask(robot, valkyrie_link::pelvis);
     body_pos_task_ = new LinkPosTask(robot, valkyrie_link::pelvis);
+    lhand_pos_task_ = new LinkPosTask(robot, valkyrie_link::leftPalm);
+    lhand_ori_task_ = new LinkOriTask(robot, valkyrie_link::leftPalm);
     body_ori_task_ = new LinkOriTask(robot, valkyrie_link::pelvis);
     torso_ori_task_ = new LinkOriTask(robot, valkyrie_link::torso);
 
@@ -109,7 +111,11 @@ void BodyCtrl::_task_setup(){
     dynacore::Vector vel_des(body_pos_task_->getDim()); vel_des.setZero();
     dynacore::Vector acc_des(body_pos_task_->getDim()); acc_des.setZero();
     dynacore::Vect3 des_pos = ini_body_pos_;
-    des_pos[2] = body_height_cmd;
+
+    double amp(0.05);
+    double omega(0.5 * 2. * M_PI);
+    des_pos[2] = body_height_cmd + amp * sin(omega * state_machine_time_);
+    vel_des[2] = amp * omega * cos(omega * state_machine_time_);
     body_pos_task_->UpdateTask(&(des_pos), vel_des, acc_des);
 
     // Set Desired Orientation
@@ -128,8 +134,20 @@ void BodyCtrl::_task_setup(){
     dynacore::Vector jvel_des(valkyrie::num_act_joint); jvel_des.setZero();
     dynacore::Vector jacc_des(valkyrie::num_act_joint); jacc_des.setZero();
     total_joint_task_->UpdateTask(&(jpos_des), jvel_des, jacc_des);
- 
+
+
+    // Left Hand
+    vel_des.setZero(); acc_des.setZero();
+    lhand_pos_task_->UpdateTask(&(ini_lhand_pos_), vel_des, acc_des);
+
+    ang_vel_des.setZero();
+    ang_acc_des.setZero();
+    lhand_ori_task_->UpdateTask(&(ini_lhand_ori_), ang_vel_des, ang_acc_des);
+
+
     // Task List Update
+    task_list_.push_back(lhand_ori_task_);
+    task_list_.push_back(lhand_pos_task_);
     task_list_.push_back(body_pos_task_);
     task_list_.push_back(body_ori_task_);
     task_list_.push_back(torso_ori_task_);
@@ -156,6 +174,8 @@ void BodyCtrl::FirstVisit(){
     jpos_ini_ = sp_->Q_.segment(valkyrie::num_virtual, valkyrie::num_act_joint);
     ctrl_start_time_ = sp_->curr_time_;
     robot_sys_->getPos(valkyrie_link::pelvis, ini_body_pos_);
+    robot_sys_->getPos(valkyrie_link::leftPalm, ini_lhand_pos_);
+    robot_sys_->getOri(valkyrie_link::leftPalm, ini_lhand_ori_);
 }
 
 void BodyCtrl::LastVisit(){

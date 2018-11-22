@@ -44,6 +44,9 @@ class BodyCtrl: public Controller{
         Task* body_pos_task_; //pelvis
         Task* body_ori_task_;
         Task* torso_ori_task_;
+
+        Task* lhand_pos_task_;
+        Task* lhand_ori_task_;
         Task* selected_joint_task_;
         KinWBC* kin_wbc_;
         WBDC_ContactSpec* rfoot_contact_;
@@ -53,6 +56,9 @@ class BodyCtrl: public Controller{
 
         double target_body_height_;
         double ini_body_height_;
+
+        dynacore::Quaternion ini_lhand_ori_;
+        dynacore::Vect3 ini_lhand_pos_;
         dynacore::Vect3 ini_body_pos_;
 
         void _task_setup();
