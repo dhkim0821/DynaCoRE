@@ -17,6 +17,7 @@ Valkyrie_StateProvider::Valkyrie_StateProvider():
   Q_.setZero();
   Qdot_.setZero();
   global_pos_local_.setZero();
+  global_cup_pos_.setZero();
 
   des_location_.setZero();
 

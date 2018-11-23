@@ -6,6 +6,7 @@
 #include <WBLC/WBLC.hpp>
 #include <Valkyrie_Controller/ContactSet/SingleContact.hpp>
 #include <Valkyrie_Controller/TaskSet/LinkPosTask.hpp>
+#include <Valkyrie_Controller/TaskSet/LinkPosSelectTask.hpp>
 #include <Valkyrie_Controller/TaskSet/LinkOriTask.hpp>
 //#include <Valkyrie_Controller/TaskSet/LinkHeightTask.hpp>
 #include <Valkyrie_Controller/TaskSet/SelectedJPosTask.hpp>
@@ -27,9 +28,12 @@ BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
 {
     total_joint_task_ = new JPosTask();
     //body_pos_task_ = new LinkHeightTask(robot, valkyrie_link::pelvis);
-    body_pos_task_ = new LinkPosTask(robot, valkyrie_link::pelvis);
-    lhand_pos_task_ = new LinkPosTask(robot, valkyrie_link::leftPalm);
+    //body_pos_task_ = new LinkPosTask(robot, valkyrie_link::pelvis);
+    body_pos_task_ = new LinkPosSelectTask(robot_sys_, valkyrie_link::pelvis, 2);
+
+    lhand_pos_task_ = new LinkPosSelectTask(robot, valkyrie_link::leftPalm, 2);
     lhand_ori_task_ = new LinkOriTask(robot, valkyrie_link::leftPalm);
+
     body_ori_task_ = new LinkOriTask(robot, valkyrie_link::pelvis);
     torso_ori_task_ = new LinkOriTask(robot, valkyrie_link::torso);
 
@@ -108,11 +112,11 @@ void BodyCtrl::_task_setup(){
     double body_height_cmd;
     if(b_set_height_target_) body_height_cmd = target_body_height_;
     else body_height_cmd = ini_body_height_;
-    dynacore::Vector vel_des(body_pos_task_->getDim()); vel_des.setZero();
-    dynacore::Vector acc_des(body_pos_task_->getDim()); acc_des.setZero();
+    dynacore::Vector vel_des(3); vel_des.setZero();
+    dynacore::Vector acc_des(3); acc_des.setZero();
     dynacore::Vect3 des_pos = ini_body_pos_;
 
-    double amp(0.05);
+    double amp(0.0);
     double omega(0.5 * 2. * M_PI);
     des_pos[2] = body_height_cmd + amp * sin(omega * state_machine_time_);
     vel_des[2] = amp * omega * cos(omega * state_machine_time_);
@@ -138,16 +142,23 @@ void BodyCtrl::_task_setup(){
 
     // Left Hand
     vel_des.setZero(); acc_des.setZero();
-    lhand_pos_task_->UpdateTask(&(ini_lhand_pos_), vel_des, acc_des);
+    ini_lhand_pos_[2] = 1.;
+    //lhand_pos_task_->UpdateTask(&(ini_lhand_pos_), vel_des, acc_des);
 
+    dynacore::Quaternion des_cup_quat;
+    rpy_des.setZero();
+    rpy_des[2] = -M_PI/2.;
+    dynacore::convert(rpy_des, des_cup_quat);
+ 
     ang_vel_des.setZero();
     ang_acc_des.setZero();
-    lhand_ori_task_->UpdateTask(&(ini_lhand_ori_), ang_vel_des, ang_acc_des);
+    lhand_ori_task_->UpdateTask(&(des_cup_quat), ang_vel_des, ang_acc_des);
 
 
     // Task List Update
+    //task_list_.push_back(lhand_pos_task_);
     task_list_.push_back(lhand_ori_task_);
-    task_list_.push_back(lhand_pos_task_);
+
     task_list_.push_back(body_pos_task_);
     task_list_.push_back(body_ori_task_);
     task_list_.push_back(torso_ori_task_);

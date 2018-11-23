@@ -23,6 +23,7 @@ class Valkyrie_Command;
 class Valkyrie_SensorData;
 class srSpace;
 class Ground;
+class Valkyrie_StateProvider;
 
 class Valkyrie_Dyn_environment
 {
@@ -50,6 +51,7 @@ public:
   void getIMU_Data(std::vector<double> & imu_acc,
           std::vector<double> & imu_ang_vel);
  
+  Valkyrie_StateProvider* sp_;
 protected:
  void _SaveStanceFoot();
   void _ExternalDisturbance(int count);
@@ -61,6 +63,7 @@ protected:
 
   void _ListReactionForce();
   void _ListCommandedReactionForce(const dynacore::Vector & Fr);
+  void _DrawDesiredLocation();
   void _Draw_Contact_Point();
   void _Draw_Contact_Force();
   void _Draw_Commanded_Force();

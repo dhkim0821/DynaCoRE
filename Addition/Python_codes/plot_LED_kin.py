@@ -23,17 +23,17 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             np.genfromtxt(file_path+'LED_Pos.txt', delimiter=None, dtype=(float))
     data_LED_kin = \
             np.genfromtxt(file_path+'LED_Kin_Pos.txt', delimiter=None, dtype=(float))
-    st_idx = 600;
-    end_idx = len(data_LED) - 600
+    st_idx = 4000;
+    end_idx = len(data_LED) - 1000
     # Select LED 
     # (0, 1, 2): Body
     # (3, 4, 5, 6, 7): Right Leg
     # (8, 9, 10, 11, 12): Left Leg
     # LED_idx = [3, 4]; # right thigh
-    LED_idx = [5, 6, 7]; # right shank
+    # LED_idx = [5, 6, 7]; # right shank
     # LED_idx = [8, 9]; #left thigh
-    # LED_idx = [10, 11, 12]; #left shank
-    
+    LED_idx = [10, 11, 12]; #left shank
+    origin_x_offset_LED = 0.075    
     # Plot Figure --------------------------------------------------------------------
     ## plot X (YZ plane)
     fig = plt.figure(figure_number)
@@ -61,7 +61,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     #plt.get_current_fig_manager().window.wm_geometry("480x600+0+0")
     fig.canvas.set_window_title('XZ plane (Y axis)')
     for i in LED_idx:
-        plt.plot(data_LED[st_idx:end_idx, 3*i + 0], data_LED[st_idx:end_idx, 3*i+2], 'r*')
+        plt.plot(data_LED[st_idx:end_idx, 3*i + 0] + origin_x_offset_LED, data_LED[st_idx:end_idx, 3*i+2], 'r*')
         plt.plot(data_LED_kin[st_idx:end_idx, 3*i + 0], data_LED_kin[st_idx:end_idx, 3*i+2], 'b*')
         # plt.legend(('command', 'pos'), loc='upper left')
     plt.grid(True)
@@ -81,7 +81,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     #plt.get_current_fig_manager().window.wm_geometry("480x600+0+0")
     fig.canvas.set_window_title('XY plane (Z axis)')
     for i in LED_idx:
-        plt.plot(data_LED[st_idx:end_idx, 3*i + 0], data_LED[st_idx:end_idx, 3*i+1], 'r*')
+        plt.plot(data_LED[st_idx:end_idx, 3*i + 0] + origin_x_offset_LED, data_LED[st_idx:end_idx, 3*i+1], 'r*')
         plt.plot(data_LED_kin[st_idx:end_idx, 3*i + 0], data_LED_kin[st_idx:end_idx, 3*i+1], 'b*')
         # plt.legend(('command', 'pos'), loc='upper left')
     plt.grid(True)
