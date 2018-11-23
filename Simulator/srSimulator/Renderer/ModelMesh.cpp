@@ -314,6 +314,7 @@ int ModelMesh::LoadGLTextures(const aiScene* scene)
         itr++;								  // next texture
 
 
+        //std::cout<<filename<<std::endl;
         std::size_t found = filename.find_last_of(".");
         std::string tmp =  filename.substr(0, found);
         // change all image reference to png

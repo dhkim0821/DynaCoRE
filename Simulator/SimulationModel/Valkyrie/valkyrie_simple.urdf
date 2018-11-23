@@ -1114,7 +1114,35 @@
       <origin rpy="0 0 0" xyz="0 0 0"/>
     </collision>
   </link>
-  <joint name="leftForearmYaw" type="revolute">
+  <joint name="leftPalmCup" type="fixed">
+    <origin rpy="-1.57 0 0" xyz="0.06 0.11 -0.1"/>
+    <axis xyz="1 0 0"/>
+    <parent link="leftPalm"/>
+    <child link="leftCup"/>
+    <limit effort="14" lower="-0.62" upper="0.625" velocity="1"/>
+    <controller_gains Kd="400" Ki="0.0" Kp="20000"/>
+    <dynamics damping="0.1" friction="0.0"/>
+ </joint>
+  <link name="leftCup">
+    <inertial>
+      <mass value="0.000001"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 -0.0"/>
+      <inertia ixx="0.0000001" ixy="3.4393e-05" ixz="3.8828e-05" iyy="0.0000001" iyz="-2.3429e-05" izz="0.000006"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <!--<mesh filename="meshes/multisense/head.dae" />-->
+        <!--<mesh filename="object/cup_low_poly.FBX" scale="0.012 0.012 0.012"/>-->
+        <mesh filename="coffee_cup/coffee_cup.obj" scale="0.014 0.014 0.014"/>
+        <!--<mesh filename="bench/Bench.dae" scale="0.5 0.5 0.5"/>-->
+        <!--<mesh filename="bench/ConcreteBench.obj" scale="0.01 0.01 0.01"/>-->
+        <!--<mesh filename="Beverage/Beverage.obj" scale="0.0012 0.0012 0.0012"/>-->
+      </geometry>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </visual>
+ </link>
+ 
+   <joint name="leftForearmYaw" type="revolute">
     <origin rpy="0.0 0.0 0.0" xyz="-0.0254 0 0"/>
     <axis xyz="0 1 0"/>
     <parent link="leftElbowPitchLink"/>
@@ -1329,7 +1357,8 @@
     <dynamics damping="1.0" friction="0.0"/>
   </joint>
   <joint name="leftIndexFingerPitch3" type="fixed">
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0229 0"/>
+    <!--<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0229 0"/>-->
+    <origin rpy="0.0 0.0 -0.6" xyz="0.0 0.0229 0"/>
     <axis xyz="0 0 1"/>
     <parent link="leftIndexFingerPitch2Link"/>
     <child link="leftIndexFingerPitch3Link"/>
@@ -1394,7 +1423,8 @@
     </collision>
   </link>
   <joint name="leftMiddleFingerPitch1" type="fixed">
-    <origin rpy="-0.1222 0.0 0.0" xyz="0.0022 0.097 -0.0119"/>
+    <!--<origin rpy="-0.1222 0.0 0.0" xyz="0.0022 0.097 -0.0119"/>-->
+    <origin rpy="-0.1222 0.0 -0.2" xyz="0.0022 0.097 -0.0119"/>
     <axis xyz="0 0 1"/>
     <parent link="leftPalm"/>
     <child link="leftMiddleFingerPitch1Link"/>
@@ -1402,7 +1432,8 @@
     <dynamics damping="1.0" friction="0.0"/>
   </joint>
   <joint name="leftMiddleFingerPitch2" type="fixed">
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0381 0.0"/>
+    <!--<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0381 0.0"/>-->
+    <origin rpy="0.0 0.0 -0.5" xyz="0.0 0.0381 0.0"/>
     <axis xyz="0 0 1"/>
     <parent link="leftMiddleFingerPitch1Link"/>
     <child link="leftMiddleFingerPitch2Link"/>
@@ -1410,7 +1441,8 @@
     <dynamics damping="1.0" friction="0.0"/>
   </joint>
   <joint name="leftMiddleFingerPitch3" type="fixed">
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0229 0.0"/>
+    <!--<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0229 0.0"/>-->
+    <origin rpy="0.0 0.0 -0.5" xyz="0.0 0.0229 0.0"/>
     <axis xyz="0 0 1"/>
     <parent link="leftMiddleFingerPitch2Link"/>
     <child link="leftMiddleFingerPitch3Link"/>
@@ -1475,7 +1507,8 @@
     </collision>
   </link>
   <joint name="leftPinkyPitch1" type="fixed">
-    <origin rpy="-0.1222 0.0 0.0" xyz="0.0022 0.0838 -0.041"/>
+    <!--<origin rpy="-0.1222 0.0 0.0" xyz="0.0022 0.0838 -0.041"/>-->
+    <origin rpy="-0.1222 0.0 -0.20" xyz="0.0022 0.0838 -0.041"/>
     <axis xyz="0 0 1"/>
     <parent link="leftPalm"/>
     <child link="leftPinkyPitch1Link"/>
@@ -1483,7 +1516,8 @@
     <dynamics damping="1.0" friction="0.0"/>
   </joint>
   <joint name="leftPinkyPitch2" type="fixed">
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0381 0.0"/>
+    <!--<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0381 0.0"/>-->
+    <origin rpy="0.0 0.0 -0.45" xyz="0.0 0.0381 0.0"/>
     <axis xyz="0 0 1"/>
     <parent link="leftPinkyPitch1Link"/>
     <child link="leftPinkyPitch2Link"/>
@@ -1491,7 +1525,8 @@
     <dynamics damping="1.0" friction="0.0"/>
   </joint>
   <joint name="leftPinkyPitch3" type="fixed">
-    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0229 0.0"/>
+    <!--<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0229 0.0"/>-->
+    <origin rpy="0.0 0.0 -0.4" xyz="0.0 0.0229 0.0"/>
     <axis xyz="0 0 1"/>
     <parent link="leftPinkyPitch2Link"/>
     <child link="leftPinkyPitch3Link"/>
