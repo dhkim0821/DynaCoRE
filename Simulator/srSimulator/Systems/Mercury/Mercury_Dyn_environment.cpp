@@ -8,15 +8,7 @@
 // #define SENSOR_NOISE
 #define SENSOR_DELAY 0 // Sensor_delay* mercury::servo_rate (sec) = time delay 
 
-//////////////////////////////////////////////// 
-#ifdef __APPLE__ 
-#include <GLUT/glut.h> 
-#endif 
- 
-#ifdef linux 
-#include <GL/glut.h> 
-#endif 
-//////////////////////////////////////////////// 
+
  
 
 Mercury_Dyn_environment::Mercury_Dyn_environment():

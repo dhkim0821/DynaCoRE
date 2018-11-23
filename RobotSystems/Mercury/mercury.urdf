@@ -44,7 +44,7 @@
   <joint name="abduct_r_to_thigh_r_j" type="continuous">
     <axis xyz="0 1 0"/>
     <!-- <origin rpy="0 0 0.0" xyz="0.0 0.0 -0.03535"/> -->
-    <origin rpy="0.01 0.0 0.007" xyz="0.0 0.0 -0.03535"/>
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.03535"/>
     <parent link="abduct_r"/>
     <child link="thigh_r"/>
   </joint>
@@ -75,7 +75,7 @@
   <joint name="ankle_r" type="fixed">
     <axis xyz="0 1 0"/>
     <!-- <origin rpy="0 0 0" xyz="0.0 0.0 -0.47"/> -->
-    <origin rpy="0 0 0" xyz="0.0 0.0 -0.47"/> 
+    <origin rpy="0 0 0" xyz="0.012 -0.01 -0.47"/> 
     <parent link="shank_r"/>
     <child link="rfoot" />
   </joint>
@@ -123,7 +123,7 @@
   <joint name="thigh_l_to_knee_l_j" type="continuous">
     <axis xyz="0 1 0"/>
     <!-- <origin rpy="0 0 -0.00472424" xyz="0.0181 0.0 -0.4575"/> -->
-    <origin rpy="0 0 0.005" xyz="0.0181 0.00 -0.4575"/>
+    <origin rpy="0 0 0.005" xyz="0.0181 -0.01 -0.4575"/>
     <parent link="thigh_l"/>
     <child link="shank_l"/>
   </joint>
@@ -138,7 +138,7 @@
   <joint name="ankle_l" type="fixed">
     <axis xyz="0 1 0"/>
     <!-- <origin rpy="0 0 0" xyz="0.0 -0.038 -0.47"/> -->
-    <origin rpy="0 0 0" xyz="0.0 -0.002 -0.47"/>
+    <origin rpy="0 0 0" xyz="0.012 -0.02 -0.47"/>
     <parent link="shank_l"/>
     <child link="lfoot" />
   </joint>
@@ -229,7 +229,7 @@
   <!-- LED_Right 2: On the Right Shank upper -->
   <joint name="fixed_led3" type="fixed">
     <axis xyz="0 1 0"/>
-    <origin rpy="0 0 0" xyz="0.035 -0.0 -0.050"/>
+    <origin rpy="0 0 0" xyz="0.035 -0.01 -0.050"/>
     <parent link="shank_r"/>
     <child link="rleg_led2" />
   </joint>
@@ -244,7 +244,7 @@
   <!-- LED_Right 3: On the Right Shank lower (foot - outside) -->
   <joint name="fixed_led4" type="fixed">
     <axis xyz="0 1 0"/>
-    <origin rpy="0 0 0" xyz="0.0 -0.025 -0.47"/>
+    <origin rpy="0 0 0" xyz="0.0 -0.045 -0.47"/>
     <parent link="shank_r"/>
     <child link="rleg_led3" />
   </joint>
@@ -259,7 +259,7 @@
   <!-- LED_Right 4: On the Right Shank lower (foot - inside) -->
   <joint name="fixed_led5" type="fixed">
     <axis xyz="0 1 0"/>
-    <origin rpy="0 0 0" xyz="0.0 0.025 -0.47"/>
+    <origin rpy="0 0 0" xyz="0.0 0.005 -0.47"/>
     <parent link="shank_r"/>
     <child link="rleg_led4" />
   </joint>
@@ -319,7 +319,7 @@
   <!-- LED_Left 3: On the Left Shank lower -->
   <joint name="fixed_led9" type="fixed">
     <axis xyz="0 1 0"/>
-    <origin rpy="0 0 0" xyz="0.0 0.017 -0.47"/> <!-- -0.0165 m in for y direction -->
+    <origin rpy="0 0 0" xyz="0.0 0.014 -0.47"/> 
     <parent link="shank_l"/>
     <child link="lleg_led3" />
   </joint>
@@ -334,7 +334,7 @@
   <!-- LED_Left 4: On the Left Shank lower (inside) -->
   <joint name="fixed_led10" type="fixed">
     <axis xyz="0 1 0"/>
-    <origin rpy="0 0 0" xyz="0.0 -0.033 -0.47"/> <!-- -0.0165 m in for y direction -->
+    <origin rpy="0 0 0" xyz="0.0 -0.034 -0.47"/>
     <parent link="shank_l"/>
     <child link="lleg_led4" />
   </joint>
