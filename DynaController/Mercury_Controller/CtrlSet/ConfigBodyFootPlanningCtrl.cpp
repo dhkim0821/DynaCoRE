@@ -248,15 +248,15 @@ void ConfigBodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 
     // TEST: estimated com selection
     for(int i(0); i<2; ++i){
-        //com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
+        com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
         //com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
-        //com_pos[i] += body_pt_offset_[i];
+        // com_pos[i] += body_pt_offset_[i];
         //com_vel[i] = sp_->average_vel_[i]; 
         //com_vel[i] = sp_->est_CoM_vel_[i]; 
 
         //com_pos[i] = sp_->est_mocap_body_pos_[i] + body_pt_offset_[i];
         //com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
-        //com_vel[i] = sp_->est_mocap_body_vel_[i];
+        com_vel[i] = sp_->est_mocap_body_vel_[i];
         //com_vel[i] = sp_->Qdot_[i];
     }
    printf("planning state: %f, %f, %f, %f\n",

@@ -8,7 +8,7 @@ test_name: walking_config_test
 # test_name: body_ctrl_test
 
 base_condition: floating
-# base_condition: fixed
+#base_condition: fixed
 #base_condition: lying
 
 jpos_model_update: true
