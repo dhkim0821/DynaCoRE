@@ -19,7 +19,7 @@ WalkingTest::WalkingTest(RobotSystem* robot):Test(robot),
 {
     sp_ = Valkyrie_StateProvider::getStateProvider();
     sp_->stance_foot_ = valkyrie_link::leftFoot;
-    sp_->global_pos_local_[1] = 0.15;
+    sp_->global_pos_local_[1] = 0.07;
 
     robot_sys_ = robot;
     reversal_planner_ = new Reversal_LIPM_Planner();

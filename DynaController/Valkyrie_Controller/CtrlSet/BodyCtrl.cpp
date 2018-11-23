@@ -7,6 +7,7 @@
 #include <Valkyrie_Controller/ContactSet/SingleContact.hpp>
 #include <Valkyrie_Controller/TaskSet/LinkPosTask.hpp>
 #include <Valkyrie_Controller/TaskSet/LinkPosSelectTask.hpp>
+#include <Valkyrie_Controller/TaskSet/LinkGlobalSelectPosTask.hpp>
 #include <Valkyrie_Controller/TaskSet/LinkOriTask.hpp>
 //#include <Valkyrie_Controller/TaskSet/LinkHeightTask.hpp>
 #include <Valkyrie_Controller/TaskSet/SelectedJPosTask.hpp>
@@ -31,7 +32,8 @@ BodyCtrl::BodyCtrl(RobotSystem* robot):Controller(robot),
     //body_pos_task_ = new LinkPosTask(robot, valkyrie_link::pelvis);
     body_pos_task_ = new LinkPosSelectTask(robot_sys_, valkyrie_link::pelvis, 2);
 
-    lhand_pos_task_ = new LinkPosSelectTask(robot, valkyrie_link::leftPalm, 2);
+    //lhand_pos_task_ = new LinkPosSelectTask(robot, valkyrie_link::leftPalm, 2);
+    lhand_pos_task_ = new LinkGlobalSelectPosTask(robot, valkyrie_link::leftPalm, 1);
     lhand_ori_task_ = new LinkOriTask(robot, valkyrie_link::leftPalm);
 
     body_ori_task_ = new LinkOriTask(robot, valkyrie_link::pelvis);
@@ -142,8 +144,9 @@ void BodyCtrl::_task_setup(){
 
     // Left Hand
     vel_des.setZero(); acc_des.setZero();
-    ini_lhand_pos_[2] = 1.;
-    //lhand_pos_task_->UpdateTask(&(ini_lhand_pos_), vel_des, acc_des);
+    ini_lhand_pos_[1] = 0.3;
+    //ini_lhand_pos_[2] = 1.0;
+    lhand_pos_task_->UpdateTask(&(ini_lhand_pos_), vel_des, acc_des);
 
     dynacore::Quaternion des_cup_quat;
     rpy_des.setZero();
@@ -156,13 +159,14 @@ void BodyCtrl::_task_setup(){
 
 
     // Task List Update
-    //task_list_.push_back(lhand_pos_task_);
-    task_list_.push_back(lhand_ori_task_);
-
+    task_list_.push_back(torso_ori_task_);
     task_list_.push_back(body_pos_task_);
     task_list_.push_back(body_ori_task_);
-    task_list_.push_back(torso_ori_task_);
-    task_list_.push_back(total_joint_task_);
+
+    task_list_.push_back(lhand_pos_task_);
+    task_list_.push_back(lhand_ori_task_);
+
+   task_list_.push_back(total_joint_task_);
 
     kin_wbc_->FindConfiguration(sp_->Q_, task_list_, contact_list_, 
             des_jpos_, des_jvel_, des_jacc_);

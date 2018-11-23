@@ -86,7 +86,7 @@ void Valkyrie_Dyn_environment::ControlFunction( void* _data ) {
             - 500. * robot->vp_joint_[1]->m_State.m_rValue[1];
     }
 
-    double Kp(200.);
+    double Kp(100.);
     double Kd(5.);
      //double Kp(30.);
      //double Kd(0.5);
