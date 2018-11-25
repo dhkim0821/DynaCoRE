@@ -6,6 +6,7 @@
 
 #include <DynaController/Valkyrie_Controller/Valkyrie_interface.hpp>
 #include <DynaController/Valkyrie_Controller/Valkyrie_DynaCtrl_Definition.h>
+#include <DynaController/Valkyrie_Controller/Valkyrie_StateProvider.hpp>
 
 #include <srTerrain/Ground.h>
 #include <srConfiguration.h>
@@ -38,6 +39,7 @@ Valkyrie_Dyn_environment::Valkyrie_Dyn_environment()
 
     m_Space->SetNumberofSubstepForRendering(50);
 
+  sp_ = Valkyrie_StateProvider::getStateProvider();
     printf("[Valkyrie Dynamic Environment] Build Dynamic Environment\n");
 }
 
@@ -84,7 +86,7 @@ void Valkyrie_Dyn_environment::ControlFunction( void* _data ) {
             - 500. * robot->vp_joint_[1]->m_State.m_rValue[1];
     }
 
-    double Kp(200.);
+    double Kp(100.);
     double Kd(5.);
      //double Kp(30.);
      //double Kd(0.5);
@@ -104,6 +106,27 @@ void Valkyrie_Dyn_environment::ControlFunction( void* _data ) {
 
 void Valkyrie_Dyn_environment::Rendering_Fnc()
 {
+    _DrawDesiredLocation();
+}
+
+void Valkyrie_Dyn_environment::_DrawDesiredLocation(){
+  // Attraction Location
+  double radi(0.07);
+  double theta(0.0);
+   //double height_attraction_loc = 
+   //Terrain_Interpreter::GetTerrainInterpreter()->surface_height( HUME_System::GetHumeSystem()->state_provider_->attraction_loc_[0],
+  //                                                                                              HUME_System::GetHumeSystem()->state_provider_->attraction_loc_[1]);
+
+   double height_attraction_loc = 0.005;
+   glBegin(GL_LINE_LOOP); 
+   theta = 0.0; 
+   for (int i(0); i<3600; ++i){ 
+       theta += DEG2RAD(i*0.1);
+       glColor3f(0.5f, 0.1f, 0.f); 
+       glVertex3f(sp_->des_location_[0] + cos(theta)*radi,
+                  sp_->des_location_[1] + sin(theta)*radi, height_attraction_loc );
+   } 
+   glEnd(); 
 }
 
 

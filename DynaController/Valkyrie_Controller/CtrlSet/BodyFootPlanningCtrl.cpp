@@ -9,6 +9,8 @@
 #include <WBLC/WBLC.hpp>
 
 #include <Valkyrie_Controller/TaskSet/LinkPosTask.hpp>
+#include <Valkyrie_Controller/TaskSet/LinkPosSelectTask.hpp>
+#include <Valkyrie_Controller/TaskSet/LinkGlobalSelectPosTask.hpp>
 #include <Valkyrie_Controller/TaskSet/LinkOriTask.hpp>
 #include <Valkyrie_Controller/TaskSet/JPosTask.hpp>
 #include <Valkyrie_Controller/ContactSet/SingleContact.hpp>
@@ -29,7 +31,12 @@ BodyFootPlanningCtrl::BodyFootPlanningCtrl(
     lfoot_contact_ = new SingleContact(robot_sys_, valkyrie_link::leftFoot);
     dim_contact_ = rfoot_contact_->getDim() + lfoot_contact_->getDim();
 
-    body_pos_task_ = new LinkPosTask(robot_sys_, valkyrie_link::pelvis);
+    //lhand_pos_task_ = new LinkPosSelectTask(robot, valkyrie_link::leftPalm, 2);
+    lhand_pos_task_ = new LinkGlobalSelectPosTask(robot, valkyrie_link::leftPalm, 1);
+    lhand_ori_task_ = new LinkOriTask(robot, valkyrie_link::leftPalm);
+
+    //body_pos_task_ = new LinkPosTask(robot_sys_, valkyrie_link::pelvis);
+    body_pos_task_ = new LinkPosSelectTask(robot_sys_, valkyrie_link::pelvis, 2);
     body_ori_task_ = new LinkOriTask(robot_sys_, valkyrie_link::pelvis);
     torso_ori_task_ = new LinkOriTask(robot_sys_, valkyrie_link::torso);
 
@@ -127,6 +134,7 @@ void BodyFootPlanningCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
     //dynacore::pretty_print(des_jacc_, std::cout, "des_jacc");
     //dynacore::pretty_print(des_jacc_cmd, std::cout, "des_jacc");
     //dynacore::pretty_print(gamma, std::cout, "gamma");
+    //dynacore::pretty_print(wblc_data_->Fr_, std::cout, "Fr");
 }
 
 void BodyFootPlanningCtrl::_task_setup(){
@@ -135,8 +143,8 @@ void BodyFootPlanningCtrl::_task_setup(){
     if(b_set_height_target_) body_height_cmd = target_body_height_;
     else body_height_cmd = ini_body_pos_[2];
 
-    dynacore::Vector vel_des(body_pos_task_->getDim()); vel_des.setZero();
-    dynacore::Vector acc_des(body_pos_task_->getDim()); acc_des.setZero();
+    dynacore::Vector vel_des(3); vel_des.setZero();
+    dynacore::Vector acc_des(3); acc_des.setZero();
     dynacore::Vect3 des_pos = ini_body_pos_;
     des_pos[2] = body_height_cmd;
     body_pos_task_->UpdateTask(&(des_pos), vel_des, acc_des);
@@ -162,12 +170,32 @@ void BodyFootPlanningCtrl::_task_setup(){
     dynacore::Vector zero(valkyrie::num_act_joint); zero.setZero();
     total_joint_task_->UpdateTask(&(jpos_des), zero, zero);
 
+    // Left Hand
+    vel_des.setZero(); acc_des.setZero();
+    ini_lhand_pos_[1] = 0.3;
+    //ini_lhand_pos_[2] = 1.0;
+    lhand_pos_task_->UpdateTask(&(ini_lhand_pos_), vel_des, acc_des);
+
+    dynacore::Quaternion des_cup_quat;
+    rpy_des.setZero();
+    rpy_des[2] = -M_PI/2.;
+    dynacore::convert(rpy_des, des_cup_quat);
+ 
+    ang_vel_des.setZero();
+    ang_acc_des.setZero();
+    lhand_ori_task_->UpdateTask(&(des_cup_quat), ang_vel_des, ang_acc_des);
+
+
     // Task Update
-    task_list_.push_back(foot_pos_task_);
+    task_list_.push_back(torso_ori_task_);
     task_list_.push_back(body_pos_task_);
     task_list_.push_back(body_ori_task_);
-    task_list_.push_back(torso_ori_task_);
-    task_list_.push_back(foot_ori_task_);
+
+    task_list_.push_back(lhand_pos_task_);
+    task_list_.push_back(lhand_ori_task_);
+    
+    task_list_.push_back(foot_pos_task_);
+   task_list_.push_back(foot_ori_task_);
     task_list_.push_back(total_joint_task_);
 
     kin_wbc_->FindConfiguration(sp_->Q_, task_list_, kin_wbc_contact_list_, 
@@ -288,6 +316,7 @@ void BodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 void BodyFootPlanningCtrl::FirstVisit(){
     b_replaned_ = false;
     ini_config_ = sp_->Q_;
+    robot_sys_->getPos(valkyrie_link::leftPalm, ini_lhand_pos_);
     robot_sys_->getPos(valkyrie_link::pelvis, ini_body_pos_);
     robot_sys_->getPos(swing_foot_, ini_foot_pos_);
     ctrl_start_time_ = sp_->curr_time_;

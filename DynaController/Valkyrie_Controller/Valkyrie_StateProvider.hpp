@@ -26,6 +26,7 @@ public:
   Vector des_jpos_prev_;
   
   dynacore::Vect3 global_pos_local_;
+  dynacore::Vect3 global_cup_pos_;
   dynacore::Vect2 des_location_;
 
   int b_rfoot_contact_;
