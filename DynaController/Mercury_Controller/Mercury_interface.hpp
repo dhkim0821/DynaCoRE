@@ -58,6 +58,10 @@ private:
   dynacore::Vector initial_jpos_;
   Mercury_StateEstimator* state_estimator_;
   Mercury_StateProvider* sp_;
+
+  double walking_dist_;
+  double walking_duration_;
+  double walking_st_time_;
 };
 
 #endif

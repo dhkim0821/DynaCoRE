@@ -195,20 +195,16 @@ void Mercury_interface::GetCommand( void* _data, void* _command){
 
 
     ////// Stepping forward
-    if(false){
-    //if(true){
-        double walking_start(7.);
-        double walking_duration(5.);
-        double walking_distance(3.0);
-
-        if(sp_->curr_time_ > walking_start){
-            double walking_time = sp_->curr_time_ - walking_start;
-            sp_->des_location_[0] = walking_distance * 
-                walking_time/walking_duration;
-            //(1-cos(walking_time/walking_duration * M_PI))/2.;
+    // if(false){
+    if(true){
+        if(sp_->curr_time_ > walking_st_time_){
+            double walking_time = sp_->curr_time_ - walking_st_time_;
+            sp_->des_location_[0] = walking_dist_ * 
+                // walking_time/walking_duration_;
+            (1-cos(walking_time/walking_duration_ * M_PI))/2.;
         }
-        if(sp_->curr_time_ > walking_start + walking_duration){
-            sp_->des_location_[0] = walking_distance;
+        if(sp_->curr_time_ > walking_st_time_ + walking_duration_){
+            sp_->des_location_[0] = walking_dist_;
         }
     }
 
@@ -300,6 +296,11 @@ void Mercury_interface::_ParameterSetting(){
     // Joint pos based model update
     handler.getBoolean("jpos_model_update", b_tmp);
     state_estimator_->setJPosModelUpdate(b_tmp);
+
+    // walking motion setup
+    handler.getValue("walking_distance", walking_dist_);
+    handler.getValue("walking_duration", walking_duration_);
+    handler.getValue("waling_start", walking_st_time_);
 
     handler.getBoolean("using_jpos", state_estimator_->b_using_jpos_);
 
