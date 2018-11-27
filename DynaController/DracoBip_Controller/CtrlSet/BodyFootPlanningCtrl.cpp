@@ -140,23 +140,16 @@ void BodyFootPlanningCtrl::_compute_torque_wblc(dynacore::Vector & gamma){
 }
 
 void BodyFootPlanningCtrl::_task_setup(){
-    // Body height
-    double base_height_cmd = ini_base_height_;
-    if(b_set_height_target_) base_height_cmd = des_body_height_;
-
     dynacore::Vector jpos_des(2); jpos_des.setZero();
     dynacore::Vector jvel_des(2); jvel_des.setZero();
     dynacore::Vector jacc_des(2); jacc_des.setZero();
 
     selected_joint_task_->UpdateTask(&(jpos_des), jvel_des, jacc_des);
 
-    // Orientation
-    dynacore::Vect3 rpy_des;
-    dynacore::Quaternion des_quat;
-    rpy_des.setZero();
-
     /////// Body Posture Task Setup 
-    dynacore::convert(rpy_des, des_quat);
+    // Orientation
+    dynacore::Quaternion des_quat;
+    dynacore::convert(0., 0., 0., des_quat); // yaw, pitch, roll
     dynacore::Vector pos_des(7); pos_des.setZero();
     dynacore::Vector vel_des(6); vel_des.setZero();
     dynacore::Vector acc_des(6); acc_des.setZero();
@@ -166,6 +159,9 @@ void BodyFootPlanningCtrl::_task_setup(){
     pos_des[2] = des_quat.z();
     pos_des[3] = des_quat.w();
 
+    // Body height
+    double base_height_cmd = ini_base_height_;
+    if(b_set_height_target_) base_height_cmd = des_body_height_;
     pos_des[4] = 0.;
     pos_des[5] = ini_body_pos_[1];
     pos_des[6] = base_height_cmd;
@@ -202,9 +198,7 @@ void BodyFootPlanningCtrl::_task_setup(){
     dynacore::Vector foot_pos_des(7);
     dynacore::Vector foot_vel_des(foot_task_->getDim()); foot_vel_des.setZero();
     dynacore::Vector foot_acc_des(foot_task_->getDim()); foot_acc_des.setZero();
-    rpy_des.setZero();
-    rpy_des[2] = 0.;
-    dynacore::convert(rpy_des, des_quat);
+    dynacore::convert(0., 0., 0., des_quat); // yaw, pitch, roll
 
     foot_pos_des[0] = des_quat.x();
     foot_pos_des[1] = des_quat.y();

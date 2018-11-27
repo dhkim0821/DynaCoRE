@@ -125,11 +125,9 @@ void SingleContactTransCtrl::_task_setup(){
     selected_joint_task_->UpdateTask(&(jpos_des), jvel_des, jacc_des);
   
     // Orientation
-    dynacore::Vect3 rpy_des;
     dynacore::Quaternion des_quat;
-    rpy_des.setZero();
-    dynacore::convert(rpy_des, des_quat);
-   
+    dynacore::convert(0., 0., 0., des_quat); // yaw, pitch, roll
+
     dynacore::Vector pos_des(7); pos_des.setZero();
     dynacore::Vector vel_des(6); vel_des.setZero();
     dynacore::Vector acc_des(6); acc_des.setZero();

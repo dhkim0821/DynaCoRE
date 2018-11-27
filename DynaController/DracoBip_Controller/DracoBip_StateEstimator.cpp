@@ -16,9 +16,9 @@ DracoBip_StateEstimator::DracoBip_StateEstimator(RobotSystem* robot):
     robot_sys_ = robot;
     ori_est_ = new BasicAccumulation();
     
-    //mocap_x_vel_est_ = new AverageFilter(dracobip::servo_rate, 0.01, 1.0);
-    //mocap_y_vel_est_ = new AverageFilter(dracobip::servo_rate, 0.01, 1.5);
-    //body_est_ = new BodyEstimator(robot);
+    mocap_x_vel_est_ = new AverageFilter(dracobip::servo_rate, 0.01, 1.0);
+    mocap_y_vel_est_ = new AverageFilter(dracobip::servo_rate, 0.01, 1.5);
+    body_est_ = new BodyEstimator(robot);
 }
 
 DracoBip_StateEstimator::~DracoBip_StateEstimator(){
@@ -52,7 +52,7 @@ void DracoBip_StateEstimator::Initialization(DracoBip_SensorData* data){
 
     ori_est_->EstimatorInitialization(imu_acc, imu_ang_vel);   
     ori_est_->getEstimatedState(body_ori, body_ang_vel);
-    //body_est_->Initialization(body_ori_);
+    body_est_->Initialization(body_ori);
 
     curr_config_[3] = body_ori.x();
     curr_config_[4] = body_ori.y();
@@ -156,7 +156,12 @@ void DracoBip_StateEstimator::Update(DracoBip_SensorData* data){
 
     // Mocap based body velocity 
     dynacore::Vect3 mocap_body_vel;
-    //body_foot_est_->Update();
-    //body_foot_est_->getMoCapBodyVel(mocap_body_vel);
+    body_est_->Update();
+    body_est_->getMoCapBodyVel(mocap_body_vel);
+    mocap_x_vel_est_->input(mocap_body_vel[0]);
+    mocap_y_vel_est_->input(mocap_body_vel[1]);
+
+    sp_->est_mocap_body_vel_[0] = mocap_x_vel_est_->output();
+    sp_->est_mocap_body_vel_[1] = mocap_y_vel_est_->output();
 }
 
