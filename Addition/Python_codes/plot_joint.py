@@ -34,23 +34,23 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
             # np.genfromtxt(file_path+'jacc_des.txt', delimiter=None, dtype=(float))
     data_qdot = \
             np.genfromtxt(file_path+'qdot.txt', delimiter=None, dtype=(float))
-    # data_jjvel_qdot = \
-            # np.genfromtxt(file_path+'jjvel_qdot.txt', delimiter=None, dtype=(float))
+    data_jjvel_qdot = \
+            np.genfromtxt(file_path+'jjvel_qdot.txt', delimiter=None, dtype=(float))
     # data_jjpos_q = \
             # np.genfromtxt(file_path+'jjpos_config.txt', delimiter=None, dtype=(float))
-    # data_mjpos = \
-            # np.genfromtxt(file_path+'mjpos.txt', delimiter=None, dtype=(float))
+    data_mjpos = \
+            np.genfromtxt(file_path+'mjpos.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))
     num_leg_joint = 3
     # st_idx = 1;
     # end_idx = len(data_x) - 1
-    st_idx = 2000
+    st_idx = 0
     end_idx = 4000
     data_x = data_x[st_idx:end_idx]
 
     # data_jpos = np.copy(data_jjpos_q[:, 6:-1])
     data_jpos = np.copy(data_config[:, 6:-1])
-    # data_jvel = np.copy(data_jjvel_qdot[:, 6:])
+    data_jvel = np.copy(data_jjvel_qdot[:, 6:])
     ##--------------------------------------------------------------------------------
     # PHASE MARKER #
     data_phse = np.genfromtxt(file_path+'phase.txt', delimiter=None, dtype=(float))
@@ -81,7 +81,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,num_leg_joint+1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
         plt.plot(data_x, data_jpos_des[st_idx:end_idx,i-1], "r-", \
-                # data_x, data_mjpos[st_idx:end_idx,i-1], "b-", \
+                data_x, data_mjpos[st_idx:end_idx,i-1], "b-", \
                 data_x, data_jpos[st_idx:end_idx, i-1], "c-")
 
         # plt.legend(('command', 'pos'), loc='upper left')
@@ -107,7 +107,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     for i in range(1,num_leg_joint + 1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
         plt.plot(data_x, data_jpos_des[st_idx:end_idx,i-1 + num_leg_joint], "r-" , \
-                # data_x, data_mjpos[st_idx:end_idx,i-1 + 3], "b-", \
+                data_x, data_mjpos[st_idx:end_idx,i-1 + 3], "b-", \
                 data_x, data_jpos[st_idx:end_idx, i-1 + num_leg_joint], "c-")
         # plt.legend(('command', 'pos'), loc='upper left')
         # phase marker #
@@ -134,7 +134,7 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('jvel (right_leg)')
     for i in range(1,num_leg_joint + 1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
-        # plt.plot(data_x, data_jvel[st_idx:end_idx, i-1], color="green", linewidth=1.3)
+        plt.plot(data_x, data_jvel[st_idx:end_idx, i-1], color="green", linewidth=1.3)
         plt.plot(data_x, data_qdot[st_idx:end_idx,i-1 + 6], "b-", \
                  data_x, data_jvel_des[st_idx:end_idx, i-1], "r-")
 
@@ -163,8 +163,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     fig.canvas.set_window_title('jvel (left_leg)')
     for i in range(1,num_leg_joint + 1,1):
         ax1 = plt.subplot(num_leg_joint, 1, i)
-        # plt.plot(data_x, data_jvel[st_idx:end_idx, i-1 + num_leg_joint], \
-                # color="green", linewidth=1.3)
+        plt.plot(data_x, data_jvel[st_idx:end_idx, i-1 + num_leg_joint], \
+                color="green", linewidth=1.3)
         plt.plot(data_x, data_qdot[st_idx:end_idx,i-1 + 6 + num_leg_joint], "b-", \
                  data_x, data_jvel_des[st_idx:end_idx, i-1 + num_leg_joint], "r-");
         if filtered_vel_available:

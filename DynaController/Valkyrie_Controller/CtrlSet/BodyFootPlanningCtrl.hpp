@@ -45,6 +45,9 @@ class BodyFootPlanningCtrl:public SwingPlanningCtrl{
         void _foot_pos_task_setup();
         std::vector<ContactSpec*> kin_wbc_contact_list_;
 
+        Task* lhand_pos_task_;
+        Task* lhand_ori_task_;
+ 
         Task* body_pos_task_;
         Task* body_ori_task_;
         Task* torso_ori_task_;
@@ -60,6 +63,7 @@ class BodyFootPlanningCtrl:public SwingPlanningCtrl{
         dynacore::Vector Kd_;
 
         dynacore::Vect3 ini_body_pos_;
+        dynacore::Vect3 ini_lhand_pos_;
         dynacore::Vect3 ini_com_pos_;
         dynacore::Vect3 ini_foot_pos_;
         dynacore::Vect2 body_pt_offset_;

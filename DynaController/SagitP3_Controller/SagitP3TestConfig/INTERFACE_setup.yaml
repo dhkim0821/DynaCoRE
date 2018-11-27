@@ -5,4 +5,5 @@
 #test_name: walking_test
 
 ## Body Ctrl Test ********************************* 
-test_name: body_ctrl_test
+#test_name: body_ctrl_test
+test_name: single_stepping_test

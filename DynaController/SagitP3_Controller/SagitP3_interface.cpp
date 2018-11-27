@@ -15,6 +15,7 @@
 #include <SagitP3_Controller/TestSet/JointCtrlTest.hpp>
 #include <SagitP3_Controller/TestSet/BodyCtrlTest.hpp>
 #include <SagitP3_Controller/TestSet/WalkingConfigTest.hpp>
+#include <SagitP3_Controller/TestSet/SingleSteppingTest.hpp>
 
 SagitP3_interface::SagitP3_interface():
     interface(),
@@ -24,7 +25,7 @@ SagitP3_interface::SagitP3_interface():
     torque_command_(sagitP3::num_act_joint),
     jpos_command_(sagitP3::num_act_joint),
     jvel_command_(sagitP3::num_act_joint),
-     waiting_count_(10)
+     waiting_count_(5)
 {
 
     robot_sys_ = new SagitP3_Model();
@@ -106,13 +107,7 @@ void SagitP3_interface::GetCommand( void* _data, void* _command){
 }
 
 bool SagitP3_interface::_Initialization(SagitP3_SensorData* data){
-    static bool test_initialized(false);
-    if(!test_initialized) {
-        test_->TestInitialization();
-        test_initialized = true;
-        printf("[SagitP3 Interface] Test initialization is done\n");
-    }
-    if(count_ < waiting_count_){
+   if(count_ < waiting_count_){
         for(int i(0); i<sagitP3::num_act_joint; ++i){
             test_cmd_->jtorque_cmd[i] = 0.;
             test_cmd_->jpos_cmd[i] = data->jpos[i];
@@ -122,7 +117,13 @@ bool SagitP3_interface::_Initialization(SagitP3_SensorData* data){
         DataManager::GetDataManager()->start();
         return true;
     }
-    return false;
+    static bool test_initialized(false);
+    if(!test_initialized) {
+        test_->TestInitialization();
+        test_initialized = true;
+        printf("[SagitP3 Interface] Test initialization is done\n");
+    }
+     return false;
 }
 
 void SagitP3_interface::_ParameterSetting(){
@@ -141,7 +142,9 @@ void SagitP3_interface::_ParameterSetting(){
     }else if(tmp_string == "body_ctrl_test"){
         test_ = new BodyCtrlTest(robot_sys_);
         // Stance and Swing Test ***********************************
-    }else {
+    }else if(tmp_string == "single_stepping_test"){
+        test_ = new SingleSteppingTest(robot_sys_);
+     }else {
         printf("[Interfacce] There is no test matching with the name\n");
         exit(0);
     }

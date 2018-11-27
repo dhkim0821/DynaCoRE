@@ -11,7 +11,8 @@ using namespace RigidBodyDynamics::Math;
 SagitP3_Model::SagitP3_Model(){
     model_ = new Model();
     if (!Addons::URDFReadFromFile 
-            (THIS_COM"RobotSystems/SagitP3/SagitP3.urdf", model_, true, false)) {
+            (THIS_COM"RobotSystems/SagitP3/p3_model_orion.urdf", model_, true, 
+             false)) {
         std::cerr << "Error loading model SagitP3.urdf" << std::endl;
         abort();
     }

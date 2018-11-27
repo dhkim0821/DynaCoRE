@@ -27,5 +27,14 @@ class SagitP3_Command{
         double jvel_cmd[sagitP3::num_act_joint];
 };
 
+class SagitP3_StateData{
+    public:
+        double q[sagitP3::num_q];
+        double qdot[sagitP3::num_qdot];
+        
+        bool rfoot_contact;
+        bool lfoot_contact;
+};
+
 
 #endif

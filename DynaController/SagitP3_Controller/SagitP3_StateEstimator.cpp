@@ -104,6 +104,10 @@ void SagitP3_StateEstimator::Update(SagitP3_SensorData* data){
     ori_est_->setSensorData( imu_acc, imu_ang_vel);
     ori_est_->getEstimatedState(body_ori, body_ang_vel);
 
+    // TEST
+    dynacore::convert(0., 0., M_PI/2., body_ori);
+    //dynacore::convert(0., 0., M_PI/2., body_ori);
+
     curr_config_[3] = body_ori.x();
     curr_config_[4] = body_ori.y();
     curr_config_[5] = body_ori.z();
@@ -148,14 +152,9 @@ void SagitP3_StateEstimator::_RBDL_TEST(){
     dynacore::Vector qdot(sagitP3::num_qdot); qdot.setZero();
 
     q[sagitP3_joint::virtual_Rw] = 1.0;
-    q[sagitP3_joint::lHipYaw] = 1.0;
-    //q[sagitP3_joint::lHipYaw] = 1.0;
     q[sagitP3_joint::virtual_Rw] = 1.0;
-    q[sagitP3_joint::lAnkle] = M_PI/2.;
-    q[sagitP3_joint::rAnkle] = M_PI/2.;
 
     qdot[sagitP3_joint::virtual_Ry] = 1.0;
-    qdot[sagitP3_joint::lAnkle] = 1.0;
     dynacore::Matrix J;
     dynacore::Vector JdotQdot;
     dynacore::Vect3 pos, vel, ang_vel;
@@ -171,7 +170,7 @@ void SagitP3_StateEstimator::_RBDL_TEST(){
     q[sagitP3_joint::virtual_Rw] = quat_floating.w();
 
     robot_sys_->UpdateSystem(q, qdot);
-    int link_idx = sagitP3_link::lAnkle;
+    int link_idx = sagitP3_link::l_ankle;
 
     robot_sys_->getFullJacobian(link_idx, J);
     robot_sys_->getFullJDotQdot(link_idx, JdotQdot);

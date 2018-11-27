@@ -9,6 +9,7 @@
 
 class Mercury_StateEstimator;
 class Mercury_StateProvider;
+class ExtCtrlReceiver;
 
 class Mercury_interface: public interface{
 public:
@@ -22,6 +23,7 @@ public:
   dynacore::Quaternion global_ori_;
 
 private:
+  ExtCtrlReceiver* ext_ctrl_receiver_;
   int waiting_count_;
   double ramp_time_;
   
@@ -56,6 +58,28 @@ private:
   dynacore::Vector initial_jpos_;
   Mercury_StateEstimator* state_estimator_;
   Mercury_StateProvider* sp_;
+
+  double walking_dist_;
+  double walking_duration_;
+  double walking_st_time_;
+
+// step left
+    double left1_walking_dist_;
+  double left1_walking_duration_;
+  
+
+// step right
+    double right_walking_dist_;
+  double right_walking_duration_;
+  
+
+  // step left again
+    double left2_walking_dist_;
+  double left2_walking_duration_;
+
+  // step back
+    double backward_walking_dist_;
+  double backward_walking_duration_;
 };
 
 #endif

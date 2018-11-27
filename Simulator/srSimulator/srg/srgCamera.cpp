@@ -20,14 +20,15 @@ const se3 srgCamera::sse3TranslateY(0, 0, 0, 0, 4, 0);
 const se3 srgCamera::sse3TranslateZ(0, 0, 0, 0, 0, 1);
 
 srgCamera::srgCamera():
-m_bLookBack(0),
-m_vEye(Vec3(10, 10, 10)),
-m_vCenter(vZero),
-m_vUp(Vec3(0, 1, 0)),
 m_xeProjectionMode(srgCamera::Perspective),
 m_dFOVy(45.0),
-m_dNear(0.01), m_dFar(2500.0),
-m_AspectRatio(1.0)
+m_dNear(0.01),
+m_dFar(2500.0),
+m_AspectRatio(1.0),
+m_bLookBack(0),
+m_vEye(Vec3(10, 10, 10)),
+m_vUp(Vec3(0, 1, 0)),
+m_vCenter(vZero)
 //m_ProjMat
 {
 	UpdateCameraFrame();

@@ -9,6 +9,8 @@
 #define SENSOR_DELAY 0 // Sensor_delay* mercury::servo_rate (sec) = time delay 
 
 
+ 
+
 Mercury_Dyn_environment::Mercury_Dyn_environment():
   num_substep_rendering_(15),
   count_(0)
@@ -187,15 +189,15 @@ void Mercury_Dyn_environment::FixXY(){
 void Mercury_Dyn_environment::FixRxRy(){
   double pos,vel;
 
-  double kp(5.0);
-  double kd(0.5);
+  double kp(500.0);
+  double kd(15);
 
-  int idx(0);
+  int idx(1);
   pos = m_Mercury->vr_joint_[idx]->m_State.m_rValue[0];
   vel = m_Mercury->vr_joint_[idx]->m_State.m_rValue[1];
   m_Mercury->vr_joint_[idx]->m_State.m_rCommand = -kp * pos - kd * vel;
 
-  idx = 1;
+  idx = 2;
   pos = m_Mercury->vr_joint_[idx]->m_State.m_rValue[0];
   vel = m_Mercury->vr_joint_[idx]->m_State.m_rValue[1];
 
@@ -203,8 +205,28 @@ void Mercury_Dyn_environment::FixRxRy(){
 }
 
 
-void Mercury_Dyn_environment::Rendering_Fnc(){}
+void Mercury_Dyn_environment::Rendering_Fnc(){
+    _DrawDesiredLocation();
+}
+void Mercury_Dyn_environment::_DrawDesiredLocation(){
+  // Attraction Location
+  double radi(0.07);
+  double theta(0.0);
+   //double height_attraction_loc = 
+   //Terrain_Interpreter::GetTerrainInterpreter()->surface_height( HUME_System::GetHumeSystem()->state_provider_->attraction_loc_[0],
+  //                                                                                              HUME_System::GetHumeSystem()->state_provider_->attraction_loc_[1]);
 
+   double height_attraction_loc = 0.005;
+   glBegin(GL_LINE_LOOP); 
+   theta = 0.0; 
+   for (int i(0); i<3600; ++i){ 
+       theta += DEG2RAD(i*0.1);
+       glColor3f(0.5f, 0.1f, 0.f); 
+       glVertex3f(sp_->des_location_[0] + cos(theta)*radi,
+                  sp_->des_location_[1] + sin(theta)*radi, height_attraction_loc );
+   } 
+   glEnd(); 
+}
 
 void Mercury_Dyn_environment::_ParamterSetup(){
   ParamHandler handler(MercuryConfigPath"SIM_sr_sim_setting.yaml");

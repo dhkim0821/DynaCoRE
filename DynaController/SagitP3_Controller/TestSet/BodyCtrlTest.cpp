@@ -10,7 +10,8 @@
 
 BodyCtrlTest::BodyCtrlTest(RobotSystem* robot):Test(robot){
   //phase_ = BodyCtrlPhase::BC_body_ctrl;
-  phase_ = BodyCtrlPhase::BC_initial_jpos;
+  //phase_ = BodyCtrlPhase::BC_initial_jpos;
+  phase_ = BodyCtrlPhase::BC_lift_up;
   state_list_.clear();
 
   jpos_ctrl_ = new JPosTargetCtrl(robot);

@@ -1,24 +1,18 @@
-planner_name: velocity_reversal_lipm
 swing_height: 0.12
 push_down_height: 0.002
 #push_down_height: 0.02
-default_target_foot_location: [-0.08, -0.1, 0.0]
-swing_jpos_delta: [ 0.0, -0.145, 0.4]
+default_target_foot_location: [-0.08, -0.11, 0.0]
 
 ## Feedback Gain
-# virtual (x, y, z, Rx, Ry, Rz) config x6
-Kp: [ 50, 50, 50, 50, 50, 50]
-Kd: [ 5, 5, 5, 5, 5, 5]
+# config x6
+# Kp: [ 50, 50, 50, 50, 50, 50]
+# Kd: [ 5, 5, 5, 5, 5, 5]
 
-body_pt_offset: [0.0, 0.0]
-#body_pt_offset: [-0.01, 0.016]
-# body_pt_offset: [-0.042, -0.035]
+Kp: [ 150, 150, 150, 250, 250, 250]
+Kd: [ 10, 10, 10, 10, 10, 10]
+
+#body_pt_offset: [0.0, 0.005]
+body_pt_offset: [0.005, 0.008]
+foot_landing_offset: [0.0, 0.0]
 swing_time_reduction: 0.0
-foot_landing_offset: [-0.0, 0.]
 
-#body_pt_offset: [-0.077, 0.0]
-#foot_landing_offset: [0.0, 0.]
-#swing_time_reduction: 0.0
-
-initial_planning: false
-#initial_planning: true

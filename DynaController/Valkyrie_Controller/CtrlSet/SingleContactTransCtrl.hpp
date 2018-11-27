@@ -33,6 +33,7 @@ class SingleContactTransCtrl: public Controller{
         double target_body_height_;
         double ini_base_height_;
         dynacore::Vect3 ini_body_pos_;
+        dynacore::Vect3 ini_lhand_pos_;
         int dim_contact_;
 
         double end_time_;
@@ -42,6 +43,8 @@ class SingleContactTransCtrl: public Controller{
         double min_rf_z_;
 
         std::vector<int> selected_jidx_;
+        Task* lhand_pos_task_;
+        Task* lhand_ori_task_;
         Task* body_pos_task_; //pelvis
         Task* body_ori_task_;
         Task* torso_ori_task_;

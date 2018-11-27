@@ -18,7 +18,7 @@ ConfigBodyFootPlanningCtrl::ConfigBodyFootPlanningCtrl(
     des_jpos_(mercury::num_act_joint),
     des_jvel_(mercury::num_act_joint),
     des_jacc_(mercury::num_act_joint),
-    waiting_time_limit_(0.02),
+    waiting_time_limit_(0.0),
     Kp_(mercury::num_act_joint),
     Kd_(mercury::num_act_joint)
 {
@@ -237,7 +237,10 @@ void ConfigBodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
     // Direct value used
     robot_sys_->getCoMPosition(com_pos);
     robot_sys_->getCoMVelocity(com_vel);
-
+    printf("CoM state: %f, %f, %f, %f\n",
+        com_pos[0], com_pos[1],
+        com_vel[0], com_vel[1]);
+ 
     // Average velocity computation
     for(int i(0); i<2; ++i){ 
        sp_->average_vel_[i] = (sp_->Q_[i] - ini_config_[i])/state_machine_time_;
@@ -245,19 +248,21 @@ void ConfigBodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 
     // TEST: estimated com selection
     for(int i(0); i<2; ++i){
-        //com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
-        // com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
+        com_pos[i] = sp_->Q_[i] + body_pt_offset_[i];
+        //com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
         // com_pos[i] += body_pt_offset_[i];
-        // com_vel[i] = sp_->average_vel_[i]; 
-        // com_vel[i] = sp_->est_CoM_vel_[i]; 
+        //com_vel[i] = sp_->average_vel_[i]; 
+        //com_vel[i] = sp_->est_CoM_vel_[i]; 
 
-         // com_pos[i] = sp_->est_mocap_body_pos_[i] + body_pt_offset_[i];
-        // com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
-        com_vel[i] = sp_->est_mocap_body_vel_[i]; 
+        //com_pos[i] = sp_->est_mocap_body_pos_[i] + body_pt_offset_[i];
+        //com_pos[i] = sp_->jjpos_body_pos_[i] + body_pt_offset_[i];
+        com_vel[i] = sp_->est_mocap_body_vel_[i];
+        //com_vel[i] = sp_->Qdot_[i];
     }
-    printf("planning com state: %f, %f, %f, %f\n",
+   printf("planning state: %f, %f, %f, %f\n",
         com_pos[0], com_pos[1],
         com_vel[0], com_vel[1]);
+
 
     OutputReversalPL pl_output;
     ParamReversalPL pl_param;
@@ -267,6 +272,13 @@ void ConfigBodyFootPlanningCtrl::_Replanning(dynacore::Vect3 & target_loc){
 
       
     pl_param.des_loc = sp_->des_location_;
+    pl_param.des_vel[0] = 0.;
+    pl_param.des_vel[1] = 0.;
+    //if(sp_->num_step_copy_ > 10){
+        //pl_param.des_vel[0] = 0.03 * sp_->num_step_copy_;
+        //pl_param.des_loc[0] = sp_->global_pos_local_[0];
+        //sp_->des_location_[0] = sp_->global_pos_local_[0];
+    //}
     pl_param.stance_foot_loc = sp_->global_pos_local_;
 
     if(swing_foot_ == mercury_link::leftFoot)

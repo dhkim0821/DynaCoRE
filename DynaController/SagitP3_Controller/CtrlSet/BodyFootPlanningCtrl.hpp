@@ -57,6 +57,7 @@ class BodyFootPlanningCtrl:public SwingPlanningCtrl{
         dynacore::Vect3 ini_body_pos_;
         dynacore::Vect3 ini_com_pos_;
         dynacore::Vect3 ini_foot_pos_;
+        dynacore::Quaternion ini_foot_ori_;
         dynacore::Vect2 body_pt_offset_;
         
         dynacore::Vector ini_config_;

@@ -102,8 +102,8 @@ void Valkyrie_interface::GetCommand( void* _data, void* _command){
     sp_->curr_time_ = running_time_;
 
     // Stepping forward
-    double walking_start(3.);
-    double walking_duration(8.);
+    double walking_start(5.);
+    double walking_duration(6.);
     double walking_distance(2.5);
     if(sp_->curr_time_ > walking_start){
         double walking_time = sp_->curr_time_ - walking_start;

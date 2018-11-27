@@ -21,9 +21,6 @@ include_directories ("${PROJECT_SOURCE_DIR}/../../utils")
 include_directories ("${PROJECT_SOURCE_DIR}/../../ExternalSource")
 include_directories ("${PROJECT_SOURCE_DIR}/../../")
 
-# system dependent (TODO)
-include_directories ("${PROJECT_SOURCE_DIR}/../../ControlSystem/Mercury/")
-
 find_package(PkgConfig)
 pkg_check_modules(EIGEN3 REQUIRED eigen3)
 include_directories(${EIGEN3_INCLUDE_DIRS})
@@ -36,7 +33,6 @@ data_protocol.h
 ../../Utils/wrap_eigen.hpp
 ../../Utils/comm_udp.hpp
 ../../Utils/utilities.hpp
-../../Utils/DataManager.hpp
 )
 
 set (sources
@@ -46,7 +42,6 @@ Status_Display.cpp
 ../../Utils/wrap_eigen.cpp
 ../../Utils/comm_udp.cpp
 ../../Utils/utilities.cpp
-../../Utils/DataManager.cpp
 )
 
 link_directories("/usr/local/lib/")

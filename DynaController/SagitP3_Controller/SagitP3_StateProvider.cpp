@@ -9,7 +9,8 @@ SagitP3_StateProvider* SagitP3_StateProvider::getStateProvider(){
 }
 
 SagitP3_StateProvider::SagitP3_StateProvider():
-                                stance_foot_(sagitP3_link::lAnkle),
+                                //stance_foot_(sagitP3_link::l_ankle),
+                                stance_foot_(sagitP3_link::l_foot),
                                 Q_(sagitP3::num_q),
                                 Qdot_(sagitP3::num_qdot),
                                 rotor_inertia_(sagitP3::num_act_joint),
@@ -48,8 +49,8 @@ SagitP3_StateProvider::SagitP3_StateProvider():
 }
 
 void SagitP3_StateProvider::SaveCurrentData(const RobotSystem* robot_sys){
-    robot_sys->getPos(sagitP3_link::rAnkle, rfoot_pos_);
-    robot_sys->getPos(sagitP3_link::lAnkle, lfoot_pos_);
-    robot_sys->getPos(sagitP3_link::rAnkle, rfoot_vel_);
-    robot_sys->getPos(sagitP3_link::lAnkle, lfoot_vel_);
+    robot_sys->getPos(sagitP3_link::r_foot, rfoot_pos_);
+    robot_sys->getPos(sagitP3_link::l_foot, lfoot_pos_);
+    robot_sys->getPos(sagitP3_link::r_foot, rfoot_vel_);
+    robot_sys->getPos(sagitP3_link::l_foot, lfoot_vel_);
 }

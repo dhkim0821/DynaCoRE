@@ -29,7 +29,7 @@ bool BodyTask::_UpdateCommand(void* pos_des,
     des_ori.w() = (*pos_cmd)[3];
 
     dynacore::Quaternion body_ori;
-    robot_sys_->getOri(sagitP3_link::torso, body_ori);
+    robot_sys_->getOri(sagitP3_link::hip_ground, body_ori);
     dynacore::Quaternion ori_err = dynacore::QuatMultiply(des_ori, body_ori.inverse());
 
     dynacore::Vect3 ori_err_so3;
@@ -43,7 +43,7 @@ bool BodyTask::_UpdateCommand(void* pos_des,
 
     // (X, Y, Z)
     dynacore::Vect3 body_pos;
-    robot_sys_->getPos(sagitP3_link::torso, body_pos);
+    robot_sys_->getPos(sagitP3_link::hip_ground, body_pos);
 
     for(int i(0); i<3; ++i){
         pos_err_[i+3] =(*pos_cmd)[i+4] - body_pos[i];
@@ -55,13 +55,15 @@ bool BodyTask::_UpdateCommand(void* pos_des,
     //dynacore::pretty_print(acc_des, std::cout, "acc_des");
     //dynacore::pretty_print(pos_err_, std::cout, "pos_err_");
     //dynacore::pretty_print(*pos_cmd, std::cout, "pos cmd");
+    //dynacore::pretty_print(body_pos, std::cout, "body_pos");
+    //dynacore::pretty_print(body_ori, std::cout, "body ori");
     //dynacore::pretty_print(Jt_, std::cout, "Jt");
 
     return true;
 }
 
 bool BodyTask::_UpdateTaskJacobian(){
-    robot_sys_->getFullJacobian(sagitP3_link::torso, Jt_);
+    robot_sys_->getFullJacobian(sagitP3_link::hip_ground, Jt_);
     return true;
 }
 

@@ -10,6 +10,16 @@
 #include <DynaController/Mercury_Controller/Mercury_interface.hpp>
 #include <DynaController/Mercury_Controller/Mercury_StateProvider.hpp>
 
+//////////////////////////////////////////////// 
+#ifdef __APPLE__ 
+#include <GLUT/glut.h> 
+#endif 
+ 
+#ifdef __linux__ 
+#include <GL/glut.h> 
+#endif 
+//////////////////////////////////////////////// 
+
 class interface;
 class LED_Position_Announcer;
 
@@ -62,6 +72,7 @@ private:
 
 
   
+  void _DrawDesiredLocation();
   void _ParamterSetup();
   int num_substep_rendering_;
   double release_time_;

@@ -12,7 +12,7 @@ class RobotSystem;
 // Must to be synchronized with MoCap system
 /////////////////////////////////////////////
 #define MOCAP_DATA_PORT 51128
-#define IP_ADDRESS "192.168.0.144"
+#define IP_ADDRESS "192.168.50.145"
 #define NUM_MARKERS 13
 
 typedef struct{
