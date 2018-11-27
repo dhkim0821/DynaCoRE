@@ -189,15 +189,15 @@ void Mercury_Dyn_environment::FixXY(){
 void Mercury_Dyn_environment::FixRxRy(){
   double pos,vel;
 
-  double kp(5.0);
-  double kd(0.5);
+  double kp(500.0);
+  double kd(15);
 
-  int idx(0);
+  int idx(1);
   pos = m_Mercury->vr_joint_[idx]->m_State.m_rValue[0];
   vel = m_Mercury->vr_joint_[idx]->m_State.m_rValue[1];
   m_Mercury->vr_joint_[idx]->m_State.m_rCommand = -kp * pos - kd * vel;
 
-  idx = 1;
+  idx = 2;
   pos = m_Mercury->vr_joint_[idx]->m_State.m_rValue[0];
   vel = m_Mercury->vr_joint_[idx]->m_State.m_rValue[1];
 

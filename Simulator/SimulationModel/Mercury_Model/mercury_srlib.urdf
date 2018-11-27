@@ -106,7 +106,7 @@
   <joint name="ankle_r" type="continuous">
     <axis xyz="0 1 0"/>
     <!-- <origin rpy="0 0 0" xyz="0.0 0.0 -0.47"/> -->
-    <origin rpy="0 0 0" xyz="0.0 0.0 -0.47"/> 
+    <origin rpy="0 0 0" xyz="0.005 -0.01 -0.47"/> 
     <parent link="shank_r"/>
     <child link="rfoot" />
   </joint>
@@ -171,7 +171,7 @@
   <joint name="thigh_l_to_knee_l_j" type="continuous">
     <axis xyz="0 1 0"/>
     <!-- <origin rpy="0 0 -0.00472424" xyz="0.0181 0.0 -0.4575"/> -->
-    <origin rpy="0 0 0.005" xyz="0.0181 0.00 -0.4575"/>
+    <origin rpy="0 0 0.005" xyz="0.0181 -0.01 -0.4575"/>
     <parent link="thigh_l"/>
     <child link="shank_l"/>
   </joint>
@@ -192,7 +192,7 @@
 
   <joint name="ankle_l" type="continuous">
     <axis xyz="0 1 0"/>
-    <origin rpy="0 0 0" xyz="0.0 -0.002 -0.47"/>
+    <origin rpy="0 0 0" xyz="0.005 -0.02 -0.47"/>
     <parent link="shank_l"/>
     <child link="lfoot" />
   </joint>
