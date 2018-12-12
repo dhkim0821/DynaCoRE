@@ -8,7 +8,7 @@ class RobotSystem;
 
 class LinkPosTask: public KinTask{
 public:
-  LinkPosTask(const RobotSystem*, int link_idx);
+  LinkPosTask(const RobotSystem*, int link_idx, bool virtual_depend = true);
   virtual ~LinkPosTask();
 
 protected:
@@ -23,6 +23,7 @@ protected:
   virtual bool _AdditionalUpdate(){ return true; }
 
   int link_idx_;
+  bool virtual_depend_;
   const RobotSystem* robot_sys_;
 };
 

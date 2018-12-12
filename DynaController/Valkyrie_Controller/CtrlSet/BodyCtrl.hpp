@@ -40,6 +40,9 @@ class BodyCtrl: public Controller{
         int dim_contact_;
 
         std::vector<int> selected_jidx_;
+        Task* head_ori_task_;
+        Task* head_joint_task_;
+
         Task* total_joint_task_;
         Task* body_pos_task_; //pelvis
         Task* body_ori_task_;

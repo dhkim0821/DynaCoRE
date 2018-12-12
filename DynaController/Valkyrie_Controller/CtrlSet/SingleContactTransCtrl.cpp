@@ -6,6 +6,7 @@
 #include <Valkyrie_Controller/TaskSet/LinkGlobalSelectPosTask.hpp>
 #include <Valkyrie_Controller/TaskSet/LinkOriTask.hpp>
 #include <Valkyrie_Controller/TaskSet/JPosTask.hpp>
+#include <Valkyrie_Controller/TaskSet/SelectedJPosTask.hpp>
 
 #include <WBLC/KinWBC.hpp>
 #include <WBLC/WBLC.hpp>
@@ -35,6 +36,14 @@ SingleContactTransCtrl::SingleContactTransCtrl(RobotSystem* robot,
     body_pos_task_ = new LinkPosSelectTask(robot_sys_, valkyrie_link::pelvis, 2);
     body_ori_task_ = new LinkOriTask(robot, valkyrie_link::pelvis);
     torso_ori_task_ = new LinkOriTask(robot, valkyrie_link::torso);
+
+    //head_ori_task_ = new LinkOriTask(robot_sys_, valkyrie_link::head);
+    selected_jidx_.push_back(valkyrie_joint::lowerNeckPitch);
+    selected_jidx_.push_back(valkyrie_joint::neckYaw);
+    selected_jidx_.push_back(valkyrie_joint::upperNeckPitch);
+
+    head_joint_task_ = new SelectedJPosTask(selected_jidx_);
+
 
     //lhand_pos_task_ = new LinkPosSelectTask(robot, valkyrie_link::leftPalm, 2);
     lhand_pos_task_ = new LinkGlobalSelectPosTask(robot, valkyrie_link::leftPalm, 1);
@@ -142,13 +151,13 @@ void SingleContactTransCtrl::_task_setup(){
     dynacore::Vector jpos_des = sp_->jpos_ini_;
     dynacore::Vector jvel_des(valkyrie::num_act_joint); jvel_des.setZero();
     dynacore::Vector jacc_des(valkyrie::num_act_joint); jacc_des.setZero();
-    total_joint_task_->UpdateTask(&(jpos_des), jvel_des, jacc_des);
+    //total_joint_task_->UpdateTask(&(jpos_des), jvel_des, jacc_des);
  
     // Left Hand
     vel_des.setZero(); acc_des.setZero();
     ini_lhand_pos_[1] = 0.3;
     //ini_lhand_pos_[2] = 1.0;
-    lhand_pos_task_->UpdateTask(&(ini_lhand_pos_), vel_des, acc_des);
+    //lhand_pos_task_->UpdateTask(&(ini_lhand_pos_), vel_des, acc_des);
 
     dynacore::Quaternion des_cup_quat;
     rpy_des.setZero();
@@ -159,15 +168,32 @@ void SingleContactTransCtrl::_task_setup(){
     ang_acc_des.setZero();
     lhand_ori_task_->UpdateTask(&(des_cup_quat), ang_vel_des, ang_acc_des);
 
+    // Head
+    dynacore::Vector neck_pos(3);
+    dynacore::Vector neck_vel(3); neck_vel.setZero();
+    dynacore::Vector neck_acc(3); neck_acc.setZero();
+    neck_pos[0] = sp_->jpos_ini_[valkyrie_joint::lowerNeckPitch - valkyrie::num_virtual];
+    neck_pos[1] = sp_->jpos_ini_[valkyrie_joint::neckYaw - valkyrie::num_virtual];
+    neck_pos[2] = sp_->jpos_ini_[valkyrie_joint::upperNeckPitch - valkyrie::num_virtual];
+    double head_rot_amp(0.5);
+    double head_rot_omega(1.5);
+    neck_pos[1] += head_rot_amp * sin(head_rot_omega * sp_->curr_time_);
+
+    head_joint_task_->UpdateTask(&neck_pos, neck_vel, neck_acc);
+
+
     // Task List Update
+    //task_list_.push_back(head_ori_task_);
     task_list_.push_back(torso_ori_task_);
+    task_list_.push_back(lhand_ori_task_);
+    
     task_list_.push_back(body_pos_task_);
     task_list_.push_back(body_ori_task_);
 
-    task_list_.push_back(lhand_pos_task_);
-    task_list_.push_back(lhand_ori_task_);
+    task_list_.push_back(head_joint_task_);
+    //task_list_.push_back(lhand_pos_task_);
 
-   task_list_.push_back(total_joint_task_);
+   //task_list_.push_back(total_joint_task_);
 
     kin_wbc_->FindConfiguration(sp_->Q_, task_list_, contact_list_, 
             des_jpos_, des_jvel_, des_jacc_);

@@ -274,12 +274,12 @@ void Valkyrie_Kin_Model::getOri(int link_id, dynacore::Quaternion & ori){
 
     R = CalcBodyWorldOrientation( *model_, q, _find_body_idx(link_id), false);
     ori = R.transpose();
-    if(ori.w() < 0.){
-        ori.w() *= (-1.);
-        ori.x() *= (-1.);
-        ori.y() *= (-1.);
-        ori.z() *= (-1.);
-    }
+    //if(ori.w() < 0.){
+        //ori.w() *= (-1.);
+        //ori.x() *= (-1.);
+        //ori.y() *= (-1.);
+        //ori.z() *= (-1.);
+    //}
 }
 
 void Valkyrie_Kin_Model::getLinearVel(int link_id, dynacore::Vect3 & vel){

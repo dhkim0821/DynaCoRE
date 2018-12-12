@@ -69,13 +69,17 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
     phase_double_idx = []
 
     for i in range(len(data_phse)-1):
-            if data_phse[i] != data_phse[i+1] and (data_phse[i+1]== 3 or data_phse[i+1] == 7):
+            if data_phse[i] != data_phse[i+1] and (data_phse[i+1]== 3 or \
+                    data_phse[i+1] == 7):
                 phase_swing_st_trans_idx.append(i+1)
-            elif data_phse[i] != data_phse[i+1] and (data_phse[i+1]== 4 or data_phse[i+1] == 8):
+            elif data_phse[i] != data_phse[i+1] and (data_phse[i+1]== 4 or \
+                    data_phse[i+1] == 8):
                 phase_swing_st_idx.append(i+1)
-            elif data_phse[i] != data_phse[i+1] and (data_phse[i+1]== 5 or data_phse[i+1] == 9):
+            elif data_phse[i] != data_phse[i+1] and (data_phse[i+1]== 5 or \
+                    data_phse[i+1] == 9):
                 phase_swing_end_trans_idx.append(i+1)
-            elif data_phse[i] != data_phse[i+1] and (data_phse[i+1]== 6 or data_phse[i+1] == 2):
+            elif data_phse[i] != data_phse[i+1] and (data_phse[i+1]== 6 or \
+                    data_phse[i+1] == 2):
                 phase_double_idx.append(i+1)
             else:
                 pass
@@ -98,10 +102,11 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
     data_estimated_com_global = data_estimated_com
     data_estimated_com_global[:,0:2] += data_global_pos_offset[:, 0:2]
     x_pos_offset = 0.0
-    st_step = 0
+    st_step = 50
     num_steps = 8
 
     lin_width = 3
+    lin_width_thin = 1
     fig_width = 480
     fig_height = 400
     x_lim = 1500
@@ -161,11 +166,11 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
                 # linewidth=lin_width, color='orange')
 
         #current swing
-        plt.plot(data_com_pos_global[swing_st_idx:swing_end_idx, plot_axis], \
+        plt.plot(data_body_global[swing_st_idx:swing_end_idx, plot_axis], \
                 data_est_mocap_body_vel[swing_st_idx:swing_end_idx, plot_axis], \
                 linewidth=lin_width, color='crimson')
         # next swing
-        plt.plot(data_com_pos_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
+        plt.plot(data_body_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
                 data_est_mocap_body_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
                 linewidth=lin_width, color='cyan')
 
@@ -228,31 +233,31 @@ def create_figures(subfigure_width=480, subfigure_height=500, starting_figure_no
         plot_axis = 1
         # current swing
         plt.plot(data_com_pos_global[swing_st_idx:swing_end_idx, plot_axis], \
-                data_com_vel[swing_st_idx:swing_end_idx, plot_axis], linewidth=lin_width, color='blue')
+                data_com_vel[swing_st_idx:swing_end_idx, plot_axis], linewidth=lin_width_thin, color='blue')
         # double 
         plt.plot(data_com_pos_global[double_st_idx:double_end_idx, plot_axis], \
-                data_com_vel[double_st_idx:double_end_idx, plot_axis], linewidth=lin_width, color='black')
+                data_com_vel[double_st_idx:double_end_idx, plot_axis], linewidth=lin_width_thin, color='black')
  
         # next swing
         plt.plot(data_com_pos_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
-                data_com_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], linewidth=lin_width, color='indigo')
+                data_com_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], linewidth=lin_width_thin, color='indigo')
 
         ## Estimated (DHKim) 
         #current swing
-        plt.plot(data_com_pos_global[swing_st_idx:swing_end_idx, plot_axis], \
-                data_est_com_vel[swing_st_idx:swing_end_idx, plot_axis], \
-                linewidth=lin_width, color='olive')
+        # plt.plot(data_com_pos_global[swing_st_idx:swing_end_idx, plot_axis], \
+                # data_est_com_vel[swing_st_idx:swing_end_idx, plot_axis], \
+                # linewidth=lin_width, color='olive')
         # next swing
-        plt.plot(data_com_pos_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
-                data_est_com_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
-                linewidth=lin_width, color='orange')
+        # plt.plot(data_com_pos_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
+                # data_est_com_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
+                # linewidth=lin_width, color='orange')
 
         #current swing
-        plt.plot(data_com_pos_global[swing_st_idx:swing_end_idx, plot_axis], \
+        plt.plot(data_body_global[swing_st_idx:swing_end_idx, plot_axis], \
                 data_est_mocap_body_vel[swing_st_idx:swing_end_idx, plot_axis], \
                 linewidth=lin_width, color='crimson')
         # next swing
-        plt.plot(data_com_pos_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
+        plt.plot(data_body_global[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
                 data_est_mocap_body_vel[nx_swing_st_idx:nx_swing_end_idx, plot_axis], \
                 linewidth=lin_width, color='cyan')
 

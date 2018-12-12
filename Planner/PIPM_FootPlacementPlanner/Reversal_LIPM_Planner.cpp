@@ -25,8 +25,10 @@ void Reversal_LIPM_Planner::_computeSwitchingState(
   for(int i(0); i<2; ++i){
     A = ((com_pos[i] - stance_foot_loc[i]) + com_vel[i]/omega_)/2.;
     B = ((com_pos[i] - stance_foot_loc[i]) - com_vel[i]/omega_)/2.;
-    switching_state[i][0] = A * exp(omega_ * swing_time) + B * exp(-omega_ * swing_time) + stance_foot_loc[i];
-    switching_state[i][1] = omega_ * ( A * exp(omega_ * swing_time) - B * exp(-omega_ * swing_time) );
+    switching_state[i][0] = A * exp(omega_ * swing_time) 
+        + B * exp(-omega_ * swing_time) + stance_foot_loc[i];
+    switching_state[i][1] = omega_ * ( A * exp(omega_ * swing_time) 
+            - B * exp(-omega_ * swing_time) );
   }
 }
 

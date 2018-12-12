@@ -5,8 +5,9 @@
 #include <Utils/utilities.hpp>
 #include <Valkyrie/Valkyrie_Model.hpp>
 
-LinkPosTask::LinkPosTask(const RobotSystem* robot, int link_idx):KinTask(3),
-    robot_sys_(robot), link_idx_(link_idx)
+LinkPosTask::LinkPosTask(const RobotSystem* robot, int link_idx, bool virtual_depend):
+    KinTask(3),
+    robot_sys_(robot), link_idx_(link_idx), virtual_depend_(virtual_depend)
 {
     Jt_ = dynacore::Matrix::Zero(dim_task_, valkyrie::num_qdot);
     JtDotQdot_ = dynacore::Vector::Zero(dim_task_);
@@ -41,6 +42,9 @@ bool LinkPosTask::_UpdateTaskJacobian(){
     dynacore::Matrix Jtmp;
     robot_sys_->getFullJacobian(link_idx_, Jtmp);
     Jt_ = Jtmp.block(3,0, 3, valkyrie::num_qdot);
+    if(!virtual_depend_){
+        Jt_.block(0,0, 3, 6) = dynacore::Matrix::Zero(3,6);
+    }
     return true;
 }
 

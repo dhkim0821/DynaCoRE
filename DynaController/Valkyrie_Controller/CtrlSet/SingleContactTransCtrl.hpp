@@ -43,12 +43,14 @@ class SingleContactTransCtrl: public Controller{
         double min_rf_z_;
 
         std::vector<int> selected_jidx_;
+        Task* head_ori_task_;
         Task* lhand_pos_task_;
         Task* lhand_ori_task_;
         Task* body_pos_task_; //pelvis
         Task* body_ori_task_;
         Task* torso_ori_task_;
         Task* total_joint_task_;
+        Task* head_joint_task_;
 
         KinWBC* kin_wbc_;
         WBDC_ContactSpec* rfoot_contact_;

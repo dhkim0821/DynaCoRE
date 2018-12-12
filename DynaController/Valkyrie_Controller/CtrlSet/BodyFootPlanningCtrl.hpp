@@ -45,9 +45,13 @@ class BodyFootPlanningCtrl:public SwingPlanningCtrl{
         void _foot_pos_task_setup();
         std::vector<ContactSpec*> kin_wbc_contact_list_;
 
+        std::vector<int> selected_jidx_;
         Task* lhand_pos_task_;
         Task* lhand_ori_task_;
  
+        Task* head_ori_task_;
+        Task* head_joint_task_;
+
         Task* body_pos_task_;
         Task* body_ori_task_;
         Task* torso_ori_task_;
