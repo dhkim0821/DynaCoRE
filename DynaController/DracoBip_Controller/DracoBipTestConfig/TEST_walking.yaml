@@ -22,8 +22,8 @@ stance_time: 0.01
 #end_transition_time: 0.13
 #stance_time: 0.11
 
-#replanning: false
-replanning: true
+replanning: false
+#replanning: true
 transition_phase_mix_ratio: 0.2
 double_stance_mix_ratio: 0.0
 # contact_switch_check: false

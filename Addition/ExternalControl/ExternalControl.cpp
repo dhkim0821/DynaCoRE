@@ -11,7 +11,7 @@ int main(int argc, char ** argv){
 
     des_loc.x = 0.;
     des_loc.y = 0.;
-    double step_size(0.05);
+    double step_size(0.1);
     char input[1];
     while(true){
         printf("Type input (w - forward, s - backward, a-left, d-right): \n");
