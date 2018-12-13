@@ -7,8 +7,9 @@ using namespace RigidBodyDynamics::Math;
 using namespace RigidBodyDynamics;
 
 DracoBip_Kin_Model::DracoBip_Kin_Model( RigidBodyDynamics::Model* model):
-    gravity_(9.81)
+    gravity_(9.81), centroid_vel_(6)
 {
+    centroid_vel_.setZero();
     model_ = model;
     Ig_ = dynacore::Matrix::Zero(6,6);
     Jg_ = dynacore::Matrix::Zero(6, model_->qdot_size);
@@ -18,7 +19,7 @@ DracoBip_Kin_Model::~DracoBip_Kin_Model(){
 }
 
 void DracoBip_Kin_Model::UpdateKinematics(const dynacore::Vector & q, const dynacore::Vector & qdot){
-    _UpdateCentroidFrame(q, qdot);
+    //_UpdateCentroidFrame(q, qdot);
 }
 
 void DracoBip_Kin_Model::_UpdateCentroidFrame(const dynacore::Vector & q, 

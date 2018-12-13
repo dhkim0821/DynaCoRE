@@ -21,7 +21,6 @@ BodyFootPlanningCtrl::BodyFootPlanningCtrl(
     des_jpos_(dracobip::num_act_joint),
     des_jvel_(dracobip::num_act_joint),
     des_jacc_(dracobip::num_act_joint),
-    waiting_time_limit_(0.02),
     Kp_(dracobip::num_act_joint),
     Kd_(dracobip::num_act_joint)
 {
@@ -345,7 +344,7 @@ void BodyFootPlanningCtrl::_SetMinJerkOffset(const dynacore::Vect3 & offset){
 }
 
 bool BodyFootPlanningCtrl::EndOfPhase(){
-    if(state_machine_time_ > (end_time_ + waiting_time_limit_)){
+    if(state_machine_time_ > (end_time_ )){
         printf("[Body Foot Ctrl] End, state_machine time/ end time: (%f, %f)\n", 
                 state_machine_time_, end_time_);
         return true;

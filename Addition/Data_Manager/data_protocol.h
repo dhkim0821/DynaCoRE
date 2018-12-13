@@ -7,8 +7,8 @@
 #define IP_ADDR_MAC    "192.168.1.131"
 #define IP_ADDR_DH    "192.168.50.159"
 
-#define IP_ADDR IP_ADDR_DH
-//#define IP_ADDR IP_ADDR_MYSELF
+//#define IP_ADDR IP_ADDR_DH
+#define IP_ADDR IP_ADDR_MYSELF
 
 #define MAX_NUM_DATA 100
 

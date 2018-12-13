@@ -78,6 +78,8 @@ bool FootTask::_UpdateTaskJDotQdot(){
     robot_sys_->getFullJDotQdot(swing_foot_, Jdotqdot);
     JtDotQdot_ = Jdotqdot.tail(dim_task_);
 
+    // TEST
+    //JtDotQdot_.setZero();
     return true;
 }
 

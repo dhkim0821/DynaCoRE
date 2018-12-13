@@ -13,6 +13,8 @@
 #include <srConfiguration.h>
 #include <ParamHandler/ParamHandler.hpp>
 
+#include <Utils/Clock.hpp>
+
 DracoBip_Dyn_environment::DracoBip_Dyn_environment():
     ang_vel_(3), simulation_freq_(10.)
 {
@@ -68,7 +70,12 @@ void DracoBip_Dyn_environment::ControlFunction( void* _data ) {
         p_data->imu_ang_vel[i] = imu_ang_vel[i];
         p_data->imu_acc[i] = imu_acc[i];
     }
-    if (pDyn_env->count_%((int)pDyn_env->simulation_freq_) ==1) pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
+    dynacore::Clock clock;
+    if (pDyn_env->count_%((int)pDyn_env->simulation_freq_) ==1){
+        clock.start();
+     pDyn_env->interface_->GetCommand(p_data, pDyn_env->cmd_); 
+     //if(pDyn_env->count_% 100 == 1) printf("clock:%f\n", clock.stop());
+    }
 
     pDyn_env->_ZeroInput_VirtualJoint();
     pDyn_env->_hold_XY();
@@ -80,6 +87,11 @@ void DracoBip_Dyn_environment::ControlFunction( void* _data ) {
             Kp * (pDyn_env->cmd_->jpos_cmd[i] - p_data->jpos[i]) + 
             Kd * (pDyn_env->cmd_->jvel_cmd[i] - p_data->jvel[i]);
     }
+    //if( ( (double)(pDyn_env->count_)*dracobip::servo_rate ) 
+            //> pDyn_env->release_time_ ){
+        //robot->r_joint_[4]->m_State.m_rCommand = 0.; //pDyn_env->cmd_->jtorque_cmd[4]; 
+        //robot->r_joint_[9]->m_State.m_rCommand = 0.; // pDyn_env->cmd_->jtorque_cmd[9];
+    //}
   pDyn_env->PushRobotBody();
 }
 
