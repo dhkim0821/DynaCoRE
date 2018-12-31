@@ -62,7 +62,9 @@ class SystemGenerator: public srSystem
   SystemGenerator();
   virtual ~SystemGenerator();
 
-  void BuildRobot(Vec3 location, srSystem::BASELINKTYPE base_link_type, srJoint::ACTTYPE joint_type, std::string filename);
+  void BuildRobot(Vec3 location, 
+          srSystem::BASELINKTYPE base_link_type, 
+          srJoint::ACTTYPE joint_type, std::string filename);
 
   std::vector<srLink*> link_;
   std::vector<srRevoluteJoint*> r_joint_;

@@ -20,7 +20,8 @@ def create_figures(subfigure_width=480, subfigure_height=600, starting_figure_no
     file_path = os.getcwd() + "/../../../experiment_data_check/"
 
     data_motor_current = \
-            np.genfromtxt(file_path+'motor_current.txt', delimiter=None, dtype=(float))
+            np.genfromtxt(file_path+'torque.txt', delimiter=None, dtype=(float))
+            # np.genfromtxt(file_path+'motor_current.txt', delimiter=None, dtype=(float))
     data_temperature = \
            np.genfromtxt(file_path+'temperature.txt', delimiter=None, dtype=(float))
     data_x = np.genfromtxt(file_path+'time.txt', delimiter='\n', dtype=(float))

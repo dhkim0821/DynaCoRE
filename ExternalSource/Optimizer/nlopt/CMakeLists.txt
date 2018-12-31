@@ -5,4 +5,4 @@ FILE(GLOB_RECURSE csources *.c)
 
 
 
-add_library (SJnlopt SHARED ${headers} ${sources} ${cppheaders} ${csources} nlopt.f)
+add_library (dynacore_nlopt SHARED ${headers} ${sources} ${cppheaders} ${csources} nlopt.f)
