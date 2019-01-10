@@ -32,7 +32,7 @@ add_subdirectory(Systems/Mercury)
 #add_subdirectory(Systems/Valkyrie)
 #add_subdirectory(Systems/SagitP3)
 add_subdirectory(Systems/DracoBip)
-add_subdirectory(Systems/Manipulator)
+#add_subdirectory(Systems/Manipulator)
 #add_subdirectory(Systems/Cassie)
 #add_subdirectory(Systems/Quadruped)
 
