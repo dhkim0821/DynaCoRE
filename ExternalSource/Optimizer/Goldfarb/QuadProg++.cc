@@ -47,64 +47,6 @@ template<typename T>
 void print_vector(char* name, const GVect<T>& v, int n = -1);
 
 // The Solving function, implementing the Goldfarb-Idnani method
-
-double solve_quadprog(Eigen::MatrixXd& _G, Eigen::VectorXd& _g0,
-                      const Eigen::MatrixXd& _CE, const Eigen::VectorXd& _ce0,
-                      const Eigen::MatrixXd& _CI, const Eigen::VectorXd& _ci0,
-                      Eigen::VectorXd& _x){
-
-    GMatr<double> G, CE, CI;
-    GVect<double> g0, ce0, ci0, x;
-    int n(_x.size());
-    int m(_ce0.size());
-    int p(_ci0.size());
-
-    G.resize(n, n);
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j) {
-            G[i][j] = _G(i, j);
-        }
-    }
-
-    g0.resize(n);
-    for (int i = 0; i < n; ++i) {
-        g0[i] = _g0[i];
-    }
-
-    CE.resize(n, m);
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < m; ++j) {
-            CE[i][j] = _CE(i, j);
-        }
-    }
-
-    ce0.resize(m);
-    for (int i = 0; i < m; ++i) {
-        ce0[i] = _ce0[i];
-    }
-
-    CI.resize(n, p);
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < p; ++j) {
-            CI[i][j] = _CI(i, j);
-        }
-    }
-
-    ci0.resize(p);
-    for (int i = 0; i < p; ++i) {
-        ci0[i] = _ci0[i];
-    }
-
-    x.resize(n);
-
-    double ret(solve_quadprog(G, g0, CE, ce0, CI, ci0, x));
-    for (int i = 0; i < n; ++i) {
-        _x[i] = x[i];
-    }
-
-    return ret;
-}
-
 double solve_quadprog(GMatr<double>& G, GVect<double>& g0,
                       const GMatr<double>& CE, const GVect<double>& ce0,
                       const GMatr<double>& CI, const GVect<double>& ci0,

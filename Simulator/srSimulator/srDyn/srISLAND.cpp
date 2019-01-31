@@ -437,7 +437,8 @@ void ISLAND::_PGS_Solve_Constraint_____________________MARK7(PGSOption * option)
 	ALLOC_BK(sr_real, lo, nt);			// lo : lower bound of lambda
 	ALLOC_BK(sr_real, hi, nt);			// hi : upper bound of lambda
 	ALLOC_BK(int, findex, nt);			// findex : friction index
-	ALLOC_BK(sr_real, rhs,nt);			// rhs : c - J(v_old + invM*f_ext*h) where c is max( penet/h , -e*J*v_old )
+	ALLOC_BK(sr_real, rhs,nt);			// rhs : c - J(v_old + invM*f_ext*h) 
+    // where c is max( penet/h , -e*J*v_old )
 	ALLOC_BK(sr_real, lambda, nt);		// lambda : constraint force
 	ALLOC_BK(sr_real, invMc, j);			// ivMc : Constraint inverse mass matrix ( J*invM*Jt )
 

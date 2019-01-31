@@ -20,14 +20,13 @@ set(YAML_CPP_VERSION_MINOR "5")
 set(YAML_CPP_VERSION_PATCH "3")
 set(YAML_CPP_VERSION "${YAML_CPP_VERSION_MAJOR}.${YAML_CPP_VERSION_MINOR}.${YAML_CPP_VERSION_PATCH}")
 
-enable_testing()
+#enable_testing()
 
 
 ###
 ### Project options
 ###
 ## Project stuff
-option(YAML_CPP_BUILD_TOOLS "Enable testing and parse tools" ON)
 option(YAML_CPP_BUILD_CONTRIB "Enable contrib stuff in library" ON)
 
 ## Build options
@@ -337,15 +336,6 @@ if(UNIX)
 	set(PC_FILE ${CMAKE_BINARY_DIR}/dynacore_yaml-cpp.pc)
 	configure_file("dynacore_yaml-cpp.pc.cmake" ${PC_FILE} @ONLY)
 	install(FILES ${PC_FILE} DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
-endif()
-
-
-###
-### Extras
-###
-if(YAML_CPP_BUILD_TOOLS)
-	# add_subdirectory(test)
-	add_subdirectory(util)
 endif()
 
 ### Formatting
