@@ -67,6 +67,7 @@ s.t.
 #endif  // #if __cplusplus > 199711L
 
 #include "Array.hh"
+#include <Eigen/Dense>
 
 using namespace GolDIdnani;
 
@@ -74,4 +75,10 @@ double solve_quadprog(GMatr<double>& G, GVect<double>& g0,
                       const GMatr<double>& CE, const GVect<double>& ce0,
                       const GMatr<double>& CI, const GVect<double>& ci0,
                       GVect<double>& x);
+
+double solve_quadprog(Eigen::MatrixXd& G, Eigen::VectorXd& g0,
+                      const Eigen::MatrixXd& CE, const Eigen::VectorXd& ce0,
+                      const Eigen::MatrixXd& CI, const Eigen::VectorXd& ci0,
+                      Eigen::VectorXd& x);
+
 #endif // #define _QUADPROGPP
