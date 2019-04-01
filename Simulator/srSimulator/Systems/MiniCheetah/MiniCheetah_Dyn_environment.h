@@ -5,8 +5,10 @@
 #include <vector>
 #include <Utils/wrap_eigen.hpp>
 
+//TEST JUNHYEOK
 #include "MiniCheetah.h"
 
+//TEST
 ////////////////////////////////////////////////
 #ifdef __APPLE__
 #include <GLUT/glut.h>
@@ -37,10 +39,10 @@ public:
   void SetCurrentState_All();
   void saveLandingLocation();
 public:
-   MiniCheetah_SensorData* data_;
-  MiniCheetah_Command* cmd_;
+   //MiniCheetah_SensorData* data_;
+  //MiniCheetah_Command* cmd_;
 
- interface* interface_;
+ //interface* interface_;
   MiniCheetah* robot_;
 
   srSpace*	m_Space;

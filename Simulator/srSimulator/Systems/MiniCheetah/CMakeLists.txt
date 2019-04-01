@@ -12,7 +12,6 @@ target_link_libraries (simulation_mini_cheetah
   util
   ${OPENGL_LIBRARIES}
   dynacore_urdf
-  #Atlas_Controller
 )
 
 if (APPLE)

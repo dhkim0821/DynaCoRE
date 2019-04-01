@@ -4,5 +4,6 @@
 #add_subdirectory(Draco)
 add_subdirectory(Mercury)
 add_subdirectory(Valkyrie)
+add_subdirectory(MiniCheetah)
 #add_subdirectory(Valkyrie_WBLC)
 #add_subdirectory(NAO)
