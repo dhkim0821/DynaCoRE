@@ -2,7 +2,7 @@
 #cmake_minimum_required(VERSION 2.8.12)
 
 include_directories(${DART_INCLUDE_DIRS})
-set(example_name valkyrie)
+set(example_name dart_valkyrie)
 
 include_directories ("${example_name}")
 

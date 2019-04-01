@@ -1,5 +1,5 @@
 include_directories(${DART_INCLUDE_DIRS})
-set(example_name wblc_valkyrie)
+set(example_name dart_wblc_valkyrie)
 
 include_directories ("${example_name}")
 

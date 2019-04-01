@@ -16,9 +16,9 @@ private:
     Eigen::VectorXd mQdot;
     Eigen::VectorXd mTorqueCommand;
     int mDof;
-    std::vector<double> cmd_;
 
     Valkyrie_SensorData* sensor_data_;
+    Valkyrie_Command* cmd_;
     interface* interface_;
 
 public:
