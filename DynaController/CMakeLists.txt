@@ -1,4 +1,5 @@
 #add_subdirectory(NAO_Exam_Controller)
+add_subdirectory(NAO_Controller)
 add_subdirectory(Valkyrie_Controller)
 add_subdirectory(DracoBip_Controller)
 add_subdirectory(Atlas_Controller)
