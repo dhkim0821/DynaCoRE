@@ -684,7 +684,8 @@ bool srCollision::_TouchToBox(Vec3& c0, sr_real r0, Vec3& point, Vec3& normal, s
 	}
 }
 
-bool srCollision::_TouchToSphere(Vec3& c0, sr_real r0, Vec3& point, Vec3& normal, sr_real& penetration)
+bool srCollision::_TouchToSphere(Vec3& c0, sr_real r0, Vec3& point, Vec3& normal, 
+        sr_real& penetration)
 {
 	// Sphere1
 

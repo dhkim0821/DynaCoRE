@@ -11,8 +11,8 @@ default_target_foot_location: [-0.08, -0.11, 0.0]
 Kp: [ 150, 150, 150, 250, 250, 250]
 Kd: [ 10, 10, 10, 10, 10, 10]
 
-#body_pt_offset: [0.0, 0.005]
-body_pt_offset: [0.005, 0.008]
+body_pt_offset: [0.0, 0.0]
+#body_pt_offset: [0.005, 0.008]
 foot_landing_offset: [0.0, 0.0]
 swing_time_reduction: 0.0
 

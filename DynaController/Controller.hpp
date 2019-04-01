@@ -3,6 +3,7 @@
 
 #include <Utils/wrap_eigen.hpp>
 #include <Utils/pseudo_inverse.hpp>
+#include <Utils/utilities.hpp>
 #include <RobotSystems/RobotSystem.hpp>
 #include <Task.hpp>
 #include <ContactSpec.hpp>
@@ -32,6 +33,7 @@ protected:
       robot_sys_->getGravity(grav_);
       robot_sys_->getCoriolis(coriolis_);
 
+      //dynacore::pretty_print(grav_, std::cout, "gravity");
       task_list_.clear();
       contact_list_.clear();
   }
