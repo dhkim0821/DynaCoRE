@@ -50,11 +50,11 @@ void MiniCheetah::_SetInitialConf(){
   vp_joint_[0]->m_State.m_rValue[0] = 0.0;
   vp_joint_[1]->m_State.m_rValue[0] = 0.0;
   vp_joint_[2]->m_State.m_rValue[0] = 1.135;// + 0.3;
+
   vr_joint_[0]->m_State.m_rValue[0] = 0.0;
   vr_joint_[1]->m_State.m_rValue[0] = 0.0;
   vr_joint_[2]->m_State.m_rValue[0] = 0.0;
 
-  vr_joint_[0]->m_State.m_rValue[0] = 0.;
   switch(pose){
   case 0:
 
@@ -62,7 +62,23 @@ void MiniCheetah::_SetInitialConf(){
 
   case 1:
     vp_joint_[2]->m_State.m_rValue[0] = 1.131;
-    break;
+
+    r_joint_[0]->m_State.m_rValue[0] = 0.0;
+    r_joint_[1]->m_State.m_rValue[0] = -0.7;
+    r_joint_[2]->m_State.m_rValue[0] = 1.4;
+
+    r_joint_[3]->m_State.m_rValue[0] = 0.0;
+    r_joint_[4]->m_State.m_rValue[0] = -0.7;
+    r_joint_[5]->m_State.m_rValue[0] = 1.4;
+
+    r_joint_[6]->m_State.m_rValue[0] = 0.0;
+    r_joint_[7]->m_State.m_rValue[0] = -0.7;
+    r_joint_[8]->m_State.m_rValue[0] = 1.4;
+
+    r_joint_[9]->m_State.m_rValue[0] = 0.0;
+    r_joint_[10]->m_State.m_rValue[0] = -0.7;
+    r_joint_[11]->m_State.m_rValue[0] = 1.4;
+      break;
 
   case 2:
     break;

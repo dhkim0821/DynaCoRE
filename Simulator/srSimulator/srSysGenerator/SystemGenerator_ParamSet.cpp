@@ -33,7 +33,7 @@ void SystemGenerator::_SetJointParam(int idx){
 
 
     Vec3 axis010=Vec3(0,0,-SR_PI_HALF);
-    Vec3 neg_axis010=Vec3(0,0,-SR_PI_HALF);
+    Vec3 neg_axis010=Vec3(0,0,SR_PI_HALF);
     Vec3 axis100=Vec3(0,SR_PI_HALF,0);
     Vec3 neg_axis100=Vec3(0,-SR_PI_HALF,0);
 
@@ -102,8 +102,8 @@ void SystemGenerator::_SetJointParam(int idx){
                 //SE3 ParentLinkFrame= JointOffFrame * Axis010Frame;
                 r_joint_[RJidx_]->SetParentLinkFrame(ParentLinkFrame);
                 r_joint_[RJidx_]->SetChildLinkFrame(EulerZYX(neg_axis010,-c_Link_offset));
-              std::cout << "Doublecheck :srSysGenerator/SystemGenerator"
-                  <<"(joint param(" <<joint_names_[idx]<< "): rotation axis_y)" << std::endl;
+              //std::cout << "Doublecheck :srSysGenerator/SystemGenerator"
+                  //<<"(joint param(" <<joint_names_[idx]<< "): rotation axis_y)" << std::endl;
              }
             RJidx_++;
         }

@@ -15,11 +15,9 @@
 MiniCheetah_Dyn_environment::MiniCheetah_Dyn_environment():
     ang_vel_(3)
 {
-    printf("1\n");
     /********** Space Setup **********/
     m_Space = new srSpace();
     m_ground = new Ground();
-    printf("1\n");
 
     m_Space->AddSystem(m_ground->BuildGround());
     /********** Robot Set  **********/
@@ -27,14 +25,11 @@ MiniCheetah_Dyn_environment::MiniCheetah_Dyn_environment():
     robot_->BuildRobot(Vec3 (0., 0., 0.), 
             srSystem::FIXED, srJoint::TORQUE, ModelPath"MiniCheetah/mini_cheetah.urdf");
     m_Space->AddSystem((srSystem*)robot_);
-    printf("1\n");
 
     /******** Interface set ********/
     //interface_ = new MiniCheetah_interface();
     //data_ = new MiniCheetah_SensorData();
     //cmd_ = new MiniCheetah_Command();
-
-    printf("1\n");
 
     m_Space->DYN_MODE_PRESTEP();
     m_Space->SET_USER_CONTROL_FUNCTION_2(ControlFunction);

@@ -37,7 +37,7 @@ bool MojaveWorkAround = true;
 
 srSimpleViewer::srSimpleViewer(void)
 {
-    printf("SimpleViewr constructed\n");
+    //printf("SimpleViewr constructed\n");
 }
 
 srSimpleViewer::~srSimpleViewer()
@@ -412,9 +412,7 @@ void srSimpleViewer::DoLoopFunc( void )
 
 srSimpleViewer& srSimpleViewer::GetInstance()
 {
-    printf("ccc\n");
 	static srSimpleViewer SingleSimpleViewer;
-    printf("ccc\n");
 	return SingleSimpleViewer;
 }
 
