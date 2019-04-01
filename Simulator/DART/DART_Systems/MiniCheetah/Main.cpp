@@ -65,7 +65,7 @@ void _setInitialConfiguration(dart::dynamics::SkeletonPtr robot) {
     Eigen::VectorXd q(robot->getNumDofs());
     q.setZero();
 
-    q[5] =0.5;
+    q[5] = 1.0;
 
     int num_joint(12);
     Eigen::VectorXd idx_joint(num_joint);
@@ -80,20 +80,20 @@ void _setInitialConfiguration(dart::dynamics::SkeletonPtr robot) {
     idx_joint[5] = robot->getDof("thigh_fl_to_knee_fl_j")->getIndexInSkeleton();
 
     // Hind Right Leg
-    idx_joint[6] = robot->getDof("torso_to_abduct_fr_j")->getIndexInSkeleton();
-    idx_joint[7] = robot->getDof("abduct_fr_to_thigh_fr_j")->getIndexInSkeleton();
-    idx_joint[8] = robot->getDof("thigh_fr_to_knee_fr_j")->getIndexInSkeleton();
+    idx_joint[6] = robot->getDof("torso_to_abduct_hr_j")->getIndexInSkeleton();
+    idx_joint[7] = robot->getDof("abduct_hr_to_thigh_hr_j")->getIndexInSkeleton();
+    idx_joint[8] = robot->getDof("thigh_hr_to_knee_hr_j")->getIndexInSkeleton();
 
     // Hind Left Leg
-    idx_joint[9] = robot->getDof("torso_to_abduct_fl_j")->getIndexInSkeleton();
-    idx_joint[10] = robot->getDof("abduct_fl_to_thigh_fl_j")->getIndexInSkeleton();
-    idx_joint[11] = robot->getDof("thigh_fl_to_knee_fl_j")->getIndexInSkeleton();
+    idx_joint[9] = robot->getDof("torso_to_abduct_hl_j")->getIndexInSkeleton();
+    idx_joint[10] = robot->getDof("abduct_hl_to_thigh_hl_j")->getIndexInSkeleton();
+    idx_joint[11] = robot->getDof("thigh_hl_to_knee_hl_j")->getIndexInSkeleton();
 
 
     Eigen::VectorXd config_joint(num_joint);
     config_joint << 
-        0.0, -0.0, 0.0, 0.0, -0.0, 0.0,
-        0.0, -0.0, 0.0, 0.0, -0.0, 0.0;
+        0.0, -0.3, 0.6, 0.0, -0.3, 0.6,
+        0.0, -0.3, 0.6, 0.0, -0.3, 0.6;
         //0.0, -0.3, 0.3, 0.0, -0.3, 0.3,
         //0.0, -0.3, 0.3, 0.0, -0.3, 0.3;
 

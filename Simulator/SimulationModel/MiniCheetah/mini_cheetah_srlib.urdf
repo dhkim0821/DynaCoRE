@@ -10,7 +10,7 @@
             <geometry>
                 <mesh filename="meshes/mini_body.obj"/>
             </geometry>
-            <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+            <origin rpy="1.5708 0.0 0.0" xyz="0.0 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
@@ -38,13 +38,13 @@
             <geometry>
                 <mesh filename="meshes/mini_abad.obj"/>
             </geometry>
-            <origin rpy="3.141592 0.0 1.5708" xyz="-0.055 0.0 0.0"/>
+            <origin rpy="1.5708 0.0 1.5708" xyz="-0.055 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_abad.obj"/>
             </geometry>
-            <origin rpy="3.141592 0 1.5708" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
     </link>
 
@@ -65,13 +65,13 @@
             <geometry>
                 <mesh filename="meshes/mini_upper_link.obj"/>
             </geometry>
-            <origin rpy="0.0 -1.5708 0.0" xyz="0.0 0.0 0.0"/>
+            <origin rpy="1.5708 -1.5708 0.0" xyz="0.0 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_upper_link.obj"/>
             </geometry>
-            <origin rpy="0 -1.5708 0" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
     </link>
 
@@ -91,13 +91,33 @@
             <geometry>
                 <mesh filename="meshes/mini_lower_link.obj"/>
             </geometry>
-            <origin rpy="0.0 3.141592 0.0" xyz="0.0 0.0 0.0"/>
+            <origin rpy="1.5708 0.0 0.0" xyz="0.0 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_lower_link.obj"/>
             </geometry>
-            <origin rpy="0 3.141592 0" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+        </collision>
+    </link>
+
+    <joint name="ankle_fr" type="fixed">
+        <axis xyz="0 1 0"/>
+        <origin rpy="0 0 0" xyz="0.0 0.0 -0.175"/>
+        <parent link="shank_fr"/>
+        <child link="foot_fr" />
+    </joint>
+    <link name="foot_fr">
+        <inertial>
+            <mass value="0.00001"/>
+            <origin xyz="0.0 0.0 0.0"/>
+            <inertia ixx="0.00001" ixy="0" ixz="0.0" iyy="0.00001" iyz="0" izz="0.00001"/>
+        </inertial>
+        <collision>
+            <geometry>
+                <sphere radius="0.03"/>
+            </geometry>
+            <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
         </collision>
     </link>
 
@@ -119,13 +139,13 @@
             <geometry>
                 <mesh filename="meshes/mini_abad.obj"/>
             </geometry>
-            <origin rpy="0. 0. -1.5708" xyz="-0.055 0.0 0.0"/>
+            <origin rpy="-1.5708 0. -1.5708" xyz="-0.055 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_abad.obj"/>
             </geometry>
-            <origin rpy="0 0 -1.5708" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
     </link>
 
@@ -146,13 +166,13 @@
             <geometry>
                 <mesh filename="meshes/mini_upper_link.obj"/>
             </geometry>
-            <origin rpy="0.0 -1.5708 0.0" xyz="0.0 0.0 0.0"/>
+            <origin rpy="1.5708 -1.5708 0.0" xyz="0.0 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_upper_link.obj"/>
             </geometry>
-            <origin rpy="0 -1.5708 0" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
     </link>
 
@@ -172,17 +192,38 @@
             <geometry>
                 <mesh filename="meshes/mini_lower_link.obj"/>
             </geometry>
-            <origin rpy="0.0 3.141592 0.0" xyz="0.0 0.0 0.0"/>
+            <origin rpy="1.5708 0.0 0.0" xyz="0.0 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_lower_link.obj"/>
             </geometry>
-            <origin rpy="0 3.141592 0" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
     </link>
 
-<!--!!!!!!!!!!!! Hind Right Leg !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
+    <joint name="ankle_fl" type="fixed">
+        <axis xyz="0 1 0"/>
+        <origin rpy="0 0 0" xyz="0.0 0.0 -0.175"/>
+        <parent link="shank_fl"/>
+        <child link="foot_fl" />
+    </joint>
+    <link name="foot_fl">
+        <inertial>
+            <mass value="0.123"/>
+            <origin xyz="0.0 0.0 0.0"/>
+            <inertia ixx="0.00001" ixy="0" ixz="0.0" iyy="0.00001" iyz="0" izz="0.00001"/>
+        </inertial>
+        <collision>
+            <geometry>
+                <!--<sphere radius="0.03"/>-->
+              <capsule radius="0.05" length="0.12" />
+            </geometry>
+            <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        </collision>
+    </link>
+
+    <!--!!!!!!!!!!!! Hind Right Leg !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
     <joint name="torso_to_abduct_hr_j" type="continuous">
         <axis xyz="1 0 0"/>
         <origin rpy="0 0 0" xyz="-0.19 -0.049 0.0"/>
@@ -200,13 +241,13 @@
             <geometry>
                 <mesh filename="meshes/mini_abad.obj"/>
             </geometry>
-            <origin rpy="0.0 0.0 1.5708" xyz="0.055 0.0 0.0"/>
+            <origin rpy="-1.5708 0.0 1.5708" xyz="0.055 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_abad.obj"/>
             </geometry>
-            <origin rpy="0 0 1.5708" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
     </link>
 
@@ -227,13 +268,13 @@
             <geometry>
                 <mesh filename="meshes/mini_upper_link.obj"/>
             </geometry>
-            <origin rpy="0.0 -1.5708 0.0" xyz="0.0 0.0 0.0"/>
+            <origin rpy="1.5708 -1.5708 0.0" xyz="0.0 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_upper_link.obj"/>
             </geometry>
-            <origin rpy="0 -1.5708 0" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
     </link>
 
@@ -253,17 +294,38 @@
             <geometry>
                 <mesh filename="meshes/mini_lower_link.obj"/>
             </geometry>
-            <origin rpy="0.0 3.141592 0.0" xyz="0.0 0.0 0.0"/>
+            <origin rpy="1.5708 0.0 0.0" xyz="0.0 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_lower_link.obj"/>
             </geometry>
-            <origin rpy="0 3.141592 0" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
     </link>
 
-<!--!!!!!!!!!!!! Hind Left Leg !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
+    <joint name="ankle_hr" type="fixed">
+        <axis xyz="0 1 0"/>
+        <origin rpy="0 0 0" xyz="0.0 0.0 -0.175"/>
+        <parent link="shank_hr"/>
+        <child link="foot_hr" />
+    </joint>
+    <link name="foot_hr">
+        <inertial>
+            <mass value="0.123"/>
+            <origin xyz="0.0 0.0 0.0"/>
+            <inertia ixx="0.00001" ixy="0" ixz="0.0" iyy="0.00001" iyz="0" izz="0.00001"/>
+        </inertial>
+        <collision>
+            <geometry>
+                <!--<sphere radius="0.03"/>-->
+              <capsule radius="0.05" length="0.12" />
+            </geometry>
+            <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        </collision>
+    </link>
+
+    <!--!!!!!!!!!!!! Hind Left Leg !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!-->
     <joint name="torso_to_abduct_hl_j" type="continuous">
         <axis xyz="1 0 0"/>
         <origin rpy="0 0 0" xyz="-0.19 0.049 0.0"/>
@@ -281,13 +343,13 @@
             <geometry>
                 <mesh filename="meshes/mini_abad.obj"/>
             </geometry>
-            <origin rpy="3.141592 0.0 -1.5708" xyz="0.055 0.0 0.0"/>
+            <origin rpy="1.5708 0.0 -1.5708" xyz="0.055 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_abad.obj"/>
             </geometry>
-            <origin rpy="3.141592 0 -1.5708" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
     </link>
 
@@ -308,13 +370,13 @@
             <geometry>
                 <mesh filename="meshes/mini_upper_link.obj"/>
             </geometry>
-            <origin rpy="0.0 -1.5708 0.0" xyz="0.0 0.0 0.0"/>
+            <origin rpy="1.5708 -1.5708 0.0" xyz="0.0 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_upper_link.obj"/>
             </geometry>
-            <origin rpy="0 -1.5708 0" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
         </collision>
     </link>
 
@@ -334,13 +396,34 @@
             <geometry>
                 <mesh filename="meshes/mini_lower_link.obj"/>
             </geometry>
-            <origin rpy="0.0 3.141592 0.0" xyz="0.0 0.0 0.0"/>
+            <origin rpy="1.5708 0.0 0.0" xyz="0.0 0.0 0.0"/>
         </visual>
         <collision>
             <geometry>
                 <mesh filename="meshes/mini_lower_link.obj"/>
             </geometry>
-            <origin rpy="0 3.141592 0" xyz="0 0 0"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+        </collision>
+    </link>
+
+    <joint name="ankle_hl" type="fixed">
+        <axis xyz="0 1 0"/>
+        <origin rpy="0 0 0" xyz="0.0 0.0 -0.175"/>
+        <parent link="shank_hl"/>
+        <child link="foot_hl" />
+    </joint>
+    <link name="foot_hl">
+        <inertial>
+            <mass value="0.123"/>
+            <origin xyz="0.0 0.0 0.0"/>
+            <inertia ixx="0.00001" ixy="0" ixz="0.0" iyy="0.00001" iyz="0" izz="0.00001"/>
+        </inertial>
+        <collision>
+            <geometry>
+                <!--<sphere radius="0.03"/>-->
+              <capsule radius="0.05" length="0.12" />
+            </geometry>
+            <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
         </collision>
     </link>
 
