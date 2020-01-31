@@ -6,7 +6,7 @@ New_Valkyrie::New_Valkyrie():
       //BuildRobot(Vec3(0., 0., 0.), srSystem::FIXED, srJoint::TORQUE,
           //ModelPath"Valkyrie/valkyrie.urdf");
  
-  printf("[Valkyrie] ASSEMBLED\n");
+  //printf("[Valkyrie] ASSEMBLED\n");
 }
 
 New_Valkyrie::~New_Valkyrie(){

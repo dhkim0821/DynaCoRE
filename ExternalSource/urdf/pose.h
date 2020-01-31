@@ -77,23 +77,27 @@ public:
     std::string s;
     while(getline(ss, s, ' ')){
         try{
-            xyz.push_back(std::stod(s.c_str()));
+          //printf("string: %s\n", s.c_str());
+          xyz.push_back(std::stod(s.c_str()));
         }
         catch(int e){
             throw ParseError("Unable to parse component [" + s + "] to a double (while parsing a vector value)");
         }
     }
 
-    if (xyz.size() != 3)
+    if (xyz.size() != 3){
+      printf("[Vector3] vector size is not proper: %lu\n", xyz.size());
+      exit(0);
       throw ParseError("Parser found " 
-              + std::to_string(xyz.size())  
-              + " elements but 3 expected while parsing vector [" + vector_str + "]");
-    
+          + std::to_string(xyz.size())  
+          + " elements but 3 expected while parsing vector [" + vector_str + "]");
+    }
+
     this->x = xyz[0];
     this->y = xyz[1];
     this->z = xyz[2];
   }
-  
+
   Vector3 operator+(Vector3 vec)
   {
     return Vector3(this->x+vec.x,this->y+vec.y,this->z+vec.z);

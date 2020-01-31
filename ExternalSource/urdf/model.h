@@ -93,10 +93,11 @@ public:
   void getLink(const std::string& name,std::shared_ptr<Link> &link) const
   {
     std::shared_ptr<Link> ptr;
-    if (this->links_.find(name) == this->links_.end())
+    if (this->links_.find(name) == this->links_.end()){
       ptr.reset();
-    else
+    } else{
       ptr = this->links_.find(name)->second;
+    }
     link = ptr;
   };
   

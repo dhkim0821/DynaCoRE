@@ -224,6 +224,7 @@ void SystemGenerator::_Parsing(std::string filename){
             std::istreambuf_iterator<char>());
     model_file.close();
 
+    //URDFModelPtr urdf_model = dynacore::urdf::parseURDF (model_xml_string, true);
     URDFModelPtr urdf_model = dynacore::urdf::parseURDF (model_xml_string);
 
     link_map_ = urdf_model->links_;

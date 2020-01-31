@@ -17,8 +17,7 @@
   <!--Yaw-->
   <!--pitch-->
   <!--roll-->
-  <!--pitch-->
-  <!--roll-->
+  <!--pitch-->   <!--roll-->
   <!--Yaw-->
   <!--pitch-->
   <!--roll-->
@@ -252,7 +251,7 @@
   <link name="torsoPitchLink">
     <inertial>
       <mass value="0.1"/>
-      <origin rpy="0 0 0" xyz="0.000000 0.000000  0.005000"/>
+      <origin rpy="0 0 0" xyz="0.000000 0.000000 0.005000"/>
       <inertia ixx="3.032e-05" ixy="0.0" ixz="-1.145e-06" iyy="2.1274e-05" iyz="0.0" izz="2.8285e-05"/>
     </inertial>
     <visual>
@@ -317,7 +316,7 @@
   <link name="lowerNeckPitchLink">
     <inertial>
       <mass value="1.05"/>
-      <origin rpy="0 0 0" xyz="-0.020000 0.000000  0.040000"/>
+      <origin rpy="0 0 0" xyz="-0.020000 0.000000 0.040000"/>
       <inertia ixx="0.001470716" ixy="-0.000126021" ixz="0.000632521" iyy="0.001851919" iyz="0.000243012" izz="0.000832117"/>
     </inertial>
     <visual>
@@ -336,7 +335,7 @@
   <link name="neckYawLink">
     <inertial>
       <mass value="1.4"/>
-      <origin rpy="0 0 0" xyz="-0.030000  -0.010000 0.150000"/>
+      <origin rpy="0 0 0" xyz="-0.030000 -0.010000 0.150000"/>
       <inertia ixx="0.001997698" ixy="-0.000180062" ixz="0.000723677" iyy="0.002919928" iyz="0.000246467" izz="0.002119751"/>
     </inertial>
     <visual>
@@ -1593,7 +1592,7 @@
   <link name="rightKneePitchLink">
     <inertial>
       <mass value="6.2"/>
-      <origin rpy="0 0 0" xyz="-0.022183  0.001703  -0.189418"/>
+      <origin rpy="0 0 0" xyz="-0.022183 0.001703 -0.189418"/>
       <inertia ixx="0.086935683" ixy="9.929e-05" ixz="0.000573207" iyy="0.091584066" iyz="0.000313745" izz="0.014017272"/>
     </inertial>
     <visual>
@@ -1631,7 +1630,7 @@
   <link name="rightFoot">
     <inertial>
       <mass value="2.27"/>
-      <origin rpy="0 0 0" xyz="0.037702  0.005161  -0.047634"/>
+      <origin rpy="0 0 0" xyz="0.037702 0.005161 -0.047634"/>
       <inertia ixx="0.00623936" ixy="0.000217174" ixz="0.001340587" iyy="0.017786991" iyz="-0.000187749" izz="0.020774433"/>
     </inertial>
     <visual>
@@ -1761,7 +1760,7 @@
   <link name="leftKneePitchLink">
     <inertial>
       <mass value="6.2"/>
-      <origin rpy="0 0 0" xyz="-0.022183  0.001703  -0.189418"/>
+      <origin rpy="0 0 0" xyz="-0.022183 0.001703 -0.189418"/>
       <inertia ixx="0.086935683" ixy="9.929e-05" ixz="0.000573207" iyy="0.091584066" iyz="0.000313745" izz="0.014017272"/>
     </inertial>
     <visual>
@@ -1799,7 +1798,7 @@
   <link name="leftFoot">
     <inertial>
       <mass value="2.27"/>
-      <origin rpy="0 0 0" xyz="0.037702  0.005161  -0.047634"/>
+      <origin rpy="0 0 0" xyz="0.037702 0.005161 -0.047634"/>
       <inertia ixx="0.00623936" ixy="0.000217174" ixz="0.001340587" iyy="0.017786991" iyz="-0.000187749" izz="0.020774433"/>
     </inertial>
     <visual>

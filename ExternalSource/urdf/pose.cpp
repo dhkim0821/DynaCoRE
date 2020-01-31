@@ -93,6 +93,7 @@ bool parsePose(Pose &pose, TiXmlElement* xml)
   if (xml)
   {
     const char* xyz_str = xml->Attribute("xyz");
+
     if (xyz_str != NULL)
     {
       try {

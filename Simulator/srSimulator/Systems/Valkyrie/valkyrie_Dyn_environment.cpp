@@ -25,6 +25,7 @@ Valkyrie_Dyn_environment::Valkyrie_Dyn_environment()
     //srJoint::TORQUE, ModelPath"Valkyrie_Model/r5_urdf.urdf");
     robot_->BuildRobot(Vec3 (0., 0., 0.), srSystem::FIXED, 
             srJoint::TORQUE, ModelPath"Valkyrie/valkyrie_simple.urdf");
+            //srJoint::TORQUE, ModelPath"Valkyrie/valkyrie_no_collision.urdf");
     m_Space->AddSystem((srSystem*)robot_);
 
     /******** Interface set ********/

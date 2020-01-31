@@ -299,13 +299,13 @@ std::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
 bool parseInertial(Inertial &i, TiXmlElement *config)
 {
   i.clear();
-
   // Origin
   TiXmlElement *o = config->FirstChildElement("origin");
   if (o)
   {
-    if (!parsePose(i.origin, o))
+    if (!parsePose(i.origin, o)){      
       return false;
+    }    
   }
 
   TiXmlElement *mass_xml = config->FirstChildElement("mass");
@@ -431,7 +431,7 @@ bool parseCollision(Collision &col, TiXmlElement* config)
 
 bool parseLink(Link &link, TiXmlElement* config)
 {
-  
+ 
   link.clear();
 
   const char *name_char = config->Attribute("name");

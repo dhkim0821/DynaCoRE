@@ -61,7 +61,6 @@ std::shared_ptr<ModelInterface>  parseURDFFile(const std::string &path, bool ver
 
 std::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string, bool verbose)
 {
-  //bool verbose(false);
   std::shared_ptr<ModelInterface> model(new ModelInterface);
   model->clear();
 
@@ -119,7 +118,8 @@ std::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string, bool v
   }
   int count(0);
   // Get all Link elements
-  for (TiXmlElement* link_xml = robot_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
+  for (TiXmlElement* link_xml = robot_xml->FirstChildElement("link"); 
+      link_xml; link_xml = link_xml->NextSiblingElement("link"))
   {
 
     std::shared_ptr<Link> link;
@@ -165,7 +165,7 @@ std::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string, bool v
       }
     }
     catch (ParseError &/*e*/) {
-        printf("[URDF] link parsing error\n");
+      printf("[URDF] link parsing error\n");
       model.reset();
       return model;
     }
