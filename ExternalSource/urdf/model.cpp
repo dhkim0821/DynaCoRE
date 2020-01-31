@@ -34,7 +34,6 @@
 
 /* Author: Wim Meeussen */
 
-#include <boost/algorithm/string.hpp>
 #include <vector>
 #include "urdf_parser.h"
 // #include <console_bridge/console.h>
@@ -46,23 +45,24 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
 bool parseLink(Link &link, TiXmlElement *config);
 bool parseJoint(Joint &joint, TiXmlElement *config);
 
-boost::shared_ptr<ModelInterface>  parseURDFFile(const std::string &path)
+std::shared_ptr<ModelInterface>  parseURDFFile(const std::string &path, bool verbose)
 {
     std::ifstream stream( path.c_str() );
     if (!stream)
     {
-      return boost::shared_ptr<ModelInterface>();
+        printf("couldn't find the file: %s\n", path.c_str());
+      return std::shared_ptr<ModelInterface>();
     }
 
     std::string xml_str((std::istreambuf_iterator<char>(stream)),
 	                     std::istreambuf_iterator<char>());
-    return urdf::parseURDF( xml_str );
+    return urdf::parseURDF( xml_str , verbose);
 }
 
-boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
+std::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string, bool verbose)
 {
-  bool verbose(false);
-  boost::shared_ptr<ModelInterface> model(new ModelInterface);
+  //bool verbose(false);
+  std::shared_ptr<ModelInterface> model(new ModelInterface);
   model->clear();
 
   TiXmlDocument xml_doc;
@@ -95,7 +95,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   // Get all Material elements
   for (TiXmlElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
   {
-    boost::shared_ptr<Material> material;
+    std::shared_ptr<Material> material;
     material.reset(new Material);
 
     try {
@@ -122,7 +122,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   for (TiXmlElement* link_xml = robot_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
   {
 
-    boost::shared_ptr<Link> link;
+    std::shared_ptr<Link> link;
     link.reset(new Link);
 
     try {
@@ -179,7 +179,7 @@ boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
   count = 0;
   for (TiXmlElement* joint_xml = robot_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
   {
-    boost::shared_ptr<Joint> joint;
+    std::shared_ptr<Joint> joint;
     joint.reset(new Joint);
 
     if (parseJoint(*joint, joint_xml))
@@ -247,17 +247,17 @@ TiXmlDocument*  exportURDF(const ModelInterface &model)
   doc->LinkEndChild(robot);
 
 
-  for (std::map<std::string, boost::shared_ptr<Material> >::const_iterator m=model.materials_.begin(); m!=model.materials_.end(); m++)
+  for (std::map<std::string, std::shared_ptr<Material> >::const_iterator m=model.materials_.begin(); m!=model.materials_.end(); m++)
   {
     exportMaterial(*(m->second), robot);
   }
 
-  for (std::map<std::string, boost::shared_ptr<Link> >::const_iterator l=model.links_.begin(); l!=model.links_.end(); l++)  
+  for (std::map<std::string, std::shared_ptr<Link> >::const_iterator l=model.links_.begin(); l!=model.links_.end(); l++)  
   {
     exportLink(*(l->second), robot);
   }
   	
-  for (std::map<std::string, boost::shared_ptr<Joint> >::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); j++)  
+  for (std::map<std::string, std::shared_ptr<Joint> >::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); j++)  
   {
     exportJoint(*(j->second), robot);
   }
@@ -265,7 +265,7 @@ TiXmlDocument*  exportURDF(const ModelInterface &model)
   return doc;
 }
     
-TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model)
+TiXmlDocument*  exportURDF(std::shared_ptr<ModelInterface> &model)
 {
   return exportURDF(*model);
 }

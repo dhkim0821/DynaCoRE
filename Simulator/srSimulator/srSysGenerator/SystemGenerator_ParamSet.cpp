@@ -215,8 +215,8 @@ void SystemGenerator::_SetLinkParam(int idx){
         if((Linkidxiter->second->visual_array[0]->geometry->type)
                 == dynacore::urdf::Geometry::MESH){
 
-            boost::shared_ptr<dynacore::urdf::Mesh> mesh
-                = boost::dynamic_pointer_cast<dynacore::urdf::Mesh>(
+            std::shared_ptr<dynacore::urdf::Mesh> mesh
+                = std::dynamic_pointer_cast<dynacore::urdf::Mesh>(
                         Linkidxiter->second->visual_array[0]->geometry );
 
             string ModelFileName_ = file_path_ + mesh->filename;
@@ -238,26 +238,26 @@ void SystemGenerator::_SetLinkParam(int idx){
         //Box
         else if((Linkidxiter->second->visual_array[0]->geometry->type)==
                 dynacore::urdf::Geometry::BOX){
-            boost::shared_ptr<dynacore::urdf::Box>box=boost::dynamic_pointer_cast<dynacore::urdf::Box>(Linkidxiter->second->visual_array[0]->geometry);
+            std::shared_ptr<dynacore::urdf::Box>box=std::dynamic_pointer_cast<dynacore::urdf::Box>(Linkidxiter->second->visual_array[0]->geometry);
             link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::BOX);
             link_[idx]->GetGeomInfo().SetDimension(box->dim.x,box->dim.y,box->dim.z);
         }
         else if((Linkidxiter->second->visual_array[0]->geometry->type)==
                 dynacore::urdf::Geometry::CYLINDER){
-            boost::shared_ptr<dynacore::urdf::Cylinder>cylinder=boost::dynamic_pointer_cast<dynacore::urdf::Cylinder>(Linkidxiter->second->visual_array[0]->geometry);
+            std::shared_ptr<dynacore::urdf::Cylinder>cylinder=std::dynamic_pointer_cast<dynacore::urdf::Cylinder>(Linkidxiter->second->visual_array[0]->geometry);
             link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::CYLINDER);
             link_[idx]->GetGeomInfo().SetDimension(cylinder->radius,cylinder->length,0);
         }
         else if((Linkidxiter->second->visual_array[0]->geometry->type)==
                 dynacore::urdf::Geometry::SPHERE){
-            boost::shared_ptr<dynacore::urdf::Sphere>sphere=boost::dynamic_pointer_cast<dynacore::urdf::Sphere>(Linkidxiter->second->visual_array[0]->geometry);
+            std::shared_ptr<dynacore::urdf::Sphere>sphere=std::dynamic_pointer_cast<dynacore::urdf::Sphere>(Linkidxiter->second->visual_array[0]->geometry);
             link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::SPHERE);
             link_[idx]->GetGeomInfo().SetDimension(sphere->radius,0,0);
         }
         else if((Linkidxiter->second->visual_array[0]->geometry->type)==
                 dynacore::urdf::Geometry::CAPSULE){
-            boost::shared_ptr<dynacore::urdf::Capsule>capsule=
-                boost::dynamic_pointer_cast<dynacore::urdf::Capsule>(
+            std::shared_ptr<dynacore::urdf::Capsule>capsule=
+                std::dynamic_pointer_cast<dynacore::urdf::Capsule>(
                         Linkidxiter->second->visual_array[0]->geometry);
             link_[idx]->GetGeomInfo().SetShape(srGeometryInfo::CAPSULE);
             link_[idx]->GetGeomInfo().SetDimension(capsule->radius,capsule->length,0);

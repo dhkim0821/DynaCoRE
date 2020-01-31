@@ -36,7 +36,6 @@
 
 #include <sstream>
 #include "joint.h"
-#include "boost/lexical_cast.hpp"
 // #include <console_bridge/console.h>
 #include "tinyxml.h"
 #include "urdf_parser.h"
@@ -58,9 +57,9 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
   {
     try
     {
-      jd.damping = boost::lexical_cast<double>(damping_str);
+      jd.damping = std::stod(damping_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -75,9 +74,9 @@ bool parseJointDynamics(JointDynamics &jd, TiXmlElement* config)
   {
     try
     {
-      jd.friction = boost::lexical_cast<double>(friction_str);
+      jd.friction = std::stod(friction_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -105,9 +104,9 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   {
     try
     {
-      jl.lower = boost::lexical_cast<double>(lower_str);
+      jl.lower = std::stod(lower_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -122,9 +121,9 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   {
     try
     {
-      jl.upper = boost::lexical_cast<double>(upper_str);
+      jl.upper = std::stod(upper_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -139,9 +138,9 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   {
     try
     {
-      jl.effort = boost::lexical_cast<double>(effort_str);
+      jl.effort = std::stod(effort_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -156,9 +155,9 @@ bool parseJointLimits(JointLimits &jl, TiXmlElement* config)
   {
     try
     {
-      jl.velocity = boost::lexical_cast<double>(velocity_str);
+      jl.velocity = std::stod(velocity_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -181,9 +180,9 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   {
     try
     {
-      js.soft_lower_limit = boost::lexical_cast<double>(soft_lower_limit_str);
+      js.soft_lower_limit = std::stod(soft_lower_limit_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -199,9 +198,9 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   {
     try
     {
-      js.soft_upper_limit = boost::lexical_cast<double>(soft_upper_limit_str);
+      js.soft_upper_limit = std::stod(soft_upper_limit_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -217,9 +216,9 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   {
     try
     {
-      js.k_position = boost::lexical_cast<double>(k_position_str);
+      js.k_position = std::stod(k_position_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -234,9 +233,9 @@ bool parseJointSafety(JointSafety &js, TiXmlElement* config)
   {
     try
     {
-      js.k_velocity = boost::lexical_cast<double>(k_velocity_str);
+      js.k_velocity = std::stod(k_velocity_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -259,9 +258,9 @@ bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
   {
     try
     {
-      jc.rising.reset(new double(boost::lexical_cast<double>(rising_position_str)));
+      jc.rising.reset(new double(std::stod(rising_position_str)));
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -277,9 +276,9 @@ bool parseJointCalibration(JointCalibration &jc, TiXmlElement* config)
   {
     try
     {
-      jc.falling.reset(new double(boost::lexical_cast<double>(falling_position_str)));
+      jc.falling.reset(new double(std::stod(falling_position_str)));
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -313,9 +312,9 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
   {
     try
     {
-      jm.multiplier = boost::lexical_cast<double>(multiplier_str);
+      jm.multiplier = std::stod(multiplier_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }
@@ -332,9 +331,9 @@ bool parseJointMimic(JointMimic &jm, TiXmlElement* config)
   {
     try
     {
-      jm.offset = boost::lexical_cast<double>(offset_str);
+      jm.offset = std::stod(offset_str);
     }
-    catch (boost::bad_lexical_cast &e)
+    catch (int e)
     {
       return false;
     }

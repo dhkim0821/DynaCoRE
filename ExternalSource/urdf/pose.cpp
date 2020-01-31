@@ -38,9 +38,7 @@
 #include "pose.h"
 #include <fstream>
 #include <sstream>
-#include <boost/lexical_cast.hpp>
 #include <algorithm>
-// #include <console_bridge/console.h>
 #include "tinyxml.h"
 #include "urdf_parser.h"
 

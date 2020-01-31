@@ -11,10 +11,10 @@
 #include <urdf/model.h>
 #include <urdf/urdf_parser.h>
 
-typedef boost::shared_ptr<dynacore::urdf::Link> LinkPtr;
-typedef const boost::shared_ptr<const dynacore::urdf::Link> ConstLinkPtr;
-typedef boost::shared_ptr<dynacore::urdf::Joint> JointPtr;
-typedef boost::shared_ptr<dynacore::urdf::ModelInterface> ModelPtr;
+typedef std::shared_ptr<dynacore::urdf::Link> LinkPtr;
+typedef const std::shared_ptr<const dynacore::urdf::Link> ConstLinkPtr;
+typedef std::shared_ptr<dynacore::urdf::Joint> JointPtr;
+typedef std::shared_ptr<dynacore::urdf::ModelInterface> ModelPtr;
 
 using namespace std;
 

@@ -58,17 +58,18 @@ using namespace Assimp;
 
 // ------------------------------------------------------------------------------------------------
 // Constructor.
-DefaultIOSystem::DefaultIOSystem()
-{
+//DefaultIOSystem::DefaultIOSystem() noexcept
+//{
+    
     // nothing to do here
-}
+//}
 
 // ------------------------------------------------------------------------------------------------
 // Destructor.
-DefaultIOSystem::~DefaultIOSystem()
-{
+//DefaultIOSystem::~DefaultIOSystem()
+//{
     // nothing to do here
-}
+//}
 
 // ------------------------------------------------------------------------------------------------
 // Tests for the existence of a file at the given path.

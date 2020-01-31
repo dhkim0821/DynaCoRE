@@ -41,8 +41,6 @@
 #include <sstream>
 #include <vector>
 #include <math.h>
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
 #include "exception.h"
 
 namespace dynacore{ 
@@ -61,22 +59,35 @@ public:
   void init(const std::string &vector_str)
   { 
     this->clear();
-    std::vector<std::string> pieces;
     std::vector<double> xyz;
-    boost::split( pieces, vector_str, boost::is_any_of(" "));
-    for (unsigned int i = 0; i < pieces.size(); ++i){
-      if (pieces[i] != ""){
-        try {
-          xyz.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
+    //std::vector<std::string> pieces;
+    //std::split( pieces, vector_str, std::is_any_of(" "));
+    //for (unsigned int i = 0; i < pieces.size(); ++i){
+      //if (pieces[i] != ""){
+        //try {
+          //xyz.push_back(std::stod(pieces[i].c_str()));
+        //}
+        //catch (int e) {
+          //throw ParseError("Unable to parse component [" + pieces[i] + "] to a double (while parsing a vector value)");
+        //}
+      //}
+    //}
+
+    std::istringstream ss(vector_str);
+    std::string s;
+    while(getline(ss, s, ' ')){
+        try{
+            xyz.push_back(std::stod(s.c_str()));
         }
-        catch (boost::bad_lexical_cast &e) {
-          throw ParseError("Unable to parse component [" + pieces[i] + "] to a double (while parsing a vector value)");
+        catch(int e){
+            throw ParseError("Unable to parse component [" + s + "] to a double (while parsing a vector value)");
         }
-      }
     }
-    
+
     if (xyz.size() != 3)
-      throw ParseError("Parser found " + boost::lexical_cast<std::string>(xyz.size())  + " elements but 3 expected while parsing vector [" + vector_str + "]");
+      throw ParseError("Parser found " 
+              + std::to_string(xyz.size())  
+              + " elements but 3 expected while parsing vector [" + vector_str + "]");
     
     this->x = xyz[0];
     this->y = xyz[1];

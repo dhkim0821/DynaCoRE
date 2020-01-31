@@ -40,9 +40,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-
+#include <memory>
 #include "joint.h"
 #include "color.h"
 
@@ -162,10 +160,10 @@ class Visual
 public:
   Visual() { this->clear(); };
   Pose origin;
-  boost::shared_ptr<Geometry> geometry;
+  std::shared_ptr<Geometry> geometry;
 
   std::string material_name;
-  boost::shared_ptr<Material> material;
+  std::shared_ptr<Material> material;
 
   void clear()
   {
@@ -186,7 +184,7 @@ class Collision
 public:
   Collision() { this->clear(); };
   Pose origin;
-  boost::shared_ptr<Geometry> geometry;
+  std::shared_ptr<Geometry> geometry;
 
   void clear()
   {
@@ -209,42 +207,42 @@ public:
   std::string name;
 
   /// inertial element
-  boost::shared_ptr<Inertial> inertial;
+  std::shared_ptr<Inertial> inertial;
 
   /// visual element
-  boost::shared_ptr<Visual> visual;
+  std::shared_ptr<Visual> visual;
 
   /// collision element
-  boost::shared_ptr<Collision> collision;
+  std::shared_ptr<Collision> collision;
 
   /// if more than one collision element is specified, all collision elements are placed in this array (the collision member will be NULL)
-  std::vector<boost::shared_ptr<Collision> > collision_array;
+  std::vector<std::shared_ptr<Collision> > collision_array;
 
   /// if more than one visual element is specified, all visual elements are placed in this array (the visual member will be NULL)
-  std::vector<boost::shared_ptr<Visual> > visual_array;
+  std::vector<std::shared_ptr<Visual> > visual_array;
 
   /// deprecated; please use visual_array instead 
   // this is actually deprecated, but too many warnings are generated
   // __attribute__((deprecated))
-  std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<Visual> > > > visual_groups;
+  std::map<std::string, std::shared_ptr<std::vector<std::shared_ptr<Visual> > > > visual_groups;
   
   /// deprecated; please use collision_array instead
   // this is actually deprecated, but too many warnings are generated
   // __attribute__((deprecated))
-  std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<Collision> > > > collision_groups;
+  std::map<std::string, std::shared_ptr<std::vector<std::shared_ptr<Collision> > > > collision_groups;
 
   /// Parent Joint element
   ///   explicitly stating "parent" because we want directional-ness for tree structure
   ///   every link can have one parent
-  boost::shared_ptr<Joint> parent_joint;
+  std::shared_ptr<Joint> parent_joint;
 
-  std::vector<boost::shared_ptr<Joint> > child_joints;
-  std::vector<boost::shared_ptr<Link> > child_links;
+  std::vector<std::shared_ptr<Joint> > child_joints;
+  std::vector<std::shared_ptr<Link> > child_links;
 
-  boost::shared_ptr<Link> getParent() const
+  std::shared_ptr<Link> getParent() const
   {return parent_link_.lock();};
 
-  void setParent(const boost::shared_ptr<Link> &parent)
+  void setParent(const std::shared_ptr<Link> &parent)
   { parent_link_ = parent; }
   
   void clear()
@@ -264,24 +262,24 @@ public:
 
   // please use visual_array member instead
   __attribute__((deprecated))
-  boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > getVisuals(const std::string& group_name) const
+  std::shared_ptr<std::vector<std::shared_ptr<Visual > > > getVisuals(const std::string& group_name) const
   {
     if (this->visual_groups.find(group_name) != this->visual_groups.end())
       return this->visual_groups.at(group_name);
-    return boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > >();
+    return std::shared_ptr<std::vector<std::shared_ptr<Visual > > >();
   }
 
   // please use collision_array member instead
   __attribute__((deprecated))
-  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > getCollisions(const std::string& group_name) const
+  std::shared_ptr<std::vector<std::shared_ptr<Collision > > > getCollisions(const std::string& group_name) const
   {
     if (this->collision_groups.find(group_name) != this->collision_groups.end())
       return this->collision_groups.at(group_name);
-    return boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > >();
+    return std::shared_ptr<std::vector<std::shared_ptr<Collision > > >();
   }
   
 private:
-  boost::weak_ptr<Link> parent_link_;
+  std::weak_ptr<Link> parent_link_;
 
 };
 

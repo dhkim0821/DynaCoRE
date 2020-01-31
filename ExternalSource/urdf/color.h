@@ -40,8 +40,8 @@
 #include <string>
 #include <vector>
 #include <math.h>
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
+//#include <std/algorithm/string.hpp>
+//#include <std/lexical_cast.hpp>
 
 namespace dynacore{
 namespace urdf
@@ -66,22 +66,32 @@ public:
     this->clear();
     std::vector<std::string> pieces;
     std::vector<float> rgba;
-    boost::split( pieces, vector_str, boost::is_any_of(" "));
-    for (unsigned int i = 0; i < pieces.size(); ++i)
-    {
-      if (!pieces[i].empty())
-      {
-        try
-        {
-          rgba.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
-        }
-        catch (boost::bad_lexical_cast &e)
-        {
-          return false;
-        }
-      }
-    }
 
+    //std::split( pieces, vector_str, std::is_any_of(" "));
+    //for (unsigned int i = 0; i < pieces.size(); ++i)
+    //{
+      //if (!pieces[i].empty())
+      //{
+        //try
+        //{
+          //rgba.push_back(std::stod(pieces[i].c_str()));
+        //}
+        //catch (int e)
+        //{
+          //return false;
+        //}
+      //}
+    //}
+    std::istringstream ss(vector_str);
+    std::string s;
+    while(getline(ss, s, ' ')){
+        try{
+            rgba.push_back(std::stod(s.c_str()));
+        }
+        catch(int e){
+            throw ParseError("Unable to parse component [" + s + "] to a double (while parsing a vector value)");
+        }
+    }
     if (rgba.size() != 4)
     {
       return false;

@@ -18,6 +18,7 @@ set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
 find_package(PkgConfig)
 pkg_check_modules(EIGEN3 REQUIRED eigen3)
 include_directories(${EIGEN3_INCLUDE_DIRS})
+message(${EIGEN3_INCLUDE_DIRS})
 
 find_package(Boost)
 if(Boost_FOUND)
