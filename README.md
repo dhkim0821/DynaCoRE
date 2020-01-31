@@ -8,7 +8,6 @@ In OSX, Xcode 9.4.1 is required < 10.1
 
 ## Install
 - cmake
-- boost (in ubuntu: sudo apt-get install libboost-all-dev)
 - eigen3 (in ubuntu: sudo apt install libeigen3-dev)
 - openGL (in ubuntu: sudo apt-get install freeglut3-dev)
 
